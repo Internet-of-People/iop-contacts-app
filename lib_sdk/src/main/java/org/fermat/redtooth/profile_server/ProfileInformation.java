@@ -10,6 +10,8 @@ public interface ProfileInformation {
 
     byte[] getVersion();
 
+    long getLastUpdateTime();
+
     byte[] getPubKey();
 
     String getName();

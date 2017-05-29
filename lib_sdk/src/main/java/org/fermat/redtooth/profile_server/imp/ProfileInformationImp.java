@@ -29,6 +29,7 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
 
     private byte[] profileServerId;
     private boolean isOnline;
+    private long updateTimestamp;
 
 
     public ProfileInformationImp() {
@@ -50,6 +51,11 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
 
     public byte[] getVersion() {
         return version;
+    }
+
+    @Override
+    public long getLastUpdateTime() {
+        return updateTimestamp;
     }
 
     public byte[] getPubKey() {
@@ -137,6 +143,10 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
 
     public void setServices(Set<String> services) {
         this.services = services;
+    }
+
+    public void setUpdateTimestamp(long updateTimestamp) {
+        this.updateTimestamp = updateTimestamp;
     }
 
     public void setTumbnailImgHash(byte[] tumbnailImgHash) {

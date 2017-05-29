@@ -130,8 +130,14 @@ public class Redtooth {
         if (!managers.containsKey(requeteerPubKey)) throw new IllegalStateException("Profile connection not established");
         ProfileInformation info = profilesManager.getProfile(CryptoBytes.fromHexToBytes(profPubKey));
         if (info!=null){
+            //todo: add TTL and expiration -> info.getLastUpdateTime().
+            // if it's not valid go to CAN.
             future.onMessageReceive(0,info);
         }else {
+            // CAN FLOW
+
+
+            //
             MsgListenerFuture<IopProfileServer.GetProfileInformationResponse> getFuture = new MsgListenerFuture<>();
             getFuture.setListener(new BaseMsgFuture.Listener<IopProfileServer.GetProfileInformationResponse>() {
                 @Override
@@ -148,6 +154,7 @@ public class Redtooth {
                     profileInformation.setLongitude(signedProfile.getLongitude());
                     profileInformation.setExtraData(signedProfile.getExtraData());
                     profileInformation.setIsOnline(message.getIsOnline());
+                    profileInformation.setUpdateTimestamp(System.currentTimeMillis());
 
                     for (int i = 0; i < message.getApplicationServicesCount(); i++) {
                         profileInformation.addAppService(message.getApplicationServices(i));
