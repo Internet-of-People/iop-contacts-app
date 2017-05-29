@@ -1,0 +1,6 @@
+
+include ':app', ':iop_sdk_android', ':libsodium-jni-aar-1.0.3'//,':iop_sdk'
+
+include ':iopj'
+project(':iopj').projectDir = new File('iop_sdk/iopj')
+

@@ -1,0 +1,1184 @@
+package org.fermat.redtooth.profile_server.engine;
+
+import org.bitcoinj.core.Sha256Hash;
+import org.fermat.redtooth.core.RedtoothContext;
+import org.fermat.redtooth.crypto.CryptoBytes;
+import org.fermat.redtooth.crypto.CryptoWrapper;
+import org.fermat.redtooth.profile_server.ProfileInformation;
+import org.fermat.redtooth.profile_server.client.PsSocketHandler;
+import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
+import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
+import org.fermat.redtooth.profile_server.protocol.IopShared;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+//import iop_sdk.crypto.CryptoBytes;
+//import iop_sdk.crypto.CryptoWrapper;
+//import iop_sdk.global.ContextWrapper;
+import org.fermat.redtooth.profile_server.CantConnectException;
+import org.fermat.redtooth.profile_server.CantSendMessageException;
+import org.fermat.redtooth.profile_server.IoSession;
+import org.fermat.redtooth.profile_server.SslContextFactory;
+import org.fermat.redtooth.profile_server.client.ProfNodeConnection;
+import org.fermat.redtooth.profile_server.client.ProfSerImp;
+import org.fermat.redtooth.profile_server.client.ProfSerRequest;
+import org.fermat.redtooth.profile_server.client.ProfileServer;
+import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
+import org.fermat.redtooth.profile_server.engine.listeners.ProfSerPartSearchListener;
+import org.fermat.redtooth.profile_server.model.ProfServerData;
+import org.fermat.redtooth.profile_server.model.Profile;
+import org.fermat.redtooth.profile_server.processors.MessageProcessor;
+import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
+
+import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.CHECK_IN;
+import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.HOME_NODE_REQUEST;
+import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.NO_SERVER;
+import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.START_CONVERSATION_CL;
+import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.WAITING_START_CL;
+import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.WAITING_START_NON_CL;
+
+/**
+ * Created by mati on 05/02/17.
+ *
+ *
+ * Esta clase va a ser el engine de conexión con el profile server, abstrayendo a los usuarios de su conexión.
+ *
+ * Por ahora el servidor solo acepta un actor por conexión por lo cual deberia tener el profile acá o armar una lista de profiles para un futuro..
+ *
+ */
+
+public class ProfSerEngine {
+
+    private Logger LOG = LoggerFactory.getLogger(ProfSerEngine.class);
+    /** Connection state */
+    private ProfSerConnectionState profSerConnectionState;
+    /**  Profile server */
+    private ProfileServer profileServer;
+    /** Server configuration data */
+    private ProfServerData profServerData;
+    /** Profile connected cached class */
+    private ProfNodeConnection profNodeConnection;
+    /** Crypto wrapper implementation */
+    private CryptoWrapper crypto;
+    /** Db */
+    private ProfSerDb profSerDb;
+    /** Internal server handler */
+    private PsSocketHandler handler;
+    /** Listener to receive incomingCallNotifications and incomingMessages from calls */
+    private CallsListener callListener;
+    /** Engine listenerv*/
+    private final CopyOnWriteArrayList<EngineListener> engineListeners = new CopyOnWriteArrayList<>();
+    /** Messages listeners:  id -> listner */
+    private final ConcurrentMap<Integer,ProfSerMsgListener> msgListeners = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String,SearchProfilesQuery> profilesQuery = new ConcurrentHashMap<>();
+    /** Executor */
+    private ExecutorService executor;
+    /** Ping executor */
+    private Map<IopProfileServer.ServerRoleType,ScheduledExecutorService> pingExecutors;
+
+    /**
+     *
+     * @param profServerData
+     * @param profile -> use a profile for the restriction of 1 per connection that the server have.
+     */
+    public ProfSerEngine(RedtoothContext contextWrapper, ProfSerDb profSerDb , ProfServerData profServerData, Profile profile, CryptoWrapper crypto, SslContextFactory sslContextFactory) throws Exception {
+        this.profServerData = profServerData;
+        this.crypto = crypto;
+        this.profSerDb = profSerDb;
+        this.profSerConnectionState=NO_SERVER;
+        this.profNodeConnection = new ProfNodeConnection(
+                profile,
+                profSerDb.isRegistered(
+                        profServerData.getHost(),
+                        profile.getHexPublicKey()),
+                randomChallenge()
+        );
+        handler = new ProfileServerHanlder();
+        this.profileServer = new ProfSerImp(contextWrapper,profServerData,sslContextFactory,handler);
+    }
+
+    /**
+     *
+     * @param profServerData
+     * @param profile -> use a profile for the restriction of 1 per connection that the server have.
+     */
+//    public ProfSerEngine(ContextWrapper contextWrapper,ProfServerData profServerData, Profile profile, CryptoWrapper crypto,SslContextFactory sslContextFactory) throws Exception {
+//        this(contextWrapper,new ProfServerDbFile(contextWrapper.getDirPrivateMode("/")),profServerData,profile,crypto,sslContextFactory);
+//    }
+
+    /**
+     * Creates a random challenge for the connection.
+     * @return
+     */
+    private byte[] randomChallenge(){
+        byte[] connChallenge = new byte[32];
+        crypto.random(connChallenge,32);
+        return connChallenge;
+    }
+
+
+    /**
+     *
+     * @param listener
+     */
+    public void addEngineListener(EngineListener listener){
+        this.engineListeners.add(listener);
+    }
+
+    public void removeEngineListener(EngineListener listener){
+        this.engineListeners.remove(listener);
+    }
+
+    public void setCallListener(CallsListener callListener) {
+        this.callListener = callListener;
+    }
+
+    /**
+     * Start
+     * @param initFuture
+     */
+    public void start(final MsgListenerFuture<Boolean> initFuture){
+        if (getProfSerConnectionState()!=NO_SERVER) throw new IllegalStateException("Start already called");
+
+        executor = Executors.newFixedThreadPool(3);
+        executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                ProfSerConnectionEngine connectionEngine = new ProfSerConnectionEngine(ProfSerEngine.this,initFuture);
+                connectionEngine.engine();
+            }
+        });
+    }
+
+    /**
+     * Stop
+     */
+    public void stop(){
+        executor.shutdown();
+        executor = null;
+        try {
+            if (pingExecutors!=null) {
+                for (ScheduledExecutorService service : pingExecutors.values()) {
+                    service.shutdownNow();
+                }
+                pingExecutors.clear();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        try {
+            profileServer.shutdown();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void addMsgListener(int msgId,ProfSerMsgListener listener){
+        msgListeners.put(msgId,listener);
+    }
+
+    private void sendRequest(ProfSerRequest profSerRequest,ProfSerMsgListener listener) throws CantConnectException, CantSendMessageException {
+        addMsgListener(profSerRequest.getMessageId(),listener);
+        profSerRequest.send();
+    }
+
+    /**
+     * Public methods
+     */
+
+    /**
+     * Request the list of ports available
+     * @param listener
+     * @return
+     * @throws Exception
+     */
+    public int requestRoleList(ProfSerMsgListener listener) throws Exception {
+        LOG.info("requestRoleList");
+        ProfSerRequest request = profileServer.listRolesRequest();
+        sendRequest(request,listener);
+        return request.getMessageId();
+    }
+
+    /**
+     *
+     * @param listener
+     * @return
+     * @throws Exception
+     */
+    int startConversationNonCl(ProfSerMsgListener listener) throws Exception{
+        LOG.info("startConversationNonCl");
+        ProfSerRequest profSerRequest = profileServer.startConversationNonCl(
+                profNodeConnection.getProfile().getPublicKey(),
+                profNodeConnection.getConnectionChallenge()
+        );
+        sendRequest(profSerRequest,listener);
+        return profSerRequest.getMessageId();
+    }
+
+    /**
+     * Register the profile on the server
+     *
+     * Need to stablish a non customer connection first
+     *
+     * @param profile
+     * @param listener
+     * @return
+     * @throws Exception
+     */
+    public int registerProfileRequest(Profile profile,ProfSerMsgListener listener) throws Exception {
+        LOG.info("registerProfileRequest");
+        ProfSerRequest profSerRequest = profileServer.registerHostRequest(
+                profile,
+                profile.getPublicKey(),
+                profile.getType()
+        );
+        sendRequest(profSerRequest,listener);
+        return profSerRequest.getMessageId();
+    }
+
+    /**
+     *
+     * @param listener
+     * @return
+     * @throws Exception
+     */
+    public int startConversationCl(ProfSerMsgListener listener) throws Exception {
+        ProfSerRequest profSerRequest = profileServer.startConversationCl(
+                profNodeConnection.getProfile().getPublicKey(),
+                profNodeConnection.getConnectionChallenge()
+        );
+        sendRequest(profSerRequest,listener);
+        return profSerRequest.getMessageId();
+    }
+
+    /**
+     * Check in request
+     *
+     * @param nodeChallenge
+     * @param profile
+     * @param listener
+     * @return
+     * @throws Exception
+     */
+    public int checkinRequest(byte[] nodeChallenge,Profile profile,ProfSerMsgListener listener) throws Exception {
+        LOG.info("check-in for pk: "+profile.getHexPublicKey());
+        ProfSerRequest request = profileServer.checkIn(nodeChallenge, profile);
+        sendRequest(request,listener);
+        return request.getMessageId();
+    }
+
+    /**
+     * Update the existing profile in the server
+     */
+    public int updateProfile(byte[] version, String name, byte[] img, int lat, int lon, String extraData, ProfSerMsgListener listener){
+        LOG.info("updateProfile, state: "+profSerConnectionState);
+        int msgId = 0;
+        if (profSerConnectionState == CHECK_IN){
+            try{
+                ProfSerRequest profSerRequest = profileServer.updateProfileRequest(
+                        profNodeConnection.getProfile(),
+                        profNodeConnection.getProfile().getPublicKey(),
+                        profNodeConnection.getProfile().getType(),
+                        version,
+                        name,
+                        img,
+                        lat,
+                        lon,
+                        extraData
+                );
+                msgId = profSerRequest.getMessageId();
+                sendRequest(profSerRequest,listener);
+            }catch (Exception e){
+                LOG.error("updateProfileException",e);
+            }
+        }else {
+            throw new IllegalStateException("Profile server not ready to use.");
+        }
+        return msgId;
+    }
+
+    /**
+     * Add application service
+     *
+     * @param applicationService
+     * @return
+     */
+    public int addApplicationService(String applicationService, ProfSerMsgListener listener){
+        profNodeConnection.getProfile().addApplicationService(applicationService);
+        return addApplicationServiceRequest(applicationService,listener);
+    }
+
+    /**
+     * //todo: hace falta dividir la lectura de la escritura.
+     * @param name
+     * @param listener
+     */
+    public void searchProfileByName(String name, ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener){
+        try {
+            ProfSerRequest request = profileServer.searchProfilesRequest(false,false,100,10000,null,name,null);
+            sendRequest(request,listener);
+        } catch (CantConnectException e) {
+            e.printStackTrace();
+        } catch (CantSendMessageException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void searchProfileByNameAndType(String name,String type, ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener){
+        try {
+            ProfSerRequest request = profileServer.searchProfilesRequest(false,false,100,10000,type,name,null);
+            sendRequest(request,listener);
+        } catch (CantConnectException e) {
+            e.printStackTrace();
+        } catch (CantSendMessageException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * todo: fijarse si a este searchProfilesQuery le deberia poner un id para busquedas siguientes..
+     * // todo: ver tema de los covered servers..
+     *
+     * @param searchProfilesQuery
+     * @param listener
+     */
+    public void searchProfiles(SearchProfilesQuery searchProfilesQuery, ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener){
+        try {
+            cacheSearch(searchProfilesQuery);
+            ProfSerRequest request = profileServer.searchProfilesRequest(
+                    searchProfilesQuery.isOnlyHostedProfiles(),
+                    searchProfilesQuery.isIncludeThumbnailImages(),
+                    searchProfilesQuery.getMaxResponseRecordCount(),
+                    searchProfilesQuery.getMaxTotalRecordCount(),
+                    searchProfilesQuery.getProfileType(),
+                    searchProfilesQuery.getProfileName(),
+                    searchProfilesQuery.getLatitude(),
+                    searchProfilesQuery.getLongitude(),
+                    searchProfilesQuery.getRadius(),
+                    searchProfilesQuery.getExtraData()
+            );
+            sendRequest(request,listener);
+        } catch (CantConnectException e) {
+            e.printStackTrace();
+        } catch (CantSendMessageException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * This method works after call searchProfile when the previous amount of result is less than the maxTotalRecordCount. Responding with a part of the entire search.
+     *
+     */
+    public void searchSubsequentProfiles(SearchProfilesQuery searchProfilesQuery,ProfSerPartSearchListener<List<IopProfileServer.ProfileQueryInformation>> listener){
+        searchProfilesQuery.setRecordIndex(searchProfilesQuery.getRecordIndex()+1);
+        updateCacheSearch(searchProfilesQuery);
+        try{
+            ProfSerRequest request = profileServer.searchProfilePartRequest(searchProfilesQuery.getRecordIndex(),searchProfilesQuery.getRecordCount());
+            sendRequest(request,listener);
+        } catch (CantSendMessageException e) {
+            e.printStackTrace();
+        } catch (CantConnectException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     *
+     * Request a single profile hosted on the server
+     *
+     * @param pubKey
+     * @param includeProfileImage
+     * @param includeThumbnailImage
+     * @param includeApplicationServices
+     * @param listener
+     */
+    public void getProfileInformation(String pubKey,boolean includeProfileImage, boolean includeThumbnailImage, boolean includeApplicationServices, ProfSerMsgListener<ProfileInformation> listener) throws CantConnectException, CantSendMessageException {
+        // hash of the public key
+        LOG.info("getProfileInformation "+pubKey);
+        byte[] profileNetworkId = Sha256Hash.hash(CryptoBytes.fromHexToBytes(pubKey));
+        ProfSerRequest profSerRequest = profileServer.getProfileInformationRequest(profileNetworkId,includeApplicationServices,includeThumbnailImage,includeProfileImage);
+        sendRequest(profSerRequest,listener);
+    }
+
+    /**
+     *  Request to establish a bridged connection between a requestor (the caller) and an identity (the callee)
+     *  hosted on the profile server via one of its supported application service. The callee has to be online,
+     *  otherwise the request will fail.
+     *
+     *  The profile server informs the callee about the incoming call and issues a token pair (caller's and
+     *  callee's tokens) to identify the caller and the callee on the Application Service Interface. The callee's
+     *  token is sent to the callee with the information about the incoming call. If the callee wants to accept
+     *  the call, the profile server informs the caller and sends it the caller's token. Both clients are then
+     *  expected to establish new connections to the profile server's Application Service Interface and use their
+     *  tokens to send a message to the other client.
+     *
+     *  Roles: clNonCustomer, clCustomer
+     *
+     *  Conversation status: Verified
+     *
+     *  @param profilePubKey -> remote profile public key
+     *  @param appService -> appService name
+     */
+    public void callProfileAppService(String profilePubKey,String appService,ProfSerMsgListener listener) throws CantConnectException, CantSendMessageException {
+        byte[] profileNetworkId = Sha256Hash.hash(CryptoBytes.fromHexToBytes(profilePubKey));
+        ProfSerRequest profSerRequest = profileServer.callIdentityApplicationServiceRequest(profileNetworkId,appService);
+        sendRequest(profSerRequest,listener);
+    }
+
+    /**
+     * Accept an incoming call
+     *
+     * @param msgId
+     * @throws CantConnectException
+     * @throws CantSendMessageException
+     */
+    public void acceptCall(int msgId) throws CantConnectException, CantSendMessageException {
+        ProfSerRequest request = profileServer.incomingCallNotificationResponse(msgId);
+        request.send();
+    }
+
+    /**
+     *
+     * The msg flow is:
+     *
+     * 1)  Sender send ApplicationServiceSendMessageRequest and wait for ApplicationServiceSendMessageResponse confirmation (channel setup opening a new socket)
+     * 2)  Server send to receiver a ApplicationServiceReceiveMessageNotificationRequest
+     * 3)  Receiver signs and response with a ApplicationServiceReceiveMessageNotificationResponse
+     * 4)  Sender receive an ApplicationServiceSendMessageResponse
+     *
+     *
+     * @param token
+     * @param msg
+     * @param listener
+     * @throws CantConnectException
+     * @throws CantSendMessageException
+     */
+    public void sendAppServiceMsg(byte[] token, byte[] msg, ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> listener) throws CantConnectException, CantSendMessageException {
+        ProfSerRequest request = profileServer.appServiceSendMessageRequest(token,msg);
+        sendRequest(request,listener);
+    }
+
+    /**
+     *
+     * @param msgToRespond
+     * @throws CantConnectException
+     * @throws CantSendMessageException
+     */
+    public void respondAppServiceReceiveMsg(String token,int msgToRespond) throws CantConnectException, CantSendMessageException {
+        ProfSerRequest request = profileServer.appServiceReceiveMessageNotificationResponse(token,msgToRespond);
+        request.send();
+    }
+
+    private void cacheSearch(SearchProfilesQuery searchProfilesQuery){
+        String id = UUID.randomUUID().toString();
+        searchProfilesQuery.setId(id);
+        profilesQuery.put(id,searchProfilesQuery);
+    }
+
+    private void updateCacheSearch(SearchProfilesQuery searchProfilesQuery){
+        if (profilesQuery.containsKey(searchProfilesQuery.getId())){
+            profilesQuery.remove(searchProfilesQuery.getId());
+            profilesQuery.put(searchProfilesQuery.getId(),searchProfilesQuery);
+        }
+    }
+
+    /**
+     * Add application service
+     *
+     * @param applicationService
+     * @return
+     */
+    private int addApplicationServiceRequest(String applicationService,ProfSerMsgListener profSerMsgListener){
+        if (!profNodeConnection.isRegistered()) throw new InvalidStateException("profile is not registered in the server");
+        if (!isClConnectionReady()) throw new IllegalStateException("connection is not ready to send messages yet");
+        int msgId = 0;
+        try {
+            ProfSerRequest request = profileServer.addApplcationService(applicationService);
+            sendRequest(request,profSerMsgListener);
+        } catch (CantSendMessageException e) {
+            e.printStackTrace();
+        } catch (CantConnectException e) {
+            e.printStackTrace();
+        }
+        return msgId;
+    }
+
+
+    void initProfile(){
+        try {
+            final Profile profile = profNodeConnection.getProfile();
+            // update data
+            int msgId = updateProfile(
+                    profile.getVersion(),
+                    profile.getName(),
+                    profile.getImg(),
+                    profile.getLatitude(),
+                    profile.getLongitude(),
+                    profile.getExtraData(),
+                    new ProfSerMsgListener() {
+                        @Override
+                        public void onMessageReceive(int messageId, Object message) {
+                            // Nothing..
+                            LOG.error("update profile init succed");
+                        }
+
+                        @Override
+                        public void onMsgFail(int messageId, int statusValue, String details) {
+                            LOG.error("update profile fail, detail: "+details);
+                        }
+
+                        @Override
+                        public String getMessageName() {
+                            return "update profile {init}";
+                        }
+                    }
+            );
+            // registerConnect application services
+            for (final String service : profile.getApplicationServices()) {
+                addApplicationServiceRequest(service, new ProfSerMsgListener() {
+                    @Override
+                    public void onMessageReceive(int messageId, Object message) {
+                        LOG.info("Application service registered: "+service+", for profile: "+profile.getName());
+                    }
+
+                    @Override
+                    public void onMsgFail(int messageId, int statusValue, String details) {
+                        LOG.info("Application service register fail: "+service+", for profile: "+profile.getName());
+                    }
+
+                    @Override
+                    public String getMessageName() {
+                        return "addAppServices";
+                    }
+                });
+            }
+
+            profNodeConnection.setNeedRegisterProfile(false);
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public ProfSerConnectionState getProfSerConnectionState() {
+        return profSerConnectionState;
+    }
+
+    public ProfNodeConnection getProfNodeConnection() {
+        return profNodeConnection;
+    }
+
+    public void setProfSerConnectionState(ProfSerConnectionState profSerConnection) {
+        this.profSerConnectionState = profSerConnection;
+    }
+
+    public ProfServerData getProfServerData() {
+        return profServerData;
+    }
+
+    ProfSerDb getProfSerDb() {
+        return profSerDb;
+    }
+
+    CopyOnWriteArrayList<EngineListener> getEngineListeners() {
+        return engineListeners;
+    }
+
+    /**
+     * Close a specific port
+     * @param port
+     * @throws IOException
+     */
+    public void closePort(IopProfileServer.ServerRoleType port) throws IOException {
+        profileServer.closePort(port);
+    }
+
+    public ExecutorService getExecutor() {
+        return executor;
+    }
+
+    /**
+     * if the customer connection is ready
+     *
+     * @return
+     */
+    public boolean isClConnectionReady() {
+        return getProfSerConnectionState() == ProfSerConnectionState.CHECK_IN;
+    }
+
+    public void startPing(final IopProfileServer.ServerRoleType portType) {
+        LOG.info("startPing on port: "+portType);
+        if (pingExecutors==null){
+            pingExecutors = new HashMap<>();
+        }
+        final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+        service.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    LOG.info("sending ping");
+                    profileServer.ping(portType).send();
+
+                }catch (CantSendMessageException e){
+                    e.printStackTrace();
+                    service.shutdownNow();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        },5,15, TimeUnit.SECONDS);
+        pingExecutors.put(portType,service);
+    }
+
+
+    /** Messages processors  */
+
+    public class ProfileServerHanlder implements PsSocketHandler<IopProfileServer.Message> {
+
+        private static final String TAG = "ProfileServerHanlder";
+
+        // Responses:
+
+        public static final int PING_PROCESSOR = 0;
+        public static final int LIST_ROLES_PROCESSOR = 1;
+        public static final int START_CONVERSATION_NON_CL_PROCESSOR = 2;
+        private static final int HOME_NODE_REQUEST_PROCESSOR = 3;
+        private static final int HOME_START_CONVERSATION_CL_PROCESSOR = 4;
+        private static final int HOME_CHECK_IN_PROCESSOR = 5;
+        private static final int HOME_UPDATE_PROFILE_PROCESSOR = 6;
+        private static final int HOME_PROFILE_SEARCH_PROCESSOR = 7;
+        private static final int HOME_ADD_APPLICATION_SERVICE_PROCESSOR = 8;
+        private static final int HOME_PART_PROFILE_SEARCH_PROCESSOR = 9;
+        private static final int GET_PROFILE_INFORMATION_PROCESSOR = 10;
+        private static final int CALL_PROFILE_APP_SERVICE_PROCESSOR = 11;
+        private static final int APP_SERVICE_SEND_MESSAGE_PROCESSOR = 12;
+
+
+        // Requests:
+
+        private static final int INCOMING_CALL_NOTIFICATION = 101;
+        private static final int INCOMING_APP_SERVICE_MSG_NOTIFICATION = 102;
+
+        private Map<Integer,MessageProcessor> processors;
+
+        public ProfileServerHanlder() {
+            processors = new HashMap<>();
+            processors.put(PING_PROCESSOR,new PingProcessor());
+            processors.put(LIST_ROLES_PROCESSOR,new ListRolesProcessor());
+            processors.put(START_CONVERSATION_NON_CL_PROCESSOR,new StartConversationNonClProcessor());
+            processors.put(HOME_NODE_REQUEST_PROCESSOR,new HomeNodeRequestProcessor());
+            processors.put(HOME_START_CONVERSATION_CL_PROCESSOR,new StartConversationClProcessor());
+            processors.put(HOME_CHECK_IN_PROCESSOR,new CheckinConversationProcessor());
+            processors.put(HOME_UPDATE_PROFILE_PROCESSOR,new UpdateProfileConversationProcessor());
+            processors.put(HOME_PROFILE_SEARCH_PROCESSOR,new ProfileSearchProcessor());
+            processors.put(HOME_ADD_APPLICATION_SERVICE_PROCESSOR,new AddApplicationServiceProcessor());
+            processors.put(HOME_PART_PROFILE_SEARCH_PROCESSOR,new PartProfileSearchProcessor());
+            processors.put(GET_PROFILE_INFORMATION_PROCESSOR,new GetProfileInformationProcessor());
+            processors.put(CALL_PROFILE_APP_SERVICE_PROCESSOR,new CallIdentityApplicationServiceProcessor());
+            processors.put(APP_SERVICE_SEND_MESSAGE_PROCESSOR, new ApplicationServiceSendMessageProcessor());
+
+
+            // requests
+            processors.put(INCOMING_CALL_NOTIFICATION, new IncomingCallNotificationProcessor());
+            processors.put(INCOMING_APP_SERVICE_MSG_NOTIFICATION,new ApplicationServiceReceiveMessageNotificationRequestProcessor());
+        }
+
+        @Override
+        public void sessionCreated(IoSession session) throws Exception {
+
+        }
+
+        @Override
+        public void sessionOpened(IoSession session) throws Exception {
+
+        }
+
+        @Override
+        public void sessionClosed(IoSession session) throws Exception {
+
+        }
+
+        @Override
+        public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
+
+        }
+
+        @Override
+        public void messageReceived(final IoSession session, final IopProfileServer.Message message) throws Exception {
+            executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        switch (message.getMessageTypeCase()) {
+                            case REQUEST:
+                                try{
+                                    dispatchRequest(session,message.getId(),message.getRequest());
+                                }catch (Exception e){
+                                    LOG.info("Request, Message id fail: " + message.getId());
+                                    e.printStackTrace();
+                                }
+                                break;
+
+                            case RESPONSE:
+                                try {
+                                    dispatchResponse(session, message.getId(), message.getResponse());
+                                } catch (Exception e) {
+                                    LOG.info("Response Message id fail: " + message.getId());
+                                    e.printStackTrace();
+                                }
+                                break;
+                            default:
+                                throw new IllegalArgumentException("message type not correspond to nothing, "+message);
+                        }
+
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+        }
+
+        @Override
+        public void portStarted(IopProfileServer.ServerRoleType portType) {
+
+        }
+
+        @Override
+        public void messageSent(IoSession session, IopProfileServer.Message message) throws Exception {
+
+        }
+
+        @Override
+        public void inputClosed(IoSession session) throws Exception {
+
+        }
+
+        private void dispatchRequest(IoSession session, int messageId, IopProfileServer.Request request){
+
+            switch (request.getConversationTypeCase()){
+
+                case SINGLEREQUEST:
+                    LOG.info("single request: with msg id: "+messageId);
+                    dispatchRequest(session,messageId,request.getSingleRequest());
+                    break;
+                case CONVERSATIONREQUEST:
+                    LOG.info("conversation request arrived: with msg id: "+messageId);
+                    dispatchRequest(session,messageId,request.getConversationRequest());
+                    break;
+                case CONVERSATIONTYPE_NOT_SET:
+                    LOG.error("request: with msg id: "+messageId+" "+request.toString());
+                    break;
+                default:
+                    LOG.error("request: with msg id: "+messageId+" "+request.toString());
+                    break;
+
+            }
+
+        }
+
+        private void dispatchRequest(IoSession session, int messageId, IopProfileServer.ConversationRequest request){
+
+            switch (request.getRequestTypeCase()){
+
+                case INCOMINGCALLNOTIFICATION:
+                    processors.get(INCOMING_CALL_NOTIFICATION).execute(session, messageId,request.getIncomingCallNotification());
+                    break;
+                default:
+                    LOG.error("Request not implemented");
+                    break;
+
+            }
+
+        }
+
+
+        private void dispatchRequest(IoSession session, int messageId, IopProfileServer.SingleRequest request){
+
+            switch (request.getRequestTypeCase()){
+
+                case APPLICATIONSERVICERECEIVEMESSAGENOTIFICATION:
+                    processors.get(INCOMING_APP_SERVICE_MSG_NOTIFICATION).execute(session,messageId,request.getApplicationServiceReceiveMessageNotification());
+                    break;
+                default:
+                    LOG.error("Request not implemented");
+                    break;
+
+            }
+
+        }
+
+
+        private void dispatchResponse(IoSession session, int messageId, IopProfileServer.Response response) throws Exception {
+            switch (response.getConversationTypeCase()){
+
+                case CONVERSATIONRESPONSE:
+                    dispatchConversationResponse(session,messageId,response.getConversationResponse());
+                    break;
+                case SINGLERESPONSE:
+                    dispatchSingleResponse(session,messageId,response.getSingleResponse());
+                    break;
+
+                case CONVERSATIONTYPE_NOT_SET:
+                    IopShared.Status status = response.getStatus();
+                    switch (status){
+                        // this happen when the connection is active and i send a startConversation or something else that i have to see..
+                        case ERROR_BAD_CONVERSATION_STATUS:
+                            LOG.info("Message id: "+messageId+", response: "+response.toString()+", engine state: "+profSerConnectionState.toString());
+//                            profSerConnectionState = START_CONVERSATION_NON_CL;
+                            break;
+                        // this happen whe the identity already exist or when the cl and non-cl port are the same in the StartConversation message
+                        case ERROR_ALREADY_EXISTS:
+                            LOG.info("response: "+response.toString());
+                            if (profSerConnectionState == WAITING_START_CL)
+                                profSerConnectionState = START_CONVERSATION_CL;
+                            else profSerConnectionState = HOME_NODE_REQUEST;
+                            break;
+                        case ERROR_INVALID_SIGNATURE:
+                            LOG.error("response to msg id: "+messageId+" "+response.toString());
+
+                            break;
+
+                        case ERROR_NOT_AVAILABLE:
+                            LOG.error("response: to msg id: "+messageId+" ERROR_NOT_AVAILABLE");
+                            msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),"remote profile not available");
+                            break;
+                        case ERROR_NOT_FOUND:
+                            LOG.error("response: to msg id: "+messageId+" ERROR_NOT_FOUND");
+                            msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),"remote profile not found");
+                            break;
+                        default:
+                            LOG.error("response: to msg id: "+messageId+" "+response.toString());
+                            msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),response.getDetails());
+                            throw new Exception("response with CONVERSATIONTYPE_NOT_SET, response: "+response.toString()+", message id: "+messageId);
+                    }
+                    break;
+
+            }
+        }
+
+        private void dispatchSingleResponse(IoSession session, int messageId, IopProfileServer.SingleResponse singleResponse){
+            switch (singleResponse.getResponseTypeCase()){
+                case PING:
+                    processors.get(PING_PROCESSOR).execute(session, messageId,singleResponse.getPing());
+                    break;
+                case LISTROLES:
+                    LOG.info("ListRoles received");
+                    processors.get(LIST_ROLES_PROCESSOR).execute(session, messageId,singleResponse.getListRoles());
+                    break;
+                case GETPROFILEINFORMATION:
+                    LOG.info("getProfileInformation received");
+                    processors.get(GET_PROFILE_INFORMATION_PROCESSOR).execute(session, messageId,singleResponse.getGetProfileInformation());
+                    break;
+
+                case APPLICATIONSERVICESENDMESSAGE:
+                    LOG.info("appServiceSendMessageResponse received");
+                    processors.get(APP_SERVICE_SEND_MESSAGE_PROCESSOR).execute(session, messageId,singleResponse.getApplicationServiceSendMessage());
+                    break;
+
+                default:
+                    LOG.info("algo llegó y no lo estoy controlando..");
+                    break;
+            }
+
+        }
+
+        private void dispatchConversationResponse(IoSession session, int messageId, IopProfileServer.ConversationResponse conversationResponse) throws Exception {
+            switch (conversationResponse.getResponseTypeCase()){
+
+                case START:
+                    LOG.info("init conversation received in port: "+session.getPortType());
+                    // saving the challenge signed..
+                    byte[] signedChallenge = conversationResponse.getSignature().toByteArray();
+                    profNodeConnection.setSignedConnectionChallenge(signedChallenge);
+                    LOG.info("challenge signed: "+ CryptoBytes.toHexString(signedChallenge));
+
+                    if (profSerConnectionState==WAITING_START_NON_CL) processors.get(START_CONVERSATION_NON_CL_PROCESSOR).execute(session, messageId,conversationResponse.getStart());
+                    else processors.get(HOME_START_CONVERSATION_CL_PROCESSOR).execute(session, messageId,conversationResponse.getStart());
+                    break;
+                case REGISTERHOSTING:
+                    LOG.info("home node response received in port: "+session.getPortType());
+                    processors.get(HOME_NODE_REQUEST_PROCESSOR).execute(session, messageId,conversationResponse.getRegisterHosting());
+                    break;
+                case CHECKIN:
+                    LOG.info("check in response ");
+                    processors.get(HOME_CHECK_IN_PROCESSOR).execute(session, messageId,conversationResponse.getCheckIn());
+                    break;
+                case UPDATEPROFILE:
+                    if (verifyIdentity(conversationResponse.getSignature().toByteArray(),conversationResponse.toByteArray())) {
+                        processors.get(HOME_UPDATE_PROFILE_PROCESSOR).execute(session, messageId,conversationResponse.getUpdateProfile());
+                    }else {
+                        throw new Exception("El nodo no es quien dice, acá tengo que desconectar todo");
+                    }
+                    break;
+                case PROFILESEARCH:
+                    LOG.info("profile search response ");
+                    processors.get(HOME_PROFILE_SEARCH_PROCESSOR).execute(session, messageId,conversationResponse.getProfileSearch());
+                    break;
+                case PROFILESEARCHPART:
+                    processors.get(HOME_PART_PROFILE_SEARCH_PROCESSOR).execute(session, messageId,conversationResponse.getProfileSearchPart());
+                    break;
+                case APPLICATIONSERVICEADD:
+                    LOG.info("add application service");
+                    processors.get(HOME_ADD_APPLICATION_SERVICE_PROCESSOR).execute(session, messageId,conversationResponse.getApplicationServiceAdd());
+                    break;
+                case CALLIDENTITYAPPLICATIONSERVICE:
+                    LOG.info("call identity application service");
+                    processors.get(CALL_PROFILE_APP_SERVICE_PROCESSOR).execute(session, messageId,conversationResponse.getCallIdentityApplicationService());
+                    break;
+                default:
+                    LOG.info("algo llegó y no lo estoy controlando..");
+                    break;
+            }
+
+        }
+
+        private boolean verifyIdentity(byte[] signature,byte[] message) {
+            //KeyEd25519.verify(signature,message,profile.getNodePubKey());
+            return true;
+        }
+    }
+
+
+    private class PingProcessor implements MessageProcessor<IopProfileServer.PingResponse>{
+
+        @Override
+        public void execute(IoSession session, int messageId, IopProfileServer.PingResponse message) {
+            LOG.info("PingProcessor execute..");
+
+        }
+    }
+
+    /**
+     * Process a list roles response message
+     */
+    private class ListRolesProcessor implements MessageProcessor<IopProfileServer.ListRolesResponse> {
+
+
+        @Override
+        public void execute(IoSession session, int messageId, IopProfileServer.ListRolesResponse message) {
+            LOG.info("ListRolesProcessor execute..");
+            onMsgReceived(messageId,message);
+        }
+    }
+
+
+    /**
+     * Process start conversation to non customer port response
+     */
+    private class StartConversationNonClProcessor implements MessageProcessor<IopProfileServer.StartConversationResponse>{
+
+        @Override
+        public void execute(IoSession session, int messageId, IopProfileServer.StartConversationResponse message) {
+            LOG.info("StartNonClProcessor execute..");
+            onMsgReceived(messageId,message);
+        }
+    }
+
+    /**
+     * Process Register hosting response
+     */
+    private class HomeNodeRequestProcessor implements MessageProcessor<IopProfileServer.RegisterHostingResponse>{
+
+        @Override
+        public void execute(IoSession session, int messageId, IopProfileServer.RegisterHostingResponse message) {
+            LOG.info("HomeNodeRequestProcessor execute.. "+CryptoBytes.toHexString(message.getContract().getIdentityPublicKey().toByteArray()));
+            onMsgReceived(messageId,message);
+        }
+    }
+
+    /**
+     * Process Start conversation with the customer port
+     */
+    private class StartConversationClProcessor implements MessageProcessor<IopProfileServer.StartConversationResponse>{
+
+        @Override
+        public void execute(IoSession session, int messageId, IopProfileServer.StartConversationResponse message) {
+            LOG.info("StartConversationClProcessor execute..");
+            onMsgReceived(messageId,message);
+        }
+    }
+
+
+    /**
+     * Process the CheckIn message response
+     */
+    private class CheckinConversationProcessor implements MessageProcessor<IopProfileServer.CheckInResponse>{
+
+        @Override
+        public void execute(IoSession session, int messageId, IopProfileServer.CheckInResponse message) {
+            LOG.info("CheckinProcessor execute..");
+            onMsgReceived(messageId,message);
+        }
+    }
+
+
+    private class UpdateProfileConversationProcessor implements MessageProcessor<IopProfileServer.UpdateProfileResponse>{
+
+        @Override
+        public void execute(IoSession session, int messageId, IopProfileServer.UpdateProfileResponse message) {
+            LOG.info("UpdateProfileProcessor execute..");
+            LOG.info("UpdateProfileProcessor update works..");
+            onMsgReceived(messageId,message);
+        }
+    }
+
+    private class ProfileSearchProcessor implements MessageProcessor<IopProfileServer.ProfileSearchResponse>{
+
+        @Override
+        public void execute(IoSession session, int messageId, IopProfileServer.ProfileSearchResponse message) {
+            LOG.info("ProfileSearchProcessor execute..");
+            LOG.info("Profile search count: "+message.getProfilesCount());
+            StringBuilder stringBuilder = new StringBuilder();
+            for (IopProfileServer.ProfileQueryInformation profileQueryInformation : message.getProfilesList()) {
+                IopProfileServer.SignedProfileInformation signedProfileInformation = profileQueryInformation.getSignedProfile();
+                stringBuilder
+                        .append("PK: "+signedProfileInformation.getProfile().getPublicKey().toStringUtf8())
+                        .append("\n")
+                        .append("Name: "+signedProfileInformation.getProfile().getName())
+                        .append("\n");
+            }
+            LOG.info(stringBuilder.toString());
+
+            ((ProfSerMsgListener)msgListeners.get(messageId)).onMessageReceive(messageId,message.getProfilesList());
+            msgListeners.remove(messageId);
+
+        }
+    }
+
+    /**
+     *
+     * Specific Error Responses:
+     * ERROR_NOT_AVAILABLE - No cached search results are available. Either the client did not send ProfileSearchRequest previously
+                              in this session, or its results have expired already.
+     * ERROR_INVALID_VALUE
+     * Response.details == "recordIndex" - 'ProfileSearchRequest.recordIndex' is not a valid index of the result.
+     * Response.details == "recordCount" - 'ProfileSearchRequest.recordCount' is not a valid number of results to obtain in combination with 'ProfileSearchRequest.recordIndex'.
+     *
+     */
+
+    private class PartProfileSearchProcessor implements MessageProcessor<IopProfileServer.ProfileSearchPartResponse>{
+
+        @Override
+        public void execute(IoSession session, int messageId, IopProfileServer.ProfileSearchPartResponse message) {
+            LOG.info("PartProfileSearchProcessor execute..");
+            ((ProfSerPartSearchListener)msgListeners.get(messageId)).onMessageReceive(messageId,message.getProfilesList(),message.getRecordIndex(),message.getRecordCount());
+        }
+    }
+
+    private class AddApplicationServiceProcessor implements MessageProcessor<IopProfileServer.ApplicationServiceAddResponse>{
+
+
+        @Override
+        public void execute(IoSession session, int messageId, IopProfileServer.ApplicationServiceAddResponse message) {
+            LOG.info("AddApplicationServiceProcessor");
+            // todo: acá deberia chequear si fueron listados bien los applicationServices..
+            onMsgReceived(messageId,message);
+
+        }
+    }
+
+    private class GetProfileInformationProcessor implements MessageProcessor<IopProfileServer.GetProfileInformationResponse>{
+
+
+        @Override
+        public void execute(IoSession session, int messageId, IopProfileServer.GetProfileInformationResponse message) {
+            LOG.info("AddApplicationServiceProcessor");
+            // todo: acá deberia chequear si fueron listados bien los applicationServices..
+            onMsgReceived(messageId,message);
+
+        }
+    }
+
+    private class CallIdentityApplicationServiceProcessor implements MessageProcessor<IopProfileServer.CallIdentityApplicationServiceResponse>{
+
+        @Override
+        public void execute(IoSession session, int messageId, IopProfileServer.CallIdentityApplicationServiceResponse message) {
+            LOG.info("CallIdentityApplicationServiceProcessor");
+            // todo: ver qué tengo que chequear acá
+            onMsgReceived(messageId,message);
+        }
+    }
+
+
+    /**
+     *
+     *  A response to ApplicationServiceSendMessageRequest. This is sent by the profile server to the client to
+     *  confirm that it sent the message to the other client and the other client confirmed its arrival.
+     *
+     *  If the connection to one of the clients is terminated, the profile server closes the connection to the
+     *  other client.
+     *
+     *  Specific Error Responses:
+     *    * ERROR_NOT_FOUND - 'ApplicationServiceSendMessageRequest.token' is not a valid token. This can have many causes.
+     *                        The token itself can have invalid format, or no such token was ever issued by the server.
+     *                        However, it can also be the case that the token was valid in the past but the call channel
+     *                        was closed by the server for any reason and thus the token is no longer valid.
+     *
+     */
+    private class ApplicationServiceSendMessageProcessor implements MessageProcessor<IopProfileServer.ApplicationServiceSendMessageResponse>{
+
+        @Override
+        public void execute(IoSession session, int messageId, IopProfileServer.ApplicationServiceSendMessageResponse message) {
+            LOG.info("ApplicationServiceSendMessageProcessor");
+            // todo: ver qué tengo que chequear acá
+            try {
+                onMsgReceived(messageId, message);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private class IncomingCallNotificationProcessor implements MessageProcessor<IopProfileServer.IncomingCallNotificationRequest>{
+
+        @Override
+        public void execute(IoSession session, int messageId, IopProfileServer.IncomingCallNotificationRequest message) {
+            LOG.info("IncomingCallNotificationProcessor");
+            if (callListener!=null)
+                callListener.incomingCallNotification(messageId,message);
+            else
+                LOG.error("IncomingCall arrive and no listener setted.");
+        }
+    }
+
+    private class ApplicationServiceReceiveMessageNotificationRequestProcessor implements MessageProcessor<IopProfileServer.ApplicationServiceReceiveMessageNotificationRequest>{
+
+        @Override
+        public void execute(IoSession session, int messageId, IopProfileServer.ApplicationServiceReceiveMessageNotificationRequest message) {
+            LOG.info("ApplicationServiceReceiveMessageNotificationRequestProcessor");
+            if (callListener!=null) {
+                callListener.incomingAppServiceMessage(messageId, AppServiceMsg.wrap(session.getSessionTokenId(),message));
+            }else
+                LOG.error("IncomingCall arrive and no listener setted.");
+
+        }
+    }
+
+    private void onMsgReceived(int messageId, Object message){
+        ProfSerMsgListener profSerMsgListener = ((ProfSerMsgListener)msgListeners.get(messageId));
+        if (profSerMsgListener!=null){
+            profSerMsgListener.onMessageReceive(messageId,message);
+            msgListeners.remove(messageId);
+        }else{
+            throw new IllegalStateException("No msg listener for message with id: "+messageId+", "+message);
+        }
+
+    }
+
+    
+}

@@ -1,0 +1,3 @@
+[submodule "iop_sdk"]
+	path = iop_sdk
+	url = https://github.com/furszy/iop_sdk.git

@@ -1,0 +1,2 @@
+configurations.maybeCreate("default")
+artifacts.add("default", file('libsodium-jni-aar-1.0.3.aar'))

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.furszy.contactsapp">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+
+    <application
+        android:icon="@mipmap/ic_launcher"
+        android:name=".App"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".ProfileActivity"></activity>
+
+        <activity android:name=".ProfileInformationActivity">
+            <intent-filter android:autoVerify="true">
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:host="www.profile.org"/>
+                <data android:scheme="http" android:host="http://profile.org"/>
+                <data android:scheme="http"
+                    android:host="www.profile.org"/>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".scanner.ScanActivity"/>
+
+        <activity android:name=".community.ProfilesInformationActivity"/>
+
+
+        <service android:name="iop.org.iop_sdk_android.core.profile_server.RedtoothService"/>
+
+    </application>
+
+</manifest>

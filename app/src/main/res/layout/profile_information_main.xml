@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/base_background"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="48dp"
+        android:gravity="center"
+        android:id="@+id/user_image"
+        android:layout_marginBottom="24dp">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/profile_image"
+            android:layout_width="148dp"
+            android:layout_height="128dp"
+            android:src="@drawable/profile"
+            app:civ_border_width="1dp"
+            android:layout_marginRight="12dp"
+
+            app:civ_border_color="#71b6ff"/>
+
+
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/user_image"
+        android:orientation="vertical"
+        android:layout_marginTop="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal"
+            android:paddingTop="5dp"
+            android:paddingBottom="12dp">
+
+
+            <TextView
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/txt_name"
+                android:ems="10"
+                tools:ignore="HardcodedText"
+                android:textColor="#E6E6E6"
+                android:hint="Username"
+                android:lines="1"
+                android:maxLines="1"
+                android:textColorHint="#E6E6E6"
+                android:foregroundTint="#808080"
+                android:backgroundTint="#fff"
+                android:paddingRight="12dp"
+                android:inputType="textFilter|textNoSuggestions"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:digits="0123456789 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ñÑ _.@"/>
+
+
+            </LinearLayout>
+
+
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal"
+            android:paddingTop="5dp"
+            android:visibility="invisible"
+            android:paddingBottom="12dp">
+
+            <EditText
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/txt_password"
+                android:ems="10"
+                android:inputType="textFilter|textNoSuggestions"
+                tools:ignore="HardcodedText"
+                android:textColor="#E6E6E6"
+                android:hint="Password"
+                android:textColorHint="#E6E6E6"
+                android:paddingRight="12dp"
+                android:lines="1"
+                android:maxLines="1"
+                android:foregroundTint="#808080"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:digits="0123456789 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ñÑ ,.,_ @"/>
+
+        </LinearLayout>
+
+</RelativeLayout>

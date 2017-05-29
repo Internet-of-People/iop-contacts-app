@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/txt_exit"
+        android:text="X"
+        android:textSize="26sp"
+        android:gravity="end"
+        android:textColor="#c9c9c9"
+        android:paddingRight="16dp"
+        android:paddingTop="5dp"/>
+
+    <LinearLayout
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:layout_marginBottom="32dp"
+        android:layout_marginTop="32dp">
+
+
+        <ImageView
+            android:layout_width="175dp"
+            android:layout_height="175dp"
+            android:id="@+id/img_qr"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/txt_qr"
+        android:layout_marginBottom="12dp"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:textSize="13sp"
+        android:paddingEnd="12dp"
+        android:paddingStart="12dp"
+        android:textIsSelectable="true"
+        android:textColor="@color/base_background"
+        tools:text="p3214asdeaf343facdaf1234v"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:paddingBottom="3dp"
+        android:paddingTop="3dp"
+        android:orientation="horizontal"
+        android:background="#000">
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_gravity="bottom"
+            android:id="@+id/txt_share"
+            android:gravity="center"
+            android:text="Share"
+            android:textColor="#fff"
+            android:layout_weight="1"
+            android:background="@null"
+            />
+
+        <View
+            android:layout_width="2dp"
+            android:layout_height="38dp"
+            android:background="@drawable/rect_round_corners_white"
+            android:paddingBottom="7dp"
+            android:layout_gravity="center"
+            android:paddingTop="7dp"
+            />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_gravity="bottom"
+            android:id="@+id/txt_copy"
+            android:gravity="center"
+            android:text="Copy"
+            android:textColor="#fff"
+            android:layout_weight="1"
+            android:background="@null"
+            />
+
+
+
+    </LinearLayout>
+
+
+
+
+
+</LinearLayout>
