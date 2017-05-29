@@ -25,6 +25,8 @@ import iop.org.iop_sdk_android.core.profile_server.PrivateStorage;
 public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManager {
 
 
+    public static final int DATABASE_VERSION = 7;
+
     public static final String DATABASE_NAME = "profiles";
     public static final String CONTACTS_TABLE_NAME = "contacts";
     public static final String CONTACTS_COLUMN_ID = "id";
@@ -36,6 +38,7 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
     public static final String CONTACTS_COLUMN_LON = "lon";
     public static final String CONTACTS_COLUMN_EXTRA_DATA = "extra";
     public static final String CONTACTS_COLUMN_PUB_KEY = "pubKey";
+    public static final String CONTACTS_COLUMN_UPDATE_TIMESTAMP = "up_time";
 
 
     public static final int CONTACTS_POS_COLUMN_ID = 0;
@@ -47,9 +50,10 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
     public static final int CONTACTS_POS_COLUMN_LON = 6;
     public static final int CONTACTS_POS_COLUMN_EXTRA_DATA = 7;
     public static final int CONTACTS_POS_COLUMN_PUB_KEY = 8;
+    public static final int CONTACTS_POS_COLUMN_UPDATE_TIMESTAMP = 9;
 
     public SqliteProfilesDb(Context context) {
-        super(context, DATABASE_NAME , null, 6);
+        super(context, DATABASE_NAME , null, DATABASE_VERSION);
     }
 
     @Override
@@ -66,7 +70,8 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
                         CONTACTS_COLUMN_LAT + " INTEGER, "+
                         CONTACTS_COLUMN_LON + " INTEGER, "+
                         CONTACTS_COLUMN_EXTRA_DATA + " TEXT ,"+
-                        CONTACTS_COLUMN_PUB_KEY + " TEXT "
+                        CONTACTS_COLUMN_PUB_KEY + " TEXT ,"+
+                        CONTACTS_COLUMN_UPDATE_TIMESTAMP + " LONG"
                 +")"
         );
     }
@@ -90,6 +95,7 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         contentValues.put(CONTACTS_COLUMN_TYPE, profile.getType());
         contentValues.put(CONTACTS_COLUMN_VERSION, profile.getVersion());
         contentValues.put(CONTACTS_COLUMN_PUB_KEY, CryptoBytes.toHexString(profile.getPubKey()));
+        contentValues.put(CONTACTS_COLUMN_UPDATE_TIMESTAMP,profile.getLastUpdateTime());
         return contentValues;
     }
 
@@ -98,11 +104,13 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         byte[] pubKey = CryptoBytes.fromHexToBytes(cursor.getString(CONTACTS_POS_COLUMN_PUB_KEY));
         String extraData = cursor.getString(CONTACTS_POS_COLUMN_EXTRA_DATA);
         String type = cursor.getString(CONTACTS_POS_COLUMN_TYPE);
+        long timestamp = cursor.getLong(CONTACTS_POS_COLUMN_UPDATE_TIMESTAMP);
         ProfileInformationImp profile = new ProfileInformationImp();
         profile.setVersion(new byte[]{0,0,1});
         profile.setName(name);
         profile.setType(type);
         profile.setPubKey(pubKey);
+        profile.setUpdateTimestamp(timestamp);
         return profile;
     }
 
