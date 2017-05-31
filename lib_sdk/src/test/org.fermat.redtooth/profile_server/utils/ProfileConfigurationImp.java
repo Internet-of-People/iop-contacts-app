@@ -182,6 +182,11 @@ public class ProfileConfigurationImp implements ProfileServerConfigurations {
     }
 
     @Override
+    public KeyEd25519 createNewUserKeys() {
+        return new KeyEd25519Java().generateKeys();
+    }
+
+    @Override
     public String getProfileType() {
         return profileType;
     }

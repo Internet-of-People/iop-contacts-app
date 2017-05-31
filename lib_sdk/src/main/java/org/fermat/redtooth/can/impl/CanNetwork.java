@@ -117,6 +117,18 @@ public class CanNetwork implements PeerToPeerNetwork<ClientApi>, Bootstrappable 
             result = 31 * result + id.hashCode();
             return result;
         }
+
+        public InetAddress getAddress() {
+            return address;
+        }
+
+        public int getPort() {
+            return port;
+        }
+
+        public String getId() {
+            return id;
+        }
     }
 
     class CanClientProxy implements ClientApi {

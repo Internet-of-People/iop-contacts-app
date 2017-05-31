@@ -2,7 +2,7 @@ package org.fermat.redtooth.can.impl;
 
 import org.fermat.redtooth.can.VariantVisitor;
 
-class Variant {
+public class Variant {
     abstract static class Value implements org.fermat.redtooth.can.Variant {
         @Override public byte[] getBytes() throws IllegalStateException {
             throw new IllegalStateException();
@@ -85,10 +85,10 @@ class Variant {
         }
     }
 
-    static class Uint64 extends Value {
+    public static class Uint64 extends Value {
         private final long value;
 
-        Uint64(long value)
+        public Uint64(long value)
         {
             this.value = value;
         }

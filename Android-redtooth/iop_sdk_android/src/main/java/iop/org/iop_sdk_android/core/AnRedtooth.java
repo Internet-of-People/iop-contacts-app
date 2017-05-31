@@ -68,16 +68,6 @@ public class AnRedtooth {
         return redtoothService;
     }
 
-    public void waitConnected() {
-        while (!isConnected.get()){
-            try {
-                TimeUnit.SECONDS.sleep(5);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     public void setListener(InitListener listener) {
         this.listener = listener;
     }
