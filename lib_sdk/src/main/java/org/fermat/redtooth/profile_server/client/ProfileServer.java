@@ -6,6 +6,7 @@ import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.IoHandler;
 import org.fermat.redtooth.profile_server.Signer;
+import org.fermat.redtooth.profile_server.protocol.CanStoreMap;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 
 
@@ -47,6 +48,8 @@ public interface ProfileServer {
     ProfSerRequest updateProfileRequest(Signer signer,byte[] profilePublicKey,String profType, byte[] version, String name, byte[] img, int latitude, int longitude, String extraData) throws Exception;
 
     ProfSerRequest updateExtraData(Signer signer,byte[] profilePublicKey,String profType, String extraData) throws Exception;
+
+    ProfSerRequest storeCanDataRequest(CanStoreMap canStoreMap);
 
     /**
      * Search request
@@ -92,4 +95,5 @@ public interface ProfileServer {
     void closePort(IopProfileServer.ServerRoleType portType) throws IOException;
 
     void shutdown() throws IOException;
+
 }
