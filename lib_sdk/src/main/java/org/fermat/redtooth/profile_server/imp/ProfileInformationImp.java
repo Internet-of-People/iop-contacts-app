@@ -1,5 +1,6 @@
 package org.fermat.redtooth.profile_server.imp;
 
+import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.governance.utils.StreamsUtils;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 
@@ -163,5 +164,15 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
 
     public void setIsOnline(boolean isOnline) {
         this.isOnline = isOnline;
+    }
+
+    @Override
+    public byte[] getPublicKey() {
+        return pubKey;
+    }
+
+    @Override
+    public String getHexPublicKey() {
+        return CryptoBytes.toHexString(pubKey);
     }
 }

@@ -2,12 +2,14 @@ package org.fermat.redtooth.profile_server.engine;
 
 import org.bitcoinj.core.Sha256Hash;
 import org.fermat.redtooth.core.RedtoothContext;
+import org.fermat.redtooth.core.client.interfaces.IoProcessor;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.crypto.CryptoWrapper;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.client.PsSocketHandler;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
+import org.fermat.redtooth.profile_server.protocol.CanStoreMap;
 import org.fermat.redtooth.profile_server.protocol.IopShared;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -310,6 +312,20 @@ public class ProfSerEngine {
         }
         return msgId;
     }
+
+    /**
+     * Store can profile
+      * @return
+     */
+    public int storeCanProfile(Profile profile,ProfSerMsgListener listener) throws CantConnectException, CantSendMessageException {
+        CanStoreMap canStoreMap = new CanStoreMap();
+        // todo: complete this when after check the PS.
+        canStoreMap.addValue("pubKey",profile.getPublicKey());
+        ProfSerRequest request = profileServer.storeCanDataRequest(canStoreMap);
+        sendRequest(request,listener);
+        return request.getMessageId();
+    }
+
 
     /**
      * Add application service
@@ -666,7 +682,8 @@ public class ProfSerEngine {
         private static final int GET_PROFILE_INFORMATION_PROCESSOR = 10;
         private static final int CALL_PROFILE_APP_SERVICE_PROCESSOR = 11;
         private static final int APP_SERVICE_SEND_MESSAGE_PROCESSOR = 12;
-
+        private static final int CAN_STORE_DATA_PROCESSOR = 13;
+        private static final int CAN_PUBLISH_IPNS_RECORD_PROCESSOR = 14;
 
         // Requests:
 
@@ -690,6 +707,8 @@ public class ProfSerEngine {
             processors.put(GET_PROFILE_INFORMATION_PROCESSOR,new GetProfileInformationProcessor());
             processors.put(CALL_PROFILE_APP_SERVICE_PROCESSOR,new CallIdentityApplicationServiceProcessor());
             processors.put(APP_SERVICE_SEND_MESSAGE_PROCESSOR, new ApplicationServiceSendMessageProcessor());
+            processors.put(CAN_STORE_DATA_PROCESSOR,new CanStoreDataProcessor());
+            processors.put(CAN_PUBLISH_IPNS_RECORD_PROCESSOR,new CanPublishIpnsRecordProcessor());
 
 
             // requests
@@ -940,6 +959,12 @@ public class ProfSerEngine {
                     LOG.info("call identity application service");
                     processors.get(CALL_PROFILE_APP_SERVICE_PROCESSOR).execute(session, messageId,conversationResponse.getCallIdentityApplicationService());
                     break;
+                case CANSTOREDATA:
+                    processors.get(CAN_STORE_DATA_PROCESSOR).execute(session, messageId,conversationResponse.getCanStoreData());
+                    break;
+                case CANPUBLISHIPNSRECORD:
+                    processors.get(CAN_PUBLISH_IPNS_RECORD_PROCESSOR).execute(session, messageId,conversationResponse.getCanPublishIpnsRecord());
+                    break;
                 default:
                     LOG.info("algo llegó y no lo estoy controlando..");
                     break;
@@ -1166,6 +1191,23 @@ public class ProfSerEngine {
             }else
                 LOG.error("IncomingCall arrive and no listener setted.");
 
+        }
+    }
+
+    private class CanStoreDataProcessor implements MessageProcessor<IopProfileServer.CanStoreDataResponse>{
+
+        @Override
+        public void execute(IoSession session, int messageId, IopProfileServer.CanStoreDataResponse message) {
+            LOG.info("CanStoreDataProcessor");
+            onMsgReceived(messageId,message);
+        }
+    }
+
+    private class CanPublishIpnsRecordProcessor implements MessageProcessor<IopProfileServer.CanPublishIpnsRecordResponse>{
+        @Override
+        public void execute(IoSession session, int messageId, IopProfileServer.CanPublishIpnsRecordResponse message) {
+            LOG.info("CanPublishIpnsRecordProcessor");
+            onMsgReceived(messageId,message);
         }
     }
 

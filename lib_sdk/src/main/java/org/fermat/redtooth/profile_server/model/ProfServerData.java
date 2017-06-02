@@ -10,6 +10,7 @@ import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 
 public class ProfServerData {
 
+    private byte[] networkId;
     private String host;
     private int pPort = 16987;
     private int custPort;
@@ -29,7 +30,8 @@ public class ProfServerData {
         this.isHome = isHome;
     }
 
-    public ProfServerData(String host, int pPort, int custPort, int nonCustPort,int appServicePort,boolean isHome) {
+    public ProfServerData(byte[] networkId,String host, int pPort, int custPort, int nonCustPort,int appServicePort,boolean isHome) {
+        this.networkId = networkId;
         this.host = host;
         this.pPort = pPort;
         this.custPort = custPort;
@@ -89,4 +91,7 @@ public class ProfServerData {
         return isHome;
     }
 
+    public byte[] getNetworkId() {
+        return networkId;
+    }
 }

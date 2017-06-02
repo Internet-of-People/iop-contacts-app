@@ -12,7 +12,7 @@ package org.fermat.redtooth.can;
  * <li>Comparing different versions of the same profile gives a strict chronological ordering.</li>
  * </ul>
  */
-public interface Profile extends Comparable<Profile>, Iterable<Profile.Attribute> {
+public interface CanProfile extends Comparable<CanProfile>, Iterable<CanProfile.Attribute> {
     /**
      * @return The entity that is shared among all versions of a profile.
      */

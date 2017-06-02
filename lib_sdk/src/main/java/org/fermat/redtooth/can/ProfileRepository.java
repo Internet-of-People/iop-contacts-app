@@ -15,5 +15,5 @@ public interface ProfileRepository {
      * @throws RuntimeException if the network is unavailable or some other problems happened while
      * retrieving the current version
      */
-    Profile getById(String identifier);
+    CanProfile getById(String identifier);
 }

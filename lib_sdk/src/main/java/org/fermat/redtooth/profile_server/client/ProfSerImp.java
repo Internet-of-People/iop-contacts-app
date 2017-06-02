@@ -6,6 +6,7 @@ import com.google.protobuf.ByteString;
 import org.fermat.redtooth.core.RedtoothContext;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.profile_server.IoHandler;
+import org.fermat.redtooth.profile_server.protocol.CanStoreMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,6 +137,14 @@ public class ProfSerImp implements ProfileServer {
         logger.info("UpdateExtraData, extra data: "+extraData);
         IopProfileServer.Message message = MessageFactory.buildUpdateProfileRequest(signer,profilePublicKey,profType,null,null,null,0,0,extraData);
         return buildRequestToCustomerPort(message);
+    }
+
+    @Override
+    public ProfSerRequest storeCanDataRequest(CanStoreMap canStoreMap) {
+        logger.info("storeCanDataRequest");
+        IopProfileServer.Message message = MessageFactory.buildCanStoreDataRequest(configurations.getNetworkId(),canStoreMap);
+
+        return null;
     }
 
     @Override
