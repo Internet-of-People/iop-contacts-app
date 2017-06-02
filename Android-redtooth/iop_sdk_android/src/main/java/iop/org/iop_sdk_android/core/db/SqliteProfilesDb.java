@@ -94,7 +94,7 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         contentValues.put(CONTACTS_COLUMN_NAME, profile.getName());
         contentValues.put(CONTACTS_COLUMN_TYPE, profile.getType());
         contentValues.put(CONTACTS_COLUMN_VERSION, profile.getVersion());
-        contentValues.put(CONTACTS_COLUMN_PUB_KEY, CryptoBytes.toHexString(profile.getPubKey()));
+        contentValues.put(CONTACTS_COLUMN_PUB_KEY, CryptoBytes.toHexString(profile.getPublicKey()));
         contentValues.put(CONTACTS_COLUMN_UPDATE_TIMESTAMP,profile.getLastUpdateTime());
         return contentValues;
     }

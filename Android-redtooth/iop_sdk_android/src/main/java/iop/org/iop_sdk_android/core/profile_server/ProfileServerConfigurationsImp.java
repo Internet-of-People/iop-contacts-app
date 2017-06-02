@@ -32,6 +32,7 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
     public static final String PREFS_PRIMARY = "primPort";
     public static final String PREFS_APP_SERVICE_PORT = "appSerPort";
     public static final String PREFS_HOST = "host";
+    public static final String PREFS_NETWORK_ID = "prof_network_id";
 
     public static final String PREFS_USER_VERSION = "userVersion";
     public static final String PREFS_USER_NAME = "username";
@@ -62,7 +63,7 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
 
     @Override
     public ProfServerData getMainProfileServer() {
-        return new ProfServerData(getHost(),getPrimaryPort(),getClPort(),getNonClPort(),getAppServicePort(),true);
+        return new ProfServerData(getMainServerNetworkId(),getHost(),getPrimaryPort(),getClPort(),getNonClPort(),getAppServicePort(),true);
     }
 
     @Override
@@ -289,6 +290,14 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
     private String convertToJson(List something){
         JSONArray jsonArray = new JSONArray(something);
         return jsonArray.toString();
+    }
+
+    public byte[] getMainServerNetworkId() {
+        return CryptoBytes.fromHexToBytes(getString(PREFS_NETWORK_ID,null));
+    }
+
+    public void setMainServerNetworkId(byte[] networkId) {
+        save(PREFS_NETWORK_ID,CryptoBytes.toHexString(networkId));
     }
 }
 
