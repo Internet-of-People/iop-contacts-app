@@ -5,13 +5,13 @@ import org.fermat.redtooth.can.Variant;
 import java.util.Iterator;
 import java.util.Map;
 
-class CanProfileImp implements org.fermat.redtooth.can.CanProfile {
+public class CanProfileImp implements org.fermat.redtooth.can.CanProfile {
     private final ProfileIdentity identity;
     private final String version;
     private final String displayName;
     private final Map<String, Variant> attrs;
 
-    CanProfileImp(ProfileIdentity identity, String version, String displayName, Map<String, Variant> attrs) {
+    public CanProfileImp(ProfileIdentity identity, String version, String displayName, Map<String, Variant> attrs) {
         this.identity = identity;
         this.version = version;
         this.displayName = displayName;
