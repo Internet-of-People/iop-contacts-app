@@ -167,6 +167,11 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     }
 
     @Override
+    public void requestProfileConnection(byte[] remotePubKey) {
+        redtooth.requestProfileConnection(profile.getPublicKey(),remotePubKey);
+    }
+
+    @Override
     public File getUserImageFile() {
         return configurationsPreferences.getUserImageFile();
     }

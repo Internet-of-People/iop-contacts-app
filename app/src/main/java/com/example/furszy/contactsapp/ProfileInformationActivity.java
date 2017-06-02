@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -31,13 +32,13 @@ public class ProfileInformationActivity extends Activity {
 
     private CircleImageView imgProfile;
     private TextView txt_name;
+    private Button btn_connect;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         module = ((App)getApplication()).getAnRedtooth().getRedtooth();
-        setContentView(R.layout.activity_main);
 
 //        Uri data = getIntent().getData();
 //        String scheme = data.getScheme(); // "http"
@@ -57,6 +58,7 @@ public class ProfileInformationActivity extends Activity {
         setContentView(R.layout.profile_information_main);
         imgProfile = (CircleImageView) findViewById(R.id.profile_image);
         txt_name = (TextView) findViewById(R.id.txt_name);
+        btn_connect = (Button) findViewById(R.id.btn_connect);
 
         if (profileInformation==null){
             onBackPressed();
@@ -68,5 +70,11 @@ public class ProfileInformationActivity extends Activity {
             Bitmap bitmap = BitmapFactory.decodeByteArray(profileInformation.getImg(),0,profileInformation.getImg().length);
             imgProfile.setImageBitmap(bitmap);
         }
+        btn_connect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                module.requestProfileConnection(profileInformation.getPubKey());
+            }
+        });
     }
 }

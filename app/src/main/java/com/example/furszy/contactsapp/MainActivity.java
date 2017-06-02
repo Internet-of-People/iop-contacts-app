@@ -132,7 +132,6 @@ public class MainActivity extends AppCompatActivity {
                                             public void run() {
                                                 if (profileInformation!=null) {
                                                     Toast.makeText(MainActivity.this, "Found: " + profileInformation.getName() + ((profileInformation.isOnline()) ? " is online" : " is offline"), Toast.LENGTH_LONG).show();
-
                                                 }else{
                                                     Toast.makeText(MainActivity.this,profileFuture.getStatusDetail(),Toast.LENGTH_LONG).show();
                                                     Log.e("app","status: "+profileFuture.getStatusDetail());
