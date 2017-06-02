@@ -6,13 +6,11 @@ import java.util.Set;
  * Created by furszy on 5/28/17.
  */
 
-public interface ProfileInformation {
+public interface ProfileInformation extends ProfileBase {
 
     byte[] getVersion();
 
     long getLastUpdateTime();
-
-    byte[] getPubKey();
 
     String getName();
 
