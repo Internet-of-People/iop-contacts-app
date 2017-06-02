@@ -25,7 +25,7 @@ import static com.example.furszy.contactsapp.QrUtils.encodeAsBitmap;
 
 public class Util {
 
-    public static void showQrDialog(final Activity activity, ModuleRedtooth module){
+    public static void showQrDialog(final Activity activity, String data){
 
         try {
             final Dialog dialog = new Dialog(activity);
@@ -45,7 +45,7 @@ public class Util {
 
             ImageView image = (ImageView) dialog.findViewById(R.id.img_qr);
             // todo: put something to show here.
-            final String address = module.getProfile().getName()+"/"+module.getProfile().getHexPublicKey();//module.getReceiveAddress();
+            final String address = data;//module.getReceiveAddress();
             // qr
             Bitmap qrBitmap = null;//Cache.getQrBigBitmapCache();
             if (qrBitmap == null) {
