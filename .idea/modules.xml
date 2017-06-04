@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ContactsApp.iml" filepath="$PROJECT_DIR$/ContactsApp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/IoP-connect-contacts.iml" filepath="$PROJECT_DIR$/IoP-connect-contacts.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/Android-redtooth/iop_sdk_android/iop_sdk_android.iml" filepath="$PROJECT_DIR$/Android-redtooth/iop_sdk_android/iop_sdk_android.iml" />
       <module fileurl="file://$PROJECT_DIR$/iopj/iopj.iml" filepath="$PROJECT_DIR$/iopj/iopj.iml" />

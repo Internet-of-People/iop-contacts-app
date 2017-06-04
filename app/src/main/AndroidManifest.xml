@@ -26,12 +26,7 @@
 
         <activity android:name=".ProfileInformationActivity">
             <intent-filter android:autoVerify="true">
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-                <data android:host="www.profile.org"/>
-                <data android:scheme="http" android:host="http://profile.org"/>
-                <data android:scheme="http"
-                    android:host="www.profile.org"/>
+                <data android:scheme="IoP"/>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />

@@ -25,6 +25,7 @@ import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.model.Profile;
+import org.fermat.redtooth.profile_server.utils.ProfileUtils;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -71,7 +72,8 @@ public class MainActivity extends AppCompatActivity {
         btn_qr_user.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Util.showQrDialog(MainActivity.this,((App)getApplication()).anRedtooth.getRedtooth());
+                String data = ProfileUtils.getProfileURI(anRedtooth.getProfile());
+                Util.showQrDialog(MainActivity.this,data);
             }
         });
         btn_scanner.setOnClickListener(new View.OnClickListener() {
@@ -132,7 +134,6 @@ public class MainActivity extends AppCompatActivity {
                                             public void run() {
                                                 if (profileInformation!=null) {
                                                     Toast.makeText(MainActivity.this, "Found: " + profileInformation.getName() + ((profileInformation.isOnline()) ? " is online" : " is offline"), Toast.LENGTH_LONG).show();
-
                                                 }else{
                                                     Toast.makeText(MainActivity.this,profileFuture.getStatusDetail(),Toast.LENGTH_LONG).show();
                                                     Log.e("app","status: "+profileFuture.getStatusDetail());

@@ -72,7 +72,7 @@ public class ProfileInformationActivity extends Activity {
                     @Override
                     public void run() {
                         MsgListenerFuture listener = new MsgListenerFuture();
-                        module.requestPairingProfile(profileInformation.getPubKey(),profileInformation.getProfileServerId(),listener);
+                        module.requestPairingProfile(profileInformation.getPublicKey(),profileInformation.getProfileServerId(),listener);
                     }
                 });
             }

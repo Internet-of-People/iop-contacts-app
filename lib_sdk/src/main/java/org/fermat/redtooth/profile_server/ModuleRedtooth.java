@@ -58,6 +58,8 @@ public interface ModuleRedtooth {
 
     SubsequentSearchMsgListenerFuture<List<IopProfileServer.ProfileQueryInformation>> searchSubsequentsProfiles(SearchProfilesQuery searchProfilesQuery);
 
+    void requestProfileConnection(byte[] pubKey);
+
     File getUserImageFile();
 
     Profile getProfile();

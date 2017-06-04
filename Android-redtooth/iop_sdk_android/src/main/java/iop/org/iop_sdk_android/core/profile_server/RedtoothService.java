@@ -185,6 +185,11 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     }
 
     @Override
+    public void requestProfileConnection(byte[] remotePubKey) {
+        redtooth.requestProfileConnection(profile.getPublicKey(),remotePubKey);
+    }
+
+    @Override
     public File getUserImageFile() {
         return configurationsPreferences.getUserImageFile();
     }
@@ -200,7 +205,7 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
         List<ProfileInformation> knownProfiles = redtooth.getKnownProfiles(profile.getPublicKey());
         // todo: this is a lazy remove..
         for (ProfileInformation knownProfile : knownProfiles) {
-            if (!Arrays.equals(knownProfile.getPubKey(),profile.getPublicKey())){
+            if (!Arrays.equals(knownProfile.getPublicKey(),profile.getPublicKey())){
                 ret.add(knownProfile);
             }
         }

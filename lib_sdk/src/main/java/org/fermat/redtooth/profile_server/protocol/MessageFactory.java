@@ -2,6 +2,7 @@ package org.fermat.redtooth.profile_server.protocol;
 
 import com.google.protobuf.ByteString;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.fermat.redtooth.profile_server.Signer;
@@ -316,6 +317,36 @@ public class MessageFactory {
         return buildMessage(builder);
     }
 
+    public static IopProfileServer.Message buildCanStoreDataRequest(byte[] hostingServerId,CanStoreMap data) {
+        IopProfileServer.CanStoreDataRequest.Builder builder = IopProfileServer.CanStoreDataRequest.newBuilder();
+        IopProfileServer.CanIdentityData.Builder canIdentityData = IopProfileServer.CanIdentityData.newBuilder();
+
+        for (Map.Entry<String, Object> stringObjectEntry : data.getData().entrySet()) {
+            IopProfileServer.CanKeyValue.Builder canKeyValue = IopProfileServer.CanKeyValue.newBuilder();
+            String key = stringObjectEntry.getKey();
+            canKeyValue.setKey(key);
+            Class clazz = data.getType(key);
+            if (clazz.equals(Integer.class)){
+                canKeyValue.setUint32Value((Integer) stringObjectEntry.getValue());
+            }else if (clazz.equals(String.class)){
+                canKeyValue.setStringValue((String) stringObjectEntry.getValue());
+            }else if (clazz.equals(Long.class)){
+                canKeyValue.setUint64Value((Long) stringObjectEntry.getValue());
+            }else if (clazz.equals(Byte.class)){
+                canKeyValue.setBinaryValue(ByteString.copyFrom((byte[]) stringObjectEntry.getValue()));
+            }else if (clazz.equals(Boolean.class)){
+                canKeyValue.setBoolValue((Boolean) stringObjectEntry.getValue());
+            }else if (clazz.equals(Boolean.class)){
+                canKeyValue.setDoubleValue((Double) stringObjectEntry.getValue());
+            }
+            canIdentityData.addKeyValueList(canKeyValue);
+        }
+        canIdentityData.setHostingServerId(ByteString.copyFrom(hostingServerId));
+        builder.setData(canIdentityData);
+        return buildMessage(builder);
+    }
+
+
     /**
      * Request to get another part from the search query.
      * This request only makes sense only if the client previously sent ProfileSearchRequest to
@@ -464,6 +495,10 @@ public class MessageFactory {
 
     private static IopProfileServer.Message buildMessage(IopProfileServer.ApplicationServiceSendMessageRequest.Builder builder) {
         return buildMessage(IopProfileServer.SingleRequest.newBuilder().setVersion(ByteString.copyFrom(PROTOCOL_VERSION)).setApplicationServiceSendMessage(builder));
+    }
+
+    private static IopProfileServer.Message buildMessage(IopProfileServer.CanStoreDataRequest.Builder builder) {
+        return buildMessage(IopProfileServer.ConversationRequest.newBuilder().setCanStoreData(builder));
     }
 
     // response

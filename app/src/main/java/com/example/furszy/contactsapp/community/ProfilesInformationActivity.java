@@ -78,7 +78,7 @@ public class ProfilesInformationActivity extends AppCompatActivity {
             @Override
             public void onItemClickListener(ProfileInformation data, int position) {
                 Intent intent1 = new Intent(ProfilesInformationActivity.this, ProfileInformationActivity.class);
-                intent1.putExtra(ProfileInformationActivity.INTENT_EXTRA_PROF_KEY, data.getPubKey());
+                intent1.putExtra(ProfileInformationActivity.INTENT_EXTRA_PROF_KEY, data.getHexPublicKey());
                 ProfilesInformationActivity.this.startActivity(intent1);
             }
 

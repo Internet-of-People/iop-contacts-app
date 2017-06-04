@@ -5,13 +5,15 @@ import java.util.List;
 
 import org.bitcoinj.core.Sha256Hash;
 import org.fermat.redtooth.crypto.CryptoBytes;
+import org.fermat.redtooth.profile_server.ProfileBase;
+import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.Signer;
 
 /**
  * Created by mati on 06/02/17.
  */
 
-public class Profile implements Signer {
+public class Profile implements Signer,ProfileBase {
 
     // internal sdk fields
     private long id;

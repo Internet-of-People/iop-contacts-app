@@ -279,4 +279,7 @@ public class Redtooth {
         }
     }
 
+    public void requestProfileConnection(byte[] publicKey, byte[] remotePubKey) {
+
+    }
 }

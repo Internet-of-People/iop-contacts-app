@@ -1,16 +1,17 @@
 package org.fermat.redtooth.can.impl;
 
+import org.fermat.redtooth.can.CanProfile;
 import org.fermat.redtooth.can.Variant;
 import java.util.Iterator;
 import java.util.Map;
 
-class Profile implements org.fermat.redtooth.can.Profile {
+public class CanProfileImp implements org.fermat.redtooth.can.CanProfile {
     private final ProfileIdentity identity;
     private final String version;
     private final String displayName;
     private final Map<String, Variant> attrs;
 
-    Profile(ProfileIdentity identity, String version, String displayName, Map<String, Variant> attrs) {
+    public CanProfileImp(ProfileIdentity identity, String version, String displayName, Map<String, Variant> attrs) {
         this.identity = identity;
         this.version = version;
         this.displayName = displayName;
@@ -37,7 +38,7 @@ class Profile implements org.fermat.redtooth.can.Profile {
         return this.attrs.get(key);
     }
 
-    @Override public int compareTo(org.fermat.redtooth.can.Profile other) {
+    @Override public int compareTo(CanProfile other) {
         int cmpIdentity = this.identity.compareTo(other.getIdentity());
         if (cmpIdentity != 0)
             return cmpIdentity;

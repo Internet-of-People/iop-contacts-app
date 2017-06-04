@@ -55,9 +55,9 @@ import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 
-public class MyWebClient {
+public class WebClient {
 
-	private static final String TAG = MyWebClient.class.getSimpleName();
+	private static final String TAG = WebClient.class.getSimpleName();
 	private static final boolean DEBUG = true;
 	
 	CloseableHttpClient httpClient;
@@ -77,7 +77,7 @@ public class MyWebClient {
 	String webServiceUrl;
 	Integer httpResponseCode = null;
 	
-	public MyWebClient(String webServiceUrl) {
+	public WebClient(String webServiceUrl) {
 		
 		this.webServiceUrl = webServiceUrl;
 		initBase();
@@ -175,24 +175,29 @@ public class MyWebClient {
 	        .build();
 		HttpGet httpget = new HttpGet(uri);
 		 */
+		return get(requestUrl);
+	}
+
+	public String get(String requestUrl){
+		String responseStr = null;
 		httpGet = new HttpGet(requestUrl);
 		// httpGet.setConfig(httpRequestConfig);
 		for (RequestHeader requestHeader:requestHeaders) {
 			httpGet.addHeader(requestHeader.getKey(), requestHeader.getValue());
 		}
-		
+
 		//CloseableHttpResponse httpResponse = null;
 		try {
 			httpResponse = httpClient.execute(httpGet);
-			httpResponseCode = httpResponse.getStatusLine().getStatusCode(); 
+			httpResponseCode = httpResponse.getStatusLine().getStatusCode();
 			HttpEntity entity = httpResponse.getEntity();
 			if (httpResponseCode >= 200 && httpResponseCode < 300) {
 				//responseStr = entity!=null ? EntityUtils.toString(entity) : "";
-            	responseStr = entity!=null ? convertInputStreamToString(entity.getContent()):"";
+				responseStr = entity!=null ? convertInputStreamToString(entity.getContent()):"";
 			} else {
-                //throw new ClientProtocolException("Unexpected response status: " + status);
-            	responseStr = httpResponseCode + "|"+"ERROR"+convertInputStreamToString(httpResponse.getEntity().getContent());
-            }
+				//throw new ClientProtocolException("Unexpected response status: " + status);
+				responseStr = httpResponseCode + "|"+"ERROR"+convertInputStreamToString(httpResponse.getEntity().getContent());
+			}
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -201,7 +206,6 @@ public class MyWebClient {
 		finally {
 			try { httpResponse.close(); } catch (Exception ex){}
 		}
-		
 		return responseStr;
 	}
 		

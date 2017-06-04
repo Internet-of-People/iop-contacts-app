@@ -1,10 +1,14 @@
 package org.fermat.redtooth.can.impl;
 
 
+import org.fermat.redtooth.can.CanProfile;
 import org.fermat.redtooth.can.ClientApi;
+import org.fermat.redtooth.forum.discourge.com.wareninja.opensource.discourse.utils.WebClient;
 import org.fermat.redtooth.global.p2p.Bootstrappable;
 import org.fermat.redtooth.global.p2p.PeerToPeerNetwork;
 import org.fermat.redtooth.global.p2p.NodeSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -12,9 +16,9 @@ import java.net.UnknownHostException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.sun.org.apache.xalan.internal.xsltc.compiler.util.Type.NodeSet;
-
 public class CanNetwork implements PeerToPeerNetwork<ClientApi>, Bootstrappable {
+
+    private static final Logger logger = LoggerFactory.getLogger(CanNetwork.class);
 
     static final String[] seeds = new String[] {
         "/ip4/104.199.219.45/tcp/14001/ipfs/QmfJGzktqwZK8S7LT55Q2nxDWCHRHzEgHgmVTyyrjqHpF5",  // ham4.fermat.cloud
@@ -134,13 +138,27 @@ public class CanNetwork implements PeerToPeerNetwork<ClientApi>, Bootstrappable 
     class CanClientProxy implements ClientApi {
 
         private final CanNode node;
+        private WebClient webClient;
 
         public CanClientProxy(CanNode node) {
             this.node = node;
         }
 
         // TODO
-        @Override public Profile getById(String identifier) {
+
+        /**
+         *
+         * These method consist in two different request:
+         *
+         * IPNS and IPFS
+         *
+         * @param identifier A multihash encoded identifier of the profile
+         * @return
+         */
+        @Override public CanProfile getById(String identifier) {
+            webClient = new WebClient(node.address.getHostAddress()+":"+node.getPort());
+            String response = webClient.get("/api/v0/name/resolve?args="+identifier+"&recursive=true&nocache=false");
+            logger.info("can ipns response: "+response);
             return null;
         }
 
@@ -149,8 +167,6 @@ public class CanNetwork implements PeerToPeerNetwork<ClientApi>, Bootstrappable 
             CanNode[] a = new CanNode[]{
                     toCanNode("/ip4/104.199.219.44/tcp/14001/ipfs/QmeJGzktqwZK8S7LT55Q2nxDWCHRHzEgHgmVTyyrjqHpF5")
             };
-
-
             return a;
         }
     }
