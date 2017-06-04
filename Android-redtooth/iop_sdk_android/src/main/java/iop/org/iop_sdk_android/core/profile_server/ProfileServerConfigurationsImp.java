@@ -252,6 +252,12 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
         save(PREFS_USER_TYPE,type);
     }
 
+    @Override
+    public boolean isPairingEnable() {
+        // default true for now..
+        return true;
+    }
+
 
     public void registerOnSharedPreferenceChangeListener(final SharedPreferences.OnSharedPreferenceChangeListener listener) {
         prefs.registerOnSharedPreferenceChangeListener(listener);

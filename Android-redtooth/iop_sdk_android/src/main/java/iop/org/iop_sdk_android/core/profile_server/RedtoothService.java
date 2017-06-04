@@ -10,6 +10,8 @@ import android.util.Log;
 import org.fermat.redtooth.core.Redtooth;
 import org.fermat.redtooth.core.RedtoothContext;
 import org.fermat.redtooth.core.RedtoothProfileConnection;
+import org.fermat.redtooth.core.services.DefaultServices;
+import org.fermat.redtooth.core.services.pairing.PairingMsg;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
@@ -23,10 +25,13 @@ import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SubsequentSearchMsgListenerFuture;
+import org.fermat.redtooth.profile_server.engine.listeners.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -45,6 +50,8 @@ import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
 
 public class RedtoothService extends Service implements ModuleRedtooth, EngineListener {
 
+    private final Logger logger = LoggerFactory.getLogger(RedtoothService.class);
+
     private static final String TAG = "RedtoothService";
 
     private ExecutorService executor;
@@ -54,8 +61,9 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     private Redtooth redtooth;
     /** Configurations impl */
     private ProfileServerConfigurations configurationsPreferences;
-
     private Profile profile;
+
+    private PairingListener pairingListener;
 
     public class ProfServerBinder extends Binder {
         public RedtoothService getService() {
@@ -143,8 +151,18 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     }
 
     @Override
+    public void requestPairingProfile(byte[] pubKey, byte[] profileServerId, ProfSerMsgListener listener) {
+        redtooth.requestPairingProfile(profile.getHexPublicKey(),profile.getName(),pubKey,profileServerId,listener);
+    }
+
+    @Override
     public boolean isIdentityCreated() {
         return configurationsPreferences.isRegisteredInServer();
+    }
+
+    @Override
+    public void setPairListener(PairingListener pairListener) {
+        this.pairingListener = pairListener;
     }
 
     @Override
@@ -209,8 +227,44 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     }
 
     @Override
-    public void newCallReceived(CallProfileAppService callProfileAppService) {
+    public void newCallReceived(final CallProfileAppService callProfileAppService) {
+        DefaultServices defaultServices = getDefaultService(callProfileAppService.getAppService());
+        if (defaultServices!=null){
+            switch (defaultServices){
+                case PROFILE_PAIRING:
+                    if (pairingListener!=null){
+                        callProfileAppService.setMsgListener(new CallProfileAppService.CallMessagesListener() {
+                            @Override
+                            public void onMessage(byte[] msg) {
+                                try {
+                                    logger.info("pair msg received");
+                                    PairingMsg pairingMsg = new PairingMsg().decode(msg);
+                                    if (pairingListener!=null){
+                                        pairingListener.onPairReceived(callProfileAppService.getRemotePubKey(),pairingMsg.getName());
+                                    }else {
+                                        logger.info("pairListener null, please add it if you want to receive pairs");
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                    }
+                    break;
+            }
+        }else {
+            // todo: other app services..
+        }
 
+    }
+
+    private DefaultServices getDefaultService(String name){
+        try{
+            return DefaultServices.getServiceByName(name);
+        }catch (Exception e){
+            // nothing
+        }
+        return null;
     }
 
 
