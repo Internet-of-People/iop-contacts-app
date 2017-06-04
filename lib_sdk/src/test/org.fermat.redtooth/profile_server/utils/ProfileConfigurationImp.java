@@ -203,4 +203,9 @@ public class ProfileConfigurationImp implements ProfileServerConfigurations {
             profile.setType(type);
         }
     }
+
+    @Override
+    public boolean isPairingEnable() {
+        return true;
+    }
 }

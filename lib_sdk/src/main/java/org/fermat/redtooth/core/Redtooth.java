@@ -1,5 +1,9 @@
 package org.fermat.redtooth.core;
 
+import org.fermat.redtooth.core.client.basic.DefaultConnectFuture;
+import org.fermat.redtooth.core.services.DefaultServices;
+import org.fermat.redtooth.core.services.pairing.PairingMsg;
+import org.fermat.redtooth.crypto.Crypto;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.crypto.CryptoWrapper;
 import org.fermat.redtooth.profile_server.CantConnectException;
@@ -7,14 +11,18 @@ import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.SslContextFactory;
+import org.fermat.redtooth.profile_server.engine.CallProfileAppService;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
+import org.fermat.redtooth.profile_server.engine.listeners.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.fermat.redtooth.profiles_manager.ProfilesManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +36,8 @@ import java.util.concurrent.ConcurrentMap;
  */
 
 public class Redtooth {
+
+    private final Logger logger = LoggerFactory.getLogger(Redtooth.class);
 
     /** Profiles connection manager */
     private ConcurrentMap<String,RedtoothProfileConnection> managers;
@@ -174,8 +184,71 @@ public class Redtooth {
         }
     }
 
+    /**
+     * Send a request pair notification to a remote profile
+     *
+     * @param senderHexPublicKey
+     * @param senderName
+     * @param pubKey
+     * @param profileServerId
+     * @param listener
+     */
+    public void requestPairingProfile(String senderHexPublicKey, final String senderName , byte[] pubKey, byte[] profileServerId, final ProfSerMsgListener listener) {
+        String remotePubKeyHex = CryptoBytes.toHexString(pubKey);
+        logger.info("requestPairingProfile, remote: "+remotePubKeyHex);
+        final RedtoothProfileConnection connection = getProfileConnection(senderHexPublicKey);
+        // first the call
+        MsgListenerFuture<CallProfileAppService> callListener = new MsgListenerFuture();
+        callListener.setListener(new BaseMsgFuture.Listener<CallProfileAppService>() {
+            @Override
+            public void onAction(int messageId, final CallProfileAppService call) {
+                try {
+                    logger.info("call establish, remote: " + call.getRemotePubKey());
+                    // now send the pairing message
+                    MsgListenerFuture<Boolean> pairingMsgFuture = new MsgListenerFuture();
+                    pairingMsgFuture.setListener(new BaseMsgFuture.Listener<Boolean>() {
+                        @Override
+                        public void onAction(int messageId, Boolean res) {
+                            logger.info("pairing msg sent, remote: " + call.getRemotePubKey());
+                            listener.onMessageReceive(messageId,res);
+                        }
+
+                        @Override
+                        public void onFail(int messageId, int status, String statusDetail) {
+                            logger.info("pairing msg fail, remote: " + call.getRemotePubKey());
+                            listener.onMsgFail(messageId,status,statusDetail);
+                        }
+                    });
+                    PairingMsg pairingMsg = new PairingMsg(senderName);
+                    call.sendMsg(pairingMsg, pairingMsgFuture);
+
+                } catch (CantSendMessageException e) {
+                    e.printStackTrace();
+                } catch (CantConnectException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFail(int messageId, int status, String statusDetail) {
+                logger.info("call fail, remote: "+statusDetail);
+                listener.onMsgFail(messageId,status,statusDetail);
+            }
+        });
+        connection.callProfileAppService(remotePubKeyHex, DefaultServices.PROFILE_PAIRING.getName(),true,callListener);
+
+
+    }
+
     private ProfileServerConfigurations createEmptyProfileServerConf(){
         return context.createProfSerConfig();
+    }
+
+    private RedtoothProfileConnection getProfileConnection(String profPubKey){
+        if (!managers.containsKey(profPubKey)) throw new IllegalStateException("Profile connection not established");
+        return managers.get(profPubKey);
     }
 
     /**

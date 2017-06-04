@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -14,8 +15,11 @@ import android.widget.TextView;
 import org.fermat.redtooth.governance.utils.TextUtils;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileInformation;
+import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -31,13 +35,15 @@ public class ProfileInformationActivity extends Activity {
 
     private CircleImageView imgProfile;
     private TextView txt_name;
+    private Button btn_connect;
+
+    private ExecutorService executor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         module = ((App)getApplication()).getAnRedtooth().getRedtooth();
-        setContentView(R.layout.activity_main);
 
 //        Uri data = getIntent().getData();
 //        String scheme = data.getScheme(); // "http"
@@ -57,6 +63,20 @@ public class ProfileInformationActivity extends Activity {
         setContentView(R.layout.profile_information_main);
         imgProfile = (CircleImageView) findViewById(R.id.profile_image);
         txt_name = (TextView) findViewById(R.id.txt_name);
+        btn_connect = (Button) findViewById(R.id.btn_connect);
+
+        btn_connect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                executor.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        MsgListenerFuture listener = new MsgListenerFuture();
+                        module.requestPairingProfile(profileInformation.getPubKey(),profileInformation.getProfileServerId(),listener);
+                    }
+                });
+            }
+        });
 
         if (profileInformation==null){
             onBackPressed();
@@ -67,6 +87,23 @@ public class ProfileInformationActivity extends Activity {
         if (profileInformation.getImg()!=null && profileInformation.getImg().length>1){
             Bitmap bitmap = BitmapFactory.decodeByteArray(profileInformation.getImg(),0,profileInformation.getImg().length);
             imgProfile.setImageBitmap(bitmap);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (executor==null){
+            executor = Executors.newSingleThreadExecutor();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (executor!=null){
+            executor.shutdownNow();
+            executor = null;
         }
     }
 }

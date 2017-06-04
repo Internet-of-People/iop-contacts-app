@@ -2,6 +2,7 @@ package org.fermat.redtooth.profile_server.engine;
 
 import com.google.protobuf.ByteString;
 
+import org.fermat.redtooth.core.services.BaseMsg;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
@@ -49,7 +50,6 @@ public class CallProfileAppService {
         void onMessage(byte[] msg);
 
     }
-
 
     /** App service used to connect both profiles  */
     private String appService;
@@ -137,6 +137,30 @@ public class CallProfileAppService {
             }
         });
         profSerEngine.sendAppServiceMsg(callToken,msgBytes,msgListenerFuture);
+    }
+
+    public void sendMsg(BaseMsg msg,final MsgListenerFuture<Boolean> sendListener) throws Exception {
+        sendMsg(msg.encode(),sendListener);
+    }
+
+    public void sendMsg(byte[] msg, final MsgListenerFuture<Boolean> sendListener) throws CantConnectException, CantSendMessageException {
+        if (this.status!=CALL_AS_ESTABLISH) throw new IllegalStateException("Call is not ready to send messages");
+
+        MsgListenerFuture<IopProfileServer.ApplicationServiceSendMessageResponse> msgListenerFuture = new MsgListenerFuture();
+        msgListenerFuture.setListener(new BaseMsgFuture.Listener<IopProfileServer.ApplicationServiceSendMessageResponse>() {
+            @Override
+            public void onAction(int messageId, IopProfileServer.ApplicationServiceSendMessageResponse object) {
+                logger.info("App service message sent!");
+                sendListener.onMessageReceive(messageId,true);
+            }
+
+            @Override
+            public void onFail(int messageId, int status, String statusDetail) {
+                logger.info("App service message fail");
+                sendListener.onMsgFail(messageId,status,statusDetail);
+            }
+        });
+        profSerEngine.sendAppServiceMsg(callToken,msg,msgListenerFuture);
 
     }
 

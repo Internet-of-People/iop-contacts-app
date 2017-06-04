@@ -7,6 +7,7 @@ import org.fermat.redtooth.profile_server.engine.SearchProfilesQuery;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SubsequentSearchMsgListenerFuture;
+import org.fermat.redtooth.profile_server.engine.listeners.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
@@ -33,7 +34,18 @@ public interface ModuleRedtooth {
 
     int updateProfileExtraData(String pubKey,Signer signer, String extraData) throws Exception;
 
+    /**
+     * Request pair profile, This will notify to the other user that you want to connect with him.
+     *
+     * @param pubKey
+     * @param profileServerId
+     * @param listener
+     */
+    void requestPairingProfile(byte[] pubKey, byte[] profileServerId, ProfSerMsgListener listener);
+
     boolean isIdentityCreated();
+
+    void setPairListener(PairingListener pairListener);
 
     /* Search queries **/
 
@@ -53,4 +65,5 @@ public interface ModuleRedtooth {
     List<ProfileInformation> getKnownProfiles();
 
     ProfileInformation getKnownProfile(byte[] pubKey);
+
 }

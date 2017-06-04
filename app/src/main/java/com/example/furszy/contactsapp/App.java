@@ -2,10 +2,14 @@ package com.example.furszy.contactsapp;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.fermat.redtooth.core.RedtoothContext;
+import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
+import org.fermat.redtooth.profile_server.engine.listeners.PairingListener;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +34,7 @@ import iop.org.iop_sdk_android.core.profile_server.ProfileServerConfigurationsIm
  * Created by furszy on 5/25/17.
  */
 
-public class App extends Application implements RedtoothContext{
+public class App extends Application implements RedtoothContext, PairingListener {
 
     AnRedtooth anRedtooth;
 
@@ -50,11 +54,12 @@ public class App extends Application implements RedtoothContext{
                         @Override
                         public void run() {
                             try {
-                                Log.i("Activity", "here");
-                                if (anRedtooth.getRedtooth().isProfileRegistered()) {
-                                    Profile profile = anRedtooth.getRedtooth().getProfile();
+                                ModuleRedtooth module = anRedtooth.getRedtooth();
+                                module.setPairListener(App.this);
+                                if (module.isProfileRegistered()) {
+                                    Profile profile = module.getProfile();
                                     if (profile != null)
-                                        anRedtooth.getRedtooth().connect(profile.getHexPublicKey());
+                                        module.connect(profile.getHexPublicKey());
                                     else
                                         Log.i("App", "Profile not found to connect");
                                 }
@@ -79,7 +84,7 @@ public class App extends Application implements RedtoothContext{
     @Override
     public ProfileServerConfigurations createProfSerConfig() {
         ProfileServerConfigurationsImp conf = new ProfileServerConfigurationsImp(this,getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));
-        conf.setHost("192.168.0.102");
+        conf.setHost("192.169.1.154");
         return conf;
         }
 
@@ -138,4 +143,23 @@ public class App extends Application implements RedtoothContext{
     }
 
 
+    @Override
+    public void onPairReceived(String requesteePubKey, String name) {
+        DialogBuilder dialogBuilder = new DialogBuilder(this)
+                .setTitle("Pairing received")
+                .setMessage("Do you want to pair with "+name+"?")
+                .twoButtons(new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(App.this,"Accepting request",Toast.LENGTH_LONG).show();
+                        dialog.dismiss();
+                    }
+                });
+        dialogBuilder.show();
+    }
 }

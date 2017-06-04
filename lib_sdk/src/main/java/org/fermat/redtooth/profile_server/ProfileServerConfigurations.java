@@ -79,4 +79,6 @@ public interface ProfileServerConfigurations extends ProfSerDb{
     void saveProfile(Profile profile);
 
     void setProfileType(String type);
+
+    boolean isPairingEnable();
 }

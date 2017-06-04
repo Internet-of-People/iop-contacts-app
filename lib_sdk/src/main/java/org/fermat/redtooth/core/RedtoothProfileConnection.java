@@ -1,6 +1,7 @@
 package org.fermat.redtooth.core;
 
 
+import org.fermat.redtooth.core.services.DefaultServices;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.crypto.CryptoWrapper;
 import org.fermat.redtooth.profile_server.CantConnectException;
@@ -18,6 +19,7 @@ import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SubsequentSearchMsgListenerFuture;
+import org.fermat.redtooth.profile_server.engine.listeners.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.ProfServerData;
@@ -57,7 +59,6 @@ public class RedtoothProfileConnection implements CallsListener {
     private EngineListener profServerEngineListener;
     /** Open profile app service calls -> remote profile pk -> call in progress */
     private ConcurrentMap<String,CallProfileAppService> openCall = new ConcurrentHashMap<>();
-
 
     public RedtoothProfileConnection(RedtoothContext contextWrapper, ProfileServerConfigurations profileServerConfigurations, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory){
         this.contextWrapper = contextWrapper;
@@ -114,6 +115,10 @@ public class RedtoothProfileConnection implements CallsListener {
             profileCache = profile;
             // save
             profileServerConfigurations.saveUserKeys(profile.getKey());
+        }
+        // pairing default
+        if(profileServerConfigurations.isPairingEnable()){
+            profileCache.addApplicationService(DefaultServices.PROFILE_PAIRING.getName());
         }
     }
 
@@ -456,8 +461,6 @@ public class RedtoothProfileConnection implements CallsListener {
         }else {
             logger.warn("incomingAppServiceMessage -> openCall not found");
         }
-
-
     }
 
 
