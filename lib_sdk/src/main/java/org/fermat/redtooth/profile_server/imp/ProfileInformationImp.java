@@ -31,6 +31,7 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
     private byte[] profileServerId;
     private boolean isOnline;
     private long updateTimestamp;
+    private boolean isPaired;
 
 
     public ProfileInformationImp() {
@@ -69,6 +70,11 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
 
     public String getType() {
         return type;
+    }
+
+    @Override
+    public boolean isPaired() {
+        return isPaired;
     }
 
     public byte[] getImg() {
@@ -174,5 +180,9 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
     @Override
     public String getHexPublicKey() {
         return CryptoBytes.toHexString(pubKey);
+    }
+
+    public void setIsPaired(boolean isPaired) {
+        this.isPaired = isPaired;
     }
 }

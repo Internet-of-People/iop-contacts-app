@@ -186,7 +186,7 @@ public class AppServiceCallsTest {
 
                             }
                             MsgListenerFuture<Boolean> sendFuture = new MsgListenerFuture<>();
-                            callProfileAppService.sendMsg("Hello mate!", sendFuture);
+                            callProfileAppService.sendMsgStr("Hello mate!", sendFuture);
                         } catch (CantSendMessageException e) {
                             e.printStackTrace();
                         } catch (CantConnectException e) {
@@ -267,7 +267,7 @@ public class AppServiceCallsTest {
 
                 }
             });
-            callProfileAppService.sendMsg("Hello",sendHiFuture);
+            callProfileAppService.sendMsgStr("Hello",sendHiFuture);
             sendHiFuture.get();
 
             assert sendHiFuture.getStatus()==200:"test pass successfully!";

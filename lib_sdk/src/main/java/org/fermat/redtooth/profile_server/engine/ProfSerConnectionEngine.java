@@ -2,6 +2,7 @@ package org.fermat.redtooth.profile_server.engine;
 
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
+import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.processors.MessageProcessor;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.slf4j.Logger;
@@ -341,6 +342,26 @@ public class ProfSerConnectionEngine {
             // if the profile is just registered i have to initialize it
             if (profSerEngine.getProfNodeConnection().isNeedRegisterProfile()){
                 profSerEngine.initProfile();
+            }
+            // registerConnect application services
+            final Profile profile = profSerEngine.getProfNodeConnection().getProfile();
+            for (final String service : profile.getApplicationServices()) {
+                profSerEngine.addApplicationService(service, new ProfSerMsgListener() {
+                    @Override
+                    public void onMessageReceive(int messageId, Object message) {
+                        LOG.info("Application service registered: "+service+", for profile: "+profile.getName());
+                    }
+
+                    @Override
+                    public void onMsgFail(int messageId, int statusValue, String details) {
+                        LOG.info("Application service register fail: "+service+", for profile: "+profile.getName());
+                    }
+
+                    @Override
+                    public String getMessageName() {
+                        return "addAppServices";
+                    }
+                });
             }
             // notify check-in
             if (initFuture!=null)

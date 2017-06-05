@@ -31,4 +31,6 @@ public interface ProfileInformation extends ProfileBase {
     boolean isOnline();
 
     String getType();
+
+    boolean isPaired();
 }

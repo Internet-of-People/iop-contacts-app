@@ -1,8 +1,14 @@
 package com.example.furszy.contactsapp;
 
 import android.app.Application;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Handler;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -36,15 +42,22 @@ import iop.org.iop_sdk_android.core.profile_server.ProfileServerConfigurationsIm
 
 public class App extends Application implements RedtoothContext, PairingListener {
 
+    private static App instance;
     AnRedtooth anRedtooth;
+    private LocalBroadcastManager broadcastManager;
+    private NotificationManager notificationManager;
 
-    String profPubKey;
-
+    public static App getInstance() {
+        return instance;
+    }
 
     @Override
     public void onCreate() {
         super.onCreate();
+        instance = this;
         initLogging();
+        broadcastManager = LocalBroadcastManager.getInstance(this);
+        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         anRedtooth = AnRedtooth.init(this, new InitListener() {
             @Override
             public void onConnected() {
@@ -84,7 +97,7 @@ public class App extends Application implements RedtoothContext, PairingListener
     @Override
     public ProfileServerConfigurations createProfSerConfig() {
         ProfileServerConfigurationsImp conf = new ProfileServerConfigurationsImp(this,getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));
-        conf.setHost("192.169.1.154");
+        conf.setHost("192.168.0.102");
         return conf;
         }
 
@@ -144,22 +157,21 @@ public class App extends Application implements RedtoothContext, PairingListener
 
 
     @Override
-    public void onPairReceived(String requesteePubKey, String name) {
-        DialogBuilder dialogBuilder = new DialogBuilder(this)
-                .setTitle("Pairing received")
-                .setMessage("Do you want to pair with "+name+"?")
-                .twoButtons(new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                }, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Toast.makeText(App.this,"Accepting request",Toast.LENGTH_LONG).show();
-                        dialog.dismiss();
-                    }
-                });
-        dialogBuilder.show();
+    public void onPairReceived(String requesteePubKey, final String name) {
+        Intent intent = new Intent(BaseActivity.NOTIF_DIALOG_EVENT);
+        intent.putExtra(ProfileInformationActivity.INTENT_EXTRA_PROF_KEY,requesteePubKey);
+        intent.putExtra(ProfileInformationActivity.INTENT_EXTRA_PROF_NAME,name);
+        broadcastManager.sendBroadcast(intent);
+
+    }
+
+    @Override
+    public void onPairResponseReceived(String requesteePubKey, String responseDetail) {
+        Notification not = new Notification.Builder(this)
+                .setContentTitle("Pair response received")
+                .setContentText(responseDetail)
+                .setSmallIcon(R.drawable.profile)
+                .build();
+        notificationManager.notify(100,not);
     }
 }

@@ -52,7 +52,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/txt_empty"
-                    android:text="Loading topics.."
+                    android:text="No contacts.."
                     android:layout_marginTop="12dp"
                     android:textSize="18sp"
                     android:textColor="#fff"/>

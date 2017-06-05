@@ -1,38 +1,34 @@
-package com.example.furszy.contactsapp.community;
+package com.example.furszy.contactsapp.contacts;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.furszy.contactsapp.App;
+import com.example.furszy.contactsapp.BaseActivity;
 import com.example.furszy.contactsapp.ProfileInformationActivity;
 import com.example.furszy.contactsapp.R;
 import com.example.furszy.contactsapp.adapter.FermatListItemListeners;
 
-import org.bitcoinj.core.Coin;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+
 /**
  * Created by mati on 03/03/17.
  */
 
-public class ProfilesInformationActivity extends AppCompatActivity {
+public class ProfilesInformationActivity extends BaseActivity {
 
     private static final String TAG = "CommunityConActivity";
 
@@ -78,7 +74,7 @@ public class ProfilesInformationActivity extends AppCompatActivity {
             @Override
             public void onItemClickListener(ProfileInformation data, int position) {
                 Intent intent1 = new Intent(ProfilesInformationActivity.this, ProfileInformationActivity.class);
-                intent1.putExtra(ProfileInformationActivity.INTENT_EXTRA_PROF_KEY, data.getHexPublicKey());
+                intent1.putExtra(ProfileInformationActivity.INTENT_EXTRA_PROF_KEY, data.getPublicKey());
                 ProfilesInformationActivity.this.startActivity(intent1);
             }
 

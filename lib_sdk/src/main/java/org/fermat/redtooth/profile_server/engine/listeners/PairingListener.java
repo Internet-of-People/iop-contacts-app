@@ -10,4 +10,6 @@ public interface PairingListener {
 
     void onPairReceived(String requesteePubKey,String name);
 
+    void onPairResponseReceived(String requesteePubKey,String responseDetail);
+
 }

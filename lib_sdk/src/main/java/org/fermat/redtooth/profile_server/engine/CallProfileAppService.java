@@ -3,6 +3,7 @@ package org.fermat.redtooth.profile_server.engine;
 import com.google.protobuf.ByteString;
 
 import org.fermat.redtooth.core.services.BaseMsg;
+import org.fermat.redtooth.core.services.MsgWrapper;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
@@ -118,7 +119,7 @@ public class CallProfileAppService {
      * @throws CantSendMessageException
      */
 
-    public void sendMsg(String msg, final MsgListenerFuture<Boolean> sendListener) throws CantConnectException, CantSendMessageException {
+    public void sendMsgStr(String msg, final MsgListenerFuture<Boolean> sendListener) throws CantConnectException, CantSendMessageException {
         if (this.status!=CALL_AS_ESTABLISH) throw new IllegalStateException("Call is not ready to send messages");
         byte[] msgBytes = ByteString.copyFromUtf8(msg).toByteArray();
 
@@ -140,7 +141,17 @@ public class CallProfileAppService {
     }
 
     public void sendMsg(BaseMsg msg,final MsgListenerFuture<Boolean> sendListener) throws Exception {
-        sendMsg(msg.encode(),sendListener);
+        MsgWrapper msgWrapper = new MsgWrapper(msg,msg.getType());
+        wrapAndSend(msgWrapper,sendListener);
+    }
+
+    public void sendMsg(String type,final MsgListenerFuture<Boolean> sendListener) throws Exception {
+        MsgWrapper msgWrapper = new MsgWrapper(null,type);
+        wrapAndSend(msgWrapper,sendListener);
+    }
+
+    private void wrapAndSend(MsgWrapper msgWrapper,final MsgListenerFuture<Boolean> sendListener) throws Exception {
+        sendMsg(msgWrapper.encode(),sendListener);
     }
 
     public void sendMsg(byte[] msg, final MsgListenerFuture<Boolean> sendListener) throws CantConnectException, CantSendMessageException {

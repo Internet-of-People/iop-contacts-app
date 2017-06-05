@@ -1,9 +1,8 @@
 package org.fermat.redtooth.core;
 
-import org.fermat.redtooth.core.client.basic.DefaultConnectFuture;
 import org.fermat.redtooth.core.services.DefaultServices;
 import org.fermat.redtooth.core.services.pairing.PairingMsg;
-import org.fermat.redtooth.crypto.Crypto;
+import org.fermat.redtooth.core.services.pairing.PairingMsgTypes;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.crypto.CryptoWrapper;
 import org.fermat.redtooth.profile_server.CantConnectException;
@@ -12,9 +11,9 @@ import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.SslContextFactory;
 import org.fermat.redtooth.profile_server.engine.CallProfileAppService;
+import org.fermat.redtooth.profile_server.engine.EngineListener;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
-import org.fermat.redtooth.profile_server.engine.listeners.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
@@ -24,7 +23,6 @@ import org.fermat.redtooth.profiles_manager.ProfilesManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -81,7 +79,6 @@ public class Redtooth {
         profileServerConfigurations.setIsCreated(true);
         // save profile
         profileServerConfigurations.saveProfile(profile);
-        addConnection(profileServerConfigurations,keyEd25519);
         // todo: return profile connection pk
         return profile;
     }
@@ -95,33 +92,26 @@ public class Redtooth {
          managers.get(profilePublicKey).init();
     }
 
-    public void connectProfileSync(String profilePublicKey,byte[] ownerChallenge) throws Exception {
+    public void connectProfileSync(String profilePublicKey,EngineListener engineListener,byte[] ownerChallenge) throws Exception {
         if (!managers.containsKey(profilePublicKey)){
             ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
             KeyEd25519 keyEd25519 = (KeyEd25519) profileServerConfigurations.getUserKeys();
             if (keyEd25519==null) throw new IllegalStateException("no pubkey saved");
-            addConnection(profileServerConfigurations,keyEd25519);
+            addConnection(profileServerConfigurations,keyEd25519,engineListener);
         }
         MsgListenerFuture<Boolean> initFuture = new MsgListenerFuture<Boolean>();
-        managers.get(profilePublicKey).init(initFuture);
+        getProfileConnection(profilePublicKey).init(initFuture);
         initFuture.get();
     }
 
     public int updateProfile(Profile profile, ProfSerMsgListener msgListener) throws Exception {
-        if (!managers.containsKey(profile.getHexPublicKey())){
-            ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
-            KeyEd25519 keyEd25519 = (KeyEd25519) profileServerConfigurations.getUserKeys();
-            if (keyEd25519==null) throw new IllegalStateException("no pubkey saved");
-            MsgListenerFuture<Boolean> initFuture = new MsgListenerFuture<Boolean>();
-            addConnection(profileServerConfigurations,keyEd25519).init(initFuture);
-            initFuture.get();
-        }
-        return managers.get(profile.getHexPublicKey()).updateProfile(profile.getVersion(),profile.getName(),profile.getImg(),profile.getLatitude(),profile.getLongitude(),profile.getExtraData(),msgListener);
+        return getProfileConnection(profile.getHexPublicKey()).updateProfile(profile.getVersion(),profile.getName(),profile.getImg(),profile.getLatitude(),profile.getLongitude(),profile.getExtraData(),msgListener);
     }
 
-    private RedtoothProfileConnection addConnection(ProfileServerConfigurations profileServerConfigurations,KeyEd25519 keyEd25519){
+    private RedtoothProfileConnection addConnection(ProfileServerConfigurations profileServerConfigurations,KeyEd25519 keyEd25519,EngineListener profServerEngineListener){
         // profile connection
         RedtoothProfileConnection redtoothProfileConnection = new RedtoothProfileConnection(context,profileServerConfigurations,cryptoWrapper,sslContextFactory);
+        redtoothProfileConnection.setProfServerEngineListener(profServerEngineListener);
         // map the profile connection with his public key
         managers.put(keyEd25519.getPublicKeyHex(),redtoothProfileConnection);
         return redtoothProfileConnection;
@@ -224,10 +214,13 @@ public class Redtooth {
 
                 } catch (CantSendMessageException e) {
                     e.printStackTrace();
+                    listener.onMsgFail(messageId,400,e.getMessage());
                 } catch (CantConnectException e) {
                     e.printStackTrace();
+                    listener.onMsgFail(messageId,400,e.getMessage());
                 } catch (Exception e) {
                     e.printStackTrace();
+                    listener.onMsgFail(messageId,400,e.getMessage());
                 }
             }
 
@@ -237,8 +230,46 @@ public class Redtooth {
                 listener.onMsgFail(messageId,status,statusDetail);
             }
         });
-        connection.callProfileAppService(remotePubKeyHex, DefaultServices.PROFILE_PAIRING.getName(),true,callListener);
+        connection.callProfileAppService(remotePubKeyHex, DefaultServices.PROFILE_PAIRING.getName(),false,callListener);
+    }
 
+    public void acceptPairingRequest(String senderHexPublicKey, byte[] profileServerId, byte[] publicKey) {
+        try {
+            String remotePubKeyHex = CryptoBytes.toHexString(publicKey);
+            logger.info("acceptPairingRequest, remote: " + remotePubKeyHex);
+            final RedtoothProfileConnection connection = getProfileConnection(senderHexPublicKey);
+            CallProfileAppService call = connection.getActiveAppCallService(remotePubKeyHex);
+            final MsgListenerFuture<Boolean> future = new MsgListenerFuture();
+            //future.setListener(); -> todo: add future listener and save acceptPairing sent
+            if (call != null) {
+                call.sendMsg(PairingMsgTypes.PAIR_ACCEPT.getType(), future);
+            }else {
+                MsgListenerFuture<CallProfileAppService> callFuture = new MsgListenerFuture<>();
+                callFuture.setListener(new BaseMsgFuture.Listener<CallProfileAppService>() {
+                    @Override
+                    public void onAction(int messageId, CallProfileAppService call) {
+                        try {
+                            call.sendMsg(PairingMsgTypes.PAIR_ACCEPT.getType(), future);
+                        } catch (Exception e) {
+                            logger.error("call sendMsg error",e);
+                            future.onMsgFail(messageId,400,e.getMessage());
+                        }
+                    }
+
+                    @Override
+                    public void onFail(int messageId, int status, String statusDetail) {
+                        logger.error("call sendMsg fail",statusDetail);
+                        future.onMsgFail(messageId,status,statusDetail);
+                    }
+                });
+                connection.callProfileAppService(remotePubKeyHex,DefaultServices.PROFILE_PAIRING.getName(),true,callFuture);
+            }
+            // todo: here i have to add the pair request db and tick this as done. and save the profile with paired true.
+            profilesManager.updatePaired(publicKey, true);
+            // requestsDbManager.removeRequest(remotePubKeyHex);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -279,7 +310,4 @@ public class Redtooth {
         }
     }
 
-    public void requestProfileConnection(byte[] publicKey, byte[] remotePubKey) {
-
-    }
 }

@@ -2,11 +2,13 @@ package org.fermat.redtooth.core.services;
 
 import org.apache.http.MethodNotSupportedException;
 
+import java.io.Serializable;
+
 /**
  * Created by furszy on 6/4/17.
  */
 
-public class BaseMsg<T> {
+public abstract class BaseMsg<T> implements Serializable{
 
     public T decode(byte[] msg) throws Exception {
         throw new MethodNotSupportedException("method not implemented");
@@ -15,4 +17,6 @@ public class BaseMsg<T> {
     public byte[] encode() throws Exception {
         throw new MethodNotSupportedException("method not implemented");
     }
+
+    public abstract String getType();
 }

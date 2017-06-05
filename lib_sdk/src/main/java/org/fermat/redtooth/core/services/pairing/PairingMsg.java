@@ -35,4 +35,9 @@ public class PairingMsg extends BaseMsg<PairingMsg> implements Serializable {
         // lazy encode to test the entire flow first..
         return SerializationUtils.serialize(this);
     }
+
+    @Override
+    public String getType() {
+        return PairingMsgTypes.PAIR_REQUEST.getType();
+    }
 }

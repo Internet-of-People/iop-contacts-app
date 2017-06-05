@@ -1,19 +1,14 @@
-package com.example.furszy.contactsapp.community;
+package com.example.furszy.contactsapp.contacts;
 
 import android.app.Activity;
 import android.graphics.BitmapFactory;
-import android.text.format.DateUtils;
 import android.view.View;
 import com.example.furszy.contactsapp.R;
 import com.example.furszy.contactsapp.adapter.FermatAdapterImproved;
 import com.example.furszy.contactsapp.adapter.FermatListItemListeners;
-import com.squareup.picasso.Picasso;
 
-import org.bitcoinj.utils.BtcFormat;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileInformation;
-import java.util.Locale;
-import static org.bitcoinj.utils.BtcFormat.COIN_SCALE;
 
 /**
  * Created by mati on 03/03/17.

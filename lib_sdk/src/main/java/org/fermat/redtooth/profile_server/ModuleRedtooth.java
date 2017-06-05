@@ -43,6 +43,14 @@ public interface ModuleRedtooth {
      */
     void requestPairingProfile(byte[] pubKey, byte[] profileServerId, ProfSerMsgListener listener);
 
+    /**
+     * Accept a pairing request.
+     *
+     * @param profileServerId
+     * @param publicKey
+     */
+    void acceptPairingProfile(byte[] profileServerId, byte[] publicKey);
+
     boolean isIdentityCreated();
 
     void setPairListener(PairingListener pairListener);
@@ -50,6 +58,7 @@ public interface ModuleRedtooth {
     /* Search queries **/
 
     void getProfileInformation(String profPubKey, ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException;
+    void getProfileInformation(String profPubKey,boolean withImage ,ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException;
 
     void searchProfileByName(String name, ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener);
 
@@ -58,8 +67,6 @@ public interface ModuleRedtooth {
 
     SubsequentSearchMsgListenerFuture<List<IopProfileServer.ProfileQueryInformation>> searchSubsequentsProfiles(SearchProfilesQuery searchProfilesQuery);
 
-    void requestProfileConnection(byte[] pubKey);
-
     File getUserImageFile();
 
     Profile getProfile();
@@ -67,5 +74,4 @@ public interface ModuleRedtooth {
     List<ProfileInformation> getKnownProfiles();
 
     ProfileInformation getKnownProfile(byte[] pubKey);
-
 }

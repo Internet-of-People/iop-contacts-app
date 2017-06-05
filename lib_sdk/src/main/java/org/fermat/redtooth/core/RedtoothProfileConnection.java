@@ -463,5 +463,13 @@ public class RedtoothProfileConnection implements CallsListener {
         }
     }
 
+    public CallProfileAppService getActiveAppCallService(String remoteProfileKey){
+        for (CallProfileAppService callProfileAppService : openCall.values()) {
+            if (callProfileAppService.getRemotePubKey().equals(remoteProfileKey)){
+                return callProfileAppService;
+            }
+        }
+        return null;
+    }
 
 }

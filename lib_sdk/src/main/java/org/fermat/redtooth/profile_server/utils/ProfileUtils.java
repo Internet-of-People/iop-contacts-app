@@ -17,4 +17,36 @@ public class ProfileUtils {
         return "IoP:profile/"+profileBase.getHexPublicKey()+"/update?name="+profileBase.getName();
     }
 
+    /**
+     * Lazy split..
+     * @param uri
+     * @return
+     */
+    public static UriProfile fromUri(String uri){
+        String[] str = uri.split("/");
+        String name = str[2].substring(str[2].indexOf("=")+1);
+        UriProfile uriProfile = new UriProfile(name,str[1]);
+        return uriProfile;
+    }
+
+
+    public static class UriProfile{
+
+        String name;
+        String pubKey;
+
+        public UriProfile(String name, String pubKey) {
+            this.name = name;
+            this.pubKey = pubKey;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getPubKey() {
+            return pubKey;
+        }
+    }
+
 }

@@ -28,4 +28,6 @@ public interface ProfilesManager {
     List<ProfileInformation> listConnectedProfiles(byte[] pubKey);
 
     List<ProfileInformation> listAll();
+
+    void updatePaired(byte[] publicKey, boolean value);
 }

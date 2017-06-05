@@ -1,7 +1,6 @@
-package com.example.furszy.contactsapp.community;
+package com.example.furszy.contactsapp.contacts;
 
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.furszy.contactsapp.R;
