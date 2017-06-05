@@ -299,7 +299,8 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
     }
 
     public byte[] getMainServerNetworkId() {
-        return CryptoBytes.fromHexToBytes(getString(PREFS_NETWORK_ID,null));
+        String id = getString(PREFS_NETWORK_ID,null);
+        return id!=null?CryptoBytes.fromHexToBytes(id):null;
     }
 
     public void setMainServerNetworkId(byte[] networkId) {

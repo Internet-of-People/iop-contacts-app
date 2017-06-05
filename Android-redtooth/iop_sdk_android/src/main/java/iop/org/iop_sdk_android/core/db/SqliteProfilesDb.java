@@ -25,7 +25,7 @@ import iop.org.iop_sdk_android.core.profile_server.PrivateStorage;
 public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManager {
 
 
-    public static final int DATABASE_VERSION = 7;
+    public static final int DATABASE_VERSION = 8;
 
     public static final String DATABASE_NAME = "profiles";
     public static final String CONTACTS_TABLE_NAME = "contacts";
@@ -39,6 +39,7 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
     public static final String CONTACTS_COLUMN_EXTRA_DATA = "extra";
     public static final String CONTACTS_COLUMN_PUB_KEY = "pubKey";
     public static final String CONTACTS_COLUMN_UPDATE_TIMESTAMP = "up_time";
+    public static final String CONTACTS_COLUMN_PAIR = "pair";
 
 
     public static final int CONTACTS_POS_COLUMN_ID = 0;
@@ -51,6 +52,7 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
     public static final int CONTACTS_POS_COLUMN_EXTRA_DATA = 7;
     public static final int CONTACTS_POS_COLUMN_PUB_KEY = 8;
     public static final int CONTACTS_POS_COLUMN_UPDATE_TIMESTAMP = 9;
+    public static final int CONTACTS_POS_COLUMN_PAIR = 10;
 
     public SqliteProfilesDb(Context context) {
         super(context, DATABASE_NAME , null, DATABASE_VERSION);
@@ -71,7 +73,8 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
                         CONTACTS_COLUMN_LON + " INTEGER, "+
                         CONTACTS_COLUMN_EXTRA_DATA + " TEXT ,"+
                         CONTACTS_COLUMN_PUB_KEY + " TEXT ,"+
-                        CONTACTS_COLUMN_UPDATE_TIMESTAMP + " LONG"
+                        CONTACTS_COLUMN_UPDATE_TIMESTAMP + " LONG ,"+
+                        CONTACTS_COLUMN_PAIR + " INTEGER"
                 +")"
         );
     }
@@ -96,6 +99,7 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         contentValues.put(CONTACTS_COLUMN_VERSION, profile.getVersion());
         contentValues.put(CONTACTS_COLUMN_PUB_KEY, CryptoBytes.toHexString(profile.getPublicKey()));
         contentValues.put(CONTACTS_COLUMN_UPDATE_TIMESTAMP,profile.getLastUpdateTime());
+        contentValues.put(CONTACTS_COLUMN_PAIR,profile.isPaired());
         return contentValues;
     }
 
@@ -105,12 +109,14 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         String extraData = cursor.getString(CONTACTS_POS_COLUMN_EXTRA_DATA);
         String type = cursor.getString(CONTACTS_POS_COLUMN_TYPE);
         long timestamp = cursor.getLong(CONTACTS_POS_COLUMN_UPDATE_TIMESTAMP);
+        boolean isPaired = cursor.getInt(CONTACTS_POS_COLUMN_PAIR)==0?false:true;
         ProfileInformationImp profile = new ProfileInformationImp();
         profile.setVersion(new byte[]{0,0,1});
         profile.setName(name);
         profile.setType(type);
         profile.setPubKey(pubKey);
         profile.setUpdateTimestamp(timestamp);
+        profile.setIsPaired(isPaired);
         return profile;
     }
 
@@ -121,6 +127,7 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
     }
 
     public Cursor getData(byte[] pubKey) {
+        if (pubKey==null) throw new IllegalArgumentException("pubKey cannot be null");
         SQLiteDatabase db = this.getReadableDatabase();
         String pubKeyStr = CryptoBytes.toHexString(pubKey);
         Cursor res =  db.rawQuery( "select * from "+CONTACTS_TABLE_NAME+" where "+CONTACTS_COLUMN_PUB_KEY+"='"+pubKeyStr+"'", null );
@@ -136,8 +143,15 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
     public boolean updateContact (ProfileInformation profile) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = buildContent(profile);
-        //db.update(CONTACTS_TABLE_NAME, contentValues, CONTACTS_COLUMN_ID+" = ? ", new String[] { Integer.toString((int) profile.getId()) } );
+        db.update(CONTACTS_TABLE_NAME, contentValues, CONTACTS_COLUMN_PUB_KEY+" = ? ", new String[] { profile.getHexPublicKey() } );
         return true;
+    }
+
+    private void updateFieldByKey(byte[] publicKey, String column, boolean value) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(column,value);
+        db.update(CONTACTS_TABLE_NAME,contentValues,CONTACTS_COLUMN_PUB_KEY+"=?",new String[]{CryptoBytes.toHexString(publicKey)});
     }
 
     public Integer deleteContact (Integer id) {
@@ -166,6 +180,10 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         return getAllCotacts();
     }
 
+    @Override
+    public void updatePaired(byte[] publicKey, boolean value) {
+        updateFieldByKey(publicKey,CONTACTS_COLUMN_PAIR,value);
+    }
 
     @Override
     public long saveProfile(ProfileInformation profile) {

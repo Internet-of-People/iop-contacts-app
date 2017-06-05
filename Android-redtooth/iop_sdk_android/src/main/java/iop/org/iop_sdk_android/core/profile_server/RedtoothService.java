@@ -11,7 +11,9 @@ import org.fermat.redtooth.core.Redtooth;
 import org.fermat.redtooth.core.RedtoothContext;
 import org.fermat.redtooth.core.RedtoothProfileConnection;
 import org.fermat.redtooth.core.services.DefaultServices;
+import org.fermat.redtooth.core.services.MsgWrapper;
 import org.fermat.redtooth.core.services.pairing.PairingMsg;
+import org.fermat.redtooth.core.services.pairing.PairingMsgTypes;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
@@ -104,7 +106,7 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
 
     @Override
     public void connect(String pubKey) throws Exception {
-        redtooth.connectProfileSync(pubKey,null);
+        redtooth.connectProfileSync(pubKey,this,null);
     }
 
     @Override
@@ -156,6 +158,11 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     }
 
     @Override
+    public void acceptPairingProfile(byte[] profileServerId, byte[] publicKey) {
+        redtooth.acceptPairingRequest(profile.getHexPublicKey(),profileServerId,publicKey);
+    }
+
+    @Override
     public boolean isIdentityCreated() {
         return configurationsPreferences.isRegisteredInServer();
     }
@@ -171,6 +178,11 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     }
 
     @Override
+    public void getProfileInformation(String profPubKey, boolean withImage, ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException {
+        redtooth.searchAndGetProfile(profile.getHexPublicKey(),profPubKey,profileFuture);
+    }
+
+    @Override
     public void searchProfileByName(String name, ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener) {
         //redtoothProfileConnection.searchProfileByName(name,listener);
     }
@@ -182,11 +194,6 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     @Override
     public SubsequentSearchMsgListenerFuture<List<IopProfileServer.ProfileQueryInformation>> searchSubsequentsProfiles(SearchProfilesQuery searchProfilesQuery) {
         return null;//redtoothProfileConnection.searchSubsequentProfiles(searchProfilesQuery);
-    }
-
-    @Override
-    public void requestProfileConnection(byte[] remotePubKey) {
-        redtooth.requestProfileConnection(profile.getPublicKey(),remotePubKey);
     }
 
     @Override
@@ -243,11 +250,34 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
                             public void onMessage(byte[] msg) {
                                 try {
                                     logger.info("pair msg received");
-                                    PairingMsg pairingMsg = new PairingMsg().decode(msg);
-                                    if (pairingListener!=null){
-                                        pairingListener.onPairReceived(callProfileAppService.getRemotePubKey(),pairingMsg.getName());
-                                    }else {
-                                        logger.info("pairListener null, please add it if you want to receive pairs");
+                                    MsgWrapper msgWrapper = MsgWrapper.decode(msg);
+
+                                    PairingMsgTypes types = PairingMsgTypes.getByName(msgWrapper.getMsgType());
+                                    switch (types){
+                                        case PAIR_ACCEPT:
+                                            if (pairingListener!=null){
+                                                pairingListener.onPairResponseReceived(callProfileAppService.getRemotePubKey(),"Accepted");
+                                            }else {
+                                                logger.info("pairListener null, please add it if you want to receive pairs");
+                                            }
+                                            break;
+                                        case PAIR_REFUSE:
+                                            if (pairingListener!=null){
+                                                pairingListener.onPairResponseReceived(callProfileAppService.getRemotePubKey(),"Refused");
+                                            }else {
+                                                logger.info("pairListener null, please add it if you want to receive pairs");
+                                            }
+                                            break;
+                                        case PAIR_REQUEST:
+                                            PairingMsg pairingMsg = (PairingMsg) msgWrapper.getMsg();
+                                            if (pairingListener!=null){
+                                                pairingListener.onPairReceived(callProfileAppService.getRemotePubKey(),pairingMsg.getName());
+                                            }else {
+                                                logger.info("pairListener null, please add it if you want to receive pairs");
+                                            }
+                                            break;
+
+
                                     }
                                 } catch (Exception e) {
                                     e.printStackTrace();
