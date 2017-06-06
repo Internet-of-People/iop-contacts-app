@@ -276,7 +276,7 @@ public class RedtoothProfileConnection implements CallsListener {
             if (!tryWithoutGetInfo) {
                 callProfileAppService.setStatus(CallProfileAppService.Status.PENDING_AS_INFO);
                 // first if the app doesn't have the profileInformation including the app services i have to request it.
-                final MsgListenerFuture<IopProfileServer.ProfileInformation> getProfileInformationFuture = new MsgListenerFuture<>();
+                final MsgListenerFuture<IopProfileServer.GetProfileInformationResponse> getProfileInformationFuture = new MsgListenerFuture<>();
                 getProfileInformationFuture.setListener(new BaseMsgFuture.Listener<IopProfileServer.GetProfileInformationResponse>() {
                     @Override
                     public void onAction(int messageId, IopProfileServer.GetProfileInformationResponse getProfileInformationResponse) {

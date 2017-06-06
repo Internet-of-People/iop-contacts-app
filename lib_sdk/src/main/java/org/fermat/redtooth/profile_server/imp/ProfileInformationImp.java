@@ -8,11 +8,21 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.fermat.redtooth.profile_server.imp.ProfileInformationImp.PairStatus.NOT_PAIRED;
+
 /**
  * Created by furszy on 5/28/17.
  */
 
 public class ProfileInformationImp implements Serializable,ProfileInformation {
+
+    public enum  PairStatus{
+        PAIRED,
+        NOT_PAIRED,
+        BLOCKED,
+        WAITING_FOR_RESPONSE,
+        WAITING_FOR_MY_RESPONSE;
+    }
 
     private byte[] version;
     private byte[] pubKey;
@@ -31,7 +41,7 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
     private byte[] profileServerId;
     private boolean isOnline;
     private long updateTimestamp;
-    private boolean isPaired;
+    private PairStatus pairStatus = NOT_PAIRED;
 
 
     public ProfileInformationImp() {
@@ -74,7 +84,12 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
 
     @Override
     public boolean isPaired() {
-        return isPaired;
+        return pairStatus==PairStatus.PAIRED;
+    }
+
+    @Override
+    public PairStatus getPairStatus() {
+        return pairStatus;
     }
 
     public byte[] getImg() {
@@ -182,7 +197,7 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
         return CryptoBytes.toHexString(pubKey);
     }
 
-    public void setIsPaired(boolean isPaired) {
-        this.isPaired = isPaired;
+    public void setPairStatus(PairStatus pairStatus) {
+        this.pairStatus = pairStatus;
     }
 }

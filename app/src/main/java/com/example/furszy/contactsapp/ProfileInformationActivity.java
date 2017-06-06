@@ -21,6 +21,9 @@ import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
+import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
+import org.fermat.redtooth.profile_server.utils.ProfileUtils;
+import org.fermat.redtooth.profiles_manager.PairingRequest;
 
 import java.util.IllegalFormatCodePointException;
 import java.util.List;
@@ -29,6 +32,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static org.fermat.redtooth.profile_server.imp.ProfileInformationImp.PairStatus.NOT_PAIRED;
 
 /**
  * Created by furszy on 5/27/17.
@@ -91,38 +96,65 @@ public class ProfileInformationActivity extends BaseActivity {
         btn_connect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                showLoading();
                 executor.submit(new Runnable() {
                     @Override
                     public void run() {
-                        if (!profileInformation.isPaired()) {
-                            MsgListenerFuture listener = new MsgListenerFuture();
-                            listener.setListener(new BaseMsgFuture.Listener<Boolean>() {
-                                @Override
-                                public void onAction(int messageId, Boolean object) {
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(ProfileInformationActivity.this, "Pairing sent!", Toast.LENGTH_LONG).show();
-                                        }
-                                    });
-                                }
+                        try {
+                            if (profileInformation.getPairStatus()==NOT_PAIRED) {
+                                MsgListenerFuture listener = new MsgListenerFuture();
+                                listener.setListener(new BaseMsgFuture.Listener<Integer>() {
+                                    @Override
+                                    public void onAction(int messageId, Integer object) {
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(ProfileInformationActivity.this, "Pairing sent!", Toast.LENGTH_LONG).show();
+                                                hideLoading();
+                                            }
+                                        });
+                                    }
 
-                                @Override
-                                public void onFail(int messageId, int status, final String statusDetail) {
+                                    @Override
+                                    public void onFail(int messageId, int status, final String statusDetail) {
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(ProfileInformationActivity.this, "Pairing fail, detail: " + statusDetail, Toast.LENGTH_LONG).show();
+                                                hideLoading();
+                                            }
+                                        });
+                                    }
+                                });
+                                module.requestPairingProfile(profileInformation.getPublicKey(), profileInformation.getProfileServerId(), listener);
+                            } else if (profileInformation.getPairStatus() == ProfileInformationImp.PairStatus.WAITING_FOR_MY_RESPONSE){
+                                // if is not paired and the search is true i can accept the pairing invitation
+                                if (searchForProfile) {
+                                    module.acceptPairingProfile(profileInformation.getProfileServerId(), profileInformation.getPublicKey());
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            Toast.makeText(ProfileInformationActivity.this, "Pairing fail, detail: " + statusDetail, Toast.LENGTH_LONG).show();
+                                            Toast.makeText(ProfileInformationActivity.this, "Sending acceptance", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                }else {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            hideLoading();
                                         }
                                     });
                                 }
-                            });
-                            module.requestPairingProfile(profileInformation.getPublicKey(), profileInformation.getProfileServerId(), listener);
-                        }else {
-                            // if is not paired and the search is true i can accept the pairing invitation
-                            if (searchForProfile){
-                                module.acceptPairingProfile(profileInformation.getProfileServerId(),profileInformation.getPublicKey());
+                            }else {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(ProfileInformationActivity.this,"Status not implemented yet.. "+profileInformation.getPairStatus().name(),Toast.LENGTH_LONG).show();
+                                    }
+                                });
                             }
+                        }catch (Exception e){
+                            e.printStackTrace();
                         }
                     }
                 });
@@ -160,21 +192,39 @@ public class ProfileInformationActivity extends BaseActivity {
 
                     try {
                         MsgListenerFuture<ProfileInformation> msgListenerFuture = new MsgListenerFuture();
-                        anRedtooth.getProfileInformation(CryptoBytes.toHexString(keyToSearch),msgListenerFuture);
-                        profileInformation = msgListenerFuture.get();
-
-                        runOnUiThread(new Runnable() {
+                        msgListenerFuture.setListener(new BaseMsgFuture.Listener<ProfileInformation>() {
                             @Override
-                            public void run() {
-                                txt_name.setText(profileInformation.getName());
-                                // todo: show profile img..
-                                hideLoading();
+                            public void onAction(int messageId, final ProfileInformation object) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        profileInformation = object;
+                                        // now check if i have a request for this profile
+                                        PairingRequest pairingRequest = anRedtooth.getProfilePairingRequest(profileInformation.getHexPublicKey());
+                                        if (pairingRequest!=null){
+                                            ProfileInformationImp.PairStatus pairStatus = ProfileUtils.PairingRequestToPairStatus(anRedtooth.getProfile(),pairingRequest);
+                                            profileInformation.setPairStatus(pairStatus);
+                                        }
+                                        txt_name.setText(profileInformation.getName());
+                                        hideLoading();
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onFail(int messageId, int status, String statusDetail) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(ProfileInformationActivity.this,"Search profile on network fail\nTry again later",Toast.LENGTH_LONG).show();
+                                        hideLoading();
+                                        onBackPressed();
+                                    }
+                                });
                             }
                         });
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
+                        anRedtooth.getProfileInformation(CryptoBytes.toHexString(keyToSearch),msgListenerFuture);
+
                     } catch (CantSendMessageException e) {
                         e.printStackTrace();
                     } catch (CantConnectException e) {

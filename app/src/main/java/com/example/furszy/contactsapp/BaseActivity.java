@@ -37,8 +37,19 @@ public class BaseActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         this.localBroadcastManager = LocalBroadcastManager.getInstance(this);
         this.notifReceiver = new NotifReceiver();
-        localBroadcastManager.registerReceiver(notifReceiver, new IntentFilter(NOTIF_DIALOG_EVENT));
         anRedtooth = App.getInstance().anRedtooth.getRedtooth();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        localBroadcastManager.registerReceiver(notifReceiver, new IntentFilter(NOTIF_DIALOG_EVENT));
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        localBroadcastManager.unregisterReceiver(notifReceiver);
     }
 
     private class NotifReceiver extends BroadcastReceiver{

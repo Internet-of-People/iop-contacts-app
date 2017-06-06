@@ -19,6 +19,8 @@ import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
+import org.fermat.redtooth.profiles_manager.PairingRequest;
+import org.fermat.redtooth.profiles_manager.PairingRequestsManager;
 import org.fermat.redtooth.profiles_manager.ProfilesManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,19 +43,22 @@ public class Redtooth {
     private ConcurrentMap<String,RedtoothProfileConnection> managers;
     /** Enviroment context */
     private RedtoothContext context;
-    /** Profiles manager  */
+    /** Profiles manager db */
     private ProfilesManager profilesManager;
+    /** Pairing request manager db  */
+    private PairingRequestsManager pairingRequestsManager;
     /** Crypto platform implementation */
     private CryptoWrapper cryptoWrapper;
     /** Socket factory */
     private SslContextFactory sslContextFactory;
 
-    public Redtooth(RedtoothContext contextWrapper, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory,ProfilesManager profilesManager) {
+    public Redtooth(RedtoothContext contextWrapper, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, ProfilesManager profilesManager, PairingRequestsManager pairingRequestsManager) {
         this.context = contextWrapper;
         this.cryptoWrapper = cryptoWrapper;
         this.sslContextFactory = sslContextFactory;
         this.managers = new ConcurrentHashMap<>();
         this.profilesManager = profilesManager;
+        this.pairingRequestsManager = pairingRequestsManager;
     }
 
 
@@ -177,16 +182,12 @@ public class Redtooth {
     /**
      * Send a request pair notification to a remote profile
      *
-     * @param senderHexPublicKey
-     * @param senderName
-     * @param pubKey
-     * @param profileServerId
+     * @param pairingRequest
      * @param listener
      */
-    public void requestPairingProfile(String senderHexPublicKey, final String senderName , byte[] pubKey, byte[] profileServerId, final ProfSerMsgListener listener) {
-        String remotePubKeyHex = CryptoBytes.toHexString(pubKey);
-        logger.info("requestPairingProfile, remote: "+remotePubKeyHex);
-        final RedtoothProfileConnection connection = getProfileConnection(senderHexPublicKey);
+    public void requestPairingProfile(final PairingRequest pairingRequest, final ProfSerMsgListener<Integer> listener) {
+        logger.info("requestPairingProfile, remote: "+pairingRequest.getRemotePubKey());
+        final RedtoothProfileConnection connection = getProfileConnection(pairingRequest.getSenderPubKey());
         // first the call
         MsgListenerFuture<CallProfileAppService> callListener = new MsgListenerFuture();
         callListener.setListener(new BaseMsgFuture.Listener<CallProfileAppService>() {
@@ -200,7 +201,8 @@ public class Redtooth {
                         @Override
                         public void onAction(int messageId, Boolean res) {
                             logger.info("pairing msg sent, remote: " + call.getRemotePubKey());
-                            listener.onMessageReceive(messageId,res);
+                            int pairingRequestId = pairingRequestsManager.savePairingRequest(pairingRequest);
+                            listener.onMessageReceive(messageId,pairingRequestId);
                         }
 
                         @Override
@@ -209,7 +211,7 @@ public class Redtooth {
                             listener.onMsgFail(messageId,status,statusDetail);
                         }
                     });
-                    PairingMsg pairingMsg = new PairingMsg(senderName);
+                    PairingMsg pairingMsg = new PairingMsg(pairingRequest.getSenderName());
                     call.sendMsg(pairingMsg, pairingMsgFuture);
 
                 } catch (CantSendMessageException e) {
@@ -230,9 +232,16 @@ public class Redtooth {
                 listener.onMsgFail(messageId,status,statusDetail);
             }
         });
-        connection.callProfileAppService(remotePubKeyHex, DefaultServices.PROFILE_PAIRING.getName(),false,callListener);
+        connection.callProfileAppService(pairingRequest.getRemotePubKey(), DefaultServices.PROFILE_PAIRING.getName(),false,callListener);
     }
 
+    /**
+     * Send a pair acceptance
+     *
+     * @param senderHexPublicKey
+     * @param profileServerId
+     * @param publicKey
+     */
     public void acceptPairingRequest(String senderHexPublicKey, byte[] profileServerId, byte[] publicKey) {
         try {
             String remotePubKeyHex = CryptoBytes.toHexString(publicKey);
@@ -265,7 +274,8 @@ public class Redtooth {
                 connection.callProfileAppService(remotePubKeyHex,DefaultServices.PROFILE_PAIRING.getName(),true,callFuture);
             }
             // todo: here i have to add the pair request db and tick this as done. and save the profile with paired true.
-            profilesManager.updatePaired(publicKey, true);
+            profilesManager.updatePaired(publicKey, ProfileInformationImp.PairStatus.PAIRED);
+            pairingRequestsManager.updateStatus(remotePubKeyHex,senderHexPublicKey,PairingMsgTypes.PAIR_ACCEPT);
             // requestsDbManager.removeRequest(remotePubKeyHex);
         } catch (Exception e) {
             e.printStackTrace();

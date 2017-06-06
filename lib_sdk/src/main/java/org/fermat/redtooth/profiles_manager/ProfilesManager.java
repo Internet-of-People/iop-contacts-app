@@ -1,6 +1,7 @@
 package org.fermat.redtooth.profiles_manager;
 
 import org.fermat.redtooth.profile_server.ProfileInformation;
+import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.model.Profile;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.List;
  */
 
 public interface ProfilesManager {
+
 
 
     long saveProfile(ProfileInformation profile);
@@ -29,5 +31,5 @@ public interface ProfilesManager {
 
     List<ProfileInformation> listAll();
 
-    void updatePaired(byte[] publicKey, boolean value);
+    void updatePaired(byte[] publicKey, ProfileInformationImp.PairStatus value);
 }

@@ -11,6 +11,7 @@ import org.fermat.redtooth.profile_server.engine.listeners.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
+import org.fermat.redtooth.profiles_manager.PairingRequest;
 
 /**
  * Created by mati on 22/11/16.
@@ -41,7 +42,7 @@ public interface ModuleRedtooth {
      * @param profileServerId
      * @param listener
      */
-    void requestPairingProfile(byte[] pubKey, byte[] profileServerId, ProfSerMsgListener listener);
+    void requestPairingProfile(byte[] pubKey, byte[] profileServerId, ProfSerMsgListener<Integer> listener);
 
     /**
      * Accept a pairing request.
@@ -74,4 +75,6 @@ public interface ModuleRedtooth {
     List<ProfileInformation> getKnownProfiles();
 
     ProfileInformation getKnownProfile(byte[] pubKey);
+
+    PairingRequest getProfilePairingRequest(String hexPublicKey);
 }

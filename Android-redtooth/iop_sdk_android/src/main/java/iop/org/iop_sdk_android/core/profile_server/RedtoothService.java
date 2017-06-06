@@ -14,6 +14,8 @@ import org.fermat.redtooth.core.services.DefaultServices;
 import org.fermat.redtooth.core.services.MsgWrapper;
 import org.fermat.redtooth.core.services.pairing.PairingMsg;
 import org.fermat.redtooth.core.services.pairing.PairingMsgTypes;
+import org.fermat.redtooth.crypto.Crypto;
+import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
@@ -29,9 +31,11 @@ import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SubsequentSearchMsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
+import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
+import org.fermat.redtooth.profiles_manager.PairingRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +47,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import iop.org.iop_sdk_android.core.crypto.CryptoWrapperAndroid;
+import iop.org.iop_sdk_android.core.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
 
 
@@ -66,6 +71,9 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     private Profile profile;
 
     private PairingListener pairingListener;
+
+    private SqlitePairingRequestDb pairingRequestDb;
+    private SqliteProfilesDb profilesDb;
 
     public class ProfServerBinder extends Binder {
         public RedtoothService getService() {
@@ -92,7 +100,9 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
             if (keyEd25519!=null)
                 profile = new Profile(configurationsPreferences.getProfileVersion(),configurationsPreferences.getUsername(),configurationsPreferences.getProfileType(),(KeyEd25519) configurationsPreferences.getUserKeys());
             executor = Executors.newFixedThreadPool(3);
-            redtooth = new Redtooth(application,new CryptoWrapperAndroid(),new SslContextFactory(this),new SqliteProfilesDb(this));//configurationsPreferences,new CryptoWrapperAndroid(),new SslContextFactory(this));
+            pairingRequestDb = new SqlitePairingRequestDb(this);
+            profilesDb = new SqliteProfilesDb(this);
+            redtooth = new Redtooth(application,new CryptoWrapperAndroid(),new SslContextFactory(this),profilesDb,pairingRequestDb);//configurationsPreferences,new CryptoWrapperAndroid(),new SslContextFactory(this));
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -153,8 +163,10 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     }
 
     @Override
-    public void requestPairingProfile(byte[] pubKey, byte[] profileServerId, ProfSerMsgListener listener) {
-        redtooth.requestPairingProfile(profile.getHexPublicKey(),profile.getName(),pubKey,profileServerId,listener);
+    public void requestPairingProfile(byte[] pubKey, byte[] profileServerId, ProfSerMsgListener<Integer> listener) {
+        // String senderPubKey, String remotePubKey, String remoteServerId, String senderName,long timestamp
+        PairingRequest pairingRequest = PairingRequest.buildPairingRequest(profile.getHexPublicKey(),CryptoBytes.toHexString(pubKey),null,profile.getName());
+        redtooth.requestPairingProfile(pairingRequest,listener);
     }
 
     @Override
@@ -225,6 +237,11 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     }
 
     @Override
+    public PairingRequest getProfilePairingRequest(String hexPublicKey) {
+        return pairingRequestDb.getPairingRequest(profile.getHexPublicKey(),hexPublicKey);
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG,"onStartCommand");
         return super.onStartCommand(intent, flags, startId);
@@ -255,6 +272,9 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
                                     PairingMsgTypes types = PairingMsgTypes.getByName(msgWrapper.getMsgType());
                                     switch (types){
                                         case PAIR_ACCEPT:
+                                            // update pair request -> todo: this should be in another place..
+                                            pairingRequestDb.updateStatus(profile.getHexPublicKey(),callProfileAppService.getRemotePubKey(),PairingMsgTypes.PAIR_ACCEPT);
+                                            profilesDb.updatePaired(profile.getPublicKey(), ProfileInformationImp.PairStatus.PAIRED);
                                             if (pairingListener!=null){
                                                 pairingListener.onPairResponseReceived(callProfileAppService.getRemotePubKey(),"Accepted");
                                             }else {
@@ -262,6 +282,8 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
                                             }
                                             break;
                                         case PAIR_REFUSE:
+                                            // update pair request -> todo: this should be in another place..
+                                            pairingRequestDb.updateStatus(profile.getHexPublicKey(),callProfileAppService.getRemotePubKey(),PairingMsgTypes.PAIR_REFUSE);
                                             if (pairingListener!=null){
                                                 pairingListener.onPairResponseReceived(callProfileAppService.getRemotePubKey(),"Refused");
                                             }else {
@@ -270,6 +292,10 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
                                             break;
                                         case PAIR_REQUEST:
                                             PairingMsg pairingMsg = (PairingMsg) msgWrapper.getMsg();
+                                            // save pair request -> todo: this should be in another place..
+                                            PairingRequest pairingRequest = PairingRequest.buildPairingRequest(callProfileAppService.getRemotePubKey(),profile.getHexPublicKey(),profile.getNetworkIdHex(),pairingMsg.getName());
+                                            pairingRequestDb.saveIfNotExistPairingRequest(pairingRequest);
+                                            profilesDb.updatePaired(CryptoBytes.fromHexToBytes(pairingRequest.getSenderPubKey()), ProfileInformationImp.PairStatus.WAITING_FOR_MY_RESPONSE);
                                             if (pairingListener!=null){
                                                 pairingListener.onPairReceived(callProfileAppService.getRemotePubKey(),pairingMsg.getName());
                                             }else {

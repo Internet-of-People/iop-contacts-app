@@ -1,5 +1,7 @@
 package org.fermat.redtooth.profile_server;
 
+import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
+
 import java.util.Set;
 
 /**
@@ -33,4 +35,8 @@ public interface ProfileInformation extends ProfileBase {
     String getType();
 
     boolean isPaired();
+
+    ProfileInformationImp.PairStatus getPairStatus();
+
+    void setPairStatus(ProfileInformationImp.PairStatus pairStatus);
 }

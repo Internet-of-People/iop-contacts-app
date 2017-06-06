@@ -1,7 +1,10 @@
 package org.fermat.redtooth.profile_server.utils;
 
+import org.fermat.redtooth.core.services.pairing.PairingMsgTypes;
 import org.fermat.redtooth.profile_server.ProfileBase;
 import org.fermat.redtooth.profile_server.ProfileInformation;
+import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
+import org.fermat.redtooth.profiles_manager.PairingRequest;
 
 /**
  * Created by mati on 01/06/17.
@@ -27,6 +30,21 @@ public class ProfileUtils {
         String name = str[2].substring(str[2].indexOf("=")+1);
         UriProfile uriProfile = new UriProfile(name,str[1]);
         return uriProfile;
+    }
+
+    public static ProfileInformationImp.PairStatus PairingRequestToPairStatus(ProfileBase owner,PairingRequest pairingRequest) {
+        ProfileInformationImp.PairStatus pairStatus = null;
+        switch (pairingRequest.getStatus()){
+            case PAIR_REFUSE:
+                break;
+            case PAIR_ACCEPT:
+                pairStatus = ProfileInformationImp.PairStatus.PAIRED;
+                break;
+            case PAIR_REQUEST:
+                pairStatus = owner.getHexPublicKey().equals(pairingRequest.getSenderPubKey())? ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE: ProfileInformationImp.PairStatus.WAITING_FOR_MY_RESPONSE;
+                break;
+        }
+        return pairStatus;
     }
 
 

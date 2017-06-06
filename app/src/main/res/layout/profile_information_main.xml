@@ -81,6 +81,7 @@
         <ProgressBar
             android:layout_width="75dp"
             android:layout_height="75dp"
+            android:layout_gravity="center"
             android:id="@+id/progress_bar" />
 
         </LinearLayout>

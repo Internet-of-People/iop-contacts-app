@@ -25,7 +25,7 @@ import iop.org.iop_sdk_android.core.profile_server.PrivateStorage;
 public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManager {
 
 
-    public static final int DATABASE_VERSION = 8;
+    public static final int DATABASE_VERSION = 9;
 
     public static final String DATABASE_NAME = "profiles";
     public static final String CONTACTS_TABLE_NAME = "contacts";
@@ -39,7 +39,7 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
     public static final String CONTACTS_COLUMN_EXTRA_DATA = "extra";
     public static final String CONTACTS_COLUMN_PUB_KEY = "pubKey";
     public static final String CONTACTS_COLUMN_UPDATE_TIMESTAMP = "up_time";
-    public static final String CONTACTS_COLUMN_PAIR = "pair";
+    public static final String CONTACTS_COLUMN_PAIR = "pair_status";
 
 
     public static final int CONTACTS_POS_COLUMN_ID = 0;
@@ -74,7 +74,7 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
                         CONTACTS_COLUMN_EXTRA_DATA + " TEXT ,"+
                         CONTACTS_COLUMN_PUB_KEY + " TEXT ,"+
                         CONTACTS_COLUMN_UPDATE_TIMESTAMP + " LONG ,"+
-                        CONTACTS_COLUMN_PAIR + " INTEGER"
+                        CONTACTS_COLUMN_PAIR + " TEXT "
                 +")"
         );
     }
@@ -99,7 +99,7 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         contentValues.put(CONTACTS_COLUMN_VERSION, profile.getVersion());
         contentValues.put(CONTACTS_COLUMN_PUB_KEY, CryptoBytes.toHexString(profile.getPublicKey()));
         contentValues.put(CONTACTS_COLUMN_UPDATE_TIMESTAMP,profile.getLastUpdateTime());
-        contentValues.put(CONTACTS_COLUMN_PAIR,profile.isPaired());
+        contentValues.put(CONTACTS_COLUMN_PAIR,profile.getPairStatus().name());
         return contentValues;
     }
 
@@ -109,14 +109,14 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         String extraData = cursor.getString(CONTACTS_POS_COLUMN_EXTRA_DATA);
         String type = cursor.getString(CONTACTS_POS_COLUMN_TYPE);
         long timestamp = cursor.getLong(CONTACTS_POS_COLUMN_UPDATE_TIMESTAMP);
-        boolean isPaired = cursor.getInt(CONTACTS_POS_COLUMN_PAIR)==0?false:true;
+        ProfileInformationImp.PairStatus pairStatus = ProfileInformationImp.PairStatus.valueOf(cursor.getString(CONTACTS_POS_COLUMN_PAIR));
         ProfileInformationImp profile = new ProfileInformationImp();
         profile.setVersion(new byte[]{0,0,1});
         profile.setName(name);
         profile.setType(type);
         profile.setPubKey(pubKey);
         profile.setUpdateTimestamp(timestamp);
-        profile.setIsPaired(isPaired);
+        profile.setPairStatus(pairStatus);
         return profile;
     }
 
@@ -154,6 +154,13 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         db.update(CONTACTS_TABLE_NAME,contentValues,CONTACTS_COLUMN_PUB_KEY+"=?",new String[]{CryptoBytes.toHexString(publicKey)});
     }
 
+    private void updateFieldByKey(byte[] publicKey, String column, String value) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(column,value);
+        db.update(CONTACTS_TABLE_NAME,contentValues,CONTACTS_COLUMN_PUB_KEY+"=?",new String[]{CryptoBytes.toHexString(publicKey)});
+    }
+
     public Integer deleteContact (Integer id) {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete(CONTACTS_TABLE_NAME,
@@ -181,8 +188,8 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
     }
 
     @Override
-    public void updatePaired(byte[] publicKey, boolean value) {
-        updateFieldByKey(publicKey,CONTACTS_COLUMN_PAIR,value);
+    public void updatePaired(byte[] publicKey, ProfileInformationImp.PairStatus value) {
+        updateFieldByKey(publicKey,CONTACTS_COLUMN_PAIR,value.name());
     }
 
     @Override

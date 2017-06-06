@@ -77,7 +77,7 @@ public class BaseMsgFuture<O> implements Future<O> {
         return statusDetail;
     }
 
-    public void setListener(Listener listener) {
+    public void setListener(Listener<O> listener) {
         this.listener = listener;
     }
 
