@@ -178,7 +178,7 @@ public class ProfSerConnectionManager {
 
         try {
             boolean result = connectToPort(portType,port,null);
-            if (!result) throw new Exception("Something happen with the connection");
+            if (!result) throw new Exception("Cant connect to: "+portType.name()+", port number: "+port);
             ProfileServerSocket profileServerSocket = serverSockets.get(portType);
             profileServerSocket.write(message);
 

@@ -159,8 +159,13 @@ public class ProfSerEngine {
         executor.submit(new Runnable() {
             @Override
             public void run() {
-                ProfSerConnectionEngine connectionEngine = new ProfSerConnectionEngine(ProfSerEngine.this,initFuture);
-                connectionEngine.engine();
+                try {
+                    ProfSerConnectionEngine connectionEngine = new ProfSerConnectionEngine(ProfSerEngine.this, initFuture);
+                    connectionEngine.engine();
+                }catch (Exception e){
+                    LOG.error("Connection engine fail",e);
+                    initFuture.onMsgFail(0,400,e.getMessage());
+                }
             }
         });
     }

@@ -77,4 +77,6 @@ public interface ModuleRedtooth {
     ProfileInformation getKnownProfile(byte[] pubKey);
 
     PairingRequest getProfilePairingRequest(String hexPublicKey);
+
+    List<PairingRequest> getPairingRequests();
 }

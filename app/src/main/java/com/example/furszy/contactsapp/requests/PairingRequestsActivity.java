@@ -1,6 +1,5 @@
-package com.example.furszy.contactsapp.contacts;
+package com.example.furszy.contactsapp.requests;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,12 +11,11 @@ import android.widget.TextView;
 
 import com.example.furszy.contactsapp.App;
 import com.example.furszy.contactsapp.BaseActivity;
-import com.example.furszy.contactsapp.ProfileInformationActivity;
 import com.example.furszy.contactsapp.R;
 import com.example.furszy.contactsapp.adapter.FermatListItemListeners;
 
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
-import org.fermat.redtooth.profile_server.ProfileInformation;
+import org.fermat.redtooth.profiles_manager.PairingRequest;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -27,18 +25,18 @@ import java.util.concurrent.Executors;
  * Created by mati on 03/03/17.
  */
 
-public class ProfilesInformationActivity extends BaseActivity {
+public class PairingRequestsActivity extends BaseActivity {
 
-    private static final String TAG = "ProfilesActivity";
+    private static final String TAG = "PairingRequestsActivity";
 
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
-    private ProfileAdapter adapter;
+    private RequestsAdapter adapter;
     private ProgressBar loading_bar;
     private TextView txt_empty;
     private View container_empty_screen;
 
-    private List<ProfileInformation> profiles;
+    private List<PairingRequest> requests;
 
     private Handler handler = new Handler();
 
@@ -49,7 +47,7 @@ public class ProfilesInformationActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstance) {
         super.onCreate(savedInstance);
-        setTitle("Profiles");
+        setTitle("Pairing requests");
 
         module = ((App)getApplication()).getAnRedtooth().getRedtooth();
 
@@ -59,6 +57,7 @@ public class ProfilesInformationActivity extends BaseActivity {
         container_empty_screen = findViewById(R.id.container_empty_screen);
         loading_bar = (ProgressBar) findViewById(R.id.loading_bar);
         txt_empty = (TextView) findViewById(R.id.txt_empty);
+        txt_empty.setText("No requests yet");
 
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
@@ -69,16 +68,16 @@ public class ProfilesInformationActivity extends BaseActivity {
         recyclerView.setLayoutManager(layoutManager);
 
         // specify an adapter (see also next example)
-        adapter = new ProfileAdapter(this, module,new FermatListItemListeners<ProfileInformation>() {
+        adapter = new RequestsAdapter(this, module,new FermatListItemListeners<PairingRequest>() {
             @Override
-            public void onItemClickListener(ProfileInformation data, int position) {
-                Intent intent1 = new Intent(ProfilesInformationActivity.this, ProfileInformationActivity.class);
-                intent1.putExtra(ProfileInformationActivity.INTENT_EXTRA_PROF_KEY, data.getPublicKey());
-                ProfilesInformationActivity.this.startActivity(intent1);
+            public void onItemClickListener(PairingRequest data, int position) {
+                //Intent intent1 = new Intent(PairingRequestsActivity.this, ProfileInformationActivity.class);
+                //intent1.putExtra(ProfileInformationActivity.INTENT_EXTRA_PROF_KEY, data.getPublicKey());
+                //PairingRequestsActivity.this.startActivity(intent1);
             }
 
             @Override
-            public void onLongItemClickListener(ProfileInformation data, int position) {
+            public void onLongItemClickListener(PairingRequest data, int position) {
 
             }
         });
@@ -94,7 +93,7 @@ public class ProfilesInformationActivity extends BaseActivity {
     }
 
     private void updateView() {
-        if (!profiles.isEmpty()) {
+        if (!requests.isEmpty()) {
             hideEmptyScreen();
         } else
             showEmptyScreen();
@@ -123,12 +122,12 @@ public class ProfilesInformationActivity extends BaseActivity {
         public void run() {
             boolean res = false;
             try {
-                profiles = module.getKnownProfiles();
+                requests = module.getPairingRequests();
                 res = true;
             } catch (Exception e){
                 e.printStackTrace();
                 res = false;
-                Log.e(TAG,"CantGetProfileException: "+e.getMessage());
+                Log.e(TAG,"CanGetProfileException: "+e.getMessage());
             }
 
             final boolean finalRes = res;
@@ -136,12 +135,12 @@ public class ProfilesInformationActivity extends BaseActivity {
                 @Override
                 public void run() {
                     if (finalRes) {
-                        if (!profiles.isEmpty()) {
+                        if (!requests.isEmpty()) {
                             hideEmptyScreen();
-                            adapter.changeDataSet(profiles);
+                            adapter.changeDataSet(requests);
                         } else {
                             showEmptyScreen();
-                            txt_empty.setText("No profiles yet..");
+                            txt_empty.setText("No requests yet..");
                         }
                     }
                 }

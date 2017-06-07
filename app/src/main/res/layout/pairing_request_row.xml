@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/degradado_black"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:layout_height="60dp">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="38.4dp"
+            android:layout_height="38.4dp"
+            android:id="@+id/img_profile"
+            android:layout_centerVertical="true"
+            android:src="@drawable/profile"
+            app:civ_border_color="#fff"
+            app:civ_border_width="1dp"
+            />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_toRightOf="@+id/img_profile"
+            android:orientation="vertical"
+            android:gravity="left"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/txt_name"
+                tools:text="Floyd Frazier"
+                android:layout_centerVertical="true"
+                android:textSize="15sp"
+                android:gravity="center_vertical"
+                android:lines="1"
+                android:paddingTop="10dp"
+                android:textColor="#fff"
+                android:paddingLeft="12dp"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/txt_status"
+                tools:text="Waiting for response"
+                android:layout_centerVertical="true"
+                android:paddingBottom="9dp"
+                android:gravity="center_vertical"
+                android:lines="1"
+                android:paddingTop="3dp"
+                android:textSize="12sp"
+                android:textColor="#fff"
+                android:paddingLeft="12dp"
+                />
+
+        </LinearLayout>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txt_timestamp"
+            tools:text="1 of july"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:paddingBottom="9dp"
+            android:lines="1"
+            android:paddingTop="3dp"
+            android:textSize="12sp"
+            android:textColor="#fff"
+            />
+
+
+
+    </RelativeLayout>
+
+
+</LinearLayout>

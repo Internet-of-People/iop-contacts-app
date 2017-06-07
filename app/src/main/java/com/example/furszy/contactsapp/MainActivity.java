@@ -14,6 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.furszy.contactsapp.contacts.ProfilesInformationActivity;
+import com.example.furszy.contactsapp.requests.PairingRequestsActivity;
 import com.example.furszy.contactsapp.scanner.ScanActivity;
 
 import org.fermat.redtooth.profile_server.CantConnectException;
@@ -22,7 +23,9 @@ import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.utils.ProfileUtils;
+import org.spongycastle.crypto.digests.WhirlpoolDigest;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,7 +33,7 @@ import java.util.concurrent.Executors;
 import static android.Manifest.permission.CAMERA;
 import static com.example.furszy.contactsapp.scanner.ScanActivity.INTENT_EXTRA_RESULT;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends BaseActivity implements View.OnClickListener{
 
     private static final int SCANNER_RESULT = 122;
     ExecutorService executors;
@@ -44,46 +47,15 @@ public class MainActivity extends BaseActivity {
         Button btn_qr_user = (Button) findViewById(R.id.btn_qr_user);
         Button btn_scanner = (Button) findViewById(R.id.btn_scanner);
         Button btn_profiles = (Button) findViewById(R.id.btn_profiles);
+        Button btn_requests = (Button) findViewById(R.id.btn_requests);
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         progressBar.setVisibility(View.GONE);
 
-        btn_user.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this,ProfileActivity.class);
-                startActivity(intent);
-            }
-        });
-        btn_qr_user.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ModuleRedtooth module = ((App) getApplication()).anRedtooth.getRedtooth();
-                String data = ProfileUtils.getProfileURI(module.getProfile());
-                Util.showQrDialog(MainActivity.this,data);
-            }
-        });
-        btn_scanner.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!checkPermission(CAMERA)) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        int permsRequestCode = 200;
-                        String[] perms = {"android.permission.CAMERA"};
-                        requestPermissions(perms, permsRequestCode);
-                    }
-                }
-
-                Intent intent = new Intent(MainActivity.this, ScanActivity.class);
-                startActivityForResult(intent,SCANNER_RESULT);
-            }
-        });
-        btn_profiles.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, ProfilesInformationActivity.class);
-                startActivity(intent);
-            }
-        });
+        btn_user.setOnClickListener(this);
+        btn_qr_user.setOnClickListener(this);
+        btn_scanner.setOnClickListener(this);
+        btn_profiles.setOnClickListener(this);
+        btn_requests.setOnClickListener(this);
 
         executors = Executors.newFixedThreadPool(3);
 
@@ -170,6 +142,36 @@ public class MainActivity extends BaseActivity {
         int result = ContextCompat.checkSelfPermission(getApplicationContext(),permission);
 
         return result == PackageManager.PERMISSION_GRANTED;
+    }
+
+    @Override
+    public void onClick(View v) {
+        int which = v.getId();
+        if (which == R.id.btn_profiles){
+            Intent intent = new Intent(MainActivity.this, ProfilesInformationActivity.class);
+            startActivity(intent);
+        }else if (which == R.id.btn_user){
+            Intent intent = new Intent(MainActivity.this,ProfileActivity.class);
+            startActivity(intent);
+        }else if (which == R.id.btn_scanner){
+            if (!checkPermission(CAMERA)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    int permsRequestCode = 200;
+                    String[] perms = {"android.permission.CAMERA"};
+                    requestPermissions(perms, permsRequestCode);
+                }
+            }
+            Intent intent = new Intent(MainActivity.this, ScanActivity.class);
+            startActivityForResult(intent,SCANNER_RESULT);
+        }else if (which == R.id.btn_requests){
+            Intent intent = new Intent(MainActivity.this,PairingRequestsActivity.class);
+            startActivity(intent);
+        }else if (which == R.id.btn_qr_user){
+            ModuleRedtooth module = ((App) getApplication()).anRedtooth.getRedtooth();
+            String data = ProfileUtils.getProfileURI(module.getProfile());
+            Util.showQrDialog(MainActivity.this,data);
+        }
+
     }
 
 }
