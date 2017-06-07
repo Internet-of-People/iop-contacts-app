@@ -242,6 +242,11 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     }
 
     @Override
+    public List<PairingRequest> getPairingRequests() {
+        return pairingRequestDb.openPairingRequests(profile.getHexPublicKey());
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG,"onStartCommand");
         return super.onStartCommand(intent, flags, startId);
