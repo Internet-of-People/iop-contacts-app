@@ -1,6 +1,7 @@
 package com.example.furszy.contactsapp.contacts;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
@@ -140,8 +141,10 @@ public class ProfilesInformationActivity extends BaseActivity {
                             hideEmptyScreen();
                             adapter.changeDataSet(profiles);
                         } else {
+                            hideEmptyScreen();
                             showEmptyScreen();
                             txt_empty.setText("No profiles yet..");
+                            txt_empty.setTextColor(Color.BLACK);
                         }
                     }
                 }
@@ -153,6 +156,7 @@ public class ProfilesInformationActivity extends BaseActivity {
     private void showEmptyScreen(){
 //        if (container_empty_screen!=null)
 //            AnimationUtils.fadeInView(container_empty_screen,300);
+
     }
 
     private void hideEmptyScreen(){

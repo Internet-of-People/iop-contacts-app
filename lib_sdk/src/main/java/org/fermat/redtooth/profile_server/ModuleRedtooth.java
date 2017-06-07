@@ -9,6 +9,7 @@ import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SubsequentSearchMsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
+import org.fermat.redtooth.profile_server.engine.listeners.ProfileListener;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
@@ -55,6 +56,8 @@ public interface ModuleRedtooth {
     boolean isIdentityCreated();
 
     void setPairListener(PairingListener pairListener);
+
+    void setProfileListener(ProfileListener profileListener);
 
     /* Search queries **/
 

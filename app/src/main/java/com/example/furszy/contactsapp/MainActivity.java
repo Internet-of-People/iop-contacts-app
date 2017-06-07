@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.furszy.contactsapp.contacts.ProfilesInformationActivity;
@@ -22,6 +23,7 @@ import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
+import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.utils.ProfileUtils;
 import org.spongycastle.crypto.digests.WhirlpoolDigest;
 
@@ -38,6 +40,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     private static final int SCANNER_RESULT = 122;
     ExecutorService executors;
     ProgressBar progressBar;
+    View container_no_connection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +51,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         Button btn_scanner = (Button) findViewById(R.id.btn_scanner);
         Button btn_profiles = (Button) findViewById(R.id.btn_profiles);
         Button btn_requests = (Button) findViewById(R.id.btn_requests);
+        container_no_connection = (View) findViewById(R.id.container_no_connection);
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         progressBar.setVisibility(View.GONE);
 
@@ -168,8 +172,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
             startActivity(intent);
         }else if (which == R.id.btn_qr_user){
             ModuleRedtooth module = ((App) getApplication()).anRedtooth.getRedtooth();
-            String data = ProfileUtils.getProfileURI(module.getProfile());
-            Util.showQrDialog(MainActivity.this,data);
+            Profile profile = module.getProfile();
+            if (profile!=null) {
+                String data = ProfileUtils.getProfileURI(profile);
+                Util.showQrDialog(MainActivity.this, data);
+            }else {
+                Toast.makeText(this,"Profile not created",Toast.LENGTH_LONG).show();
+            }
         }
 
     }

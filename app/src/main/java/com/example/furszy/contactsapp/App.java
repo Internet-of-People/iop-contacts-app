@@ -16,6 +16,7 @@ import org.fermat.redtooth.core.RedtoothContext;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.engine.listeners.PairingListener;
+import org.fermat.redtooth.profile_server.engine.listeners.ProfileListener;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,10 +43,15 @@ import iop.org.iop_sdk_android.core.profile_server.ProfileServerConfigurationsIm
 
 public class App extends Application implements RedtoothContext, PairingListener {
 
+    public static final String INTENT_ACTION_PROFILE_CONNECTED = "profile_connected";
+    public static final String INTENT_ACTION_PROFILE_DISCONNECTED = "profile_disconnected";
+
     private static App instance;
     AnRedtooth anRedtooth;
     private LocalBroadcastManager broadcastManager;
     private NotificationManager notificationManager;
+
+    private ProfileListener profileListener;
 
     public static App getInstance() {
         return instance;
@@ -69,6 +75,7 @@ public class App extends Application implements RedtoothContext, PairingListener
                             try {
                                 ModuleRedtooth module = anRedtooth.getRedtooth();
                                 module.setPairListener(App.this);
+                                module.setProfileListener(new ProfileListenerImp(App.this));
                                 if (module.isProfileRegistered()) {
                                     Profile profile = module.getProfile();
                                     if (profile != null)
@@ -173,5 +180,27 @@ public class App extends Application implements RedtoothContext, PairingListener
                 .setSmallIcon(R.drawable.profile)
                 .build();
         notificationManager.notify(100,not);
+    }
+
+
+    private class ProfileListenerImp implements ProfileListener{
+
+        App app;
+
+        public ProfileListenerImp(App app) {
+            this.app = app;
+        }
+
+        @Override
+        public void onConnect(Profile profile) {
+            Intent intent = new Intent(INTENT_ACTION_PROFILE_CONNECTED);
+            app.broadcastManager.sendBroadcast(intent);
+        }
+
+        @Override
+        public void onDisconnect(Profile profile) {
+            Intent intent = new Intent(INTENT_ACTION_PROFILE_DISCONNECTED);
+            app.broadcastManager.sendBroadcast(intent);
+        }
     }
 }

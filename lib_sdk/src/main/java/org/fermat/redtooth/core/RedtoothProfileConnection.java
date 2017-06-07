@@ -82,15 +82,14 @@ public class RedtoothProfileConnection implements CallsListener {
         if (profileServerConfigurations.getMainProfileServerContract()!=null){
             //
             initProfileServer();
-            profSerEngine.start(initFuture);
         }else {
             // search in LOC for a profile server or use a trusted one from the user.
             // todo: here i have to do the LOC Network flow.
             // Until Istvan push his client i will connect to a single local host server putting a hardcoded local server on the configurations.
             initProfileServer();
-            profileServerConfigurations.setHost("localhost");
-            profSerEngine.start(initFuture);
+            //profileServerConfigurations.setHost("localhost");
         }
+        profSerEngine.start(initFuture);
     }
 
     public void init() throws Exception {

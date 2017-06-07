@@ -6,6 +6,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
@@ -51,6 +52,7 @@ public class Util {
             if (qrBitmap == null) {
                 Resources r = activity.getResources();
                 int px = convertDpToPx(r,175);
+                Log.i("Util",address);
                 qrBitmap = encodeAsBitmap(address, px, px, Color.parseColor("#1A1A1A"), WHITE );
                 //Cache.setQrBigBitmapCache(qrBitmap);
             }

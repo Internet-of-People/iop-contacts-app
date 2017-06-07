@@ -97,7 +97,7 @@ public class Redtooth {
          managers.get(profilePublicKey).init();
     }
 
-    public void connectProfileSync(String profilePublicKey,EngineListener engineListener,byte[] ownerChallenge) throws Exception {
+    public boolean connectProfileSync(String profilePublicKey,EngineListener engineListener,byte[] ownerChallenge) throws Exception {
         if (!managers.containsKey(profilePublicKey)){
             ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
             KeyEd25519 keyEd25519 = (KeyEd25519) profileServerConfigurations.getUserKeys();
@@ -106,7 +106,7 @@ public class Redtooth {
         }
         MsgListenerFuture<Boolean> initFuture = new MsgListenerFuture<Boolean>();
         getProfileConnection(profilePublicKey).init(initFuture);
-        initFuture.get();
+        return initFuture.get();
     }
 
     public int updateProfile(Profile profile, ProfSerMsgListener msgListener) throws Exception {

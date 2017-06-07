@@ -1,8 +1,11 @@
 package com.example.furszy.contactsapp;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -32,6 +35,7 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
+import org.fermat.redtooth.core.services.BaseMsg;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.model.Profile;
@@ -84,6 +88,16 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
     private boolean isRegistered;
     private int screenState;
     private ExecutorService executor;
+
+    private BroadcastReceiver connectionReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(App.INTENT_ACTION_PROFILE_CONNECTED)){
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(getActivity(),"Profile connected",Toast.LENGTH_LONG).show();
+            }
+        }
+    };
 
 
     @Nullable
@@ -171,6 +185,11 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
         if (executor!=null){
             executor.shutdownNow();
             executor = null;
+        }
+        try{
+            ((BaseActivity) getActivity()).localBroadcastManager.unregisterReceiver(connectionReceiver);
+        }catch (Exception e){
+            // nothing..
         }
     }
 
@@ -333,13 +352,18 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
         final String name = txt_name.getText().toString();
         if (!name.equals("")) {
             progressBar.setVisibility(View.VISIBLE);
+            final boolean isIdentityCreated = module.isIdentityCreated();
+            if (!isIdentityCreated){
+                IntentFilter intentFilter = new IntentFilter(App.INTENT_ACTION_PROFILE_CONNECTED);
+                ((BaseActivity)getActivity()).localBroadcastManager.registerReceiver(connectionReceiver,intentFilter);
+            }
             executor.submit(new Runnable() {
                 @Override
                 public void run() {
                     boolean res = false;
                     String detail = null;
                     try {
-                        if (!module.isIdentityCreated()) {
+                        if (!isIdentityCreated) {
                             String pk = module.registerProfile(name, "contactApp", profImgData, 0, 0, null);
                             module.connect(pk);
                         } else {

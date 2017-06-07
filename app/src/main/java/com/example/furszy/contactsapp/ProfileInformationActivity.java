@@ -189,7 +189,6 @@ public class ProfileInformationActivity extends BaseActivity {
             executor.submit(new Runnable() {
                 @Override
                 public void run() {
-
                     try {
                         MsgListenerFuture<ProfileInformation> msgListenerFuture = new MsgListenerFuture();
                         msgListenerFuture.setListener(new BaseMsgFuture.Listener<ProfileInformation>() {
