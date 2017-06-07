@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import org.fermat.redtooth.core.Redtooth;
@@ -31,6 +32,7 @@ import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SubsequentSearchMsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
+import org.fermat.redtooth.profile_server.engine.listeners.ProfileListener;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.Profile;
@@ -61,6 +63,8 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
 
     private static final String TAG = "RedtoothService";
 
+    private LocalBroadcastManager localBroadcastManager;
+
     private ExecutorService executor;
     /** Context */
     private RedtoothContext application;
@@ -69,9 +73,10 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     /** Configurations impl */
     private ProfileServerConfigurations configurationsPreferences;
     private Profile profile;
-
+    /** Listeners */
+    private ProfileListener profileListener;
     private PairingListener pairingListener;
-
+    /** Databases */
     private SqlitePairingRequestDb pairingRequestDb;
     private SqliteProfilesDb profilesDb;
 
@@ -93,6 +98,7 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     public void onCreate() {
         super.onCreate();
         Log.d(TAG,"onCreate");
+        localBroadcastManager = LocalBroadcastManager.getInstance(this);
         try {
             application = (RedtoothContext) getApplication();
             configurationsPreferences = new ProfileServerConfigurationsImp(this,getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));
@@ -108,7 +114,6 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
         }
     }
 
-
     @Override
     public boolean isProfileRegistered() {
         return configurationsPreferences.isRegisteredInServer();
@@ -117,6 +122,7 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     @Override
     public void connect(String pubKey) throws Exception {
         redtooth.connectProfileSync(pubKey,this,null);
+        onCheckInCompleted(profile);
     }
 
     @Override
@@ -182,6 +188,11 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     @Override
     public void setPairListener(PairingListener pairListener) {
         this.pairingListener = pairListener;
+    }
+
+    @Override
+    public void setProfileListener(ProfileListener profileListener) {
+        this.profileListener = profileListener;
     }
 
     @Override
@@ -258,6 +269,13 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
         redtooth.stop();
         executor.shutdown();
         super.onDestroy();
+    }
+
+    @Override
+    public void onCheckInCompleted(Profile profile) {
+        if (profileListener!=null){
+            profileListener.onConnect(profile);
+        }
     }
 
     @Override
