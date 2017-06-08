@@ -40,7 +40,7 @@ public class ProfSerImp implements ProfileServer {
     private ProfServerData configurations;
 
 
-    public ProfSerImp(RedtoothContext context, ProfServerData configurations, SslContextFactory sslContextFactory, PsSocketHandler<IopProfileServer.Message> handler) throws Exception {
+    public ProfSerImp(RedtoothContext context, ProfServerData configurations, SslContextFactory sslContextFactory, PsSocketHandler<IopProfileServer.Message> handler) {
         this.configurations = configurations;
         profSerConnectionManager = new ProfSerConnectionManager(configurations.getHost(),sslContextFactory,handler);
     }

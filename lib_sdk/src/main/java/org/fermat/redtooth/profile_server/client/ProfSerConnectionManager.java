@@ -54,7 +54,7 @@ public class ProfSerConnectionManager {
     /** seconds */
     private static final long connectionTimeout = 45;
 
-    public ProfSerConnectionManager(String host, SslContextFactory sslContextFactory,PsSocketHandler<IopProfileServer.Message> handler) throws Exception {
+    public ProfSerConnectionManager(String host, SslContextFactory sslContextFactory,PsSocketHandler<IopProfileServer.Message> handler) {
         this.host = host;
         serverSockets = new ConcurrentHashMap<>();
         this.handler = handler;
@@ -65,9 +65,15 @@ public class ProfSerConnectionManager {
         this.handler = handler;
     }
 
-    private void initContext(SslContextFactory sslContextFactory) throws Exception {
-        if (sslContextFactory==null) throw new IllegalArgumentException("ssl context factory null");
-        this.sslContext = sslContextFactory.buildContext();
+    private void initContext(SslContextFactory sslContextFactory){
+        try {
+            if (sslContextFactory == null)
+                throw new IllegalArgumentException("ssl context factory null");
+            this.sslContext = sslContextFactory.buildContext();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new IllegalStateException(e);
+        }
     }
 
     public boolean connectToSecurePort(final IopProfileServer.ServerRoleType portType, final int port) throws CantConnectException {
@@ -174,30 +180,19 @@ public class ProfSerConnectionManager {
      * @param message
      * @throws Exception
      */
-    public void write(IopProfileServer.ServerRoleType portType, int port, IopProfileServer.Message message) throws CantConnectException,CantSendMessageException {
-
-        try {
-            boolean result = connectToPort(portType,port,null);
-            if (!result) throw new Exception("Cant connect to: "+portType.name()+", port number: "+port);
-            ProfileServerSocket profileServerSocket = serverSockets.get(portType);
-            profileServerSocket.write(message);
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+    public void write(IopProfileServer.ServerRoleType portType, int port, IopProfileServer.Message message) throws CantSendMessageException,CantConnectException {
+        boolean result = connectToPort(portType,port,null);
+        if (!result) throw new CantSendMessageException("Cant connect to: "+portType.name()+", port number: "+port);
+        ProfileServerSocket profileServerSocket = serverSockets.get(portType);
+        profileServerSocket.write(message);
     }
 
-    public void writeToAppServiceCall(IopProfileServer.ServerRoleType portType, int port, IopProfileServer.Message message,String token) throws CantConnectException,CantSendMessageException {
+    public void writeToAppServiceCall(IopProfileServer.ServerRoleType portType, int port, IopProfileServer.Message message,String token) throws CantSendMessageException,CantConnectException {
         if (token==null || token.length()<1) throw new IllegalArgumentException("bad token value");
-        try {
-            boolean result = connectToPort(portType,port,token);
-            if (!result) throw new Exception("Something happen with the connection");
-            ProfileServerSocket profileServerSocket = appServicesSockets.get(token);
-            profileServerSocket.write(message);
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+        boolean result = connectToPort(portType,port,token);
+        if (!result) throw new CantSendMessageException("Connection fail");
+        ProfileServerSocket profileServerSocket = appServicesSockets.get(token);
+        profileServerSocket.write(message);
     }
 
     private boolean connectToPort(IopProfileServer.ServerRoleType portType, int port,String tokenIdentifier) throws CantConnectException {

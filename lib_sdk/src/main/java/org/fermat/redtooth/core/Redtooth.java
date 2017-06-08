@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by mati on 17/05/17.
@@ -97,7 +98,7 @@ public class Redtooth {
          managers.get(profilePublicKey).init();
     }
 
-    public boolean connectProfileSync(String profilePublicKey,EngineListener engineListener,byte[] ownerChallenge) throws Exception {
+    public boolean connectProfileSync(String profilePublicKey,EngineListener engineListener,byte[] ownerChallenge) throws CantConnectException, ExecutionException, InterruptedException {
         if (!managers.containsKey(profilePublicKey)){
             ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
             KeyEd25519 keyEd25519 = (KeyEd25519) profileServerConfigurations.getUserKeys();
@@ -106,7 +107,12 @@ public class Redtooth {
         }
         MsgListenerFuture<Boolean> initFuture = new MsgListenerFuture<Boolean>();
         getProfileConnection(profilePublicKey).init(initFuture);
-        return initFuture.get();
+        Boolean res = initFuture.get();
+        if (res!=null){
+            return res;
+        }else {
+            throw new CantConnectException("Error code: "+initFuture.getStatus()+", detail: "+initFuture.getStatusDetail());
+        }
     }
 
     public int updateProfile(Profile profile, ProfSerMsgListener msgListener) throws Exception {

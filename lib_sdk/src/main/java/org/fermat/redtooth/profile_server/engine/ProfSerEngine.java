@@ -96,7 +96,7 @@ public class ProfSerEngine {
      * @param profServerData
      * @param profile -> use a profile for the restriction of 1 per connection that the server have.
      */
-    public ProfSerEngine(RedtoothContext contextWrapper, ProfSerDb profSerDb , ProfServerData profServerData, Profile profile, CryptoWrapper crypto, SslContextFactory sslContextFactory) throws Exception {
+    public ProfSerEngine(RedtoothContext contextWrapper, ProfSerDb profSerDb , ProfServerData profServerData, Profile profile, CryptoWrapper crypto, SslContextFactory sslContextFactory) {
         this.profServerData = profServerData;
         this.crypto = crypto;
         this.profSerDb = profSerDb;

@@ -72,7 +72,7 @@ public class RedtoothProfileConnection implements CallsListener {
      *
      * @throws Exception
      */
-    public void init(MsgListenerFuture<Boolean> initFuture) throws Exception {
+    public void init(MsgListenerFuture<Boolean> initFuture) {
         // init client data
         initClientData();
         // the flow is:
@@ -125,7 +125,7 @@ public class RedtoothProfileConnection implements CallsListener {
      * Initialize the profile server
      * @throws Exception
      */
-    private void initProfileServer() throws Exception {
+    private void initProfileServer() {
         ProfServerData profServerData = profileServerConfigurations.getMainProfileServer();
         if (profServerData.getHost()!=null) {
             profSerEngine = new ProfSerEngine(
