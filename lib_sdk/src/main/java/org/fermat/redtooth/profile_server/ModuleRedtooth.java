@@ -4,10 +4,9 @@ import java.io.File;
 import java.util.List;
 
 import org.fermat.redtooth.profile_server.engine.SearchProfilesQuery;
-import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SubsequentSearchMsgListenerFuture;
-import org.fermat.redtooth.profile_server.engine.listeners.PairingListener;
+import org.fermat.redtooth.profile_server.engine.app_services.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfileListener;
 import org.fermat.redtooth.profile_server.model.Profile;

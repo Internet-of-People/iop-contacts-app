@@ -1,4 +1,4 @@
-package org.fermat.redtooth.profile_server.engine;
+package org.fermat.redtooth.profile_server.engine.app_services;
 
 import com.google.protobuf.ByteString;
 
@@ -6,14 +6,15 @@ import org.fermat.redtooth.core.services.BaseMsg;
 import org.fermat.redtooth.core.services.MsgWrapper;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
+import org.fermat.redtooth.profile_server.engine.ProfSerEngine;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.fermat.redtooth.profile_server.engine.CallProfileAppService.Status.CALL_AS_ESTABLISH;
-import static org.fermat.redtooth.profile_server.engine.CallProfileAppService.Status.NO_INFORMATION;
+import static org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService.Status.CALL_AS_ESTABLISH;
+import static org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService.Status.NO_INFORMATION;
 
 /**
  * Created by mati on 18/05/17.

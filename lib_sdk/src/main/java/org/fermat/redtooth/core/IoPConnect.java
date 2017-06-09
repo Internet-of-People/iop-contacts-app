@@ -1,6 +1,7 @@
 package org.fermat.redtooth.core;
 
 import org.fermat.redtooth.core.services.DefaultServices;
+import org.fermat.redtooth.core.services.pairing.PairingAppService;
 import org.fermat.redtooth.core.services.pairing.PairingMsg;
 import org.fermat.redtooth.core.services.pairing.PairingMsgTypes;
 import org.fermat.redtooth.crypto.CryptoBytes;
@@ -10,8 +11,9 @@ import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.SslContextFactory;
-import org.fermat.redtooth.profile_server.engine.CallProfileAppService;
-import org.fermat.redtooth.profile_server.engine.EngineListener;
+import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
+import org.fermat.redtooth.profile_server.engine.app_services.PairingListener;
+import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
@@ -36,9 +38,9 @@ import java.util.concurrent.ExecutionException;
  * todo: clase encargada de crear perfiles, agregar aplication services y hablar con las capas superiores.
  */
 
-public class Redtooth {
+public class IoPConnect {
 
-    private final Logger logger = LoggerFactory.getLogger(Redtooth.class);
+    private final Logger logger = LoggerFactory.getLogger(IoPConnect.class);
 
     /** Profiles connection manager */
     private ConcurrentMap<String,RedtoothProfileConnection> managers;
@@ -53,7 +55,7 @@ public class Redtooth {
     /** Socket factory */
     private SslContextFactory sslContextFactory;
 
-    public Redtooth(RedtoothContext contextWrapper, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, ProfilesManager profilesManager, PairingRequestsManager pairingRequestsManager) {
+    public IoPConnect(RedtoothContext contextWrapper, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, ProfilesManager profilesManager, PairingRequestsManager pairingRequestsManager) {
         this.context = contextWrapper;
         this.cryptoWrapper = cryptoWrapper;
         this.sslContextFactory = sslContextFactory;
@@ -98,12 +100,12 @@ public class Redtooth {
          managers.get(profilePublicKey).init();
     }
 
-    public boolean connectProfileSync(String profilePublicKey,EngineListener engineListener,byte[] ownerChallenge) throws CantConnectException, ExecutionException, InterruptedException {
+    public boolean connectProfileSync(String profilePublicKey, EngineListener engineListener, PairingListener pairingListener, byte[] ownerChallenge) throws CantConnectException, ExecutionException, InterruptedException {
         if (!managers.containsKey(profilePublicKey)){
             ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
             KeyEd25519 keyEd25519 = (KeyEd25519) profileServerConfigurations.getUserKeys();
             if (keyEd25519==null) throw new IllegalStateException("no pubkey saved");
-            addConnection(profileServerConfigurations,keyEd25519,engineListener);
+            addConnection(profileServerConfigurations,keyEd25519,engineListener,pairingListener);
         }
         MsgListenerFuture<Boolean> initFuture = new MsgListenerFuture<Boolean>();
         getProfileConnection(profilePublicKey).init(initFuture);
@@ -119,13 +121,45 @@ public class Redtooth {
         return getProfileConnection(profile.getHexPublicKey()).updateProfile(profile.getVersion(),profile.getName(),profile.getImg(),profile.getLatitude(),profile.getLongitude(),profile.getExtraData(),msgListener);
     }
 
-    private RedtoothProfileConnection addConnection(ProfileServerConfigurations profileServerConfigurations,KeyEd25519 keyEd25519,EngineListener profServerEngineListener){
+    private RedtoothProfileConnection addConnection(ProfileServerConfigurations profileServerConfigurations, KeyEd25519 keyEd25519, EngineListener profServerEngineListener, PairingListener pairingListener){
         // profile connection
-        RedtoothProfileConnection redtoothProfileConnection = new RedtoothProfileConnection(context,profileServerConfigurations,cryptoWrapper,sslContextFactory);
+        RedtoothProfileConnection redtoothProfileConnection = new RedtoothProfileConnection(
+                context,
+                initClientData(profileServerConfigurations,pairingListener),
+                profileServerConfigurations,
+                cryptoWrapper,
+                sslContextFactory);
         redtoothProfileConnection.setProfServerEngineListener(profServerEngineListener);
         // map the profile connection with his public key
         managers.put(keyEd25519.getPublicKeyHex(),redtoothProfileConnection);
         return redtoothProfileConnection;
+    }
+
+    private Profile initClientData(ProfileServerConfigurations profileServerConfigurations, PairingListener pairingListener) {
+        //todo: esto lo tengo que hacer cuando guarde la privkey encriptada.., por ahora lo dejo asI. Este es el profile que va a crear el usuario, está acá de ejemplo.
+        Profile profile = null;
+        if (profileServerConfigurations.isIdentityCreated()) {
+            // load profileCache
+            KeyEd25519 keyEd25519 = (KeyEd25519) profileServerConfigurations.getUserKeys();
+            profile = new Profile(
+                    profileServerConfigurations.getProtocolVersion(),
+                    profileServerConfigurations.getUsername(),
+                    profileServerConfigurations.getProfileType(),
+                    keyEd25519
+            );
+        } else {
+            // create and save
+            KeyEd25519 keyEd25519 = profileServerConfigurations.createUserKeys();
+            profile = new Profile(profileServerConfigurations.getProfileVersion(), profileServerConfigurations.getUsername(), profileServerConfigurations.getProfileType(),keyEd25519);
+            // save
+            profileServerConfigurations.saveUserKeys(profile.getKey());
+        }
+        // pairing default
+        if(profileServerConfigurations.isPairingEnable()){
+            if (pairingListener==null) throw new IllegalArgumentException("Pairing listener cannot be null if configurations pairing is enabled");
+            profile.addApplicationService(new PairingAppService(profile,pairingRequestsManager,profilesManager,pairingListener));
+        }
+        return profile;
     }
 
     /**

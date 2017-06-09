@@ -6,7 +6,7 @@ import org.junit.Test;
  * Created by mati on 09/05/17.
  */
 
-public class RedtoothTest {
+public class IoPConnectTest {
 
 
 

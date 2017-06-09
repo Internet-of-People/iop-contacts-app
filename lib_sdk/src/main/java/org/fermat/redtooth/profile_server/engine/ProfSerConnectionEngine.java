@@ -343,26 +343,6 @@ public class ProfSerConnectionEngine {
             if (profSerEngine.getProfNodeConnection().isNeedRegisterProfile()){
                 profSerEngine.initProfile();
             }
-            // registerConnect application services
-            final Profile profile = profSerEngine.getProfNodeConnection().getProfile();
-            for (final String service : profile.getApplicationServices()) {
-                profSerEngine.addApplicationService(service, new ProfSerMsgListener() {
-                    @Override
-                    public void onMessageReceive(int messageId, Object message) {
-                        LOG.info("Application service registered: "+service+", for profile: "+profile.getName());
-                    }
-
-                    @Override
-                    public void onMsgFail(int messageId, int statusValue, String details) {
-                        LOG.info("Application service register fail: "+service+", for profile: "+profile.getName());
-                    }
-
-                    @Override
-                    public String getMessageName() {
-                        return "addAppServices";
-                    }
-                });
-            }
             // notify check-in
             if (initFuture!=null)
                 initFuture.onMessageReceive(messageId,true);

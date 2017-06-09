@@ -2,13 +2,15 @@ package org.fermat.redtooth.profile_server.engine;
 
 import org.bitcoinj.core.Sha256Hash;
 import org.fermat.redtooth.core.RedtoothContext;
-import org.fermat.redtooth.core.client.interfaces.IoProcessor;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.crypto.CryptoWrapper;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.client.PsSocketHandler;
+import org.fermat.redtooth.profile_server.engine.app_services.AppService;
+import org.fermat.redtooth.profile_server.engine.app_services.CallsListener;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
-import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
+import org.fermat.redtooth.profile_server.engine.listeners.*;
+import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
 import org.fermat.redtooth.profile_server.protocol.CanStoreMap;
 import org.fermat.redtooth.profile_server.protocol.IopShared;
 import org.slf4j.Logger;
@@ -38,8 +40,6 @@ import org.fermat.redtooth.profile_server.client.ProfNodeConnection;
 import org.fermat.redtooth.profile_server.client.ProfSerImp;
 import org.fermat.redtooth.profile_server.client.ProfSerRequest;
 import org.fermat.redtooth.profile_server.client.ProfileServer;
-import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
-import org.fermat.redtooth.profile_server.engine.listeners.ProfSerPartSearchListener;
 import org.fermat.redtooth.profile_server.model.ProfServerData;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.processors.MessageProcessor;
@@ -80,9 +80,9 @@ public class ProfSerEngine {
     /** Internal server handler */
     private PsSocketHandler handler;
     /** Listener to receive incomingCallNotifications and incomingMessages from calls */
-    private CallsListener callListener;
+    private org.fermat.redtooth.profile_server.engine.app_services.CallsListener callListener;
     /** Engine listenerv*/
-    private final CopyOnWriteArrayList<EngineListener> engineListeners = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<org.fermat.redtooth.profile_server.engine.listeners.EngineListener> engineListeners = new CopyOnWriteArrayList<>();
     /** Messages listeners:  id -> listner */
     private final ConcurrentMap<Integer,ProfSerMsgListener> msgListeners = new ConcurrentHashMap<>();
     private final ConcurrentMap<String,SearchProfilesQuery> profilesQuery = new ConcurrentHashMap<>();
@@ -136,11 +136,11 @@ public class ProfSerEngine {
      *
      * @param listener
      */
-    public void addEngineListener(EngineListener listener){
+    public void addEngineListener(org.fermat.redtooth.profile_server.engine.listeners.EngineListener listener){
         this.engineListeners.add(listener);
     }
 
-    public void removeEngineListener(EngineListener listener){
+    public void removeEngineListener(org.fermat.redtooth.profile_server.engine.listeners.EngineListener listener){
         this.engineListeners.remove(listener);
     }
 
@@ -335,12 +335,12 @@ public class ProfSerEngine {
     /**
      * Add application service
      *
-     * @param applicationService
+     * @param appService
      * @return
      */
-    public int addApplicationService(String applicationService, ProfSerMsgListener listener){
-        profNodeConnection.getProfile().addApplicationService(applicationService);
-        return addApplicationServiceRequest(applicationService,listener);
+    public int addApplicationService(AppService appService){
+        profNodeConnection.getProfile().addApplicationService(appService);
+        return addApplicationServiceRequest(appService.getName(),appService);
     }
 
     /**
@@ -1172,7 +1172,7 @@ public class ProfSerEngine {
         public void execute(IoSession session, int messageId, IopProfileServer.ApplicationServiceReceiveMessageNotificationRequest message) {
             LOG.info("ApplicationServiceReceiveMessageNotificationRequestProcessor");
             if (callListener!=null) {
-                callListener.incomingAppServiceMessage(messageId, AppServiceMsg.wrap(session.getSessionTokenId(),message));
+                callListener.incomingAppServiceMessage(messageId, org.fermat.redtooth.profile_server.engine.app_services.AppServiceMsg.wrap(session.getSessionTokenId(),message));
             }else
                 LOG.error("IncomingCall arrive and no listener setted.");
 

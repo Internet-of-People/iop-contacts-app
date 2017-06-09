@@ -2,24 +2,24 @@ package org.fermat.redtooth.core;
 
 
 import org.fermat.redtooth.core.services.DefaultServices;
+import org.fermat.redtooth.core.services.pairing.PairingAppService;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.crypto.CryptoWrapper;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
-import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.SslContextFactory;
-import org.fermat.redtooth.profile_server.engine.AppServiceMsg;
-import org.fermat.redtooth.profile_server.engine.CallProfileAppService;
-import org.fermat.redtooth.profile_server.engine.CallsListener;
-import org.fermat.redtooth.profile_server.engine.EngineListener;
+import org.fermat.redtooth.profile_server.engine.app_services.AppService;
+import org.fermat.redtooth.profile_server.engine.app_services.AppServiceMsg;
+import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
+import org.fermat.redtooth.profile_server.engine.app_services.CallsListener;
+import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
 import org.fermat.redtooth.profile_server.engine.ProfSerEngine;
 import org.fermat.redtooth.profile_server.engine.SearchProfilesQuery;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SubsequentSearchMsgListenerFuture;
-import org.fermat.redtooth.profile_server.engine.listeners.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.ProfServerData;
@@ -59,12 +59,15 @@ public class RedtoothProfileConnection implements CallsListener {
     private EngineListener profServerEngineListener;
     /** Open profile app service calls -> remote profile pk -> call in progress */
     private ConcurrentMap<String,CallProfileAppService> openCall = new ConcurrentHashMap<>();
+    /**  */
+    private ConcurrentMap<String,AppService> openServices = new ConcurrentHashMap<>();
 
-    public RedtoothProfileConnection(RedtoothContext contextWrapper, ProfileServerConfigurations profileServerConfigurations, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory){
+    public RedtoothProfileConnection(RedtoothContext contextWrapper,Profile profile,ProfileServerConfigurations profileServerConfigurations, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory){
         this.contextWrapper = contextWrapper;
         this.profileServerConfigurations = profileServerConfigurations;
         this.cryptoWrapper = cryptoWrapper;
         this.sslContextFactory = sslContextFactory;
+        this.profileCache = profile;
     }
 
     /**
@@ -72,9 +75,7 @@ public class RedtoothProfileConnection implements CallsListener {
      *
      * @throws Exception
      */
-    public void init(MsgListenerFuture<Boolean> initFuture) {
-        // init client data
-        initClientData();
+    public void init(final MsgListenerFuture<Boolean> initFuture) {
         // the flow is:
         // If the profile server main contract is active the connection with the profile server is clear.
         // If the hosting contract is null i have to search for a profile server using the LOC network and start the flow again
@@ -89,36 +90,25 @@ public class RedtoothProfileConnection implements CallsListener {
             initProfileServer();
             //profileServerConfigurations.setHost("localhost");
         }
-        profSerEngine.start(initFuture);
+        MsgListenerFuture<Boolean> initWrapper = new MsgListenerFuture<>();
+        initFuture.setListener(new BaseMsgFuture.Listener<Boolean>() {
+            @Override
+            public void onAction(int messageId, Boolean object) {
+                // not that this is initialized, init the app services
+                registerApplicationServices();
+                initFuture.onMessageReceive(messageId,object);
+            }
+
+            @Override
+            public void onFail(int messageId, int status, String statusDetail) {
+                initFuture.onMsgFail(messageId,status,statusDetail);
+            }
+        });
+        profSerEngine.start(initWrapper);
     }
 
     public void init() throws Exception {
         init(null);
-    }
-
-    private void initClientData() {
-        //todo: esto lo tengo que hacer cuando guarde la privkey encriptada.., por ahora lo dejo asI. Este es el profile que va a crear el usuario, está acá de ejemplo.
-        if (profileServerConfigurations.isIdentityCreated()) {
-            // load profileCache
-            KeyEd25519 keyEd25519 = (KeyEd25519) profileServerConfigurations.getUserKeys();
-            profileCache = new Profile(
-                    profileServerConfigurations.getProtocolVersion(),
-                    profileServerConfigurations.getUsername(),
-                    profileServerConfigurations.getProfileType(),
-                    keyEd25519
-            );
-        } else {
-            // create and save
-            KeyEd25519 keyEd25519 = profileServerConfigurations.createUserKeys();
-            Profile profile = new Profile(profileServerConfigurations.getProfileVersion(), profileServerConfigurations.getUsername(), profileServerConfigurations.getProfileType(),keyEd25519);
-            profileCache = profile;
-            // save
-            profileServerConfigurations.saveUserKeys(profile.getKey());
-        }
-        // pairing default
-        if(profileServerConfigurations.isPairingEnable()){
-            profileCache.addApplicationService(DefaultServices.PROFILE_PAIRING.getName());
-        }
     }
 
     /**
@@ -153,6 +143,17 @@ public class RedtoothProfileConnection implements CallsListener {
 
     public ProfileServerConfigurations getProfileServerConfigurations() {
         return profileServerConfigurations;
+    }
+
+    /**
+     * Register the default app services
+     */
+    private void registerApplicationServices() {
+        // registerConnect application services
+        final Profile profile = profSerEngine.getProfNodeConnection().getProfile();
+        for (final AppService service : profile.getApplicationServices()) {
+            addApplicationService(service);
+        }
     }
 
 
@@ -233,12 +234,13 @@ public class RedtoothProfileConnection implements CallsListener {
     /**
      * Add more application services to an active profile
      * @param appService
-     * @param profSerMsgListener
+     * @param appService
      */
-    public void addApplicationService(String appService,ProfSerMsgListener profSerMsgListener) {
+    public void addApplicationService(AppService appService) {
         profileCache.addApplicationService(appService);
         profileServerConfigurations.saveProfile(profileCache);
-        profSerEngine.addApplicationService(appService,profSerMsgListener);
+        openServices.put(appService.getName(),appService);
+        profSerEngine.addApplicationService(appService);
     }
 
 
@@ -397,7 +399,7 @@ public class RedtoothProfileConnection implements CallsListener {
                 @Override
                 public void onMessageReceive(int messageId, CallProfileAppService message) {
                     // once everything is correct, launch notification
-                    profServerEngineListener.newCallReceived(callProfileAppService);
+                    openServices.get(message.getAppService()).onNewCallReceived(callProfileAppService);
                 }
 
                 @Override

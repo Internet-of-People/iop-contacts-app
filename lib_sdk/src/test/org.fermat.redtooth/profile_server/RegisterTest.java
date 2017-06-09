@@ -4,14 +4,9 @@ import org.fermat.redtooth.core.RedtoothContext;
 import org.fermat.redtooth.core.RedtoothProfileConnection;
 import org.fermat.redtooth.core.pure.CryptoWrapperJava;
 import org.fermat.redtooth.crypto.CryptoWrapper;
-import org.fermat.redtooth.profile_server.engine.CallProfileAppService;
-import org.fermat.redtooth.profile_server.engine.EngineListener;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
-import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
-import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.utils.ProfileConfigurationImp;
 import org.junit.Test;
-import org.junit.experimental.theories.suppliers.TestedOn;
 
 import java.util.concurrent.TimeUnit;
 

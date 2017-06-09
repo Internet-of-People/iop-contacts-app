@@ -1,15 +1,14 @@
 package org.fermat.redtooth.profile_server;
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.Internal;
 
 import org.fermat.redtooth.core.RedtoothContext;
 import org.fermat.redtooth.core.RedtoothProfileConnection;
 import org.fermat.redtooth.core.pure.CryptoWrapperJava;
 import org.fermat.redtooth.core.pure.KeyEd25519Java;
 import org.fermat.redtooth.crypto.CryptoBytes;
-import org.fermat.redtooth.profile_server.engine.CallProfileAppService;
-import org.fermat.redtooth.profile_server.engine.EngineListener;
+import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
+import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
@@ -20,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;

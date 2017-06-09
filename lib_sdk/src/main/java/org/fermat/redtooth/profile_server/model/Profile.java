@@ -1,13 +1,16 @@
 package org.fermat.redtooth.profile_server.model;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.bitcoinj.core.Sha256Hash;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.profile_server.ProfileBase;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.Signer;
+import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 
 /**
  * Created by mati on 06/02/17.
@@ -27,7 +30,7 @@ public class Profile implements Signer,ProfileBase {
     private int longitude;
     private String extraData;
 
-    private List<String> applicationServices;
+    private HashSet<AppService> applicationServices;
 
     /** Key del profile */
     private KeyEd25519 keyEd25519;
@@ -38,7 +41,7 @@ public class Profile implements Signer,ProfileBase {
         this.name = name;
         this.type = type;
         this.keyEd25519 = keyEd25519;
-        applicationServices = new ArrayList<>();
+        applicationServices = new HashSet<>();
     }
 
     public Profile(byte[] version, String name, byte[] img, int latitude, int longitude, String extraData) {
@@ -122,7 +125,7 @@ public class Profile implements Signer,ProfileBase {
         this.type = type;
     }
 
-    public void addApplicationService(String service){
+    public void addApplicationService(AppService service){
         applicationServices.add(service);
     }
 
@@ -145,7 +148,7 @@ public class Profile implements Signer,ProfileBase {
     }
 
 
-    public List<String> getApplicationServices() {
+    public HashSet<AppService> getApplicationServices() {
         return applicationServices;
     }
 
