@@ -12,6 +12,8 @@ import org.fermat.redtooth.core.IoPConnect;
 import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.core.services.DefaultServices;
 import org.fermat.redtooth.crypto.CryptoBytes;
+import org.fermat.redtooth.global.DeviceLocation;
+import org.fermat.redtooth.global.GpsLocation;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
@@ -48,7 +50,7 @@ import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
  * Created by mati on 09/11/16.
  */
 
-public class IoPConnectService extends Service implements ModuleRedtooth, EngineListener {
+public class IoPConnectService extends Service implements ModuleRedtooth, EngineListener,DeviceLocation {
 
     private final Logger logger = LoggerFactory.getLogger(IoPConnectService.class);
 
@@ -99,7 +101,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
             executor = Executors.newFixedThreadPool(3);
             pairingRequestDb = new SqlitePairingRequestDb(this);
             profilesDb = new SqliteProfilesDb(this);
-            ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),profilesDb,pairingRequestDb);//configurationsPreferences,new CryptoWrapperAndroid(),new SslContextFactory(this));
+            ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),profilesDb,pairingRequestDb,this);//configurationsPreferences,new CryptoWrapperAndroid(),new SslContextFactory(this));
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -278,5 +280,14 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         return null;
     }
 
+    @Override
+    public boolean isDeviceLocationEnabled() {
+        return false;
+    }
+
+    @Override
+    public GpsLocation getDeviceLocation() {
+        return null;
+    }
 
 }
