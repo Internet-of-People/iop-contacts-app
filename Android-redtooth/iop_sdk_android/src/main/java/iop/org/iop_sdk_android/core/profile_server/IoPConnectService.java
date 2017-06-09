@@ -9,11 +9,8 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import org.fermat.redtooth.core.IoPConnect;
-import org.fermat.redtooth.core.RedtoothContext;
+import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.core.services.DefaultServices;
-import org.fermat.redtooth.core.services.MsgWrapper;
-import org.fermat.redtooth.core.services.pairing.PairingMsg;
-import org.fermat.redtooth.core.services.pairing.PairingMsgTypes;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
@@ -21,7 +18,6 @@ import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.Signer;
-import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
 import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
 import org.fermat.redtooth.profile_server.engine.SearchProfilesQuery;
 import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
@@ -29,7 +25,6 @@ import org.fermat.redtooth.profile_server.engine.futures.SubsequentSearchMsgList
 import org.fermat.redtooth.profile_server.engine.app_services.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfileListener;
-import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
@@ -53,17 +48,17 @@ import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
  * Created by mati on 09/11/16.
  */
 
-public class RedtoothService extends Service implements ModuleRedtooth, EngineListener {
+public class IoPConnectService extends Service implements ModuleRedtooth, EngineListener {
 
-    private final Logger logger = LoggerFactory.getLogger(RedtoothService.class);
+    private final Logger logger = LoggerFactory.getLogger(IoPConnectService.class);
 
-    private static final String TAG = "RedtoothService";
+    private static final String TAG = "IoPConnectService";
 
     private LocalBroadcastManager localBroadcastManager;
 
     private ExecutorService executor;
     /** Context */
-    private RedtoothContext application;
+    private IoPConnectContext application;
     /** Main library */
     private IoPConnect ioPConnect;
     /** Configurations impl */
@@ -77,12 +72,12 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     private SqliteProfilesDb profilesDb;
 
     public class ProfServerBinder extends Binder {
-        public RedtoothService getService() {
-            return RedtoothService.this;
+        public IoPConnectService getService() {
+            return IoPConnectService.this;
         }
     }
 
-    private final IBinder mBinder = new RedtoothService.ProfServerBinder();
+    private final IBinder mBinder = new IoPConnectService.ProfServerBinder();
 
     @Nullable
     @Override
@@ -96,7 +91,7 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
         Log.d(TAG,"onCreate");
         localBroadcastManager = LocalBroadcastManager.getInstance(this);
         try {
-            application = (RedtoothContext) getApplication();
+            application = (IoPConnectContext) getApplication();
             configurationsPreferences = new ProfileServerConfigurationsImp(this,getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));
             KeyEd25519 keyEd25519 = (KeyEd25519) configurationsPreferences.getUserKeys();
             if (keyEd25519!=null)
