@@ -1,3 +1,4 @@
+/*
 package org.fermat.redtooth.profile_server;
 
 import org.fermat.redtooth.core.RedtoothContext;
@@ -10,9 +11,10 @@ import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
 
-/**
+*
  * Created by furszy on 5/23/17.
- */
+
+
 
 public class RegisterTest {
 
@@ -66,3 +68,4 @@ public class RegisterTest {
     }
 
 }
+*/

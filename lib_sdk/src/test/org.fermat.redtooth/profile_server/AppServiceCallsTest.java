@@ -1,3 +1,4 @@
+/*
 package org.fermat.redtooth.profile_server;
 
 import com.google.protobuf.ByteString;
@@ -23,9 +24,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-/**
+*
  * Created by furszy on 5/23/17.
- */
+
+
 
 public class AppServiceCallsTest {
 
@@ -276,3 +278,4 @@ public class AppServiceCallsTest {
 
 
 }
+*/

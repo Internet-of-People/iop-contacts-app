@@ -45,7 +45,7 @@ public class CanTest {
     public void addIPNSTest() throws Exception {
 
         ProfileConfigurationImp conf = new ProfileConfigurationImp();
-        RedtoothProfileConnection redtoothProfileConnection = new RedtoothProfileConnection(redtoothContext,conf,cryptoWrapper,sslContextFactory);
+        /*RedtoothProfileConnection redtoothProfileConnection = new RedtoothProfileConnection(redtoothContext,,conf,cryptoWrapper,sslContextFactory);
         redtoothProfileConnection.setProfileName("MatiasCan");
         redtoothProfileConnection.setProfileType("registerCanTest");
         redtoothProfileConnection.init();
@@ -57,7 +57,7 @@ public class CanTest {
 
             assert redtoothProfileConnection.isReady();
 
-        }
+        }*/
 
 
 //        WebClient webClient = new WebClient("localhost"+":"+node.getPort());
