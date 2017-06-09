@@ -8,14 +8,12 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import org.fermat.redtooth.core.Redtooth;
+import org.fermat.redtooth.core.IoPConnect;
 import org.fermat.redtooth.core.RedtoothContext;
-import org.fermat.redtooth.core.RedtoothProfileConnection;
 import org.fermat.redtooth.core.services.DefaultServices;
 import org.fermat.redtooth.core.services.MsgWrapper;
 import org.fermat.redtooth.core.services.pairing.PairingMsg;
 import org.fermat.redtooth.core.services.pairing.PairingMsgTypes;
-import org.fermat.redtooth.crypto.Crypto;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
@@ -23,14 +21,12 @@ import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.Signer;
-import org.fermat.redtooth.profile_server.engine.CallProfileAppService;
-import org.fermat.redtooth.profile_server.engine.EngineListener;
+import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
+import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
 import org.fermat.redtooth.profile_server.engine.SearchProfilesQuery;
-import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
-import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SubsequentSearchMsgListenerFuture;
-import org.fermat.redtooth.profile_server.engine.listeners.PairingListener;
+import org.fermat.redtooth.profile_server.engine.app_services.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfileListener;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
@@ -69,7 +65,7 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     /** Context */
     private RedtoothContext application;
     /** Main library */
-    private Redtooth redtooth;
+    private IoPConnect ioPConnect;
     /** Configurations impl */
     private ProfileServerConfigurations configurationsPreferences;
     private Profile profile;
@@ -108,7 +104,7 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
             executor = Executors.newFixedThreadPool(3);
             pairingRequestDb = new SqlitePairingRequestDb(this);
             profilesDb = new SqliteProfilesDb(this);
-            redtooth = new Redtooth(application,new CryptoWrapperAndroid(),new SslContextFactory(this),profilesDb,pairingRequestDb);//configurationsPreferences,new CryptoWrapperAndroid(),new SslContextFactory(this));
+            ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),profilesDb,pairingRequestDb);//configurationsPreferences,new CryptoWrapperAndroid(),new SslContextFactory(this));
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -121,13 +117,13 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
 
     @Override
     public void connect(String pubKey) throws Exception {
-        redtooth.connectProfileSync(pubKey,this,null);
+        ioPConnect.connectProfileSync(pubKey,this,pairingListener,null);
         onCheckInCompleted(profile);
     }
 
     @Override
     public String registerProfile(String name,String type, byte[] img, int latitude, int longitude, String extraData) throws Exception {
-        profile = redtooth.createProfile(null,name,type,extraData,null);
+        profile = ioPConnect.createProfile(null,name,type,extraData,null);
         configurationsPreferences.setIsCreated(true);
         return profile.getHexPublicKey();
     }
@@ -156,7 +152,7 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
             if (version==null){
                 profile.setVersion(this.profile.getVersion());
             }
-            return redtooth.updateProfile(profile,msgListener);
+            return ioPConnect.updateProfile(profile,msgListener);
         }catch (Exception e){
             e.printStackTrace();
             throw e;
@@ -172,12 +168,12 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     public void requestPairingProfile(byte[] pubKey, byte[] profileServerId, ProfSerMsgListener<Integer> listener) {
         // String senderPubKey, String remotePubKey, String remoteServerId, String senderName,long timestamp
         PairingRequest pairingRequest = PairingRequest.buildPairingRequest(profile.getHexPublicKey(),CryptoBytes.toHexString(pubKey),null,profile.getName());
-        redtooth.requestPairingProfile(pairingRequest,listener);
+        ioPConnect.requestPairingProfile(pairingRequest,listener);
     }
 
     @Override
     public void acceptPairingProfile(byte[] profileServerId, byte[] publicKey) {
-        redtooth.acceptPairingRequest(profile.getHexPublicKey(),profileServerId,publicKey);
+        ioPConnect.acceptPairingRequest(profile.getHexPublicKey(),profileServerId,publicKey);
     }
 
     @Override
@@ -197,12 +193,12 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
 
     @Override
     public void getProfileInformation(String profPubKey,final ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException {
-        redtooth.searchAndGetProfile(profile.getHexPublicKey(),profPubKey,profileFuture);
+        ioPConnect.searchAndGetProfile(profile.getHexPublicKey(),profPubKey,profileFuture);
     }
 
     @Override
     public void getProfileInformation(String profPubKey, boolean withImage, ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException {
-        redtooth.searchAndGetProfile(profile.getHexPublicKey(),profPubKey,profileFuture);
+        ioPConnect.searchAndGetProfile(profile.getHexPublicKey(),profPubKey,profileFuture);
     }
 
     @Override
@@ -232,7 +228,7 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     @Override
     public List<ProfileInformation> getKnownProfiles() {
         List<ProfileInformation> ret = new ArrayList<>();
-        List<ProfileInformation> knownProfiles = redtooth.getKnownProfiles(profile.getPublicKey());
+        List<ProfileInformation> knownProfiles = ioPConnect.getKnownProfiles(profile.getPublicKey());
         // todo: this is a lazy remove..
         for (ProfileInformation knownProfile : knownProfiles) {
             if (!Arrays.equals(knownProfile.getPublicKey(),profile.getPublicKey())){
@@ -244,7 +240,7 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
 
     @Override
     public ProfileInformation getKnownProfile(byte[] pubKey){
-        return redtooth.getKnownProfile(pubKey);
+        return ioPConnect.getKnownProfile(pubKey);
     }
 
     @Override
@@ -266,7 +262,7 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
     @Override
     public void onDestroy() {
         Log.d(TAG,"onDestroy");
-        redtooth.stop();
+        ioPConnect.stop();
         executor.shutdown();
         super.onDestroy();
     }
@@ -276,70 +272,6 @@ public class RedtoothService extends Service implements ModuleRedtooth, EngineLi
         if (profileListener!=null){
             profileListener.onConnect(profile);
         }
-    }
-
-    @Override
-    public void newCallReceived(final CallProfileAppService callProfileAppService) {
-        DefaultServices defaultServices = getDefaultService(callProfileAppService.getAppService());
-        if (defaultServices!=null){
-            switch (defaultServices){
-                case PROFILE_PAIRING:
-                    if (pairingListener!=null){
-                        callProfileAppService.setMsgListener(new CallProfileAppService.CallMessagesListener() {
-                            @Override
-                            public void onMessage(byte[] msg) {
-                                try {
-                                    logger.info("pair msg received");
-                                    MsgWrapper msgWrapper = MsgWrapper.decode(msg);
-
-                                    PairingMsgTypes types = PairingMsgTypes.getByName(msgWrapper.getMsgType());
-                                    switch (types){
-                                        case PAIR_ACCEPT:
-                                            // update pair request -> todo: this should be in another place..
-                                            pairingRequestDb.updateStatus(profile.getHexPublicKey(),callProfileAppService.getRemotePubKey(),PairingMsgTypes.PAIR_ACCEPT);
-                                            profilesDb.updatePaired(profile.getPublicKey(), ProfileInformationImp.PairStatus.PAIRED);
-                                            if (pairingListener!=null){
-                                                pairingListener.onPairResponseReceived(callProfileAppService.getRemotePubKey(),"Accepted");
-                                            }else {
-                                                logger.info("pairListener null, please add it if you want to receive pairs");
-                                            }
-                                            break;
-                                        case PAIR_REFUSE:
-                                            // update pair request -> todo: this should be in another place..
-                                            pairingRequestDb.updateStatus(profile.getHexPublicKey(),callProfileAppService.getRemotePubKey(),PairingMsgTypes.PAIR_REFUSE);
-                                            if (pairingListener!=null){
-                                                pairingListener.onPairResponseReceived(callProfileAppService.getRemotePubKey(),"Refused");
-                                            }else {
-                                                logger.info("pairListener null, please add it if you want to receive pairs");
-                                            }
-                                            break;
-                                        case PAIR_REQUEST:
-                                            PairingMsg pairingMsg = (PairingMsg) msgWrapper.getMsg();
-                                            // save pair request -> todo: this should be in another place..
-                                            PairingRequest pairingRequest = PairingRequest.buildPairingRequest(callProfileAppService.getRemotePubKey(),profile.getHexPublicKey(),profile.getNetworkIdHex(),pairingMsg.getName());
-                                            pairingRequestDb.saveIfNotExistPairingRequest(pairingRequest);
-                                            profilesDb.updatePaired(CryptoBytes.fromHexToBytes(pairingRequest.getSenderPubKey()), ProfileInformationImp.PairStatus.WAITING_FOR_MY_RESPONSE);
-                                            if (pairingListener!=null){
-                                                pairingListener.onPairReceived(callProfileAppService.getRemotePubKey(),pairingMsg.getName());
-                                            }else {
-                                                logger.info("pairListener null, please add it if you want to receive pairs");
-                                            }
-                                            break;
-
-
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        });
-                    }
-                    break;
-            }
-        }else {
-            // todo: other app services..
-        }
-
     }
 
     private DefaultServices getDefaultService(String name){

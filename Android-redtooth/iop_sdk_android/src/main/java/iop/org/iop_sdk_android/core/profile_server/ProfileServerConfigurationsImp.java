@@ -14,6 +14,7 @@ import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.json.JSONArray;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 
 import iop.org.iop_sdk_android.core.base.Configurations;
@@ -293,7 +294,7 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
         return isRegisteredInServer();
     }
 
-    private String convertToJson(List something){
+    private String convertToJson(Collection something){
         JSONArray jsonArray = new JSONArray(something);
         return jsonArray.toString();
     }
