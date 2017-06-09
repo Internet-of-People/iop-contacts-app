@@ -7,8 +7,7 @@ import java.util.concurrent.*;
 
 public class Main
 {
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         try
         {
             // Explore profile servers around Budapest

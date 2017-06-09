@@ -43,8 +43,7 @@ public class NodeInfo
     }
 
 
-    public enum ServiceType
-    {
+    public enum ServiceType {
         Unstructured,
         Content,
         Latency,

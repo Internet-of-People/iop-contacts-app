@@ -6,14 +6,16 @@ import java.util.concurrent.Callable;
 
 
 
-public class Explorer implements Callable< List<NodeInfo> >
-{
+public class Explorer implements Callable<List<NodeInfo>>{
+
     static int DefaultClientPort = 16981;
     static List<String> SeedServers = Arrays.asList(
-        "ham4.fermat.cloud",
-        "ham5.fermat.cloud",
-        "ham6.fermat.cloud",
-        "ham7.fermat.cloud" );
+        //"ham4.fermat.cloud",
+        //"ham5.fermat.cloud",
+        //"ham6.fermat.cloud",
+        //"ham7.fermat.cloud"
+        "localhost"
+    );
 
 
 
@@ -26,8 +28,7 @@ public class Explorer implements Callable< List<NodeInfo> >
     static org.gavaghan.geodesy.GeodeticCalculator geoCalc = new org.gavaghan.geodesy.GeodeticCalculator();
     static org.gavaghan.geodesy.Ellipsoid reference = org.gavaghan.geodesy.Ellipsoid.WGS84;
 
-    double getDistanceKm(NodeInfo.GpsLocation location)
-    {
+    double getDistanceKm(NodeInfo.GpsLocation location) {
         org.gavaghan.geodesy.GlobalPosition searchLocationGps = new org.gavaghan.geodesy.GlobalPosition(
             searchLocation.getLatitude(), searchLocation.getLongitude(), 0.0);
         org.gavaghan.geodesy.GlobalPosition userPos = new org.gavaghan.geodesy.GlobalPosition(
@@ -38,8 +39,7 @@ public class Explorer implements Callable< List<NodeInfo> >
 
 
     public Explorer(NodeInfo.ServiceType serviceType, NodeInfo.GpsLocation searchLocation,
-                    float maxRadiusKm, int maxNodeCount)
-    {
+                    float maxRadiusKm, int maxNodeCount) {
         this.searchLocation = searchLocation;
         this.serviceType    = serviceType;
         this.maxRadiusKm    = maxRadiusKm;
@@ -47,8 +47,7 @@ public class Explorer implements Callable< List<NodeInfo> >
     }
 
 
-    Session createSeedSession() throws IOException
-    {
+    Session createSeedSession() throws IOException {
         Random rand = new Random();
         List<String> remainingSeeds = new ArrayList<>(SeedServers);
         while ( ! remainingSeeds.isEmpty() )
@@ -64,8 +63,7 @@ public class Explorer implements Callable< List<NodeInfo> >
 
 
 
-    @Override public List<NodeInfo> call() throws IOException
-    {
+    @Override public List<NodeInfo> call() throws IOException {
         // Find closest node to specified searchLocation
         Session session = createSeedSession();
         NodeInfo oldClosestNode = null;
@@ -90,11 +88,11 @@ public class Explorer implements Callable< List<NodeInfo> >
             searchLocation, maxRadiusKm, 2 * maxNodeCount, true);
         List<NodeInfo> matchingNodes = filterType(collectedNodes, serviceType);
         // TODO what algorithmic strategy to follow here to collect more nodes if necessary?
-        while ( matchingNodes.size() < maxNodeCount ) {
+        /*while ( matchingNodes.size() < maxNodeCount ) {
             //TODO check if there is any chance to get more nodes;
             List<NodeInfo> nodes = filterDistance(matchingNodes, maxRadiusKm);
             //todo: don't fuck it..
-        }
+        }*/
         return matchingNodes.subList( 0, Math.min( matchingNodes.size(), maxNodeCount) );
     }
 
