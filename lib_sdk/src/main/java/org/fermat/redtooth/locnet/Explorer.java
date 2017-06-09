@@ -1,5 +1,7 @@
 package org.fermat.redtooth.locnet;
 
+import org.fermat.redtooth.global.GpsLocation;
+
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -20,7 +22,7 @@ public class Explorer implements Callable<List<NodeInfo>>{
 
 
     NodeInfo.ServiceType serviceType;
-    NodeInfo.GpsLocation searchLocation;
+    GpsLocation searchLocation;
     float                maxRadiusKm;
     int                  maxNodeCount;
 
@@ -28,7 +30,7 @@ public class Explorer implements Callable<List<NodeInfo>>{
     static org.gavaghan.geodesy.GeodeticCalculator geoCalc = new org.gavaghan.geodesy.GeodeticCalculator();
     static org.gavaghan.geodesy.Ellipsoid reference = org.gavaghan.geodesy.Ellipsoid.WGS84;
 
-    double getDistanceKm(NodeInfo.GpsLocation location) {
+    double getDistanceKm(GpsLocation location) {
         org.gavaghan.geodesy.GlobalPosition searchLocationGps = new org.gavaghan.geodesy.GlobalPosition(
             searchLocation.getLatitude(), searchLocation.getLongitude(), 0.0);
         org.gavaghan.geodesy.GlobalPosition userPos = new org.gavaghan.geodesy.GlobalPosition(
@@ -38,7 +40,7 @@ public class Explorer implements Callable<List<NodeInfo>>{
 
 
 
-    public Explorer(NodeInfo.ServiceType serviceType, NodeInfo.GpsLocation searchLocation,
+    public Explorer(NodeInfo.ServiceType serviceType, GpsLocation searchLocation,
                     float maxRadiusKm, int maxNodeCount) {
         this.searchLocation = searchLocation;
         this.serviceType    = serviceType;

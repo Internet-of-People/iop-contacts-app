@@ -1,5 +1,6 @@
 package org.fermat.redtooth.locnet;
 
+import org.fermat.redtooth.global.GpsLocation;
 import org.fermat.redtooth.locnet.protocol.IopLocNet;
 
 import java.net.InetAddress;
@@ -14,9 +15,9 @@ public class Converter
     static final float GPS_COORDINATE_PROTOBUF_INT_MULTIPLIER = 1000000.f;
 
 
-    public static NodeInfo.GpsLocation fromProtoBuf(IopLocNet.GpsLocation location)
+    public static GpsLocation fromProtoBuf(IopLocNet.GpsLocation location)
     {
-        return new NodeInfo.GpsLocation(
+        return new GpsLocation(
             location.getLatitude() / GPS_COORDINATE_PROTOBUF_INT_MULTIPLIER,
             location.getLongitude() / GPS_COORDINATE_PROTOBUF_INT_MULTIPLIER );
     }
@@ -77,7 +78,7 @@ public class Converter
     }
 
 
-    public static IopLocNet.GpsLocation toProtoBuf(NodeInfo.GpsLocation location)
+    public static IopLocNet.GpsLocation toProtoBuf(GpsLocation location)
     {
         return IopLocNet.GpsLocation.newBuilder()
             .setLatitude(  (int)(location.getLatitude()  * GPS_COORDINATE_PROTOBUF_INT_MULTIPLIER) )

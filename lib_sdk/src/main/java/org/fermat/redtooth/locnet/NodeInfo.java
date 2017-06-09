@@ -1,5 +1,7 @@
 package org.fermat.redtooth.locnet;
 
+import org.fermat.redtooth.global.GpsLocation;
+
 import java.net.InetAddress;
 import java.util.List;
 
@@ -7,23 +9,6 @@ import java.util.List;
 
 public class NodeInfo
 {
-    public static class GpsLocation
-    {
-        float latitude;
-        float longitude;
-
-        public GpsLocation(float latitude, float longitude)
-        {
-            this.latitude  = latitude;
-            this.longitude = longitude;
-        }
-
-        public float getLatitude()  { return latitude; }
-        public float getLongitude() { return longitude; }
-
-        @Override public String toString() { return latitude + "," + longitude; }
-    }
-
 
     public static class Contact
     {

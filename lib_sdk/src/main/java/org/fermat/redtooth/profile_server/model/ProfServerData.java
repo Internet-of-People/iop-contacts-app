@@ -15,6 +15,8 @@ public class ProfServerData {
     private int pPort = 16987;
     private int custPort;
     private int nonCustPort;
+    private float latitude;
+    private float longitude;
     /** If the profile server is the home server */
     private boolean isHome;
 
@@ -40,11 +42,22 @@ public class ProfServerData {
         this.isHome = isHome;
     }
 
+    public ProfServerData(byte[] networkId,String host, int pPort) {
+        this.networkId = networkId;
+        this.host = host;
+        this.pPort = pPort;
+    }
+
     public ProfServerData(String host, int clPort, int nonClPort) {
         this.host = host;
         this.custPort = clPort;
         this.nonCustPort = nonClPort;
-        this.isHome = isHome;
+    }
+
+    public ProfServerData(byte[] networkId, String host, int port, float latitude, float longitude) {
+        this(networkId,host,port);
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public String getHost() {
@@ -93,5 +106,13 @@ public class ProfServerData {
 
     public byte[] getNetworkId() {
         return networkId;
+    }
+
+    public float getLatitude() {
+        return latitude;
+    }
+
+    public float getLongitude() {
+        return longitude;
     }
 }

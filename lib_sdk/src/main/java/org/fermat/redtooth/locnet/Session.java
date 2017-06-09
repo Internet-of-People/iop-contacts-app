@@ -1,5 +1,6 @@
 package org.fermat.redtooth.locnet;
 
+import org.fermat.redtooth.global.GpsLocation;
 import org.fermat.redtooth.locnet.protocol.IopLocNet;
 
 import java.io.IOException;
@@ -37,7 +38,7 @@ public class Session
     }
 
 
-    public List<NodeInfo> getClosestNodes(NodeInfo.GpsLocation location,
+    public List<NodeInfo> getClosestNodes(GpsLocation location,
         float maxRadiusKm, int maxNodeCount, boolean includeNeighbours) throws IOException
     {
         IopLocNet.ClientRequest.Builder request = IopLocNet.ClientRequest.newBuilder();

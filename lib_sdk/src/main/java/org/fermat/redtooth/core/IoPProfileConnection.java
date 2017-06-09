@@ -3,6 +3,10 @@ package org.fermat.redtooth.core;
 
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.crypto.CryptoWrapper;
+import org.fermat.redtooth.global.DeviceLocation;
+import org.fermat.redtooth.global.GpsLocation;
+import org.fermat.redtooth.locnet.Explorer;
+import org.fermat.redtooth.locnet.NodeInfo;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
@@ -29,6 +33,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 /**
  * Created by mati on 08/05/17.
@@ -49,10 +55,12 @@ public class IoPProfileConnection implements CallsListener {
     private ProfSerEngine profSerEngine;
     /** profile server configurations */
     private ProfileServerConfigurations profileServerConfigurations;
-    /** Crypto implmentation depends on the platform */
+    /** Crypto implmentation dependent on the platform */
     private CryptoWrapper cryptoWrapper;
     /** Ssl context factory */
     private SslContextFactory sslContextFactory;
+    /** Location helper dependent on the platform */
+    private DeviceLocation deviceLocation;
     /** Engine listener */
     private EngineListener profServerEngineListener;
     /** Open profile app service calls -> remote profile pk -> call in progress */
@@ -60,12 +68,13 @@ public class IoPProfileConnection implements CallsListener {
     /**  */
     private ConcurrentMap<String,AppService> openServices = new ConcurrentHashMap<>();
 
-    public IoPProfileConnection(IoPConnectContext contextWrapper, Profile profile, ProfileServerConfigurations profileServerConfigurations, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory){
+    public IoPProfileConnection(IoPConnectContext contextWrapper, Profile profile, ProfileServerConfigurations profileServerConfigurations, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, DeviceLocation deviceLocation){
         this.contextWrapper = contextWrapper;
         this.profileServerConfigurations = profileServerConfigurations;
         this.cryptoWrapper = cryptoWrapper;
         this.sslContextFactory = sslContextFactory;
         this.profileCache = profile;
+        this.deviceLocation = deviceLocation;
     }
 
     /**
@@ -73,19 +82,41 @@ public class IoPProfileConnection implements CallsListener {
      *
      * @throws Exception
      */
-    public void init(final MsgListenerFuture<Boolean> initFuture) {
+    public void init(final MsgListenerFuture<Boolean> initFuture) throws ExecutionException, InterruptedException {
         // the flow is:
         // If the profile server main contract is active the connection with the profile server is clear.
         // If the hosting contract is null i have to search for a profile server using the LOC network and start the flow again
         //
         if (profileServerConfigurations.getMainProfileServerContract()!=null){
             //
-            initProfileServer();
+            ProfServerData profServerData = profileServerConfigurations.getMainProfileServer();
+            initProfileServer(profServerData);
         }else {
             // search in LOC for a profile server or use a trusted one from the user.
             // todo: here i have to do the LOC Network flow.
+            // Sync explore profile servers around Argentina
+            ProfServerData profServerData = null;
+            if (false){
+                Explorer explorer = new Explorer( NodeInfo.ServiceType.Profile, deviceLocation.getDeviceLocation(), 10000, 10 );
+                FutureTask< List<NodeInfo> > task = new FutureTask<>(explorer);
+                task.run();
+                List<NodeInfo> resultNodes = task.get();
+                // chose the first one - closest
+                if (!resultNodes.isEmpty()) {
+                    NodeInfo selectedNode = resultNodes.get(0);
+                    profServerData = new ProfServerData(
+                            CryptoBytes.fromHexToBytes(selectedNode.getNodeId()),
+                            selectedNode.getContact().getAddress().getHostAddress(),
+                            selectedNode.getContact().getPort(),
+                            selectedNode.getLocation().getLatitude(),
+                            selectedNode.getLocation().getLongitude()
+                    );
+                }
+            }else {
+                 profServerData = profileServerConfigurations.getMainProfileServer();
+            }
             // Until Istvan push his client i will connect to a single local host server putting a hardcoded local server on the configurations.
-            initProfileServer();
+            initProfileServer(profServerData);
             //profileServerConfigurations.setHost("localhost");
         }
         MsgListenerFuture<Boolean> initWrapper = new MsgListenerFuture<>();
@@ -113,8 +144,7 @@ public class IoPProfileConnection implements CallsListener {
      * Initialize the profile server
      * @throws Exception
      */
-    private void initProfileServer() {
-        ProfServerData profServerData = profileServerConfigurations.getMainProfileServer();
+    private void initProfileServer(ProfServerData profServerData) {
         if (profServerData.getHost()!=null) {
             profSerEngine = new ProfSerEngine(
                     contextWrapper,

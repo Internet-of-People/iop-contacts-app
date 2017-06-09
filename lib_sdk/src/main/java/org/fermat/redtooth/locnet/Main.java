@@ -1,5 +1,7 @@
 package org.fermat.redtooth.locnet;
 
+import org.fermat.redtooth.global.GpsLocation;
+
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -12,7 +14,7 @@ public class Main
         {
             // Explore profile servers around Budapest
             Explorer explorer = new Explorer( NodeInfo.ServiceType.Profile,
-                new NodeInfo.GpsLocation(47.497912f, 19.040235f), 10000, 10 );
+                new GpsLocation(47.497912f, 19.040235f), 10000, 10 );
             FutureTask< List<NodeInfo> > task = new FutureTask<>(explorer);
             task.run();
             List<NodeInfo> resultNodes = task.get();

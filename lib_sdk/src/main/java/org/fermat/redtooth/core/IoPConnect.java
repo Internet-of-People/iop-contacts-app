@@ -6,6 +6,8 @@ import org.fermat.redtooth.core.services.pairing.PairingMsg;
 import org.fermat.redtooth.core.services.pairing.PairingMsgTypes;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.crypto.CryptoWrapper;
+import org.fermat.redtooth.global.DeviceLocation;
+import org.fermat.redtooth.locnet.Explorer;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ProfileInformation;
@@ -50,18 +52,21 @@ public class IoPConnect {
     private ProfilesManager profilesManager;
     /** Pairing request manager db  */
     private PairingRequestsManager pairingRequestsManager;
+    /** Gps */
+    private DeviceLocation deviceLocation;
     /** Crypto platform implementation */
     private CryptoWrapper cryptoWrapper;
     /** Socket factory */
     private SslContextFactory sslContextFactory;
 
-    public IoPConnect(IoPConnectContext contextWrapper, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, ProfilesManager profilesManager, PairingRequestsManager pairingRequestsManager) {
+    public IoPConnect(IoPConnectContext contextWrapper, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, ProfilesManager profilesManager, PairingRequestsManager pairingRequestsManager,DeviceLocation deviceLocation) {
         this.context = contextWrapper;
         this.cryptoWrapper = cryptoWrapper;
         this.sslContextFactory = sslContextFactory;
         this.managers = new ConcurrentHashMap<>();
         this.profilesManager = profilesManager;
         this.pairingRequestsManager = pairingRequestsManager;
+        this.deviceLocation = deviceLocation;
     }
 
 
@@ -128,7 +133,8 @@ public class IoPConnect {
                 initClientData(profileServerConfigurations,pairingListener),
                 profileServerConfigurations,
                 cryptoWrapper,
-                sslContextFactory);
+                sslContextFactory,
+                deviceLocation);
         ioPProfileConnection.setProfServerEngineListener(profServerEngineListener);
         // map the profile connection with his public key
         managers.put(keyEd25519.getPublicKeyHex(), ioPProfileConnection);
