@@ -3,9 +3,8 @@ package org.fermat.redtooth.profile_server.client;
 
 import com.google.protobuf.ByteString;
 
-import org.fermat.redtooth.core.RedtoothContext;
+import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.crypto.CryptoBytes;
-import org.fermat.redtooth.profile_server.IoHandler;
 import org.fermat.redtooth.profile_server.protocol.CanStoreMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +39,7 @@ public class ProfSerImp implements ProfileServer {
     private ProfServerData configurations;
 
 
-    public ProfSerImp(RedtoothContext context, ProfServerData configurations, SslContextFactory sslContextFactory, PsSocketHandler<IopProfileServer.Message> handler) {
+    public ProfSerImp(IoPConnectContext context, ProfServerData configurations, SslContextFactory sslContextFactory, PsSocketHandler<IopProfileServer.Message> handler) {
         this.configurations = configurations;
         profSerConnectionManager = new ProfSerConnectionManager(configurations.getHost(),sslContextFactory,handler);
     }

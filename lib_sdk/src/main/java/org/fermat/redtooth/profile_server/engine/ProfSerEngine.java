@@ -1,7 +1,7 @@
 package org.fermat.redtooth.profile_server.engine;
 
 import org.bitcoinj.core.Sha256Hash;
-import org.fermat.redtooth.core.RedtoothContext;
+import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.crypto.CryptoWrapper;
 import org.fermat.redtooth.profile_server.ProfileInformation;
@@ -96,7 +96,7 @@ public class ProfSerEngine {
      * @param profServerData
      * @param profile -> use a profile for the restriction of 1 per connection that the server have.
      */
-    public ProfSerEngine(RedtoothContext contextWrapper, ProfSerDb profSerDb , ProfServerData profServerData, Profile profile, CryptoWrapper crypto, SslContextFactory sslContextFactory) {
+    public ProfSerEngine(IoPConnectContext contextWrapper, ProfSerDb profSerDb , ProfServerData profServerData, Profile profile, CryptoWrapper crypto, SslContextFactory sslContextFactory) {
         this.profServerData = profServerData;
         this.crypto = crypto;
         this.profSerDb = profSerDb;

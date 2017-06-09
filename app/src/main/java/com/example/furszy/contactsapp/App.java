@@ -7,7 +7,7 @@ import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import org.fermat.redtooth.core.RedtoothContext;
+import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.engine.app_services.PairingListener;
@@ -35,7 +35,7 @@ import iop.org.iop_sdk_android.core.profile_server.ProfileServerConfigurationsIm
  * Created by furszy on 5/25/17.
  */
 
-public class App extends Application implements RedtoothContext, PairingListener {
+public class App extends Application implements IoPConnectContext, PairingListener {
 
     public static final String INTENT_ACTION_PROFILE_CONNECTED = "profile_connected";
     public static final String INTENT_ACTION_PROFILE_DISCONNECTED = "profile_disconnected";

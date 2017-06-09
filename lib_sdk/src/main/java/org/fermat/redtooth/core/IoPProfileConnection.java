@@ -1,8 +1,6 @@
 package org.fermat.redtooth.core;
 
 
-import org.fermat.redtooth.core.services.DefaultServices;
-import org.fermat.redtooth.core.services.pairing.PairingAppService;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.crypto.CryptoWrapper;
 import org.fermat.redtooth.profile_server.CantConnectException;
@@ -39,12 +37,12 @@ import java.util.concurrent.ConcurrentMap;
  *
  */
 
-public class RedtoothProfileConnection implements CallsListener {
+public class IoPProfileConnection implements CallsListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(RedtoothProfileConnection.class);
+    private static final Logger logger = LoggerFactory.getLogger(IoPProfileConnection.class);
 
     /** Context wrapper */
-    private RedtoothContext contextWrapper;
+    private IoPConnectContext contextWrapper;
     /** Profile cached */
     private Profile profileCache;
     /** profile server engine */
@@ -62,7 +60,7 @@ public class RedtoothProfileConnection implements CallsListener {
     /**  */
     private ConcurrentMap<String,AppService> openServices = new ConcurrentHashMap<>();
 
-    public RedtoothProfileConnection(RedtoothContext contextWrapper,Profile profile,ProfileServerConfigurations profileServerConfigurations, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory){
+    public IoPProfileConnection(IoPConnectContext contextWrapper, Profile profile, ProfileServerConfigurations profileServerConfigurations, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory){
         this.contextWrapper = contextWrapper;
         this.profileServerConfigurations = profileServerConfigurations;
         this.cryptoWrapper = cryptoWrapper;

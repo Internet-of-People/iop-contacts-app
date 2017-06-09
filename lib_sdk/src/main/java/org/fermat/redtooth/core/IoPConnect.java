@@ -43,9 +43,9 @@ public class IoPConnect {
     private final Logger logger = LoggerFactory.getLogger(IoPConnect.class);
 
     /** Profiles connection manager */
-    private ConcurrentMap<String,RedtoothProfileConnection> managers;
+    private ConcurrentMap<String,IoPProfileConnection> managers;
     /** Enviroment context */
-    private RedtoothContext context;
+    private IoPConnectContext context;
     /** Profiles manager db */
     private ProfilesManager profilesManager;
     /** Pairing request manager db  */
@@ -55,7 +55,7 @@ public class IoPConnect {
     /** Socket factory */
     private SslContextFactory sslContextFactory;
 
-    public IoPConnect(RedtoothContext contextWrapper, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, ProfilesManager profilesManager, PairingRequestsManager pairingRequestsManager) {
+    public IoPConnect(IoPConnectContext contextWrapper, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, ProfilesManager profilesManager, PairingRequestsManager pairingRequestsManager) {
         this.context = contextWrapper;
         this.cryptoWrapper = cryptoWrapper;
         this.sslContextFactory = sslContextFactory;
@@ -121,18 +121,18 @@ public class IoPConnect {
         return getProfileConnection(profile.getHexPublicKey()).updateProfile(profile.getVersion(),profile.getName(),profile.getImg(),profile.getLatitude(),profile.getLongitude(),profile.getExtraData(),msgListener);
     }
 
-    private RedtoothProfileConnection addConnection(ProfileServerConfigurations profileServerConfigurations, KeyEd25519 keyEd25519, EngineListener profServerEngineListener, PairingListener pairingListener){
+    private IoPProfileConnection addConnection(ProfileServerConfigurations profileServerConfigurations, KeyEd25519 keyEd25519, EngineListener profServerEngineListener, PairingListener pairingListener){
         // profile connection
-        RedtoothProfileConnection redtoothProfileConnection = new RedtoothProfileConnection(
+        IoPProfileConnection ioPProfileConnection = new IoPProfileConnection(
                 context,
                 initClientData(profileServerConfigurations,pairingListener),
                 profileServerConfigurations,
                 cryptoWrapper,
                 sslContextFactory);
-        redtoothProfileConnection.setProfServerEngineListener(profServerEngineListener);
+        ioPProfileConnection.setProfServerEngineListener(profServerEngineListener);
         // map the profile connection with his public key
-        managers.put(keyEd25519.getPublicKeyHex(),redtoothProfileConnection);
-        return redtoothProfileConnection;
+        managers.put(keyEd25519.getPublicKeyHex(), ioPProfileConnection);
+        return ioPProfileConnection;
     }
 
     private Profile initClientData(ProfileServerConfigurations profileServerConfigurations, PairingListener pairingListener) {
@@ -227,7 +227,7 @@ public class IoPConnect {
      */
     public void requestPairingProfile(final PairingRequest pairingRequest, final ProfSerMsgListener<Integer> listener) {
         logger.info("requestPairingProfile, remote: "+pairingRequest.getRemotePubKey());
-        final RedtoothProfileConnection connection = getProfileConnection(pairingRequest.getSenderPubKey());
+        final IoPProfileConnection connection = getProfileConnection(pairingRequest.getSenderPubKey());
         // first the call
         MsgListenerFuture<CallProfileAppService> callListener = new MsgListenerFuture();
         callListener.setListener(new BaseMsgFuture.Listener<CallProfileAppService>() {
@@ -286,7 +286,7 @@ public class IoPConnect {
         try {
             String remotePubKeyHex = CryptoBytes.toHexString(publicKey);
             logger.info("acceptPairingRequest, remote: " + remotePubKeyHex);
-            final RedtoothProfileConnection connection = getProfileConnection(senderHexPublicKey);
+            final IoPProfileConnection connection = getProfileConnection(senderHexPublicKey);
             CallProfileAppService call = connection.getActiveAppCallService(remotePubKeyHex);
             final MsgListenerFuture<Boolean> future = new MsgListenerFuture();
             //future.setListener(); -> todo: add future listener and save acceptPairing sent
@@ -327,7 +327,7 @@ public class IoPConnect {
         return context.createProfSerConfig();
     }
 
-    private RedtoothProfileConnection getProfileConnection(String profPubKey){
+    private IoPProfileConnection getProfileConnection(String profPubKey){
         if (!managers.containsKey(profPubKey)) throw new IllegalStateException("Profile connection not established");
         return managers.get(profPubKey);
     }
@@ -351,7 +351,7 @@ public class IoPConnect {
     }
 
     public void stop() {
-        for (Map.Entry<String, RedtoothProfileConnection> stringRedtoothProfileConnectionEntry : managers.entrySet()) {
+        for (Map.Entry<String, IoPProfileConnection> stringRedtoothProfileConnectionEntry : managers.entrySet()) {
             try {
                 stringRedtoothProfileConnectionEntry.getValue().stop();
             }catch (Exception e){

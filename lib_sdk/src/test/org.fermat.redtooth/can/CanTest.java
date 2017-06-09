@@ -2,14 +2,11 @@ package org.fermat.redtooth.can;
 
 import org.fermat.redtooth.can.impl.*;
 import org.fermat.redtooth.can.impl.Variant;
-import org.fermat.redtooth.core.RedtoothContext;
-import org.fermat.redtooth.core.RedtoothProfileConnection;
+import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.core.pure.CryptoWrapperJava;
 import org.fermat.redtooth.crypto.CryptoWrapper;
-import org.fermat.redtooth.forum.discourge.com.wareninja.opensource.discourse.utils.WebClient;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.SslContextFactory;
-import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.utils.ProfileConfigurationImp;
 import org.junit.Test;
 
@@ -19,7 +16,7 @@ import org.junit.Test;
 
 public class CanTest {
 
-    RedtoothContext redtoothContext = new RedtoothContext() {
+    IoPConnectContext ioPConnectContext = new IoPConnectContext() {
         @Override
         public ProfileServerConfigurations createProfSerConfig() {
             return new ProfileConfigurationImp();
@@ -45,7 +42,7 @@ public class CanTest {
     public void addIPNSTest() throws Exception {
 
         ProfileConfigurationImp conf = new ProfileConfigurationImp();
-        /*RedtoothProfileConnection redtoothProfileConnection = new RedtoothProfileConnection(redtoothContext,,conf,cryptoWrapper,sslContextFactory);
+        /*IoPProfileConnection redtoothProfileConnection = new IoPProfileConnection(ioPConnectContext,,conf,cryptoWrapper,sslContextFactory);
         redtoothProfileConnection.setProfileName("MatiasCan");
         redtoothProfileConnection.setProfileType("registerCanTest");
         redtoothProfileConnection.init();
