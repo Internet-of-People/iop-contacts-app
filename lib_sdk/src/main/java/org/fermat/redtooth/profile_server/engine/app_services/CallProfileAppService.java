@@ -7,8 +7,10 @@ import org.fermat.redtooth.core.services.MsgWrapper;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.engine.ProfSerEngine;
+import org.fermat.redtooth.profile_server.engine.crypto.CryptoAlgo;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
+import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +58,7 @@ public class CallProfileAppService {
     /** App service used to connect both profiles  */
     private String appService;
     /** Local profile public key */
-    private String localProfilePk;
+    private Profile localProfile;
     /** Remote profile public key */
     private String remoteProfilePk;
     /** Identifier token of the call in the server */
@@ -67,14 +69,18 @@ public class CallProfileAppService {
     private String errorStatus;
     /** If the local profile is the creator of the call */
     private boolean isCallCreator;
+    /** If the call is encryted by the parties */
+    private boolean isEncrypted;
+    /** Algorithm used to encrypt and decrypt the messages */
+    private CryptoAlgo cryptoAlgo;
     /** App call message listener */
     private CallMessagesListener msgListener;
 
     private ProfSerEngine profSerEngine;
 
-    public CallProfileAppService(String appService, String localProfilePk,String remotePubKey,ProfSerEngine profSerEngine) {
+    public CallProfileAppService(String appService, Profile localProfile,String remotePubKey,ProfSerEngine profSerEngine) {
         this.appService = appService;
-        this.localProfilePk = localProfilePk;
+        this.localProfile = localProfile;
         this.remoteProfilePk = remotePubKey;
         this.profSerEngine = profSerEngine;
     }
@@ -111,6 +117,11 @@ public class CallProfileAppService {
         this.msgListener = msgListener;
     }
 
+    public void setCryptoAlgo(CryptoAlgo cryptoAlgo){
+        this.cryptoAlgo = cryptoAlgo;
+        this.isEncrypted = true;
+    }
+
     /**
      *
      *
@@ -123,7 +134,6 @@ public class CallProfileAppService {
     public void sendMsgStr(String msg, final MsgListenerFuture<Boolean> sendListener) throws CantConnectException, CantSendMessageException {
         if (this.status!=CALL_AS_ESTABLISH) throw new IllegalStateException("Call is not ready to send messages");
         byte[] msgBytes = ByteString.copyFromUtf8(msg).toByteArray();
-
         MsgListenerFuture<IopProfileServer.ApplicationServiceSendMessageResponse> msgListenerFuture = new MsgListenerFuture();
         msgListenerFuture.setListener(new BaseMsgFuture.Listener<IopProfileServer.ApplicationServiceSendMessageResponse>() {
             @Override
@@ -157,7 +167,6 @@ public class CallProfileAppService {
 
     public void sendMsg(byte[] msg, final MsgListenerFuture<Boolean> sendListener) throws CantConnectException, CantSendMessageException {
         if (this.status!=CALL_AS_ESTABLISH) throw new IllegalStateException("Call is not ready to send messages");
-
         MsgListenerFuture<IopProfileServer.ApplicationServiceSendMessageResponse> msgListenerFuture = new MsgListenerFuture();
         msgListenerFuture.setListener(new BaseMsgFuture.Listener<IopProfileServer.ApplicationServiceSendMessageResponse>() {
             @Override
@@ -172,8 +181,16 @@ public class CallProfileAppService {
                 sendListener.onMsgFail(messageId,status,statusDetail);
             }
         });
-        profSerEngine.sendAppServiceMsg(callToken,msg,msgListenerFuture);
-
+        byte[] msgTemp = msg;
+        if (isEncrypted){
+            if (cryptoAlgo!=null){
+                msgTemp = cryptoAlgo.digest(msgTemp,msg.length,localProfile.getPublicKey());
+            }else {
+                logger.error("msg encryption, crypto algo not setted");
+                throw new CantSendMessageException("msg encryption, crypto algo not setted");
+            }
+        }
+        profSerEngine.sendAppServiceMsg(callToken,msgTemp,msgListenerFuture);
     }
 
     /**
@@ -182,8 +199,16 @@ public class CallProfileAppService {
      * @param msg
      */
     public void onMessageReceived(byte[] msg){
+        byte[] msgTemp = msg;
         if (msgListener!=null){
-            msgListener.onMessage(msg);
+            if (isEncrypted){
+                if (cryptoAlgo!=null){
+                    msgTemp = cryptoAlgo.open(msg,localProfile.getPublicKey(),localProfile.getPrivKey());
+                }else {
+                    logger.error("msg decryption, crypto algo not setted");
+                }
+            }
+            msgListener.onMessage(msgTemp);
         }else {
             logger.warn("CallAppService msg received, not msgListener attached..");
         }

@@ -105,7 +105,7 @@ public class IoPProfileConnection implements CallsListener {
                 if (!resultNodes.isEmpty()) {
                     NodeInfo selectedNode = resultNodes.get(0);
                     profServerData = new ProfServerData(
-                            CryptoBytes.fromHexToBytes(selectedNode.getNodeId()),
+                            selectedNode.getNodeId(),
                             selectedNode.getContact().getAddress().getHostAddress(),
                             selectedNode.getContact().getPort(),
                             selectedNode.getLocation().getLatitude(),
@@ -300,7 +300,7 @@ public class IoPProfileConnection implements CallsListener {
      */
     public void callProfileAppService(final String remoteProfilePublicKey, final String appService, boolean tryWithoutGetInfo, final ProfSerMsgListener<CallProfileAppService> profSerMsgListener) {
         logger.info("callProfileAppService from "+remoteProfilePublicKey+" using "+appService);
-        final CallProfileAppService callProfileAppService = new CallProfileAppService(appService,profileCache.getHexPublicKey(),remoteProfilePublicKey,profSerEngine);
+        final CallProfileAppService callProfileAppService = new CallProfileAppService(appService,profileCache,remoteProfilePublicKey,profSerEngine);
         try {
             if (!tryWithoutGetInfo) {
                 callProfileAppService.setStatus(CallProfileAppService.Status.PENDING_AS_INFO);
@@ -415,7 +415,7 @@ public class IoPProfileConnection implements CallsListener {
             // todo: launch notification to accept the incoming call here.
             String remotePubKey = CryptoBytes.toHexString(message.getCallerPublicKey().toByteArray());
             String callToken = CryptoBytes.toHexString(message.getCalleeToken().toByteArray());
-            final CallProfileAppService callProfileAppService = new CallProfileAppService(message.getServiceName(), profileCache.getHexPublicKey(), remotePubKey,profSerEngine);
+            final CallProfileAppService callProfileAppService = new CallProfileAppService(message.getServiceName(), profileCache, remotePubKey,profSerEngine);
             callProfileAppService.setCallToken(message.getCalleeToken().toByteArray());
 
             // accept every single call
