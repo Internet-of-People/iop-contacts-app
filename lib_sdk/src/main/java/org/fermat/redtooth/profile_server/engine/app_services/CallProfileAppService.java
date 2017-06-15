@@ -2,8 +2,6 @@ package org.fermat.redtooth.profile_server.engine.app_services;
 
 import com.google.protobuf.ByteString;
 
-import org.fermat.redtooth.core.services.BaseMsg;
-import org.fermat.redtooth.core.services.MsgWrapper;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.engine.ProfSerEngine;
@@ -78,6 +76,12 @@ public class CallProfileAppService {
 
     private ProfSerEngine profSerEngine;
 
+    public CallProfileAppService(String appService, Profile localProfile,String remotePubKey,ProfSerEngine profSerEngine,CryptoAlgo cryptoAlgo) {
+        this(appService,localProfile,remotePubKey,profSerEngine);
+        this.cryptoAlgo = cryptoAlgo;
+        this.isEncrypted = true;
+    }
+
     public CallProfileAppService(String appService, Profile localProfile,String remotePubKey,ProfSerEngine profSerEngine) {
         this.appService = appService;
         this.localProfile = localProfile;
@@ -120,6 +124,10 @@ public class CallProfileAppService {
     public void setCryptoAlgo(CryptoAlgo cryptoAlgo){
         this.cryptoAlgo = cryptoAlgo;
         this.isEncrypted = true;
+    }
+
+    public boolean isEncrypted() {
+        return isEncrypted;
     }
 
     /**

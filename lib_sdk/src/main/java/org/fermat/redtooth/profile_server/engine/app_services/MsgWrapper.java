@@ -1,4 +1,4 @@
-package org.fermat.redtooth.core.services;
+package org.fermat.redtooth.profile_server.engine.app_services;
 
 import org.fermat.redtooth.global.utils.SerializationUtils;
 

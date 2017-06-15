@@ -1,7 +1,6 @@
 package org.fermat.redtooth.core.services.pairing;
 
-import org.apache.http.MethodNotSupportedException;
-import org.fermat.redtooth.core.services.BaseMsg;
+import org.fermat.redtooth.profile_server.engine.app_services.BaseMsg;
 import org.fermat.redtooth.global.utils.SerializationUtils;
 
 import java.io.Serializable;
@@ -10,7 +9,7 @@ import java.io.Serializable;
  * Created by furszy on 6/4/17.
  */
 
-public class PairingMsg extends BaseMsg<PairingMsg> implements Serializable {
+public class PairingMsg extends BaseMsg<PairingMsg> {
 
     private String name;
 

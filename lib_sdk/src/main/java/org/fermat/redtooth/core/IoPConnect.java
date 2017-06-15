@@ -278,7 +278,7 @@ public class IoPConnect {
                 listener.onMsgFail(messageId,status,statusDetail);
             }
         });
-        connection.callProfileAppService(pairingRequest.getRemotePubKey(), DefaultServices.PROFILE_PAIRING.getName(),false,callListener);
+        connection.callProfileAppService(pairingRequest.getRemotePubKey(), DefaultServices.PROFILE_PAIRING.getName(),false,false,callListener);
     }
 
     /**
@@ -317,7 +317,7 @@ public class IoPConnect {
                         future.onMsgFail(messageId,status,statusDetail);
                     }
                 });
-                connection.callProfileAppService(remotePubKeyHex,DefaultServices.PROFILE_PAIRING.getName(),true,callFuture);
+                connection.callProfileAppService(remotePubKeyHex,DefaultServices.PROFILE_PAIRING.getName(),true,false,callFuture);
             }
             // todo: here i have to add the pair request db and tick this as done. and save the profile with paired true.
             profilesManager.updatePaired(publicKey, ProfileInformationImp.PairStatus.PAIRED);

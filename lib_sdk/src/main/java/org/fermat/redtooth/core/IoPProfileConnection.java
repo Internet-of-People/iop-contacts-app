@@ -15,6 +15,8 @@ import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 import org.fermat.redtooth.profile_server.engine.app_services.AppServiceMsg;
 import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
 import org.fermat.redtooth.profile_server.engine.app_services.CallsListener;
+import org.fermat.redtooth.profile_server.engine.app_services.CryptoMsg;
+import org.fermat.redtooth.profile_server.engine.crypto.BoxAlgo;
 import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
 import org.fermat.redtooth.profile_server.engine.ProfSerEngine;
 import org.fermat.redtooth.profile_server.engine.SearchProfilesQuery;
@@ -298,9 +300,14 @@ public class IoPProfileConnection implements CallsListener {
      * @param appService
      * @param tryWithoutGetInfo -> if the redtooth knows the profile data there is no necesity to get the data again.
      */
-    public void callProfileAppService(final String remoteProfilePublicKey, final String appService, boolean tryWithoutGetInfo, final ProfSerMsgListener<CallProfileAppService> profSerMsgListener) {
+    public void callProfileAppService(final String remoteProfilePublicKey, final String appService, boolean tryWithoutGetInfo,final boolean encryptMsg ,final ProfSerMsgListener<CallProfileAppService> profSerMsgListener) {
         logger.info("callProfileAppService from "+remoteProfilePublicKey+" using "+appService);
-        final CallProfileAppService callProfileAppService = new CallProfileAppService(appService,profileCache,remoteProfilePublicKey,profSerEngine);
+        final CallProfileAppService callProfileAppService = new CallProfileAppService(
+                appService,
+                profileCache,
+                remoteProfilePublicKey,
+                profSerEngine,
+                (encryptMsg)?new BoxAlgo():null);
         try {
             if (!tryWithoutGetInfo) {
                 callProfileAppService.setStatus(CallProfileAppService.Status.PENDING_AS_INFO);
@@ -335,10 +342,8 @@ public class IoPProfileConnection implements CallsListener {
                                 callProfileAppService.setErrorStatus("Remote profile not accept service " + appService);
                                 return;
                             }
-
                             // call profile
                             callProfileAppService(callProfileAppService,profSerMsgListener);
-
                         } catch (CantSendMessageException e) {
                             e.printStackTrace();
                             callProfileAppService.setStatus(CallProfileAppService.Status.CALL_FAIL);
@@ -390,7 +395,7 @@ public class IoPProfileConnection implements CallsListener {
                     callProfileAppService.setCallToken(appServiceResponse.getCallerToken().toByteArray());
                     openCall.put(CryptoBytes.toHexString(appServiceResponse.getCallerToken().toByteArray()),callProfileAppService);
                     // setup call app service
-                    setupCallAppServiceInitMessage(callProfileAppService,profSerMsgListener);
+                    setupCallAppServiceInitMessage(callProfileAppService,true,profSerMsgListener);
                 } catch (CantSendMessageException e) {
                     e.printStackTrace();
                     callProfileAppService.setStatus(CallProfileAppService.Status.CALL_FAIL);
@@ -423,7 +428,7 @@ public class IoPProfileConnection implements CallsListener {
             profSerEngine.acceptCall(messageId);
 
             // init setup call message
-            setupCallAppServiceInitMessage(callProfileAppService, new ProfSerMsgListener<CallProfileAppService>() {
+            setupCallAppServiceInitMessage(callProfileAppService,false,new ProfSerMsgListener<CallProfileAppService>() {
                 @Override
                 public void onMessageReceive(int messageId, CallProfileAppService message) {
                     // once everything is correct, launch notification
@@ -447,16 +452,26 @@ public class IoPProfileConnection implements CallsListener {
         }
     }
 
-    private void setupCallAppServiceInitMessage(final CallProfileAppService callProfileAppService, final ProfSerMsgListener<CallProfileAppService> profSerMsgListener) throws CantConnectException, CantSendMessageException {
+    private void setupCallAppServiceInitMessage(final CallProfileAppService callProfileAppService, final boolean isRequester , final ProfSerMsgListener<CallProfileAppService> profSerMsgListener) throws CantConnectException, CantSendMessageException {
         callProfileAppService.setStatus(CallProfileAppService.Status.PENDING_INIT_MESSAGE);
         // send init message to setup the call
-        MsgListenerFuture<IopProfileServer.ApplicationServiceSendMessageResponse> initMsgFuture = new MsgListenerFuture<>();
+        final MsgListenerFuture<IopProfileServer.ApplicationServiceSendMessageResponse> initMsgFuture = new MsgListenerFuture<>();
         initMsgFuture.setListener(new BaseMsgFuture.Listener<IopProfileServer.ApplicationServiceSendMessageResponse>() {
             @Override
             public void onAction(int messageId, IopProfileServer.ApplicationServiceSendMessageResponse object) {
-                logger.info("callProfileAppService setup message accepted");
-                callProfileAppService.setStatus(CallProfileAppService.Status.CALL_AS_ESTABLISH);
-                profSerMsgListener.onMessageReceive(messageId,callProfileAppService);
+                try {
+                    logger.info("callProfileAppService setup message accepted");
+                    if (callProfileAppService.isEncrypted() && isRequester) {
+                        encryptCall(callProfileAppService, profSerMsgListener);
+                    } else {
+                        callProfileAppService.setStatus(CallProfileAppService.Status.CALL_AS_ESTABLISH);
+                        profSerMsgListener.onMessageReceive(messageId, callProfileAppService);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    logger.error("callProfileAppService crypto message fail");
+                    profSerMsgListener.onMsgFail(messageId,400,e.getMessage());
+                }
             }
             @Override
             public void onFail(int messageId, int status, String statusDetail) {
@@ -465,6 +480,28 @@ public class IoPProfileConnection implements CallsListener {
             }
         });
         profSerEngine.sendAppServiceMsg(callProfileAppService.getCallToken(), null, initMsgFuture);
+    }
+
+    /**
+     * Encrypt call with the default algorithm for now
+     */
+    private void encryptCall(final CallProfileAppService callProfileAppService, final ProfSerMsgListener<CallProfileAppService> profSerMsgListener) throws Exception {
+        CryptoMsg cryptoMsg = new CryptoMsg("box");
+        MsgListenerFuture<Boolean> cryptoFuture = new MsgListenerFuture<Boolean>();
+        cryptoFuture.setListener(new BaseMsgFuture.Listener<Boolean>() {
+            @Override
+            public void onAction(int messageId, Boolean object) {
+                callProfileAppService.setStatus(CallProfileAppService.Status.CALL_AS_ESTABLISH);
+                profSerMsgListener.onMessageReceive(messageId, callProfileAppService);
+            }
+
+            @Override
+            public void onFail(int messageId, int status, String statusDetail) {
+                logger.info("callProfileAppService crypto message fail, "+statusDetail);
+                profSerMsgListener.onMsgFail(messageId,status,statusDetail);
+            }
+        });
+        callProfileAppService.sendMsg(cryptoMsg,cryptoFuture);
     }
 
     @Override

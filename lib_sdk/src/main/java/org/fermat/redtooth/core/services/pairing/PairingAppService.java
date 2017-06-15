@@ -1,7 +1,7 @@
 package org.fermat.redtooth.core.services.pairing;
 
 import org.fermat.redtooth.core.services.DefaultServices;
-import org.fermat.redtooth.core.services.MsgWrapper;
+import org.fermat.redtooth.profile_server.engine.app_services.MsgWrapper;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
