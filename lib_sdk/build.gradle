@@ -13,9 +13,40 @@ repositories {
     mavenCentral()
 }
 
+configurations{
+    provided
+    compile.extendsFrom provided
+}
+
+/*jar{
+    dependsOn configurations.runtime
+    from{
+        (configurations.runtime - configurations.provided).collect{
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }{
+       // exclude "META-INF"
+    }
+
+}*/
+
+//create a single Jar with all dependencies
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'lib_sdk': 'IoP connect library',
+                'Implementation-Version': version,
+                'Main-Class': 'IoPConnect'
+    }
+    baseName = project.name + '-all'
+    from {
+        (configurations.runtime - configurations.provided).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    with jar
+}
 
 sourceSets{
-
     test {
         java.srcDirs = ['src/test']
     }

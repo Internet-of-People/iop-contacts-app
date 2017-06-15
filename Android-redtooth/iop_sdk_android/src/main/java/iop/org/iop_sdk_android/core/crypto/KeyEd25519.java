@@ -4,13 +4,9 @@ import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.utils.ArraysUtils;
 import org.libsodium.jni.NaCl;
 import org.libsodium.jni.Sodium;
-
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-
-//import jnr.ffi.byref.LongLongByReference;
-//import org.abstractj.kalium.NaCl;
 
 /**
  * Created by Matias Furszyfer on 02/10/16.

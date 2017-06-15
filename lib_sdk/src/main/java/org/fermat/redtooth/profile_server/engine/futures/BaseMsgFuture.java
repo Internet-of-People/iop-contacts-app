@@ -61,9 +61,6 @@ public class BaseMsgFuture<O> implements Future<O> {
         synchronized(reentrantLock) {
             if (object == null) {
                 reentrantLock.wait(timeUnit.toMillis(l));
-//            if (!lockFlag) {
-//                throw new TimeoutException();
-//            }
             }
         }
         return object;

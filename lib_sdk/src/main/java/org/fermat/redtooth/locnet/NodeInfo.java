@@ -63,13 +63,13 @@ public class NodeInfo
     }
 
 
-    String      nodeId;
+    byte[]      nodeId;
     Contact     contact;
     GpsLocation location;
     List<ServiceInfo> services;
 
 
-    public NodeInfo(String nodeId, Contact contact, GpsLocation location, List<ServiceInfo> services)
+    public NodeInfo(byte[] nodeId, Contact contact, GpsLocation location, List<ServiceInfo> services)
     {
         this.nodeId   = nodeId;
         this.contact  = contact;
@@ -77,7 +77,7 @@ public class NodeInfo
         this.services = services;
     }
 
-    public String getNodeId() { return nodeId; }
+    public byte[] getNodeId() { return nodeId; }
     public Contact getContact() { return contact; }
     public GpsLocation getLocation() { return location; }
     public List<ServiceInfo> getServiceInfo() { return services; }

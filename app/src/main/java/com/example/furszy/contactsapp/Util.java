@@ -93,7 +93,6 @@ public class Util {
 
     public static int convertDpToPx(Resources resources, int dp){
         return Math.round(dp*(resources.getDisplayMetrics().xdpi/ DisplayMetrics.DENSITY_DEFAULT));
-
     }
 
 }

@@ -62,7 +62,7 @@ public class Converter
         }
 
         return new NodeInfo(
-            node.getNodeId().toStringUtf8(),
+            node.getNodeId().toByteArray(),
             fromProtoBuf( node.getContact() ),
             fromProtoBuf( node.getLocation() ),
             services );
