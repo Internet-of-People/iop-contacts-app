@@ -4,12 +4,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 /**
- * FermatViewHolder Base Class
+ * BaseViewHolder Base Class
  *
  * @author Francisco Vásquez & Matias Furszyfer
  * @version 2.0
  */
-public abstract class FermatViewHolder extends RecyclerView.ViewHolder {
+public abstract class BaseViewHolder extends RecyclerView.ViewHolder {
 
     private int holderId = 0;
     private int holderType;
@@ -21,7 +21,7 @@ public abstract class FermatViewHolder extends RecyclerView.ViewHolder {
      * @param itemView
      */
     @Deprecated
-    protected FermatViewHolder(View itemView) {
+    protected BaseViewHolder(View itemView) {
         super(itemView);
     }
 
@@ -29,18 +29,18 @@ public abstract class FermatViewHolder extends RecyclerView.ViewHolder {
      * @param itemView
      * @param holderType
      */
-    protected FermatViewHolder(View itemView, int holderType) {
+    protected BaseViewHolder(View itemView, int holderType) {
         super(itemView);
         this.holderType = holderType;
     }
 
-    protected FermatViewHolder(View itemView, int holderId, int holderType) {
+    protected BaseViewHolder(View itemView, int holderId, int holderType) {
         super(itemView);
         this.holderId = holderId;
         this.holderType = holderType;
     }
 
-    public FermatViewHolder(View itemView, int holderId, int holderType, int holderLayoutRes) {
+    public BaseViewHolder(View itemView, int holderId, int holderType, int holderLayoutRes) {
         super(itemView);
         this.holderId = holderId;
         this.holderType = holderType;

@@ -15,17 +15,17 @@ import java.util.List;
  * @author Matias Furszyfer
  * @version 1.0
  */
-public abstract class FermatAdapterImproved<M, H extends FermatViewHolder> extends RecyclerView.Adapter<H> {
+public abstract class BaseAdapter<M, H extends BaseViewHolder> extends RecyclerView.Adapter<H> {
 
     protected List<M> dataSet;
     protected Context context;
     protected FermatListItemListeners<M> eventListeners;
 
-    protected FermatAdapterImproved(Context context) {
+    protected BaseAdapter(Context context) {
         this.context = context;
     }
 
-    protected FermatAdapterImproved(Context context, List<M> dataSet) {
+    protected BaseAdapter(Context context, List<M> dataSet) {
         this.context = context;
         this.dataSet = dataSet;
     }

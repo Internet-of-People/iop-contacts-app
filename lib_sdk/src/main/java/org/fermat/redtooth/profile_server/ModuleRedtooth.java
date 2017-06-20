@@ -81,4 +81,8 @@ public interface ModuleRedtooth {
     PairingRequest getProfilePairingRequest(String hexPublicKey);
 
     List<PairingRequest> getPairingRequests();
+
+    void acceptPairingProfile(PairingRequest pairingRequest);
+
+    void cancelPairingRequest(PairingRequest pairingRequest);
 }

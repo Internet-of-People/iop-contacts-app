@@ -61,15 +61,9 @@ public class ProfilesInformationActivity extends BaseActivity {
         loading_bar = (ProgressBar) findViewById(R.id.loading_bar);
         txt_empty = (TextView) findViewById(R.id.txt_empty);
 
-        // use this setting to improve performance if you know that changes
-        // in content do not change the layout size of the RecyclerView
         recyclerView.setHasFixedSize(true);
-
-        // use a linear layout manager
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-
-        // specify an adapter (see also next example)
         adapter = new ProfileAdapter(this, module,new FermatListItemListeners<ProfileInformation>() {
             @Override
             public void onItemClickListener(ProfileInformation data, int position) {
@@ -84,14 +78,6 @@ public class ProfilesInformationActivity extends BaseActivity {
             }
         });
         recyclerView.setAdapter(adapter);
-
-//        container_empty_screen.findViewById(R.id.create_contract).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-//            }
-//        });
-
     }
 
     private void updateView() {

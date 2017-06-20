@@ -1,16 +1,14 @@
 package com.example.furszy.contactsapp.requests;
 
 import android.app.Activity;
-import android.graphics.BitmapFactory;
 import android.icu.text.SimpleDateFormat;
 import android.view.View;
 
 import com.example.furszy.contactsapp.R;
-import com.example.furszy.contactsapp.adapter.FermatAdapterImproved;
+import com.example.furszy.contactsapp.adapter.BaseAdapter;
 import com.example.furszy.contactsapp.adapter.FermatListItemListeners;
 
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
-import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.utils.ProfileUtils;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
 
@@ -19,7 +17,7 @@ import java.util.Date;
 /**
  * Created by mati on 03/03/17.
  */
-public class RequestsAdapter extends FermatAdapterImproved<PairingRequest, RequestHolder> {
+public class RequestsAdapter extends BaseAdapter<PairingRequest, RequestHolder> {
 
     ModuleRedtooth module;
 

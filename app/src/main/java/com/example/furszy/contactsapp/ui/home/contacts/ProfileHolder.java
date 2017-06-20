@@ -1,4 +1,4 @@
-package com.example.furszy.contactsapp.contacts;
+package com.example.furszy.contactsapp.ui.home.contacts;
 
 import android.view.View;
 import android.widget.TextView;

@@ -1,8 +1,9 @@
-package com.example.furszy.contactsapp.contacts;
+package com.example.furszy.contactsapp.ui.home.contacts;
 
 import android.app.Activity;
 import android.graphics.BitmapFactory;
 import android.view.View;
+
 import com.example.furszy.contactsapp.R;
 import com.example.furszy.contactsapp.adapter.BaseAdapter;
 import com.example.furszy.contactsapp.adapter.FermatListItemListeners;

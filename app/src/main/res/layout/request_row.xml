@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/txt_name"
+            android:layout_weight="1"
+            tools:text="Floyd Frazier"
+            android:layout_gravity="center"
+            android:paddingBottom="3dp"
+            android:gravity="center_vertical"
+            android:lines="1"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#000"
+            android:paddingLeft="12dp"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:gravity="center">
+
+            <Button
+                android:layout_width="70dp"
+                android:layout_height="wrap_content"
+                android:text="Confirm"
+                android:layout_marginRight="5dp"
+                android:textColor="#fff"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp"
+                android:textSize="12sp"
+                android:gravity="center"
+                android:background="@drawable/blue_btn"
+                android:id="@+id/btn_confirm"/>
+
+            <Button
+                android:layout_width="70dp"
+                android:layout_height="wrap_content"
+                android:text="Cancel"
+                android:gravity="center"
+                android:layout_marginStart="5dp"
+                android:textColor="@color/blue_base"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp"
+                android:textSize="12sp"
+                android:background="@drawable/white_btn"
+                android:id="@+id/btn_cancel"/>
+
+
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+</LinearLayout>
