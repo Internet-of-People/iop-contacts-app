@@ -57,6 +57,24 @@ public class Session
     }
 
 
+    public List<NodeInfo> exploreNodes(GpsLocation location,
+        int targetNodeCount, int maxNodeHops) throws IOException
+    {
+        IopLocNet.ClientRequest.Builder request = IopLocNet.ClientRequest.newBuilder();
+        request.getExploreNodesBuilder()
+            .setLocation( Converter.toProtoBuf(location) )
+            .setTargetNodeCount(targetNodeCount)
+            .setMaxNodeHops(maxNodeHops);
+
+        connection.SendRequest( request.build() );
+        IopLocNet.ClientResponse response = connection.ReceiveResponse();
+
+        if ( response.getClientResponseTypeCase() != IopLocNet.ClientResponse.ClientResponseTypeCase.EXPLORENODES )
+            { throw new IllegalStateException("Received unexpected response type"); }
+        return Converter.fromProtoBuf( response.getExploreNodes().getClosestNodesList() );
+    }
+
+
     public NodeInfo getNodeInfo() throws IOException
     {
         IopLocNet.ClientRequest.Builder request = IopLocNet.ClientRequest.newBuilder();
