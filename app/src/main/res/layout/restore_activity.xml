@@ -1,0 +1,63 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bgBlue">
+
+    <ImageView
+        android:id="@+id/imgCurve"
+        android:adjustViewBounds="true"
+        android:background="#53acff"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@drawable/img_curve"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"/>
+
+    <TextView
+        android:id="@+id/restoreMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="72dp"
+        android:gravity="center_vertical|center_horizontal"
+        android:text="@string/restore_message"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:layout_below="@+id/imgCurve"
+        android:layout_alignEnd="@+id/addFile" />
+
+    <Button
+        android:id="@+id/addFile"
+        android:layout_width="260dp"
+        android:layout_height="40dp"
+        android:layout_below="@+id/restoreMessage"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="60dp"
+        android:background="@drawable/login_input"
+        android:drawableRight="@drawable/ic_add_file"
+        android:elevation="2dp"
+        android:gravity="center_horizontal|center_vertical"
+        android:onClick="addFile"
+        android:paddingLeft="10dip"
+        android:paddingRight="10dip"
+        android:text="@string/select_file"
+        android:textColor="@color/white"
+        android:textSize="14sp" />
+
+
+
+    <Button
+        android:id="@+id/btnRestore"
+        android:layout_width="@dimen/btn_width"
+        android:layout_height="@dimen/btn_height"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="40dp"
+        android:background="@drawable/bg_button_white"
+        android:gravity="center_vertical|center_horizontal"
+        android:onClick="tryRestore"
+        android:text="@string/restore_profile"
+        android:textColor="@color/mainBlue"
+        android:textSize="14sp" />
+
+</RelativeLayout>

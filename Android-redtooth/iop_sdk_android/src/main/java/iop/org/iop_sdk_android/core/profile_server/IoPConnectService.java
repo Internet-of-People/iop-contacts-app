@@ -126,6 +126,11 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
+    public String registerProfile(String name) throws Exception {
+        return registerProfile(name,"IoP-contacts",null,0,0,null);
+    }
+
+    @Override
     public int updateProfile(String name, ProfSerMsgListener msgListener) throws Exception {
         return updateProfile(null,profile.getHexPublicKey(),name,null,0,0,null,msgListener);
     }
@@ -280,16 +285,6 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
             profileListener.onConnect(profile);
         }
     }
-
-    private DefaultServices getDefaultService(String name){
-        try{
-            return DefaultServices.getServiceByName(name);
-        }catch (Exception e){
-            // nothing
-        }
-        return null;
-    }
-
     @Override
     public boolean isDeviceLocationEnabled() {
         return false;

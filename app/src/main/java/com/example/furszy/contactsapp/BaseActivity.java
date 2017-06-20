@@ -5,11 +5,16 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import org.fermat.redtooth.crypto.CryptoBytes;
@@ -20,6 +25,8 @@ import static com.example.furszy.contactsapp.ProfileInformationActivity.INTENT_E
 import static com.example.furszy.contactsapp.ProfileInformationActivity.INTENT_EXTRA_PROF_NAME;
 import static com.example.furszy.contactsapp.ProfileInformationActivity.INTENT_EXTRA_PROF_SERVER_ID;
 import static com.example.furszy.contactsapp.ProfileInformationActivity.INTENT_EXTRA_SEARCH;
+import static com.example.furszy.contactsapp.R.id.toolbar;
+import static org.abstractj.kalium.NaCl.init;
 
 /**
  * Created by furszy on 6/5/17.
@@ -31,13 +38,41 @@ public class BaseActivity extends AppCompatActivity{
     protected ModuleRedtooth anRedtooth;
     protected LocalBroadcastManager localBroadcastManager;
     private NotifReceiver notifReceiver;
+    protected Toolbar toolbar;
+    protected FrameLayout childContainer;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        setContentView(R.layout.activity_base);
         this.localBroadcastManager = LocalBroadcastManager.getInstance(this);
         this.notifReceiver = new NotifReceiver();
         anRedtooth = App.getInstance().anRedtooth.getRedtooth();
+        init();
+        // onCreateChildMethod
+        onCreateView(savedInstanceState,childContainer);
+    }
+
+    private void init(){
+        childContainer = (FrameLayout) findViewById(R.id.content);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+    }
+
+    /**
+     * Empty method to override.
+     *
+     * @param savedInstanceState
+     */
+    protected void onCreateView(Bundle savedInstanceState, ViewGroup container){
+
     }
 
     @Override

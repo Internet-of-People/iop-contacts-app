@@ -15,12 +15,13 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
-            <!--<intent-filter>
+        <activity android:name=".MainActivity"/>
+        <activity android:name=".StartActivity">
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>-->
+            </intent-filter>
         </activity>
         <activity android:name=".ProfileActivity"></activity>
 
@@ -34,17 +35,14 @@
         </activity>
 
         <activity android:name=".scanner.ScanActivity"/>
-
+        <activity android:name=".BaseDrawerActivity"></activity>
+        <activity android:name=".RestoreActivity"></activity>
+        <activity android:name=".CreateProfileActivity"></activity>
         <activity android:name=".contacts.ProfilesInformationActivity"/>
         <activity android:name=".requests.PairingRequestsActivity"/>
 
         <activity android:name=".ui.home.HomeActivity"
             android:theme="@style/AppTheme">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
 
 
