@@ -16,6 +16,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity">
+        </activity>
+        <activity android:name=".StartActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -34,7 +36,9 @@
         </activity>
 
         <activity android:name=".scanner.ScanActivity"/>
-
+        <activity android:name=".BaseDrawerActivity"></activity>
+        <activity android:name=".RestoreActivity"></activity>
+        <activity android:name=".CreateProfileActivity"></activity>
         <activity android:name=".contacts.ProfilesInformationActivity"/>
         <activity android:name=".requests.PairingRequestsActivity"/>
 
