@@ -251,6 +251,16 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
+    public void acceptPairingProfile(PairingRequest pairingRequest) {
+        // todo: improve this
+    }
+
+    @Override
+    public void cancelPairingRequest(PairingRequest pairingRequest) {
+        // todo: improve this
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG,"onStartCommand");
         return super.onStartCommand(intent, flags, startId);
