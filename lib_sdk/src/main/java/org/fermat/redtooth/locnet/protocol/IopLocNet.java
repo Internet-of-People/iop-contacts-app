@@ -112,7 +112,7 @@ public final class IopLocNet {
 
     public final int getNumber() {
       if (this == UNRECOGNIZED) {
-        throw new IllegalArgumentException(
+        throw new java.lang.IllegalArgumentException(
             "Can't get the number of an unknown enum value.");
       }
       return value;
@@ -121,7 +121,7 @@ public final class IopLocNet {
     /**
      * @deprecated Use {@link #forNumber(int)} instead.
      */
-    @Deprecated
+    @java.lang.Deprecated
     public static Status valueOf(int value) {
       return forNumber(value);
     }
@@ -167,7 +167,7 @@ public final class IopLocNet {
     public static Status valueOf(
         com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
       if (desc.getType() != getDescriptor()) {
-        throw new IllegalArgumentException(
+        throw new java.lang.IllegalArgumentException(
           "EnumValueDescriptor is not for this type.");
       }
       if (desc.getIndex() == -1) {
@@ -298,7 +298,7 @@ public final class IopLocNet {
 
     public final int getNumber() {
       if (this == UNRECOGNIZED) {
-        throw new IllegalArgumentException(
+        throw new java.lang.IllegalArgumentException(
             "Can't get the number of an unknown enum value.");
       }
       return value;
@@ -307,7 +307,7 @@ public final class IopLocNet {
     /**
      * @deprecated Use {@link #forNumber(int)} instead.
      */
-    @Deprecated
+    @java.lang.Deprecated
     public static ServiceType valueOf(int value) {
       return forNumber(value);
     }
@@ -358,7 +358,7 @@ public final class IopLocNet {
     public static ServiceType valueOf(
         com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
       if (desc.getType() != getDescriptor()) {
-        throw new IllegalArgumentException(
+        throw new java.lang.IllegalArgumentException(
           "EnumValueDescriptor is not for this type.");
       }
       if (desc.getIndex() == -1) {
@@ -429,7 +429,7 @@ public final class IopLocNet {
       serviceData_ = com.google.protobuf.ByteString.EMPTY;
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -486,7 +486,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_ServiceInfo_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_ServiceInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -580,8 +580,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -599,7 +599,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -688,9 +688,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -711,7 +711,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_ServiceInfo_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_ServiceInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -724,7 +724,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -871,7 +871,7 @@ public final class IopLocNet {
         if (value == null) {
           throw new NullPointerException();
         }
-        
+
         type_ = value.getNumber();
         onChanged();
         return this;
@@ -880,7 +880,7 @@ public final class IopLocNet {
        * <code>optional .ServiceType type = 1;</code>
        */
       public Builder clearType() {
-        
+
         type_ = 0;
         onChanged();
         return this;
@@ -905,7 +905,7 @@ public final class IopLocNet {
        * <code>optional uint32 port = 2;</code>
        */
       public Builder setPort(int value) {
-        
+
         port_ = value;
         onChanged();
         return this;
@@ -918,7 +918,7 @@ public final class IopLocNet {
        * <code>optional uint32 port = 2;</code>
        */
       public Builder clearPort() {
-        
+
         port_ = 0;
         onChanged();
         return this;
@@ -946,7 +946,7 @@ public final class IopLocNet {
         if (value == null) {
     throw new NullPointerException();
   }
-  
+
         serviceData_ = value;
         onChanged();
         return this;
@@ -959,7 +959,7 @@ public final class IopLocNet {
        * <code>optional bytes serviceData = 3;</code>
        */
       public Builder clearServiceData() {
-        
+
         serviceData_ = getDefaultInstance().getServiceData();
         onChanged();
         return this;
@@ -1002,7 +1002,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<ServiceInfo> getParserForType() {
       return PARSER;
     }
@@ -1034,7 +1034,7 @@ public final class IopLocNet {
    * which means that a floating point value of the latitude or longitude is multiplied by 1,000,000
    * and converted to integer (cutting any digits right of the decimal point without rounding).
    * To get the floating point value back, simply divide the integer value by 1,000,000.
-   * For latitudes, valid values are in range [-90,000,000;90,000,000], for longitudes the range is 
+   * For latitudes, valid values are in range [-90,000,000;90,000,000], for longitudes the range is
    * [-179,999,999;180,000,000].
    * </pre>
    *
@@ -1053,7 +1053,7 @@ public final class IopLocNet {
       longitude_ = 0;
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -1104,7 +1104,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_GpsLocation_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_GpsLocation_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -1167,8 +1167,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -1185,7 +1185,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -1272,9 +1272,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1285,7 +1285,7 @@ public final class IopLocNet {
      * which means that a floating point value of the latitude or longitude is multiplied by 1,000,000
      * and converted to integer (cutting any digits right of the decimal point without rounding).
      * To get the floating point value back, simply divide the integer value by 1,000,000.
-     * For latitudes, valid values are in range [-90,000,000;90,000,000], for longitudes the range is 
+     * For latitudes, valid values are in range [-90,000,000;90,000,000], for longitudes the range is
      * [-179,999,999;180,000,000].
      * </pre>
      *
@@ -1300,7 +1300,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_GpsLocation_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_GpsLocation_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -1313,7 +1313,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1436,7 +1436,7 @@ public final class IopLocNet {
        * <code>optional sfixed32 latitude = 1;</code>
        */
       public Builder setLatitude(int value) {
-        
+
         latitude_ = value;
         onChanged();
         return this;
@@ -1445,7 +1445,7 @@ public final class IopLocNet {
        * <code>optional sfixed32 latitude = 1;</code>
        */
       public Builder clearLatitude() {
-        
+
         latitude_ = 0;
         onChanged();
         return this;
@@ -1462,7 +1462,7 @@ public final class IopLocNet {
        * <code>optional sfixed32 longitude = 2;</code>
        */
       public Builder setLongitude(int value) {
-        
+
         longitude_ = value;
         onChanged();
         return this;
@@ -1471,7 +1471,7 @@ public final class IopLocNet {
        * <code>optional sfixed32 longitude = 2;</code>
        */
       public Builder clearLongitude() {
-        
+
         longitude_ = 0;
         onChanged();
         return this;
@@ -1514,7 +1514,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<GpsLocation> getParserForType() {
       return PARSER;
     }
@@ -1577,7 +1577,7 @@ public final class IopLocNet {
       clientPort_ = 0;
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -1633,7 +1633,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_NodeContact_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_NodeContact_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -1720,8 +1720,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -1740,7 +1740,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -1829,9 +1829,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1855,7 +1855,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_NodeContact_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_NodeContact_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -1868,7 +1868,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2000,7 +2000,7 @@ public final class IopLocNet {
         if (value == null) {
     throw new NullPointerException();
   }
-  
+
         ipAddress_ = value;
         onChanged();
         return this;
@@ -2009,7 +2009,7 @@ public final class IopLocNet {
        * <code>optional bytes ipAddress = 1;</code>
        */
       public Builder clearIpAddress() {
-        
+
         ipAddress_ = getDefaultInstance().getIpAddress();
         onChanged();
         return this;
@@ -2034,7 +2034,7 @@ public final class IopLocNet {
        * <code>optional uint32 nodePort = 2;</code>
        */
       public Builder setNodePort(int value) {
-        
+
         nodePort_ = value;
         onChanged();
         return this;
@@ -2047,7 +2047,7 @@ public final class IopLocNet {
        * <code>optional uint32 nodePort = 2;</code>
        */
       public Builder clearNodePort() {
-        
+
         nodePort_ = 0;
         onChanged();
         return this;
@@ -2072,7 +2072,7 @@ public final class IopLocNet {
        * <code>optional uint32 clientPort = 3;</code>
        */
       public Builder setClientPort(int value) {
-        
+
         clientPort_ = value;
         onChanged();
         return this;
@@ -2085,7 +2085,7 @@ public final class IopLocNet {
        * <code>optional uint32 clientPort = 3;</code>
        */
       public Builder clearClientPort() {
-        
+
         clientPort_ = 0;
         onChanged();
         return this;
@@ -2128,7 +2128,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<NodeContact> getParserForType() {
       return PARSER;
     }
@@ -2181,7 +2181,7 @@ public final class IopLocNet {
     /**
      * <code>repeated .ServiceInfo services = 32;</code>
      */
-    java.util.List<IopLocNet.ServiceInfo> 
+    java.util.List<IopLocNet.ServiceInfo>
         getServicesList();
     /**
      * <code>repeated .ServiceInfo services = 32;</code>
@@ -2194,13 +2194,13 @@ public final class IopLocNet {
     /**
      * <code>repeated .ServiceInfo services = 32;</code>
      */
-    java.util.List<? extends IopLocNet.ServiceInfoOrBuilder> 
+    java.util.List<? extends IopLocNet.ServiceInfoOrBuilder>
         getServicesOrBuilderList();
     /**
      * <code>repeated .ServiceInfo services = 32;</code>
      */
     IopLocNet.ServiceInfoOrBuilder getServicesOrBuilder(
-            int index);
+        int index);
   }
   /**
    * <pre>
@@ -2223,7 +2223,7 @@ public final class IopLocNet {
       services_ = java.util.Collections.emptyList();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -2307,7 +2307,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_NodeInfo_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_NodeInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -2381,7 +2381,7 @@ public final class IopLocNet {
     /**
      * <code>repeated .ServiceInfo services = 32;</code>
      */
-    public java.util.List<? extends IopLocNet.ServiceInfoOrBuilder> 
+    public java.util.List<? extends IopLocNet.ServiceInfoOrBuilder>
         getServicesOrBuilderList() {
       return services_;
     }
@@ -2457,8 +2457,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -2485,7 +2485,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -2582,9 +2582,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -2605,7 +2605,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_NodeInfo_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_NodeInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -2618,7 +2618,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2763,7 +2763,7 @@ public final class IopLocNet {
               servicesBuilder_ = null;
               services_ = other.services_;
               bitField0_ = (bitField0_ & ~0x00000008);
-              servicesBuilder_ = 
+              servicesBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getServicesFieldBuilder() : null;
             } else {
@@ -2820,7 +2820,7 @@ public final class IopLocNet {
         if (value == null) {
     throw new NullPointerException();
   }
-  
+
         nodeId_ = value;
         onChanged();
         return this;
@@ -2833,7 +2833,7 @@ public final class IopLocNet {
        * <code>optional bytes nodeId = 1;</code>
        */
       public Builder clearNodeId() {
-        
+
         nodeId_ = getDefaultInstance().getNodeId();
         onChanged();
         return this;
@@ -2924,7 +2924,7 @@ public final class IopLocNet {
        * <code>optional .NodeContact contact = 2;</code>
        */
       public IopLocNet.NodeContact.Builder getContactBuilder() {
-        
+
         onChanged();
         return getContactFieldBuilder().getBuilder();
       }
@@ -2943,7 +2943,7 @@ public final class IopLocNet {
        * <code>optional .NodeContact contact = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.NodeContact, IopLocNet.NodeContact.Builder, IopLocNet.NodeContactOrBuilder> 
+          IopLocNet.NodeContact, IopLocNet.NodeContact.Builder, IopLocNet.NodeContactOrBuilder>
           getContactFieldBuilder() {
         if (contactBuilder_ == null) {
           contactBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -3041,7 +3041,7 @@ public final class IopLocNet {
        * <code>optional .GpsLocation location = 3;</code>
        */
       public IopLocNet.GpsLocation.Builder getLocationBuilder() {
-        
+
         onChanged();
         return getLocationFieldBuilder().getBuilder();
       }
@@ -3060,7 +3060,7 @@ public final class IopLocNet {
        * <code>optional .GpsLocation location = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.GpsLocation, IopLocNet.GpsLocation.Builder, IopLocNet.GpsLocationOrBuilder> 
+          IopLocNet.GpsLocation, IopLocNet.GpsLocation.Builder, IopLocNet.GpsLocationOrBuilder>
           getLocationFieldBuilder() {
         if (locationBuilder_ == null) {
           locationBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -3211,7 +3211,7 @@ public final class IopLocNet {
        * <code>repeated .ServiceInfo services = 32;</code>
        */
       public Builder addAllServices(
-          Iterable<? extends IopLocNet.ServiceInfo> values) {
+          java.lang.Iterable<? extends IopLocNet.ServiceInfo> values) {
         if (servicesBuilder_ == null) {
           ensureServicesIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -3268,7 +3268,7 @@ public final class IopLocNet {
       /**
        * <code>repeated .ServiceInfo services = 32;</code>
        */
-      public java.util.List<? extends IopLocNet.ServiceInfoOrBuilder> 
+      public java.util.List<? extends IopLocNet.ServiceInfoOrBuilder>
            getServicesOrBuilderList() {
         if (servicesBuilder_ != null) {
           return servicesBuilder_.getMessageOrBuilderList();
@@ -3294,12 +3294,12 @@ public final class IopLocNet {
       /**
        * <code>repeated .ServiceInfo services = 32;</code>
        */
-      public java.util.List<IopLocNet.ServiceInfo.Builder> 
+      public java.util.List<IopLocNet.ServiceInfo.Builder>
            getServicesBuilderList() {
         return getServicesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          IopLocNet.ServiceInfo, IopLocNet.ServiceInfo.Builder, IopLocNet.ServiceInfoOrBuilder> 
+          IopLocNet.ServiceInfo, IopLocNet.ServiceInfo.Builder, IopLocNet.ServiceInfoOrBuilder>
           getServicesFieldBuilder() {
         if (servicesBuilder_ == null) {
           servicesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -3350,7 +3350,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<NodeInfo> getParserForType() {
       return PARSER;
     }
@@ -3424,7 +3424,7 @@ public final class IopLocNet {
       header_ = 0;
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -3483,7 +3483,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_MessageWithHeader_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_MessageWithHeader_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -3574,8 +3574,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -3595,7 +3595,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -3684,9 +3684,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -3712,7 +3712,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_MessageWithHeader_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_MessageWithHeader_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -3725,7 +3725,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -3864,7 +3864,7 @@ public final class IopLocNet {
        * <code>optional fixed32 header = 1;</code>
        */
       public Builder setHeader(int value) {
-        
+
         header_ = value;
         onChanged();
         return this;
@@ -3877,7 +3877,7 @@ public final class IopLocNet {
        * <code>optional fixed32 header = 1;</code>
        */
       public Builder clearHeader() {
-        
+
         header_ = 0;
         onChanged();
         return this;
@@ -3996,7 +3996,7 @@ public final class IopLocNet {
        * <code>optional .Message body = 2;</code>
        */
       public IopLocNet.Message.Builder getBodyBuilder() {
-        
+
         onChanged();
         return getBodyFieldBuilder().getBuilder();
       }
@@ -4023,7 +4023,7 @@ public final class IopLocNet {
        * <code>optional .Message body = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.Message, IopLocNet.Message.Builder, IopLocNet.MessageOrBuilder> 
+          IopLocNet.Message, IopLocNet.Message.Builder, IopLocNet.MessageOrBuilder>
           getBodyFieldBuilder() {
         if (bodyBuilder_ == null) {
           bodyBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -4073,7 +4073,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<MessageWithHeader> getParserForType() {
       return PARSER;
     }
@@ -4090,7 +4090,7 @@ public final class IopLocNet {
 
     /**
      * <pre>
-     * Requestor defined message ID that the requestee has to return in the response. 
+     * Requestor defined message ID that the requestee has to return in the response.
      * </pre>
      *
      * <code>optional uint32 id = 1;</code>
@@ -4136,7 +4136,7 @@ public final class IopLocNet {
       id_ = 0;
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -4210,7 +4210,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_Message_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_Message_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -4218,7 +4218,7 @@ public final class IopLocNet {
     }
 
     private int messageTypeCase_ = 0;
-    private Object messageType_;
+    private java.lang.Object messageType_;
     public enum MessageTypeCase
         implements com.google.protobuf.Internal.EnumLite {
       REQUEST(2),
@@ -4231,7 +4231,7 @@ public final class IopLocNet {
       /**
        * @deprecated Use {@link #forNumber(int)} instead.
        */
-      @Deprecated
+      @java.lang.Deprecated
       public static MessageTypeCase valueOf(int value) {
         return forNumber(value);
       }
@@ -4259,7 +4259,7 @@ public final class IopLocNet {
     private int id_;
     /**
      * <pre>
-     * Requestor defined message ID that the requestee has to return in the response. 
+     * Requestor defined message ID that the requestee has to return in the response.
      * </pre>
      *
      * <code>optional uint32 id = 1;</code>
@@ -4353,8 +4353,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -4384,7 +4384,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -4481,9 +4481,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -4503,7 +4503,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_Message_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_Message_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -4516,7 +4516,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -4652,7 +4652,7 @@ public final class IopLocNet {
         return this;
       }
       private int messageTypeCase_ = 0;
-      private Object messageType_;
+      private java.lang.Object messageType_;
       public MessageTypeCase
           getMessageTypeCase() {
         return MessageTypeCase.forNumber(
@@ -4670,7 +4670,7 @@ public final class IopLocNet {
       private int id_ ;
       /**
        * <pre>
-       * Requestor defined message ID that the requestee has to return in the response. 
+       * Requestor defined message ID that the requestee has to return in the response.
        * </pre>
        *
        * <code>optional uint32 id = 1;</code>
@@ -4680,26 +4680,26 @@ public final class IopLocNet {
       }
       /**
        * <pre>
-       * Requestor defined message ID that the requestee has to return in the response. 
+       * Requestor defined message ID that the requestee has to return in the response.
        * </pre>
        *
        * <code>optional uint32 id = 1;</code>
        */
       public Builder setId(int value) {
-        
+
         id_ = value;
         onChanged();
         return this;
       }
       /**
        * <pre>
-       * Requestor defined message ID that the requestee has to return in the response. 
+       * Requestor defined message ID that the requestee has to return in the response.
        * </pre>
        *
        * <code>optional uint32 id = 1;</code>
        */
       public Builder clearId() {
-        
+
         id_ = 0;
         onChanged();
         return this;
@@ -4817,7 +4817,7 @@ public final class IopLocNet {
        * <code>optional .Request request = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.Request, IopLocNet.Request.Builder, IopLocNet.RequestOrBuilder> 
+          IopLocNet.Request, IopLocNet.Request.Builder, IopLocNet.RequestOrBuilder>
           getRequestFieldBuilder() {
         if (requestBuilder_ == null) {
           if (!(messageTypeCase_ == 2)) {
@@ -4947,7 +4947,7 @@ public final class IopLocNet {
        * <code>optional .Response response = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.Response, IopLocNet.Response.Builder, IopLocNet.ResponseOrBuilder> 
+          IopLocNet.Response, IopLocNet.Response.Builder, IopLocNet.ResponseOrBuilder>
           getResponseFieldBuilder() {
         if (responseBuilder_ == null) {
           if (!(messageTypeCase_ == 3)) {
@@ -5002,7 +5002,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<Message> getParserForType() {
       return PARSER;
     }
@@ -5079,7 +5079,7 @@ public final class IopLocNet {
       version_ = com.google.protobuf.ByteString.EMPTY;
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -5167,7 +5167,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_Request_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_Request_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -5175,7 +5175,7 @@ public final class IopLocNet {
     }
 
     private int requestTypeCase_ = 0;
-    private Object requestType_;
+    private java.lang.Object requestType_;
     public enum RequestTypeCase
         implements com.google.protobuf.Internal.EnumLite {
       LOCALSERVICE(2),
@@ -5189,7 +5189,7 @@ public final class IopLocNet {
       /**
        * @deprecated Use {@link #forNumber(int)} instead.
        */
-      @Deprecated
+      @java.lang.Deprecated
       public static RequestTypeCase valueOf(int value) {
         return forNumber(value);
       }
@@ -5335,8 +5335,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -5370,7 +5370,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -5471,9 +5471,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -5502,7 +5502,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_Request_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_Request_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -5515,7 +5515,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -5662,7 +5662,7 @@ public final class IopLocNet {
         return this;
       }
       private int requestTypeCase_ = 0;
-      private Object requestType_;
+      private java.lang.Object requestType_;
       public RequestTypeCase
           getRequestTypeCase() {
         return RequestTypeCase.forNumber(
@@ -5691,7 +5691,7 @@ public final class IopLocNet {
         if (value == null) {
     throw new NullPointerException();
   }
-  
+
         version_ = value;
         onChanged();
         return this;
@@ -5700,7 +5700,7 @@ public final class IopLocNet {
        * <code>optional bytes version = 1;</code>
        */
       public Builder clearVersion() {
-        
+
         version_ = getDefaultInstance().getVersion();
         onChanged();
         return this;
@@ -5818,7 +5818,7 @@ public final class IopLocNet {
        * <code>optional .LocalServiceRequest localService = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.LocalServiceRequest, IopLocNet.LocalServiceRequest.Builder, IopLocNet.LocalServiceRequestOrBuilder> 
+          IopLocNet.LocalServiceRequest, IopLocNet.LocalServiceRequest.Builder, IopLocNet.LocalServiceRequestOrBuilder>
           getLocalServiceFieldBuilder() {
         if (localServiceBuilder_ == null) {
           if (!(requestTypeCase_ == 2)) {
@@ -5948,7 +5948,7 @@ public final class IopLocNet {
        * <code>optional .RemoteNodeRequest remoteNode = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.RemoteNodeRequest, IopLocNet.RemoteNodeRequest.Builder, IopLocNet.RemoteNodeRequestOrBuilder> 
+          IopLocNet.RemoteNodeRequest, IopLocNet.RemoteNodeRequest.Builder, IopLocNet.RemoteNodeRequestOrBuilder>
           getRemoteNodeFieldBuilder() {
         if (remoteNodeBuilder_ == null) {
           if (!(requestTypeCase_ == 3)) {
@@ -6078,7 +6078,7 @@ public final class IopLocNet {
        * <code>optional .ClientRequest client = 4;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.ClientRequest, IopLocNet.ClientRequest.Builder, IopLocNet.ClientRequestOrBuilder> 
+          IopLocNet.ClientRequest, IopLocNet.ClientRequest.Builder, IopLocNet.ClientRequestOrBuilder>
           getClientFieldBuilder() {
         if (clientBuilder_ == null) {
           if (!(requestTypeCase_ == 4)) {
@@ -6133,7 +6133,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<Request> getParserForType() {
       return PARSER;
     }
@@ -6181,7 +6181,7 @@ public final class IopLocNet {
      *
      * <code>optional string details = 3;</code>
      */
-    String getDetails();
+    java.lang.String getDetails();
     /**
      * <pre>
      * In case of an error, this field may contain additional details.
@@ -6242,7 +6242,7 @@ public final class IopLocNet {
       details_ = "";
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -6279,7 +6279,7 @@ public final class IopLocNet {
               break;
             }
             case 26: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
 
               details_ = s;
               break;
@@ -6342,7 +6342,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_Response_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_Response_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -6350,7 +6350,7 @@ public final class IopLocNet {
     }
 
     private int responseTypeCase_ = 0;
-    private Object responseType_;
+    private java.lang.Object responseType_;
     public enum ResponseTypeCase
         implements com.google.protobuf.Internal.EnumLite {
       LOCALSERVICE(4),
@@ -6364,7 +6364,7 @@ public final class IopLocNet {
       /**
        * @deprecated Use {@link #forNumber(int)} instead.
        */
-      @Deprecated
+      @java.lang.Deprecated
       public static ResponseTypeCase valueOf(int value) {
         return forNumber(value);
       }
@@ -6427,7 +6427,7 @@ public final class IopLocNet {
     }
 
     public static final int DETAILS_FIELD_NUMBER = 3;
-    private volatile Object details_;
+    private volatile java.lang.Object details_;
     /**
      * <pre>
      * In case of an error, this field may contain additional details.
@@ -6435,14 +6435,14 @@ public final class IopLocNet {
      *
      * <code>optional string details = 3;</code>
      */
-    public String getDetails() {
-      Object ref = details_;
-      if (ref instanceof String) {
-        return (String) ref;
+    public java.lang.String getDetails() {
+      java.lang.Object ref = details_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         details_ = s;
         return s;
       }
@@ -6456,11 +6456,11 @@ public final class IopLocNet {
      */
     public com.google.protobuf.ByteString
         getDetailsBytes() {
-      Object ref = details_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+      java.lang.Object ref = details_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         details_ = b;
         return b;
       } else {
@@ -6593,8 +6593,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -6631,7 +6631,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -6737,9 +6737,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -6759,7 +6759,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_Response_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_Response_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -6772,7 +6772,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -6932,7 +6932,7 @@ public final class IopLocNet {
         return this;
       }
       private int responseTypeCase_ = 0;
-      private Object responseType_;
+      private java.lang.Object responseType_;
       public ResponseTypeCase
           getResponseTypeCase() {
         return ResponseTypeCase.forNumber(
@@ -6992,7 +6992,7 @@ public final class IopLocNet {
         if (value == null) {
           throw new NullPointerException();
         }
-        
+
         status_ = value.getNumber();
         onChanged();
         return this;
@@ -7005,7 +7005,7 @@ public final class IopLocNet {
        * <code>optional .Status status = 1;</code>
        */
       public Builder clearStatus() {
-        
+
         status_ = 0;
         onChanged();
         return this;
@@ -7030,7 +7030,7 @@ public final class IopLocNet {
        * <code>optional sint64 timestamp = 2;</code>
        */
       public Builder setTimestamp(long value) {
-        
+
         timestamp_ = value;
         onChanged();
         return this;
@@ -7043,13 +7043,13 @@ public final class IopLocNet {
        * <code>optional sint64 timestamp = 2;</code>
        */
       public Builder clearTimestamp() {
-        
+
         timestamp_ = 0L;
         onChanged();
         return this;
       }
 
-      private Object details_ = "";
+      private java.lang.Object details_ = "";
       /**
        * <pre>
        * In case of an error, this field may contain additional details.
@@ -7057,16 +7057,16 @@ public final class IopLocNet {
        *
        * <code>optional string details = 3;</code>
        */
-      public String getDetails() {
-        Object ref = details_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getDetails() {
+        java.lang.Object ref = details_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           details_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -7078,11 +7078,11 @@ public final class IopLocNet {
        */
       public com.google.protobuf.ByteString
           getDetailsBytes() {
-        Object ref = details_;
+        java.lang.Object ref = details_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           details_ = b;
           return b;
         } else {
@@ -7097,11 +7097,11 @@ public final class IopLocNet {
        * <code>optional string details = 3;</code>
        */
       public Builder setDetails(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  
+
         details_ = value;
         onChanged();
         return this;
@@ -7114,7 +7114,7 @@ public final class IopLocNet {
        * <code>optional string details = 3;</code>
        */
       public Builder clearDetails() {
-        
+
         details_ = getDefaultInstance().getDetails();
         onChanged();
         return this;
@@ -7132,7 +7132,7 @@ public final class IopLocNet {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-        
+
         details_ = value;
         onChanged();
         return this;
@@ -7250,7 +7250,7 @@ public final class IopLocNet {
        * <code>optional .LocalServiceResponse localService = 4;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.LocalServiceResponse, IopLocNet.LocalServiceResponse.Builder, IopLocNet.LocalServiceResponseOrBuilder> 
+          IopLocNet.LocalServiceResponse, IopLocNet.LocalServiceResponse.Builder, IopLocNet.LocalServiceResponseOrBuilder>
           getLocalServiceFieldBuilder() {
         if (localServiceBuilder_ == null) {
           if (!(responseTypeCase_ == 4)) {
@@ -7380,7 +7380,7 @@ public final class IopLocNet {
        * <code>optional .RemoteNodeResponse remoteNode = 5;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.RemoteNodeResponse, IopLocNet.RemoteNodeResponse.Builder, IopLocNet.RemoteNodeResponseOrBuilder> 
+          IopLocNet.RemoteNodeResponse, IopLocNet.RemoteNodeResponse.Builder, IopLocNet.RemoteNodeResponseOrBuilder>
           getRemoteNodeFieldBuilder() {
         if (remoteNodeBuilder_ == null) {
           if (!(responseTypeCase_ == 5)) {
@@ -7510,7 +7510,7 @@ public final class IopLocNet {
        * <code>optional .ClientResponse client = 6;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.ClientResponse, IopLocNet.ClientResponse.Builder, IopLocNet.ClientResponseOrBuilder> 
+          IopLocNet.ClientResponse, IopLocNet.ClientResponse.Builder, IopLocNet.ClientResponseOrBuilder>
           getClientFieldBuilder() {
         if (clientBuilder_ == null) {
           if (!(responseTypeCase_ == 6)) {
@@ -7565,7 +7565,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<Response> getParserForType() {
       return PARSER;
     }
@@ -7658,7 +7658,7 @@ public final class IopLocNet {
     private LocalServiceRequest() {
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -7755,7 +7755,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_LocalServiceRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_LocalServiceRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -7763,7 +7763,7 @@ public final class IopLocNet {
     }
 
     private int localServiceRequestTypeCase_ = 0;
-    private Object localServiceRequestType_;
+    private java.lang.Object localServiceRequestType_;
     public enum LocalServiceRequestTypeCase
         implements com.google.protobuf.Internal.EnumLite {
       REGISTERSERVICE(1),
@@ -7778,7 +7778,7 @@ public final class IopLocNet {
       /**
        * @deprecated Use {@link #forNumber(int)} instead.
        */
-      @Deprecated
+      @java.lang.Deprecated
       public static LocalServiceRequestTypeCase valueOf(int value) {
         return forNumber(value);
       }
@@ -7958,8 +7958,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -7995,7 +7995,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -8098,9 +8098,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -8120,7 +8120,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_LocalServiceRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_LocalServiceRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -8133,7 +8133,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -8285,7 +8285,7 @@ public final class IopLocNet {
         return this;
       }
       private int localServiceRequestTypeCase_ = 0;
-      private Object localServiceRequestType_;
+      private java.lang.Object localServiceRequestType_;
       public LocalServiceRequestTypeCase
           getLocalServiceRequestTypeCase() {
         return LocalServiceRequestTypeCase.forNumber(
@@ -8444,7 +8444,7 @@ public final class IopLocNet {
        * <code>optional .RegisterServiceRequest registerService = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.RegisterServiceRequest, IopLocNet.RegisterServiceRequest.Builder, IopLocNet.RegisterServiceRequestOrBuilder> 
+          IopLocNet.RegisterServiceRequest, IopLocNet.RegisterServiceRequest.Builder, IopLocNet.RegisterServiceRequestOrBuilder>
           getRegisterServiceFieldBuilder() {
         if (registerServiceBuilder_ == null) {
           if (!(localServiceRequestTypeCase_ == 1)) {
@@ -8574,7 +8574,7 @@ public final class IopLocNet {
        * <code>optional .DeregisterServiceRequest deregisterService = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.DeregisterServiceRequest, IopLocNet.DeregisterServiceRequest.Builder, IopLocNet.DeregisterServiceRequestOrBuilder> 
+          IopLocNet.DeregisterServiceRequest, IopLocNet.DeregisterServiceRequest.Builder, IopLocNet.DeregisterServiceRequestOrBuilder>
           getDeregisterServiceFieldBuilder() {
         if (deregisterServiceBuilder_ == null) {
           if (!(localServiceRequestTypeCase_ == 2)) {
@@ -8704,7 +8704,7 @@ public final class IopLocNet {
        * <code>optional .GetNeighbourNodesByDistanceLocalRequest getNeighbourNodes = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.GetNeighbourNodesByDistanceLocalRequest, IopLocNet.GetNeighbourNodesByDistanceLocalRequest.Builder, IopLocNet.GetNeighbourNodesByDistanceLocalRequestOrBuilder> 
+          IopLocNet.GetNeighbourNodesByDistanceLocalRequest, IopLocNet.GetNeighbourNodesByDistanceLocalRequest.Builder, IopLocNet.GetNeighbourNodesByDistanceLocalRequestOrBuilder>
           getGetNeighbourNodesFieldBuilder() {
         if (getNeighbourNodesBuilder_ == null) {
           if (!(localServiceRequestTypeCase_ == 3)) {
@@ -8890,7 +8890,7 @@ public final class IopLocNet {
        * <code>optional .NeighbourhoodChangedNotificationRequest neighbourhoodChanged = 4;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.NeighbourhoodChangedNotificationRequest, IopLocNet.NeighbourhoodChangedNotificationRequest.Builder, IopLocNet.NeighbourhoodChangedNotificationRequestOrBuilder> 
+          IopLocNet.NeighbourhoodChangedNotificationRequest, IopLocNet.NeighbourhoodChangedNotificationRequest.Builder, IopLocNet.NeighbourhoodChangedNotificationRequestOrBuilder>
           getNeighbourhoodChangedFieldBuilder() {
         if (neighbourhoodChangedBuilder_ == null) {
           if (!(localServiceRequestTypeCase_ == 4)) {
@@ -8945,7 +8945,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<LocalServiceRequest> getParserForType() {
       return PARSER;
     }
@@ -9028,7 +9028,7 @@ public final class IopLocNet {
     private LocalServiceResponse() {
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -9125,7 +9125,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_LocalServiceResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_LocalServiceResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -9133,7 +9133,7 @@ public final class IopLocNet {
     }
 
     private int localServiceResponseTypeCase_ = 0;
-    private Object localServiceResponseType_;
+    private java.lang.Object localServiceResponseType_;
     public enum LocalServiceResponseTypeCase
         implements com.google.protobuf.Internal.EnumLite {
       REGISTERSERVICE(1),
@@ -9148,7 +9148,7 @@ public final class IopLocNet {
       /**
        * @deprecated Use {@link #forNumber(int)} instead.
        */
-      @Deprecated
+      @java.lang.Deprecated
       public static LocalServiceResponseTypeCase valueOf(int value) {
         return forNumber(value);
       }
@@ -9322,8 +9322,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -9359,7 +9359,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -9462,9 +9462,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -9480,7 +9480,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_LocalServiceResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_LocalServiceResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -9493,7 +9493,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -9645,7 +9645,7 @@ public final class IopLocNet {
         return this;
       }
       private int localServiceResponseTypeCase_ = 0;
-      private Object localServiceResponseType_;
+      private java.lang.Object localServiceResponseType_;
       public LocalServiceResponseTypeCase
           getLocalServiceResponseTypeCase() {
         return LocalServiceResponseTypeCase.forNumber(
@@ -9804,7 +9804,7 @@ public final class IopLocNet {
        * <code>optional .RegisterServiceResponse registerService = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.RegisterServiceResponse, IopLocNet.RegisterServiceResponse.Builder, IopLocNet.RegisterServiceResponseOrBuilder> 
+          IopLocNet.RegisterServiceResponse, IopLocNet.RegisterServiceResponse.Builder, IopLocNet.RegisterServiceResponseOrBuilder>
           getRegisterServiceFieldBuilder() {
         if (registerServiceBuilder_ == null) {
           if (!(localServiceResponseTypeCase_ == 1)) {
@@ -9934,7 +9934,7 @@ public final class IopLocNet {
        * <code>optional .DeregisterServiceResponse deregisterService = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.DeregisterServiceResponse, IopLocNet.DeregisterServiceResponse.Builder, IopLocNet.DeregisterServiceResponseOrBuilder> 
+          IopLocNet.DeregisterServiceResponse, IopLocNet.DeregisterServiceResponse.Builder, IopLocNet.DeregisterServiceResponseOrBuilder>
           getDeregisterServiceFieldBuilder() {
         if (deregisterServiceBuilder_ == null) {
           if (!(localServiceResponseTypeCase_ == 2)) {
@@ -10064,7 +10064,7 @@ public final class IopLocNet {
        * <code>optional .GetNeighbourNodesByDistanceResponse getNeighbourNodes = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.GetNeighbourNodesByDistanceResponse, IopLocNet.GetNeighbourNodesByDistanceResponse.Builder, IopLocNet.GetNeighbourNodesByDistanceResponseOrBuilder> 
+          IopLocNet.GetNeighbourNodesByDistanceResponse, IopLocNet.GetNeighbourNodesByDistanceResponse.Builder, IopLocNet.GetNeighbourNodesByDistanceResponseOrBuilder>
           getGetNeighbourNodesFieldBuilder() {
         if (getNeighbourNodesBuilder_ == null) {
           if (!(localServiceResponseTypeCase_ == 3)) {
@@ -10226,7 +10226,7 @@ public final class IopLocNet {
        * <code>optional .NeighbourhoodChangedNotificationResponse neighbourhoodUpdated = 4;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.NeighbourhoodChangedNotificationResponse, IopLocNet.NeighbourhoodChangedNotificationResponse.Builder, IopLocNet.NeighbourhoodChangedNotificationResponseOrBuilder> 
+          IopLocNet.NeighbourhoodChangedNotificationResponse, IopLocNet.NeighbourhoodChangedNotificationResponse.Builder, IopLocNet.NeighbourhoodChangedNotificationResponseOrBuilder>
           getNeighbourhoodUpdatedFieldBuilder() {
         if (neighbourhoodUpdatedBuilder_ == null) {
           if (!(localServiceResponseTypeCase_ == 4)) {
@@ -10281,7 +10281,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<LocalServiceResponse> getParserForType() {
       return PARSER;
     }
@@ -10328,7 +10328,7 @@ public final class IopLocNet {
     private RegisterServiceRequest() {
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -10382,7 +10382,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_RegisterServiceRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_RegisterServiceRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -10441,8 +10441,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -10460,7 +10460,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -10547,9 +10547,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -10570,7 +10570,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_RegisterServiceRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_RegisterServiceRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -10583,7 +10583,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -10782,7 +10782,7 @@ public final class IopLocNet {
        * <code>optional .ServiceInfo service = 1;</code>
        */
       public IopLocNet.ServiceInfo.Builder getServiceBuilder() {
-        
+
         onChanged();
         return getServiceFieldBuilder().getBuilder();
       }
@@ -10801,7 +10801,7 @@ public final class IopLocNet {
        * <code>optional .ServiceInfo service = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.ServiceInfo, IopLocNet.ServiceInfo.Builder, IopLocNet.ServiceInfoOrBuilder> 
+          IopLocNet.ServiceInfo, IopLocNet.ServiceInfo.Builder, IopLocNet.ServiceInfoOrBuilder>
           getServiceFieldBuilder() {
         if (serviceBuilder_ == null) {
           serviceBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -10851,7 +10851,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<RegisterServiceRequest> getParserForType() {
       return PARSER;
     }
@@ -10865,6 +10865,31 @@ public final class IopLocNet {
   public interface RegisterServiceResponseOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RegisterServiceResponse)
       com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <pre>
+     * GPS location of the LOC node.
+     * </pre>
+     *
+     * <code>optional .GpsLocation location = 1;</code>
+     */
+    boolean hasLocation();
+    /**
+     * <pre>
+     * GPS location of the LOC node.
+     * </pre>
+     *
+     * <code>optional .GpsLocation location = 1;</code>
+     */
+    IopLocNet.GpsLocation getLocation();
+    /**
+     * <pre>
+     * GPS location of the LOC node.
+     * </pre>
+     *
+     * <code>optional .GpsLocation location = 1;</code>
+     */
+    IopLocNet.GpsLocationOrBuilder getLocationOrBuilder();
   }
   /**
    * Protobuf type {@code RegisterServiceResponse}
@@ -10880,7 +10905,7 @@ public final class IopLocNet {
     private RegisterServiceResponse() {
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -10890,6 +10915,7 @@ public final class IopLocNet {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      int mutable_bitField0_ = 0;
       try {
         boolean done = false;
         while (!done) {
@@ -10902,6 +10928,19 @@ public final class IopLocNet {
               if (!input.skipField(tag)) {
                 done = true;
               }
+              break;
+            }
+            case 10: {
+              IopLocNet.GpsLocation.Builder subBuilder = null;
+              if (location_ != null) {
+                subBuilder = location_.toBuilder();
+              }
+              location_ = input.readMessage(IopLocNet.GpsLocation.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(location_);
+                location_ = subBuilder.buildPartial();
+              }
+
               break;
             }
           }
@@ -10920,11 +10959,44 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_RegisterServiceResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_RegisterServiceResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               IopLocNet.RegisterServiceResponse.class, IopLocNet.RegisterServiceResponse.Builder.class);
+    }
+
+    public static final int LOCATION_FIELD_NUMBER = 1;
+    private IopLocNet.GpsLocation location_;
+    /**
+     * <pre>
+     * GPS location of the LOC node.
+     * </pre>
+     *
+     * <code>optional .GpsLocation location = 1;</code>
+     */
+    public boolean hasLocation() {
+      return location_ != null;
+    }
+    /**
+     * <pre>
+     * GPS location of the LOC node.
+     * </pre>
+     *
+     * <code>optional .GpsLocation location = 1;</code>
+     */
+    public IopLocNet.GpsLocation getLocation() {
+      return location_ == null ? IopLocNet.GpsLocation.getDefaultInstance() : location_;
+    }
+    /**
+     * <pre>
+     * GPS location of the LOC node.
+     * </pre>
+     *
+     * <code>optional .GpsLocation location = 1;</code>
+     */
+    public IopLocNet.GpsLocationOrBuilder getLocationOrBuilder() {
+      return getLocation();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -10939,6 +11011,9 @@ public final class IopLocNet {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
+      if (location_ != null) {
+        output.writeMessage(1, getLocation());
+      }
     }
 
     public int getSerializedSize() {
@@ -10946,13 +11021,17 @@ public final class IopLocNet {
       if (size != -1) return size;
 
       size = 0;
+      if (location_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getLocation());
+      }
       memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -10962,16 +11041,25 @@ public final class IopLocNet {
       IopLocNet.RegisterServiceResponse other = (IopLocNet.RegisterServiceResponse) obj;
 
       boolean result = true;
+      result = result && (hasLocation() == other.hasLocation());
+      if (hasLocation()) {
+        result = result && getLocation()
+            .equals(other.getLocation());
+      }
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasLocation()) {
+        hash = (37 * hash) + LOCATION_FIELD_NUMBER;
+        hash = (53 * hash) + getLocation().hashCode();
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -11048,9 +11136,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -11066,7 +11154,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_RegisterServiceResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_RegisterServiceResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -11079,7 +11167,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -11090,6 +11178,12 @@ public final class IopLocNet {
       }
       public Builder clear() {
         super.clear();
+        if (locationBuilder_ == null) {
+          location_ = null;
+        } else {
+          location_ = null;
+          locationBuilder_ = null;
+        }
         return this;
       }
 
@@ -11112,6 +11206,11 @@ public final class IopLocNet {
 
       public IopLocNet.RegisterServiceResponse buildPartial() {
         IopLocNet.RegisterServiceResponse result = new IopLocNet.RegisterServiceResponse(this);
+        if (locationBuilder_ == null) {
+          result.location_ = location_;
+        } else {
+          result.location_ = locationBuilder_.build();
+        }
         onBuilt();
         return result;
       }
@@ -11153,6 +11252,9 @@ public final class IopLocNet {
 
       public Builder mergeFrom(IopLocNet.RegisterServiceResponse other) {
         if (other == IopLocNet.RegisterServiceResponse.getDefaultInstance()) return this;
+        if (other.hasLocation()) {
+          mergeLocation(other.getLocation());
+        }
         onChanged();
         return this;
       }
@@ -11177,6 +11279,159 @@ public final class IopLocNet {
           }
         }
         return this;
+      }
+
+      private IopLocNet.GpsLocation location_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          IopLocNet.GpsLocation, IopLocNet.GpsLocation.Builder, IopLocNet.GpsLocationOrBuilder> locationBuilder_;
+      /**
+       * <pre>
+       * GPS location of the LOC node.
+       * </pre>
+       *
+       * <code>optional .GpsLocation location = 1;</code>
+       */
+      public boolean hasLocation() {
+        return locationBuilder_ != null || location_ != null;
+      }
+      /**
+       * <pre>
+       * GPS location of the LOC node.
+       * </pre>
+       *
+       * <code>optional .GpsLocation location = 1;</code>
+       */
+      public IopLocNet.GpsLocation getLocation() {
+        if (locationBuilder_ == null) {
+          return location_ == null ? IopLocNet.GpsLocation.getDefaultInstance() : location_;
+        } else {
+          return locationBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       * GPS location of the LOC node.
+       * </pre>
+       *
+       * <code>optional .GpsLocation location = 1;</code>
+       */
+      public Builder setLocation(IopLocNet.GpsLocation value) {
+        if (locationBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          location_ = value;
+          onChanged();
+        } else {
+          locationBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * GPS location of the LOC node.
+       * </pre>
+       *
+       * <code>optional .GpsLocation location = 1;</code>
+       */
+      public Builder setLocation(
+          IopLocNet.GpsLocation.Builder builderForValue) {
+        if (locationBuilder_ == null) {
+          location_ = builderForValue.build();
+          onChanged();
+        } else {
+          locationBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * GPS location of the LOC node.
+       * </pre>
+       *
+       * <code>optional .GpsLocation location = 1;</code>
+       */
+      public Builder mergeLocation(IopLocNet.GpsLocation value) {
+        if (locationBuilder_ == null) {
+          if (location_ != null) {
+            location_ =
+              IopLocNet.GpsLocation.newBuilder(location_).mergeFrom(value).buildPartial();
+          } else {
+            location_ = value;
+          }
+          onChanged();
+        } else {
+          locationBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * GPS location of the LOC node.
+       * </pre>
+       *
+       * <code>optional .GpsLocation location = 1;</code>
+       */
+      public Builder clearLocation() {
+        if (locationBuilder_ == null) {
+          location_ = null;
+          onChanged();
+        } else {
+          location_ = null;
+          locationBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * GPS location of the LOC node.
+       * </pre>
+       *
+       * <code>optional .GpsLocation location = 1;</code>
+       */
+      public IopLocNet.GpsLocation.Builder getLocationBuilder() {
+
+        onChanged();
+        return getLocationFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * GPS location of the LOC node.
+       * </pre>
+       *
+       * <code>optional .GpsLocation location = 1;</code>
+       */
+      public IopLocNet.GpsLocationOrBuilder getLocationOrBuilder() {
+        if (locationBuilder_ != null) {
+          return locationBuilder_.getMessageOrBuilder();
+        } else {
+          return location_ == null ?
+              IopLocNet.GpsLocation.getDefaultInstance() : location_;
+        }
+      }
+      /**
+       * <pre>
+       * GPS location of the LOC node.
+       * </pre>
+       *
+       * <code>optional .GpsLocation location = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          IopLocNet.GpsLocation, IopLocNet.GpsLocation.Builder, IopLocNet.GpsLocationOrBuilder>
+          getLocationFieldBuilder() {
+        if (locationBuilder_ == null) {
+          locationBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              IopLocNet.GpsLocation, IopLocNet.GpsLocation.Builder, IopLocNet.GpsLocationOrBuilder>(
+                  getLocation(),
+                  getParentForChildren(),
+                  isClean());
+          location_ = null;
+        }
+        return locationBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -11216,7 +11471,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<RegisterServiceResponse> getParserForType() {
       return PARSER;
     }
@@ -11259,7 +11514,7 @@ public final class IopLocNet {
       serviceType_ = 0;
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -11306,7 +11561,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_DeregisterServiceRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_DeregisterServiceRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -11360,8 +11615,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -11375,7 +11630,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -11460,9 +11715,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -11482,7 +11737,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_DeregisterServiceRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_DeregisterServiceRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -11495,7 +11750,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -11630,7 +11885,7 @@ public final class IopLocNet {
         if (value == null) {
           throw new NullPointerException();
         }
-        
+
         serviceType_ = value.getNumber();
         onChanged();
         return this;
@@ -11639,7 +11894,7 @@ public final class IopLocNet {
        * <code>optional .ServiceType serviceType = 1;</code>
        */
       public Builder clearServiceType() {
-        
+
         serviceType_ = 0;
         onChanged();
         return this;
@@ -11682,7 +11937,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<DeregisterServiceRequest> getParserForType() {
       return PARSER;
     }
@@ -11711,7 +11966,7 @@ public final class IopLocNet {
     private DeregisterServiceResponse() {
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -11751,7 +12006,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_DeregisterServiceResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_DeregisterServiceResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -11782,8 +12037,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -11796,7 +12051,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -11879,9 +12134,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -11897,7 +12152,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_DeregisterServiceResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_DeregisterServiceResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -11910,7 +12165,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -12047,7 +12302,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<DeregisterServiceResponse> getParserForType() {
       return PARSER;
     }
@@ -12088,7 +12343,7 @@ public final class IopLocNet {
       keepAliveAndSendUpdates_ = false;
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -12134,7 +12389,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_GetNeighbourNodesByDistanceLocalRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_GetNeighbourNodesByDistanceLocalRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -12181,8 +12436,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -12197,7 +12452,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -12283,9 +12538,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -12307,7 +12562,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_GetNeighbourNodesByDistanceLocalRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_GetNeighbourNodesByDistanceLocalRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -12320,7 +12575,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -12437,7 +12692,7 @@ public final class IopLocNet {
        * <code>optional bool keepAliveAndSendUpdates = 1;</code>
        */
       public Builder setKeepAliveAndSendUpdates(boolean value) {
-        
+
         keepAliveAndSendUpdates_ = value;
         onChanged();
         return this;
@@ -12446,7 +12701,7 @@ public final class IopLocNet {
        * <code>optional bool keepAliveAndSendUpdates = 1;</code>
        */
       public Builder clearKeepAliveAndSendUpdates() {
-        
+
         keepAliveAndSendUpdates_ = false;
         onChanged();
         return this;
@@ -12489,7 +12744,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<GetNeighbourNodesByDistanceLocalRequest> getParserForType() {
       return PARSER;
     }
@@ -12507,7 +12762,7 @@ public final class IopLocNet {
     /**
      * <code>repeated .NodeInfo nodes = 1;</code>
      */
-    java.util.List<IopLocNet.NodeInfo> 
+    java.util.List<IopLocNet.NodeInfo>
         getNodesList();
     /**
      * <code>repeated .NodeInfo nodes = 1;</code>
@@ -12520,13 +12775,13 @@ public final class IopLocNet {
     /**
      * <code>repeated .NodeInfo nodes = 1;</code>
      */
-    java.util.List<? extends IopLocNet.NodeInfoOrBuilder> 
+    java.util.List<? extends IopLocNet.NodeInfoOrBuilder>
         getNodesOrBuilderList();
     /**
      * <code>repeated .NodeInfo nodes = 1;</code>
      */
     IopLocNet.NodeInfoOrBuilder getNodesOrBuilder(
-            int index);
+        int index);
   }
   /**
    * <pre>
@@ -12547,7 +12802,7 @@ public final class IopLocNet {
       nodes_ = java.util.Collections.emptyList();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -12600,7 +12855,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_GetNeighbourNodesByDistanceResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_GetNeighbourNodesByDistanceResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -12618,7 +12873,7 @@ public final class IopLocNet {
     /**
      * <code>repeated .NodeInfo nodes = 1;</code>
      */
-    public java.util.List<? extends IopLocNet.NodeInfoOrBuilder> 
+    public java.util.List<? extends IopLocNet.NodeInfoOrBuilder>
         getNodesOrBuilderList() {
       return nodes_;
     }
@@ -12673,8 +12928,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -12689,7 +12944,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -12776,9 +13031,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -12798,7 +13053,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_GetNeighbourNodesByDistanceResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_GetNeighbourNodesByDistanceResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -12811,7 +13066,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -12920,7 +13175,7 @@ public final class IopLocNet {
               nodesBuilder_ = null;
               nodes_ = other.nodes_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              nodesBuilder_ = 
+              nodesBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getNodesFieldBuilder() : null;
             } else {
@@ -13093,7 +13348,7 @@ public final class IopLocNet {
        * <code>repeated .NodeInfo nodes = 1;</code>
        */
       public Builder addAllNodes(
-          Iterable<? extends IopLocNet.NodeInfo> values) {
+          java.lang.Iterable<? extends IopLocNet.NodeInfo> values) {
         if (nodesBuilder_ == null) {
           ensureNodesIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -13150,7 +13405,7 @@ public final class IopLocNet {
       /**
        * <code>repeated .NodeInfo nodes = 1;</code>
        */
-      public java.util.List<? extends IopLocNet.NodeInfoOrBuilder> 
+      public java.util.List<? extends IopLocNet.NodeInfoOrBuilder>
            getNodesOrBuilderList() {
         if (nodesBuilder_ != null) {
           return nodesBuilder_.getMessageOrBuilderList();
@@ -13176,12 +13431,12 @@ public final class IopLocNet {
       /**
        * <code>repeated .NodeInfo nodes = 1;</code>
        */
-      public java.util.List<IopLocNet.NodeInfo.Builder> 
+      public java.util.List<IopLocNet.NodeInfo.Builder>
            getNodesBuilderList() {
         return getNodesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder> 
+          IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder>
           getNodesFieldBuilder() {
         if (nodesBuilder_ == null) {
           nodesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -13232,7 +13487,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<GetNeighbourNodesByDistanceResponse> getParserForType() {
       return PARSER;
     }
@@ -13290,7 +13545,7 @@ public final class IopLocNet {
     private NeighbourhoodChange() {
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -13364,7 +13619,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_NeighbourhoodChange_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_NeighbourhoodChange_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -13372,7 +13627,7 @@ public final class IopLocNet {
     }
 
     private int changeTypeCase_ = 0;
-    private Object changeType_;
+    private java.lang.Object changeType_;
     public enum ChangeTypeCase
         implements com.google.protobuf.Internal.EnumLite {
       ADDEDNODEINFO(1),
@@ -13386,7 +13641,7 @@ public final class IopLocNet {
       /**
        * @deprecated Use {@link #forNumber(int)} instead.
        */
-      @Deprecated
+      @java.lang.Deprecated
       public static ChangeTypeCase valueOf(int value) {
         return forNumber(value);
       }
@@ -13509,8 +13764,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -13542,7 +13797,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -13641,9 +13896,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -13663,7 +13918,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_NeighbourhoodChange_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_NeighbourhoodChange_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -13676,7 +13931,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -13813,7 +14068,7 @@ public final class IopLocNet {
         return this;
       }
       private int changeTypeCase_ = 0;
-      private Object changeType_;
+      private java.lang.Object changeType_;
       public ChangeTypeCase
           getChangeTypeCase() {
         return ChangeTypeCase.forNumber(
@@ -13940,7 +14195,7 @@ public final class IopLocNet {
        * <code>optional .NodeInfo addedNodeInfo = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder> 
+          IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder>
           getAddedNodeInfoFieldBuilder() {
         if (addedNodeInfoBuilder_ == null) {
           if (!(changeTypeCase_ == 1)) {
@@ -14070,7 +14325,7 @@ public final class IopLocNet {
        * <code>optional .NodeInfo updatedNodeInfo = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder> 
+          IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder>
           getUpdatedNodeInfoFieldBuilder() {
         if (updatedNodeInfoBuilder_ == null) {
           if (!(changeTypeCase_ == 2)) {
@@ -14158,7 +14413,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<NeighbourhoodChange> getParserForType() {
       return PARSER;
     }
@@ -14176,7 +14431,7 @@ public final class IopLocNet {
     /**
      * <code>repeated .NeighbourhoodChange changes = 1;</code>
      */
-    java.util.List<IopLocNet.NeighbourhoodChange> 
+    java.util.List<IopLocNet.NeighbourhoodChange>
         getChangesList();
     /**
      * <code>repeated .NeighbourhoodChange changes = 1;</code>
@@ -14189,13 +14444,13 @@ public final class IopLocNet {
     /**
      * <code>repeated .NeighbourhoodChange changes = 1;</code>
      */
-    java.util.List<? extends IopLocNet.NeighbourhoodChangeOrBuilder> 
+    java.util.List<? extends IopLocNet.NeighbourhoodChangeOrBuilder>
         getChangesOrBuilderList();
     /**
      * <code>repeated .NeighbourhoodChange changes = 1;</code>
      */
     IopLocNet.NeighbourhoodChangeOrBuilder getChangesOrBuilder(
-            int index);
+        int index);
   }
   /**
    * <pre>
@@ -14216,7 +14471,7 @@ public final class IopLocNet {
       changes_ = java.util.Collections.emptyList();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -14269,7 +14524,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_NeighbourhoodChangedNotificationRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_NeighbourhoodChangedNotificationRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -14287,7 +14542,7 @@ public final class IopLocNet {
     /**
      * <code>repeated .NeighbourhoodChange changes = 1;</code>
      */
-    public java.util.List<? extends IopLocNet.NeighbourhoodChangeOrBuilder> 
+    public java.util.List<? extends IopLocNet.NeighbourhoodChangeOrBuilder>
         getChangesOrBuilderList() {
       return changes_;
     }
@@ -14342,8 +14597,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -14358,7 +14613,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -14445,9 +14700,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -14467,7 +14722,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_NeighbourhoodChangedNotificationRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_NeighbourhoodChangedNotificationRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -14480,7 +14735,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -14589,7 +14844,7 @@ public final class IopLocNet {
               changesBuilder_ = null;
               changes_ = other.changes_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              changesBuilder_ = 
+              changesBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getChangesFieldBuilder() : null;
             } else {
@@ -14762,7 +15017,7 @@ public final class IopLocNet {
        * <code>repeated .NeighbourhoodChange changes = 1;</code>
        */
       public Builder addAllChanges(
-          Iterable<? extends IopLocNet.NeighbourhoodChange> values) {
+          java.lang.Iterable<? extends IopLocNet.NeighbourhoodChange> values) {
         if (changesBuilder_ == null) {
           ensureChangesIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -14819,7 +15074,7 @@ public final class IopLocNet {
       /**
        * <code>repeated .NeighbourhoodChange changes = 1;</code>
        */
-      public java.util.List<? extends IopLocNet.NeighbourhoodChangeOrBuilder> 
+      public java.util.List<? extends IopLocNet.NeighbourhoodChangeOrBuilder>
            getChangesOrBuilderList() {
         if (changesBuilder_ != null) {
           return changesBuilder_.getMessageOrBuilderList();
@@ -14845,12 +15100,12 @@ public final class IopLocNet {
       /**
        * <code>repeated .NeighbourhoodChange changes = 1;</code>
        */
-      public java.util.List<IopLocNet.NeighbourhoodChange.Builder> 
+      public java.util.List<IopLocNet.NeighbourhoodChange.Builder>
            getChangesBuilderList() {
         return getChangesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          IopLocNet.NeighbourhoodChange, IopLocNet.NeighbourhoodChange.Builder, IopLocNet.NeighbourhoodChangeOrBuilder> 
+          IopLocNet.NeighbourhoodChange, IopLocNet.NeighbourhoodChange.Builder, IopLocNet.NeighbourhoodChangeOrBuilder>
           getChangesFieldBuilder() {
         if (changesBuilder_ == null) {
           changesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -14901,7 +15156,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<NeighbourhoodChangedNotificationRequest> getParserForType() {
       return PARSER;
     }
@@ -14930,7 +15185,7 @@ public final class IopLocNet {
     private NeighbourhoodChangedNotificationResponse() {
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -14970,7 +15225,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_NeighbourhoodChangedNotificationResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_NeighbourhoodChangedNotificationResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -15001,8 +15256,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -15015,7 +15270,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -15098,9 +15353,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -15116,7 +15371,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_NeighbourhoodChangedNotificationResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_NeighbourhoodChangedNotificationResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -15129,7 +15384,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -15266,7 +15521,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<NeighbourhoodChangedNotificationResponse> getParserForType() {
       return PARSER;
     }
@@ -15369,7 +15624,7 @@ public final class IopLocNet {
     private RemoteNodeRequest() {
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -15522,7 +15777,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_RemoteNodeRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_RemoteNodeRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -15530,7 +15785,7 @@ public final class IopLocNet {
     }
 
     private int remoteNodeRequestTypeCase_ = 0;
-    private Object remoteNodeRequestType_;
+    private java.lang.Object remoteNodeRequestType_;
     public enum RemoteNodeRequestTypeCase
         implements com.google.protobuf.Internal.EnumLite {
       ACCEPTCOLLEAGUE(1),
@@ -15549,7 +15804,7 @@ public final class IopLocNet {
       /**
        * @deprecated Use {@link #forNumber(int)} instead.
        */
-      @Deprecated
+      @java.lang.Deprecated
       public static RemoteNodeRequestTypeCase valueOf(int value) {
         return forNumber(value);
       }
@@ -15819,8 +16074,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -15872,7 +16127,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -15991,9 +16246,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -16009,7 +16264,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_RemoteNodeRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_RemoteNodeRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -16022,7 +16277,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -16218,7 +16473,7 @@ public final class IopLocNet {
         return this;
       }
       private int remoteNodeRequestTypeCase_ = 0;
-      private Object remoteNodeRequestType_;
+      private java.lang.Object remoteNodeRequestType_;
       public RemoteNodeRequestTypeCase
           getRemoteNodeRequestTypeCase() {
         return RemoteNodeRequestTypeCase.forNumber(
@@ -16345,7 +16600,7 @@ public final class IopLocNet {
        * <code>optional .BuildNetworkRequest acceptColleague = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.BuildNetworkRequest, IopLocNet.BuildNetworkRequest.Builder, IopLocNet.BuildNetworkRequestOrBuilder> 
+          IopLocNet.BuildNetworkRequest, IopLocNet.BuildNetworkRequest.Builder, IopLocNet.BuildNetworkRequestOrBuilder>
           getAcceptColleagueFieldBuilder() {
         if (acceptColleagueBuilder_ == null) {
           if (!(remoteNodeRequestTypeCase_ == 1)) {
@@ -16475,7 +16730,7 @@ public final class IopLocNet {
        * <code>optional .BuildNetworkRequest renewColleague = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.BuildNetworkRequest, IopLocNet.BuildNetworkRequest.Builder, IopLocNet.BuildNetworkRequestOrBuilder> 
+          IopLocNet.BuildNetworkRequest, IopLocNet.BuildNetworkRequest.Builder, IopLocNet.BuildNetworkRequestOrBuilder>
           getRenewColleagueFieldBuilder() {
         if (renewColleagueBuilder_ == null) {
           if (!(remoteNodeRequestTypeCase_ == 2)) {
@@ -16605,7 +16860,7 @@ public final class IopLocNet {
        * <code>optional .BuildNetworkRequest acceptNeighbour = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.BuildNetworkRequest, IopLocNet.BuildNetworkRequest.Builder, IopLocNet.BuildNetworkRequestOrBuilder> 
+          IopLocNet.BuildNetworkRequest, IopLocNet.BuildNetworkRequest.Builder, IopLocNet.BuildNetworkRequestOrBuilder>
           getAcceptNeighbourFieldBuilder() {
         if (acceptNeighbourBuilder_ == null) {
           if (!(remoteNodeRequestTypeCase_ == 3)) {
@@ -16735,7 +16990,7 @@ public final class IopLocNet {
        * <code>optional .BuildNetworkRequest renewNeighbour = 4;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.BuildNetworkRequest, IopLocNet.BuildNetworkRequest.Builder, IopLocNet.BuildNetworkRequestOrBuilder> 
+          IopLocNet.BuildNetworkRequest, IopLocNet.BuildNetworkRequest.Builder, IopLocNet.BuildNetworkRequestOrBuilder>
           getRenewNeighbourFieldBuilder() {
         if (renewNeighbourBuilder_ == null) {
           if (!(remoteNodeRequestTypeCase_ == 4)) {
@@ -16865,7 +17120,7 @@ public final class IopLocNet {
        * <code>optional .GetNodeCountRequest getNodeCount = 5;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.GetNodeCountRequest, IopLocNet.GetNodeCountRequest.Builder, IopLocNet.GetNodeCountRequestOrBuilder> 
+          IopLocNet.GetNodeCountRequest, IopLocNet.GetNodeCountRequest.Builder, IopLocNet.GetNodeCountRequestOrBuilder>
           getGetNodeCountFieldBuilder() {
         if (getNodeCountBuilder_ == null) {
           if (!(remoteNodeRequestTypeCase_ == 5)) {
@@ -16995,7 +17250,7 @@ public final class IopLocNet {
        * <code>optional .GetRandomNodesRequest getRandomNodes = 6;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.GetRandomNodesRequest, IopLocNet.GetRandomNodesRequest.Builder, IopLocNet.GetRandomNodesRequestOrBuilder> 
+          IopLocNet.GetRandomNodesRequest, IopLocNet.GetRandomNodesRequest.Builder, IopLocNet.GetRandomNodesRequestOrBuilder>
           getGetRandomNodesFieldBuilder() {
         if (getRandomNodesBuilder_ == null) {
           if (!(remoteNodeRequestTypeCase_ == 6)) {
@@ -17125,7 +17380,7 @@ public final class IopLocNet {
        * <code>optional .GetClosestNodesByDistanceRequest getClosestNodes = 7;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.GetClosestNodesByDistanceRequest, IopLocNet.GetClosestNodesByDistanceRequest.Builder, IopLocNet.GetClosestNodesByDistanceRequestOrBuilder> 
+          IopLocNet.GetClosestNodesByDistanceRequest, IopLocNet.GetClosestNodesByDistanceRequest.Builder, IopLocNet.GetClosestNodesByDistanceRequestOrBuilder>
           getGetClosestNodesFieldBuilder() {
         if (getClosestNodesBuilder_ == null) {
           if (!(remoteNodeRequestTypeCase_ == 7)) {
@@ -17255,7 +17510,7 @@ public final class IopLocNet {
        * <code>optional .GetNodeInfoRequest getNodeInfo = 8;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.GetNodeInfoRequest, IopLocNet.GetNodeInfoRequest.Builder, IopLocNet.GetNodeInfoRequestOrBuilder> 
+          IopLocNet.GetNodeInfoRequest, IopLocNet.GetNodeInfoRequest.Builder, IopLocNet.GetNodeInfoRequestOrBuilder>
           getGetNodeInfoFieldBuilder() {
         if (getNodeInfoBuilder_ == null) {
           if (!(remoteNodeRequestTypeCase_ == 8)) {
@@ -17310,7 +17565,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<RemoteNodeRequest> getParserForType() {
       return PARSER;
     }
@@ -17413,7 +17668,7 @@ public final class IopLocNet {
     private RemoteNodeResponse() {
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -17566,7 +17821,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_RemoteNodeResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_RemoteNodeResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -17574,7 +17829,7 @@ public final class IopLocNet {
     }
 
     private int remoteNodeResponseTypeCase_ = 0;
-    private Object remoteNodeResponseType_;
+    private java.lang.Object remoteNodeResponseType_;
     public enum RemoteNodeResponseTypeCase
         implements com.google.protobuf.Internal.EnumLite {
       ACCEPTCOLLEAGUE(1),
@@ -17593,7 +17848,7 @@ public final class IopLocNet {
       /**
        * @deprecated Use {@link #forNumber(int)} instead.
        */
-      @Deprecated
+      @java.lang.Deprecated
       public static RemoteNodeResponseTypeCase valueOf(int value) {
         return forNumber(value);
       }
@@ -17863,8 +18118,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -17916,7 +18171,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -18035,9 +18290,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -18053,7 +18308,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_RemoteNodeResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_RemoteNodeResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -18066,7 +18321,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -18262,7 +18517,7 @@ public final class IopLocNet {
         return this;
       }
       private int remoteNodeResponseTypeCase_ = 0;
-      private Object remoteNodeResponseType_;
+      private java.lang.Object remoteNodeResponseType_;
       public RemoteNodeResponseTypeCase
           getRemoteNodeResponseTypeCase() {
         return RemoteNodeResponseTypeCase.forNumber(
@@ -18389,7 +18644,7 @@ public final class IopLocNet {
        * <code>optional .BuildNetworkResponse acceptColleague = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.BuildNetworkResponse, IopLocNet.BuildNetworkResponse.Builder, IopLocNet.BuildNetworkResponseOrBuilder> 
+          IopLocNet.BuildNetworkResponse, IopLocNet.BuildNetworkResponse.Builder, IopLocNet.BuildNetworkResponseOrBuilder>
           getAcceptColleagueFieldBuilder() {
         if (acceptColleagueBuilder_ == null) {
           if (!(remoteNodeResponseTypeCase_ == 1)) {
@@ -18519,7 +18774,7 @@ public final class IopLocNet {
        * <code>optional .BuildNetworkResponse renewColleague = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.BuildNetworkResponse, IopLocNet.BuildNetworkResponse.Builder, IopLocNet.BuildNetworkResponseOrBuilder> 
+          IopLocNet.BuildNetworkResponse, IopLocNet.BuildNetworkResponse.Builder, IopLocNet.BuildNetworkResponseOrBuilder>
           getRenewColleagueFieldBuilder() {
         if (renewColleagueBuilder_ == null) {
           if (!(remoteNodeResponseTypeCase_ == 2)) {
@@ -18649,7 +18904,7 @@ public final class IopLocNet {
        * <code>optional .BuildNetworkResponse acceptNeighbour = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.BuildNetworkResponse, IopLocNet.BuildNetworkResponse.Builder, IopLocNet.BuildNetworkResponseOrBuilder> 
+          IopLocNet.BuildNetworkResponse, IopLocNet.BuildNetworkResponse.Builder, IopLocNet.BuildNetworkResponseOrBuilder>
           getAcceptNeighbourFieldBuilder() {
         if (acceptNeighbourBuilder_ == null) {
           if (!(remoteNodeResponseTypeCase_ == 3)) {
@@ -18779,7 +19034,7 @@ public final class IopLocNet {
        * <code>optional .BuildNetworkResponse renewNeighbour = 4;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.BuildNetworkResponse, IopLocNet.BuildNetworkResponse.Builder, IopLocNet.BuildNetworkResponseOrBuilder> 
+          IopLocNet.BuildNetworkResponse, IopLocNet.BuildNetworkResponse.Builder, IopLocNet.BuildNetworkResponseOrBuilder>
           getRenewNeighbourFieldBuilder() {
         if (renewNeighbourBuilder_ == null) {
           if (!(remoteNodeResponseTypeCase_ == 4)) {
@@ -18909,7 +19164,7 @@ public final class IopLocNet {
        * <code>optional .GetNodeCountResponse getNodeCount = 5;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.GetNodeCountResponse, IopLocNet.GetNodeCountResponse.Builder, IopLocNet.GetNodeCountResponseOrBuilder> 
+          IopLocNet.GetNodeCountResponse, IopLocNet.GetNodeCountResponse.Builder, IopLocNet.GetNodeCountResponseOrBuilder>
           getGetNodeCountFieldBuilder() {
         if (getNodeCountBuilder_ == null) {
           if (!(remoteNodeResponseTypeCase_ == 5)) {
@@ -19039,7 +19294,7 @@ public final class IopLocNet {
        * <code>optional .GetRandomNodesResponse getRandomNodes = 6;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.GetRandomNodesResponse, IopLocNet.GetRandomNodesResponse.Builder, IopLocNet.GetRandomNodesResponseOrBuilder> 
+          IopLocNet.GetRandomNodesResponse, IopLocNet.GetRandomNodesResponse.Builder, IopLocNet.GetRandomNodesResponseOrBuilder>
           getGetRandomNodesFieldBuilder() {
         if (getRandomNodesBuilder_ == null) {
           if (!(remoteNodeResponseTypeCase_ == 6)) {
@@ -19169,7 +19424,7 @@ public final class IopLocNet {
        * <code>optional .GetClosestNodesByDistanceResponse getClosestNodes = 7;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.GetClosestNodesByDistanceResponse, IopLocNet.GetClosestNodesByDistanceResponse.Builder, IopLocNet.GetClosestNodesByDistanceResponseOrBuilder> 
+          IopLocNet.GetClosestNodesByDistanceResponse, IopLocNet.GetClosestNodesByDistanceResponse.Builder, IopLocNet.GetClosestNodesByDistanceResponseOrBuilder>
           getGetClosestNodesFieldBuilder() {
         if (getClosestNodesBuilder_ == null) {
           if (!(remoteNodeResponseTypeCase_ == 7)) {
@@ -19299,7 +19554,7 @@ public final class IopLocNet {
        * <code>optional .GetNodeInfoResponse getNodeInfo = 8;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.GetNodeInfoResponse, IopLocNet.GetNodeInfoResponse.Builder, IopLocNet.GetNodeInfoResponseOrBuilder> 
+          IopLocNet.GetNodeInfoResponse, IopLocNet.GetNodeInfoResponse.Builder, IopLocNet.GetNodeInfoResponseOrBuilder>
           getGetNodeInfoFieldBuilder() {
         if (getNodeInfoBuilder_ == null) {
           if (!(remoteNodeResponseTypeCase_ == 8)) {
@@ -19354,7 +19609,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<RemoteNodeResponse> getParserForType() {
       return PARSER;
     }
@@ -19401,7 +19656,7 @@ public final class IopLocNet {
     private BuildNetworkRequest() {
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -19455,7 +19710,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_BuildNetworkRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_BuildNetworkRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -19514,8 +19769,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -19533,7 +19788,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -19620,9 +19875,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -19643,7 +19898,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_BuildNetworkRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_BuildNetworkRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -19656,7 +19911,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -19855,7 +20110,7 @@ public final class IopLocNet {
        * <code>optional .NodeInfo requestorNodeInfo = 1;</code>
        */
       public IopLocNet.NodeInfo.Builder getRequestorNodeInfoBuilder() {
-        
+
         onChanged();
         return getRequestorNodeInfoFieldBuilder().getBuilder();
       }
@@ -19874,7 +20129,7 @@ public final class IopLocNet {
        * <code>optional .NodeInfo requestorNodeInfo = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder> 
+          IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder>
           getRequestorNodeInfoFieldBuilder() {
         if (requestorNodeInfoBuilder_ == null) {
           requestorNodeInfoBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -19924,7 +20179,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<BuildNetworkRequest> getParserForType() {
       return PARSER;
     }
@@ -19998,7 +20253,7 @@ public final class IopLocNet {
       remoteIpAddress_ = com.google.protobuf.ByteString.EMPTY;
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -20062,7 +20317,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_BuildNetworkResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_BuildNetworkResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -20173,8 +20428,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -20196,7 +20451,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -20288,9 +20543,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -20306,7 +20561,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_BuildNetworkResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_BuildNetworkResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -20319,7 +20574,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -20464,7 +20719,7 @@ public final class IopLocNet {
        * <code>optional bool accepted = 1;</code>
        */
       public Builder setAccepted(boolean value) {
-        
+
         accepted_ = value;
         onChanged();
         return this;
@@ -20477,7 +20732,7 @@ public final class IopLocNet {
        * <code>optional bool accepted = 1;</code>
        */
       public Builder clearAccepted() {
-        
+
         accepted_ = false;
         onChanged();
         return this;
@@ -20596,7 +20851,7 @@ public final class IopLocNet {
        * <code>optional .NodeInfo acceptorNodeInfo = 2;</code>
        */
       public IopLocNet.NodeInfo.Builder getAcceptorNodeInfoBuilder() {
-        
+
         onChanged();
         return getAcceptorNodeInfoFieldBuilder().getBuilder();
       }
@@ -20623,7 +20878,7 @@ public final class IopLocNet {
        * <code>optional .NodeInfo acceptorNodeInfo = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder> 
+          IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder>
           getAcceptorNodeInfoFieldBuilder() {
         if (acceptorNodeInfoBuilder_ == null) {
           acceptorNodeInfoBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -20658,7 +20913,7 @@ public final class IopLocNet {
         if (value == null) {
     throw new NullPointerException();
   }
-  
+
         remoteIpAddress_ = value;
         onChanged();
         return this;
@@ -20671,7 +20926,7 @@ public final class IopLocNet {
        * <code>optional bytes remoteIpAddress = 3;</code>
        */
       public Builder clearRemoteIpAddress() {
-        
+
         remoteIpAddress_ = getDefaultInstance().getRemoteIpAddress();
         onChanged();
         return this;
@@ -20714,7 +20969,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<BuildNetworkResponse> getParserForType() {
       return PARSER;
     }
@@ -20747,7 +21002,7 @@ public final class IopLocNet {
     private GetNodeCountRequest() {
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -20787,7 +21042,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_GetNodeCountRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_GetNodeCountRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -20818,8 +21073,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -20832,7 +21087,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -20915,9 +21170,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -20937,7 +21192,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_GetNodeCountRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_GetNodeCountRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -20950,7 +21205,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -21087,7 +21342,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<GetNodeCountRequest> getParserForType() {
       return PARSER;
     }
@@ -21122,7 +21377,7 @@ public final class IopLocNet {
       nodeCount_ = 0;
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -21168,7 +21423,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_GetNodeCountResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_GetNodeCountResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -21215,8 +21470,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -21231,7 +21486,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -21316,9 +21571,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -21334,7 +21589,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_GetNodeCountResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_GetNodeCountResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -21347,7 +21602,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -21464,7 +21719,7 @@ public final class IopLocNet {
        * <code>optional uint32 nodeCount = 1;</code>
        */
       public Builder setNodeCount(int value) {
-        
+
         nodeCount_ = value;
         onChanged();
         return this;
@@ -21473,7 +21728,7 @@ public final class IopLocNet {
        * <code>optional uint32 nodeCount = 1;</code>
        */
       public Builder clearNodeCount() {
-        
+
         nodeCount_ = 0;
         onChanged();
         return this;
@@ -21516,7 +21771,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<GetNodeCountResponse> getParserForType() {
       return PARSER;
     }
@@ -21561,7 +21816,7 @@ public final class IopLocNet {
       includeNeighbours_ = false;
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -21612,7 +21867,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_GetRandomNodesRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_GetRandomNodesRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -21675,8 +21930,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -21693,7 +21948,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -21781,9 +22036,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -21803,7 +22058,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_GetRandomNodesRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_GetRandomNodesRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -21816,7 +22071,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -21939,7 +22194,7 @@ public final class IopLocNet {
        * <code>optional uint32 maxNodeCount = 1;</code>
        */
       public Builder setMaxNodeCount(int value) {
-        
+
         maxNodeCount_ = value;
         onChanged();
         return this;
@@ -21948,7 +22203,7 @@ public final class IopLocNet {
        * <code>optional uint32 maxNodeCount = 1;</code>
        */
       public Builder clearMaxNodeCount() {
-        
+
         maxNodeCount_ = 0;
         onChanged();
         return this;
@@ -21965,7 +22220,7 @@ public final class IopLocNet {
        * <code>optional bool includeNeighbours = 2;</code>
        */
       public Builder setIncludeNeighbours(boolean value) {
-        
+
         includeNeighbours_ = value;
         onChanged();
         return this;
@@ -21974,7 +22229,7 @@ public final class IopLocNet {
        * <code>optional bool includeNeighbours = 2;</code>
        */
       public Builder clearIncludeNeighbours() {
-        
+
         includeNeighbours_ = false;
         onChanged();
         return this;
@@ -22017,7 +22272,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<GetRandomNodesRequest> getParserForType() {
       return PARSER;
     }
@@ -22035,7 +22290,7 @@ public final class IopLocNet {
     /**
      * <code>repeated .NodeInfo nodes = 1;</code>
      */
-    java.util.List<IopLocNet.NodeInfo> 
+    java.util.List<IopLocNet.NodeInfo>
         getNodesList();
     /**
      * <code>repeated .NodeInfo nodes = 1;</code>
@@ -22048,13 +22303,13 @@ public final class IopLocNet {
     /**
      * <code>repeated .NodeInfo nodes = 1;</code>
      */
-    java.util.List<? extends IopLocNet.NodeInfoOrBuilder> 
+    java.util.List<? extends IopLocNet.NodeInfoOrBuilder>
         getNodesOrBuilderList();
     /**
      * <code>repeated .NodeInfo nodes = 1;</code>
      */
     IopLocNet.NodeInfoOrBuilder getNodesOrBuilder(
-            int index);
+        int index);
   }
   /**
    * Protobuf type {@code GetRandomNodesResponse}
@@ -22071,7 +22326,7 @@ public final class IopLocNet {
       nodes_ = java.util.Collections.emptyList();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -22124,7 +22379,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_GetRandomNodesResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_GetRandomNodesResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -22142,7 +22397,7 @@ public final class IopLocNet {
     /**
      * <code>repeated .NodeInfo nodes = 1;</code>
      */
-    public java.util.List<? extends IopLocNet.NodeInfoOrBuilder> 
+    public java.util.List<? extends IopLocNet.NodeInfoOrBuilder>
         getNodesOrBuilderList() {
       return nodes_;
     }
@@ -22197,8 +22452,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -22213,7 +22468,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -22300,9 +22555,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -22318,7 +22573,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_GetRandomNodesResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_GetRandomNodesResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -22331,7 +22586,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -22440,7 +22695,7 @@ public final class IopLocNet {
               nodesBuilder_ = null;
               nodes_ = other.nodes_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              nodesBuilder_ = 
+              nodesBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getNodesFieldBuilder() : null;
             } else {
@@ -22613,7 +22868,7 @@ public final class IopLocNet {
        * <code>repeated .NodeInfo nodes = 1;</code>
        */
       public Builder addAllNodes(
-          Iterable<? extends IopLocNet.NodeInfo> values) {
+          java.lang.Iterable<? extends IopLocNet.NodeInfo> values) {
         if (nodesBuilder_ == null) {
           ensureNodesIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -22670,7 +22925,7 @@ public final class IopLocNet {
       /**
        * <code>repeated .NodeInfo nodes = 1;</code>
        */
-      public java.util.List<? extends IopLocNet.NodeInfoOrBuilder> 
+      public java.util.List<? extends IopLocNet.NodeInfoOrBuilder>
            getNodesOrBuilderList() {
         if (nodesBuilder_ != null) {
           return nodesBuilder_.getMessageOrBuilderList();
@@ -22696,12 +22951,12 @@ public final class IopLocNet {
       /**
        * <code>repeated .NodeInfo nodes = 1;</code>
        */
-      public java.util.List<IopLocNet.NodeInfo.Builder> 
+      public java.util.List<IopLocNet.NodeInfo.Builder>
            getNodesBuilderList() {
         return getNodesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder> 
+          IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder>
           getNodesFieldBuilder() {
         if (nodesBuilder_ == null) {
           nodesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -22752,7 +23007,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<GetRandomNodesResponse> getParserForType() {
       return PARSER;
     }
@@ -22816,7 +23071,7 @@ public final class IopLocNet {
       includeNeighbours_ = false;
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -22885,7 +23140,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_GetClosestNodesByDistanceRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_GetClosestNodesByDistanceRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -22992,8 +23247,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -23009,8 +23264,8 @@ public final class IopLocNet {
             .equals(other.getLocation());
       }
       result = result && (
-          Float.floatToIntBits(getMaxRadiusKm())
-          == Float.floatToIntBits(
+          java.lang.Float.floatToIntBits(getMaxRadiusKm())
+          == java.lang.Float.floatToIntBits(
               other.getMaxRadiusKm()));
       result = result && (getMaxNodeCount()
           == other.getMaxNodeCount());
@@ -23019,7 +23274,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -23031,7 +23286,7 @@ public final class IopLocNet {
         hash = (53 * hash) + getLocation().hashCode();
       }
       hash = (37 * hash) + MAXRADIUSKM_FIELD_NUMBER;
-      hash = (53 * hash) + Float.floatToIntBits(
+      hash = (53 * hash) + java.lang.Float.floatToIntBits(
           getMaxRadiusKm());
       hash = (37 * hash) + MAXNODECOUNT_FIELD_NUMBER;
       hash = (53 * hash) + getMaxNodeCount();
@@ -23114,9 +23369,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -23136,7 +23391,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_GetClosestNodesByDistanceRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_GetClosestNodesByDistanceRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -23149,7 +23404,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -23366,7 +23621,7 @@ public final class IopLocNet {
        * <code>optional .GpsLocation location = 1;</code>
        */
       public IopLocNet.GpsLocation.Builder getLocationBuilder() {
-        
+
         onChanged();
         return getLocationFieldBuilder().getBuilder();
       }
@@ -23385,7 +23640,7 @@ public final class IopLocNet {
        * <code>optional .GpsLocation location = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.GpsLocation, IopLocNet.GpsLocation.Builder, IopLocNet.GpsLocationOrBuilder> 
+          IopLocNet.GpsLocation, IopLocNet.GpsLocation.Builder, IopLocNet.GpsLocationOrBuilder>
           getLocationFieldBuilder() {
         if (locationBuilder_ == null) {
           locationBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -23409,7 +23664,7 @@ public final class IopLocNet {
        * <code>optional float maxRadiusKm = 2;</code>
        */
       public Builder setMaxRadiusKm(float value) {
-        
+
         maxRadiusKm_ = value;
         onChanged();
         return this;
@@ -23418,7 +23673,7 @@ public final class IopLocNet {
        * <code>optional float maxRadiusKm = 2;</code>
        */
       public Builder clearMaxRadiusKm() {
-        
+
         maxRadiusKm_ = 0F;
         onChanged();
         return this;
@@ -23435,7 +23690,7 @@ public final class IopLocNet {
        * <code>optional uint32 maxNodeCount = 3;</code>
        */
       public Builder setMaxNodeCount(int value) {
-        
+
         maxNodeCount_ = value;
         onChanged();
         return this;
@@ -23444,7 +23699,7 @@ public final class IopLocNet {
        * <code>optional uint32 maxNodeCount = 3;</code>
        */
       public Builder clearMaxNodeCount() {
-        
+
         maxNodeCount_ = 0;
         onChanged();
         return this;
@@ -23461,7 +23716,7 @@ public final class IopLocNet {
        * <code>optional bool includeNeighbours = 4;</code>
        */
       public Builder setIncludeNeighbours(boolean value) {
-        
+
         includeNeighbours_ = value;
         onChanged();
         return this;
@@ -23470,7 +23725,7 @@ public final class IopLocNet {
        * <code>optional bool includeNeighbours = 4;</code>
        */
       public Builder clearIncludeNeighbours() {
-        
+
         includeNeighbours_ = false;
         onChanged();
         return this;
@@ -23513,7 +23768,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<GetClosestNodesByDistanceRequest> getParserForType() {
       return PARSER;
     }
@@ -23531,7 +23786,7 @@ public final class IopLocNet {
     /**
      * <code>repeated .NodeInfo nodes = 1;</code>
      */
-    java.util.List<IopLocNet.NodeInfo> 
+    java.util.List<IopLocNet.NodeInfo>
         getNodesList();
     /**
      * <code>repeated .NodeInfo nodes = 1;</code>
@@ -23544,13 +23799,13 @@ public final class IopLocNet {
     /**
      * <code>repeated .NodeInfo nodes = 1;</code>
      */
-    java.util.List<? extends IopLocNet.NodeInfoOrBuilder> 
+    java.util.List<? extends IopLocNet.NodeInfoOrBuilder>
         getNodesOrBuilderList();
     /**
      * <code>repeated .NodeInfo nodes = 1;</code>
      */
     IopLocNet.NodeInfoOrBuilder getNodesOrBuilder(
-            int index);
+        int index);
   }
   /**
    * Protobuf type {@code GetClosestNodesByDistanceResponse}
@@ -23567,7 +23822,7 @@ public final class IopLocNet {
       nodes_ = java.util.Collections.emptyList();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -23620,7 +23875,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_GetClosestNodesByDistanceResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_GetClosestNodesByDistanceResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -23638,7 +23893,7 @@ public final class IopLocNet {
     /**
      * <code>repeated .NodeInfo nodes = 1;</code>
      */
-    public java.util.List<? extends IopLocNet.NodeInfoOrBuilder> 
+    public java.util.List<? extends IopLocNet.NodeInfoOrBuilder>
         getNodesOrBuilderList() {
       return nodes_;
     }
@@ -23693,8 +23948,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -23709,7 +23964,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -23796,9 +24051,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -23814,7 +24069,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_GetClosestNodesByDistanceResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_GetClosestNodesByDistanceResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -23827,7 +24082,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -23936,7 +24191,7 @@ public final class IopLocNet {
               nodesBuilder_ = null;
               nodes_ = other.nodes_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              nodesBuilder_ = 
+              nodesBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getNodesFieldBuilder() : null;
             } else {
@@ -24109,7 +24364,7 @@ public final class IopLocNet {
        * <code>repeated .NodeInfo nodes = 1;</code>
        */
       public Builder addAllNodes(
-          Iterable<? extends IopLocNet.NodeInfo> values) {
+          java.lang.Iterable<? extends IopLocNet.NodeInfo> values) {
         if (nodesBuilder_ == null) {
           ensureNodesIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -24166,7 +24421,7 @@ public final class IopLocNet {
       /**
        * <code>repeated .NodeInfo nodes = 1;</code>
        */
-      public java.util.List<? extends IopLocNet.NodeInfoOrBuilder> 
+      public java.util.List<? extends IopLocNet.NodeInfoOrBuilder>
            getNodesOrBuilderList() {
         if (nodesBuilder_ != null) {
           return nodesBuilder_.getMessageOrBuilderList();
@@ -24192,12 +24447,12 @@ public final class IopLocNet {
       /**
        * <code>repeated .NodeInfo nodes = 1;</code>
        */
-      public java.util.List<IopLocNet.NodeInfo.Builder> 
+      public java.util.List<IopLocNet.NodeInfo.Builder>
            getNodesBuilderList() {
         return getNodesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder> 
+          IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder>
           getNodesFieldBuilder() {
         if (nodesBuilder_ == null) {
           nodesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -24248,7 +24503,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<GetClosestNodesByDistanceResponse> getParserForType() {
       return PARSER;
     }
@@ -24290,6 +24545,15 @@ public final class IopLocNet {
      */
     IopLocNet.GetClosestNodesByDistanceRequestOrBuilder getGetClosestNodesOrBuilder();
 
+    /**
+     * <code>optional .ExploreNetworkNodesByDistanceRequest exploreNodes = 4;</code>
+     */
+    IopLocNet.ExploreNetworkNodesByDistanceRequest getExploreNodes();
+    /**
+     * <code>optional .ExploreNetworkNodesByDistanceRequest exploreNodes = 4;</code>
+     */
+    IopLocNet.ExploreNetworkNodesByDistanceRequestOrBuilder getExploreNodesOrBuilder();
+
     public IopLocNet.ClientRequest.ClientRequestTypeCase getClientRequestTypeCase();
   }
   /**
@@ -24306,7 +24570,7 @@ public final class IopLocNet {
     private ClientRequest() {
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -24373,6 +24637,20 @@ public final class IopLocNet {
               clientRequestTypeCase_ = 3;
               break;
             }
+            case 34: {
+              IopLocNet.ExploreNetworkNodesByDistanceRequest.Builder subBuilder = null;
+              if (clientRequestTypeCase_ == 4) {
+                subBuilder = ((IopLocNet.ExploreNetworkNodesByDistanceRequest) clientRequestType_).toBuilder();
+              }
+              clientRequestType_ =
+                  input.readMessage(IopLocNet.ExploreNetworkNodesByDistanceRequest.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom((IopLocNet.ExploreNetworkNodesByDistanceRequest) clientRequestType_);
+                clientRequestType_ = subBuilder.buildPartial();
+              }
+              clientRequestTypeCase_ = 4;
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -24389,7 +24667,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_ClientRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_ClientRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -24397,12 +24675,13 @@ public final class IopLocNet {
     }
 
     private int clientRequestTypeCase_ = 0;
-    private Object clientRequestType_;
+    private java.lang.Object clientRequestType_;
     public enum ClientRequestTypeCase
         implements com.google.protobuf.Internal.EnumLite {
       GETNODEINFO(1),
       GETNEIGHBOURNODES(2),
       GETCLOSESTNODES(3),
+      EXPLORENODES(4),
       CLIENTREQUESTTYPE_NOT_SET(0);
       private final int value;
       private ClientRequestTypeCase(int value) {
@@ -24411,7 +24690,7 @@ public final class IopLocNet {
       /**
        * @deprecated Use {@link #forNumber(int)} instead.
        */
-      @Deprecated
+      @java.lang.Deprecated
       public static ClientRequestTypeCase valueOf(int value) {
         return forNumber(value);
       }
@@ -24421,6 +24700,7 @@ public final class IopLocNet {
           case 1: return GETNODEINFO;
           case 2: return GETNEIGHBOURNODES;
           case 3: return GETCLOSESTNODES;
+          case 4: return EXPLORENODES;
           case 0: return CLIENTREQUESTTYPE_NOT_SET;
           default: return null;
         }
@@ -24496,6 +24776,26 @@ public final class IopLocNet {
       return IopLocNet.GetClosestNodesByDistanceRequest.getDefaultInstance();
     }
 
+    public static final int EXPLORENODES_FIELD_NUMBER = 4;
+    /**
+     * <code>optional .ExploreNetworkNodesByDistanceRequest exploreNodes = 4;</code>
+     */
+    public IopLocNet.ExploreNetworkNodesByDistanceRequest getExploreNodes() {
+      if (clientRequestTypeCase_ == 4) {
+         return (IopLocNet.ExploreNetworkNodesByDistanceRequest) clientRequestType_;
+      }
+      return IopLocNet.ExploreNetworkNodesByDistanceRequest.getDefaultInstance();
+    }
+    /**
+     * <code>optional .ExploreNetworkNodesByDistanceRequest exploreNodes = 4;</code>
+     */
+    public IopLocNet.ExploreNetworkNodesByDistanceRequestOrBuilder getExploreNodesOrBuilder() {
+      if (clientRequestTypeCase_ == 4) {
+         return (IopLocNet.ExploreNetworkNodesByDistanceRequest) clientRequestType_;
+      }
+      return IopLocNet.ExploreNetworkNodesByDistanceRequest.getDefaultInstance();
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -24517,6 +24817,9 @@ public final class IopLocNet {
       if (clientRequestTypeCase_ == 3) {
         output.writeMessage(3, (IopLocNet.GetClosestNodesByDistanceRequest) clientRequestType_);
       }
+      if (clientRequestTypeCase_ == 4) {
+        output.writeMessage(4, (IopLocNet.ExploreNetworkNodesByDistanceRequest) clientRequestType_);
+      }
     }
 
     public int getSerializedSize() {
@@ -24536,13 +24839,17 @@ public final class IopLocNet {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, (IopLocNet.GetClosestNodesByDistanceRequest) clientRequestType_);
       }
+      if (clientRequestTypeCase_ == 4) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(4, (IopLocNet.ExploreNetworkNodesByDistanceRequest) clientRequestType_);
+      }
       memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -24568,13 +24875,17 @@ public final class IopLocNet {
           result = result && getGetClosestNodes()
               .equals(other.getGetClosestNodes());
           break;
+        case 4:
+          result = result && getExploreNodes()
+              .equals(other.getExploreNodes());
+          break;
         case 0:
         default:
       }
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -24593,6 +24904,10 @@ public final class IopLocNet {
         case 3:
           hash = (37 * hash) + GETCLOSESTNODES_FIELD_NUMBER;
           hash = (53 * hash) + getGetClosestNodes().hashCode();
+          break;
+        case 4:
+          hash = (37 * hash) + EXPLORENODES_FIELD_NUMBER;
+          hash = (53 * hash) + getExploreNodes().hashCode();
           break;
         case 0:
         default:
@@ -24673,9 +24988,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -24691,7 +25006,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_ClientRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_ClientRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -24704,7 +25019,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -24758,6 +25073,13 @@ public final class IopLocNet {
             result.clientRequestType_ = clientRequestType_;
           } else {
             result.clientRequestType_ = getClosestNodesBuilder_.build();
+          }
+        }
+        if (clientRequestTypeCase_ == 4) {
+          if (exploreNodesBuilder_ == null) {
+            result.clientRequestType_ = clientRequestType_;
+          } else {
+            result.clientRequestType_ = exploreNodesBuilder_.build();
           }
         }
         result.clientRequestTypeCase_ = clientRequestTypeCase_;
@@ -24815,6 +25137,10 @@ public final class IopLocNet {
             mergeGetClosestNodes(other.getGetClosestNodes());
             break;
           }
+          case EXPLORENODES: {
+            mergeExploreNodes(other.getExploreNodes());
+            break;
+          }
           case CLIENTREQUESTTYPE_NOT_SET: {
             break;
           }
@@ -24845,7 +25171,7 @@ public final class IopLocNet {
         return this;
       }
       private int clientRequestTypeCase_ = 0;
-      private Object clientRequestType_;
+      private java.lang.Object clientRequestType_;
       public ClientRequestTypeCase
           getClientRequestTypeCase() {
         return ClientRequestTypeCase.forNumber(
@@ -24972,7 +25298,7 @@ public final class IopLocNet {
        * <code>optional .GetNodeInfoRequest getNodeInfo = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.GetNodeInfoRequest, IopLocNet.GetNodeInfoRequest.Builder, IopLocNet.GetNodeInfoRequestOrBuilder> 
+          IopLocNet.GetNodeInfoRequest, IopLocNet.GetNodeInfoRequest.Builder, IopLocNet.GetNodeInfoRequestOrBuilder>
           getGetNodeInfoFieldBuilder() {
         if (getNodeInfoBuilder_ == null) {
           if (!(clientRequestTypeCase_ == 1)) {
@@ -25102,7 +25428,7 @@ public final class IopLocNet {
        * <code>optional .GetNeighbourNodesByDistanceClientRequest getNeighbourNodes = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.GetNeighbourNodesByDistanceClientRequest, IopLocNet.GetNeighbourNodesByDistanceClientRequest.Builder, IopLocNet.GetNeighbourNodesByDistanceClientRequestOrBuilder> 
+          IopLocNet.GetNeighbourNodesByDistanceClientRequest, IopLocNet.GetNeighbourNodesByDistanceClientRequest.Builder, IopLocNet.GetNeighbourNodesByDistanceClientRequestOrBuilder>
           getGetNeighbourNodesFieldBuilder() {
         if (getNeighbourNodesBuilder_ == null) {
           if (!(clientRequestTypeCase_ == 2)) {
@@ -25232,7 +25558,7 @@ public final class IopLocNet {
        * <code>optional .GetClosestNodesByDistanceRequest getClosestNodes = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.GetClosestNodesByDistanceRequest, IopLocNet.GetClosestNodesByDistanceRequest.Builder, IopLocNet.GetClosestNodesByDistanceRequestOrBuilder> 
+          IopLocNet.GetClosestNodesByDistanceRequest, IopLocNet.GetClosestNodesByDistanceRequest.Builder, IopLocNet.GetClosestNodesByDistanceRequestOrBuilder>
           getGetClosestNodesFieldBuilder() {
         if (getClosestNodesBuilder_ == null) {
           if (!(clientRequestTypeCase_ == 3)) {
@@ -25248,6 +25574,136 @@ public final class IopLocNet {
         clientRequestTypeCase_ = 3;
         onChanged();;
         return getClosestNodesBuilder_;
+      }
+
+      private com.google.protobuf.SingleFieldBuilderV3<
+          IopLocNet.ExploreNetworkNodesByDistanceRequest, IopLocNet.ExploreNetworkNodesByDistanceRequest.Builder, IopLocNet.ExploreNetworkNodesByDistanceRequestOrBuilder> exploreNodesBuilder_;
+      /**
+       * <code>optional .ExploreNetworkNodesByDistanceRequest exploreNodes = 4;</code>
+       */
+      public IopLocNet.ExploreNetworkNodesByDistanceRequest getExploreNodes() {
+        if (exploreNodesBuilder_ == null) {
+          if (clientRequestTypeCase_ == 4) {
+            return (IopLocNet.ExploreNetworkNodesByDistanceRequest) clientRequestType_;
+          }
+          return IopLocNet.ExploreNetworkNodesByDistanceRequest.getDefaultInstance();
+        } else {
+          if (clientRequestTypeCase_ == 4) {
+            return exploreNodesBuilder_.getMessage();
+          }
+          return IopLocNet.ExploreNetworkNodesByDistanceRequest.getDefaultInstance();
+        }
+      }
+      /**
+       * <code>optional .ExploreNetworkNodesByDistanceRequest exploreNodes = 4;</code>
+       */
+      public Builder setExploreNodes(IopLocNet.ExploreNetworkNodesByDistanceRequest value) {
+        if (exploreNodesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          clientRequestType_ = value;
+          onChanged();
+        } else {
+          exploreNodesBuilder_.setMessage(value);
+        }
+        clientRequestTypeCase_ = 4;
+        return this;
+      }
+      /**
+       * <code>optional .ExploreNetworkNodesByDistanceRequest exploreNodes = 4;</code>
+       */
+      public Builder setExploreNodes(
+          IopLocNet.ExploreNetworkNodesByDistanceRequest.Builder builderForValue) {
+        if (exploreNodesBuilder_ == null) {
+          clientRequestType_ = builderForValue.build();
+          onChanged();
+        } else {
+          exploreNodesBuilder_.setMessage(builderForValue.build());
+        }
+        clientRequestTypeCase_ = 4;
+        return this;
+      }
+      /**
+       * <code>optional .ExploreNetworkNodesByDistanceRequest exploreNodes = 4;</code>
+       */
+      public Builder mergeExploreNodes(IopLocNet.ExploreNetworkNodesByDistanceRequest value) {
+        if (exploreNodesBuilder_ == null) {
+          if (clientRequestTypeCase_ == 4 &&
+              clientRequestType_ != IopLocNet.ExploreNetworkNodesByDistanceRequest.getDefaultInstance()) {
+            clientRequestType_ = IopLocNet.ExploreNetworkNodesByDistanceRequest.newBuilder((IopLocNet.ExploreNetworkNodesByDistanceRequest) clientRequestType_)
+                .mergeFrom(value).buildPartial();
+          } else {
+            clientRequestType_ = value;
+          }
+          onChanged();
+        } else {
+          if (clientRequestTypeCase_ == 4) {
+            exploreNodesBuilder_.mergeFrom(value);
+          }
+          exploreNodesBuilder_.setMessage(value);
+        }
+        clientRequestTypeCase_ = 4;
+        return this;
+      }
+      /**
+       * <code>optional .ExploreNetworkNodesByDistanceRequest exploreNodes = 4;</code>
+       */
+      public Builder clearExploreNodes() {
+        if (exploreNodesBuilder_ == null) {
+          if (clientRequestTypeCase_ == 4) {
+            clientRequestTypeCase_ = 0;
+            clientRequestType_ = null;
+            onChanged();
+          }
+        } else {
+          if (clientRequestTypeCase_ == 4) {
+            clientRequestTypeCase_ = 0;
+            clientRequestType_ = null;
+          }
+          exploreNodesBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>optional .ExploreNetworkNodesByDistanceRequest exploreNodes = 4;</code>
+       */
+      public IopLocNet.ExploreNetworkNodesByDistanceRequest.Builder getExploreNodesBuilder() {
+        return getExploreNodesFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .ExploreNetworkNodesByDistanceRequest exploreNodes = 4;</code>
+       */
+      public IopLocNet.ExploreNetworkNodesByDistanceRequestOrBuilder getExploreNodesOrBuilder() {
+        if ((clientRequestTypeCase_ == 4) && (exploreNodesBuilder_ != null)) {
+          return exploreNodesBuilder_.getMessageOrBuilder();
+        } else {
+          if (clientRequestTypeCase_ == 4) {
+            return (IopLocNet.ExploreNetworkNodesByDistanceRequest) clientRequestType_;
+          }
+          return IopLocNet.ExploreNetworkNodesByDistanceRequest.getDefaultInstance();
+        }
+      }
+      /**
+       * <code>optional .ExploreNetworkNodesByDistanceRequest exploreNodes = 4;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          IopLocNet.ExploreNetworkNodesByDistanceRequest, IopLocNet.ExploreNetworkNodesByDistanceRequest.Builder, IopLocNet.ExploreNetworkNodesByDistanceRequestOrBuilder>
+          getExploreNodesFieldBuilder() {
+        if (exploreNodesBuilder_ == null) {
+          if (!(clientRequestTypeCase_ == 4)) {
+            clientRequestType_ = IopLocNet.ExploreNetworkNodesByDistanceRequest.getDefaultInstance();
+          }
+          exploreNodesBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              IopLocNet.ExploreNetworkNodesByDistanceRequest, IopLocNet.ExploreNetworkNodesByDistanceRequest.Builder, IopLocNet.ExploreNetworkNodesByDistanceRequestOrBuilder>(
+                  (IopLocNet.ExploreNetworkNodesByDistanceRequest) clientRequestType_,
+                  getParentForChildren(),
+                  isClean());
+          clientRequestType_ = null;
+        }
+        clientRequestTypeCase_ = 4;
+        onChanged();;
+        return exploreNodesBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -25287,7 +25743,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<ClientRequest> getParserForType() {
       return PARSER;
     }
@@ -25329,6 +25785,15 @@ public final class IopLocNet {
      */
     IopLocNet.GetClosestNodesByDistanceResponseOrBuilder getGetClosestNodesOrBuilder();
 
+    /**
+     * <code>optional .ExploreNetworkNodesByDistanceResponse exploreNodes = 4;</code>
+     */
+    IopLocNet.ExploreNetworkNodesByDistanceResponse getExploreNodes();
+    /**
+     * <code>optional .ExploreNetworkNodesByDistanceResponse exploreNodes = 4;</code>
+     */
+    IopLocNet.ExploreNetworkNodesByDistanceResponseOrBuilder getExploreNodesOrBuilder();
+
     public IopLocNet.ClientResponse.ClientResponseTypeCase getClientResponseTypeCase();
   }
   /**
@@ -25345,7 +25810,7 @@ public final class IopLocNet {
     private ClientResponse() {
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -25412,6 +25877,20 @@ public final class IopLocNet {
               clientResponseTypeCase_ = 3;
               break;
             }
+            case 34: {
+              IopLocNet.ExploreNetworkNodesByDistanceResponse.Builder subBuilder = null;
+              if (clientResponseTypeCase_ == 4) {
+                subBuilder = ((IopLocNet.ExploreNetworkNodesByDistanceResponse) clientResponseType_).toBuilder();
+              }
+              clientResponseType_ =
+                  input.readMessage(IopLocNet.ExploreNetworkNodesByDistanceResponse.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom((IopLocNet.ExploreNetworkNodesByDistanceResponse) clientResponseType_);
+                clientResponseType_ = subBuilder.buildPartial();
+              }
+              clientResponseTypeCase_ = 4;
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -25428,7 +25907,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_ClientResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_ClientResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -25436,12 +25915,13 @@ public final class IopLocNet {
     }
 
     private int clientResponseTypeCase_ = 0;
-    private Object clientResponseType_;
+    private java.lang.Object clientResponseType_;
     public enum ClientResponseTypeCase
         implements com.google.protobuf.Internal.EnumLite {
       GETNODEINFO(1),
       GETNEIGHBOURNODES(2),
       GETCLOSESTNODES(3),
+      EXPLORENODES(4),
       CLIENTRESPONSETYPE_NOT_SET(0);
       private final int value;
       private ClientResponseTypeCase(int value) {
@@ -25450,7 +25930,7 @@ public final class IopLocNet {
       /**
        * @deprecated Use {@link #forNumber(int)} instead.
        */
-      @Deprecated
+      @java.lang.Deprecated
       public static ClientResponseTypeCase valueOf(int value) {
         return forNumber(value);
       }
@@ -25460,6 +25940,7 @@ public final class IopLocNet {
           case 1: return GETNODEINFO;
           case 2: return GETNEIGHBOURNODES;
           case 3: return GETCLOSESTNODES;
+          case 4: return EXPLORENODES;
           case 0: return CLIENTRESPONSETYPE_NOT_SET;
           default: return null;
         }
@@ -25535,6 +26016,26 @@ public final class IopLocNet {
       return IopLocNet.GetClosestNodesByDistanceResponse.getDefaultInstance();
     }
 
+    public static final int EXPLORENODES_FIELD_NUMBER = 4;
+    /**
+     * <code>optional .ExploreNetworkNodesByDistanceResponse exploreNodes = 4;</code>
+     */
+    public IopLocNet.ExploreNetworkNodesByDistanceResponse getExploreNodes() {
+      if (clientResponseTypeCase_ == 4) {
+         return (IopLocNet.ExploreNetworkNodesByDistanceResponse) clientResponseType_;
+      }
+      return IopLocNet.ExploreNetworkNodesByDistanceResponse.getDefaultInstance();
+    }
+    /**
+     * <code>optional .ExploreNetworkNodesByDistanceResponse exploreNodes = 4;</code>
+     */
+    public IopLocNet.ExploreNetworkNodesByDistanceResponseOrBuilder getExploreNodesOrBuilder() {
+      if (clientResponseTypeCase_ == 4) {
+         return (IopLocNet.ExploreNetworkNodesByDistanceResponse) clientResponseType_;
+      }
+      return IopLocNet.ExploreNetworkNodesByDistanceResponse.getDefaultInstance();
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -25556,6 +26057,9 @@ public final class IopLocNet {
       if (clientResponseTypeCase_ == 3) {
         output.writeMessage(3, (IopLocNet.GetClosestNodesByDistanceResponse) clientResponseType_);
       }
+      if (clientResponseTypeCase_ == 4) {
+        output.writeMessage(4, (IopLocNet.ExploreNetworkNodesByDistanceResponse) clientResponseType_);
+      }
     }
 
     public int getSerializedSize() {
@@ -25575,13 +26079,17 @@ public final class IopLocNet {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, (IopLocNet.GetClosestNodesByDistanceResponse) clientResponseType_);
       }
+      if (clientResponseTypeCase_ == 4) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(4, (IopLocNet.ExploreNetworkNodesByDistanceResponse) clientResponseType_);
+      }
       memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -25607,13 +26115,17 @@ public final class IopLocNet {
           result = result && getGetClosestNodes()
               .equals(other.getGetClosestNodes());
           break;
+        case 4:
+          result = result && getExploreNodes()
+              .equals(other.getExploreNodes());
+          break;
         case 0:
         default:
       }
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -25632,6 +26144,10 @@ public final class IopLocNet {
         case 3:
           hash = (37 * hash) + GETCLOSESTNODES_FIELD_NUMBER;
           hash = (53 * hash) + getGetClosestNodes().hashCode();
+          break;
+        case 4:
+          hash = (37 * hash) + EXPLORENODES_FIELD_NUMBER;
+          hash = (53 * hash) + getExploreNodes().hashCode();
           break;
         case 0:
         default:
@@ -25712,9 +26228,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -25730,7 +26246,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_ClientResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_ClientResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -25743,7 +26259,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -25797,6 +26313,13 @@ public final class IopLocNet {
             result.clientResponseType_ = clientResponseType_;
           } else {
             result.clientResponseType_ = getClosestNodesBuilder_.build();
+          }
+        }
+        if (clientResponseTypeCase_ == 4) {
+          if (exploreNodesBuilder_ == null) {
+            result.clientResponseType_ = clientResponseType_;
+          } else {
+            result.clientResponseType_ = exploreNodesBuilder_.build();
           }
         }
         result.clientResponseTypeCase_ = clientResponseTypeCase_;
@@ -25854,6 +26377,10 @@ public final class IopLocNet {
             mergeGetClosestNodes(other.getGetClosestNodes());
             break;
           }
+          case EXPLORENODES: {
+            mergeExploreNodes(other.getExploreNodes());
+            break;
+          }
           case CLIENTRESPONSETYPE_NOT_SET: {
             break;
           }
@@ -25884,7 +26411,7 @@ public final class IopLocNet {
         return this;
       }
       private int clientResponseTypeCase_ = 0;
-      private Object clientResponseType_;
+      private java.lang.Object clientResponseType_;
       public ClientResponseTypeCase
           getClientResponseTypeCase() {
         return ClientResponseTypeCase.forNumber(
@@ -26011,7 +26538,7 @@ public final class IopLocNet {
        * <code>optional .GetNodeInfoResponse getNodeInfo = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.GetNodeInfoResponse, IopLocNet.GetNodeInfoResponse.Builder, IopLocNet.GetNodeInfoResponseOrBuilder> 
+          IopLocNet.GetNodeInfoResponse, IopLocNet.GetNodeInfoResponse.Builder, IopLocNet.GetNodeInfoResponseOrBuilder>
           getGetNodeInfoFieldBuilder() {
         if (getNodeInfoBuilder_ == null) {
           if (!(clientResponseTypeCase_ == 1)) {
@@ -26141,7 +26668,7 @@ public final class IopLocNet {
        * <code>optional .GetNeighbourNodesByDistanceResponse getNeighbourNodes = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.GetNeighbourNodesByDistanceResponse, IopLocNet.GetNeighbourNodesByDistanceResponse.Builder, IopLocNet.GetNeighbourNodesByDistanceResponseOrBuilder> 
+          IopLocNet.GetNeighbourNodesByDistanceResponse, IopLocNet.GetNeighbourNodesByDistanceResponse.Builder, IopLocNet.GetNeighbourNodesByDistanceResponseOrBuilder>
           getGetNeighbourNodesFieldBuilder() {
         if (getNeighbourNodesBuilder_ == null) {
           if (!(clientResponseTypeCase_ == 2)) {
@@ -26271,7 +26798,7 @@ public final class IopLocNet {
        * <code>optional .GetClosestNodesByDistanceResponse getClosestNodes = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.GetClosestNodesByDistanceResponse, IopLocNet.GetClosestNodesByDistanceResponse.Builder, IopLocNet.GetClosestNodesByDistanceResponseOrBuilder> 
+          IopLocNet.GetClosestNodesByDistanceResponse, IopLocNet.GetClosestNodesByDistanceResponse.Builder, IopLocNet.GetClosestNodesByDistanceResponseOrBuilder>
           getGetClosestNodesFieldBuilder() {
         if (getClosestNodesBuilder_ == null) {
           if (!(clientResponseTypeCase_ == 3)) {
@@ -26287,6 +26814,136 @@ public final class IopLocNet {
         clientResponseTypeCase_ = 3;
         onChanged();;
         return getClosestNodesBuilder_;
+      }
+
+      private com.google.protobuf.SingleFieldBuilderV3<
+          IopLocNet.ExploreNetworkNodesByDistanceResponse, IopLocNet.ExploreNetworkNodesByDistanceResponse.Builder, IopLocNet.ExploreNetworkNodesByDistanceResponseOrBuilder> exploreNodesBuilder_;
+      /**
+       * <code>optional .ExploreNetworkNodesByDistanceResponse exploreNodes = 4;</code>
+       */
+      public IopLocNet.ExploreNetworkNodesByDistanceResponse getExploreNodes() {
+        if (exploreNodesBuilder_ == null) {
+          if (clientResponseTypeCase_ == 4) {
+            return (IopLocNet.ExploreNetworkNodesByDistanceResponse) clientResponseType_;
+          }
+          return IopLocNet.ExploreNetworkNodesByDistanceResponse.getDefaultInstance();
+        } else {
+          if (clientResponseTypeCase_ == 4) {
+            return exploreNodesBuilder_.getMessage();
+          }
+          return IopLocNet.ExploreNetworkNodesByDistanceResponse.getDefaultInstance();
+        }
+      }
+      /**
+       * <code>optional .ExploreNetworkNodesByDistanceResponse exploreNodes = 4;</code>
+       */
+      public Builder setExploreNodes(IopLocNet.ExploreNetworkNodesByDistanceResponse value) {
+        if (exploreNodesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          clientResponseType_ = value;
+          onChanged();
+        } else {
+          exploreNodesBuilder_.setMessage(value);
+        }
+        clientResponseTypeCase_ = 4;
+        return this;
+      }
+      /**
+       * <code>optional .ExploreNetworkNodesByDistanceResponse exploreNodes = 4;</code>
+       */
+      public Builder setExploreNodes(
+          IopLocNet.ExploreNetworkNodesByDistanceResponse.Builder builderForValue) {
+        if (exploreNodesBuilder_ == null) {
+          clientResponseType_ = builderForValue.build();
+          onChanged();
+        } else {
+          exploreNodesBuilder_.setMessage(builderForValue.build());
+        }
+        clientResponseTypeCase_ = 4;
+        return this;
+      }
+      /**
+       * <code>optional .ExploreNetworkNodesByDistanceResponse exploreNodes = 4;</code>
+       */
+      public Builder mergeExploreNodes(IopLocNet.ExploreNetworkNodesByDistanceResponse value) {
+        if (exploreNodesBuilder_ == null) {
+          if (clientResponseTypeCase_ == 4 &&
+              clientResponseType_ != IopLocNet.ExploreNetworkNodesByDistanceResponse.getDefaultInstance()) {
+            clientResponseType_ = IopLocNet.ExploreNetworkNodesByDistanceResponse.newBuilder((IopLocNet.ExploreNetworkNodesByDistanceResponse) clientResponseType_)
+                .mergeFrom(value).buildPartial();
+          } else {
+            clientResponseType_ = value;
+          }
+          onChanged();
+        } else {
+          if (clientResponseTypeCase_ == 4) {
+            exploreNodesBuilder_.mergeFrom(value);
+          }
+          exploreNodesBuilder_.setMessage(value);
+        }
+        clientResponseTypeCase_ = 4;
+        return this;
+      }
+      /**
+       * <code>optional .ExploreNetworkNodesByDistanceResponse exploreNodes = 4;</code>
+       */
+      public Builder clearExploreNodes() {
+        if (exploreNodesBuilder_ == null) {
+          if (clientResponseTypeCase_ == 4) {
+            clientResponseTypeCase_ = 0;
+            clientResponseType_ = null;
+            onChanged();
+          }
+        } else {
+          if (clientResponseTypeCase_ == 4) {
+            clientResponseTypeCase_ = 0;
+            clientResponseType_ = null;
+          }
+          exploreNodesBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>optional .ExploreNetworkNodesByDistanceResponse exploreNodes = 4;</code>
+       */
+      public IopLocNet.ExploreNetworkNodesByDistanceResponse.Builder getExploreNodesBuilder() {
+        return getExploreNodesFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .ExploreNetworkNodesByDistanceResponse exploreNodes = 4;</code>
+       */
+      public IopLocNet.ExploreNetworkNodesByDistanceResponseOrBuilder getExploreNodesOrBuilder() {
+        if ((clientResponseTypeCase_ == 4) && (exploreNodesBuilder_ != null)) {
+          return exploreNodesBuilder_.getMessageOrBuilder();
+        } else {
+          if (clientResponseTypeCase_ == 4) {
+            return (IopLocNet.ExploreNetworkNodesByDistanceResponse) clientResponseType_;
+          }
+          return IopLocNet.ExploreNetworkNodesByDistanceResponse.getDefaultInstance();
+        }
+      }
+      /**
+       * <code>optional .ExploreNetworkNodesByDistanceResponse exploreNodes = 4;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          IopLocNet.ExploreNetworkNodesByDistanceResponse, IopLocNet.ExploreNetworkNodesByDistanceResponse.Builder, IopLocNet.ExploreNetworkNodesByDistanceResponseOrBuilder>
+          getExploreNodesFieldBuilder() {
+        if (exploreNodesBuilder_ == null) {
+          if (!(clientResponseTypeCase_ == 4)) {
+            clientResponseType_ = IopLocNet.ExploreNetworkNodesByDistanceResponse.getDefaultInstance();
+          }
+          exploreNodesBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              IopLocNet.ExploreNetworkNodesByDistanceResponse, IopLocNet.ExploreNetworkNodesByDistanceResponse.Builder, IopLocNet.ExploreNetworkNodesByDistanceResponseOrBuilder>(
+                  (IopLocNet.ExploreNetworkNodesByDistanceResponse) clientResponseType_,
+                  getParentForChildren(),
+                  isClean());
+          clientResponseType_ = null;
+        }
+        clientResponseTypeCase_ = 4;
+        onChanged();;
+        return exploreNodesBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -26326,7 +26983,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<ClientResponse> getParserForType() {
       return PARSER;
     }
@@ -26359,7 +27016,7 @@ public final class IopLocNet {
     private GetNodeInfoRequest() {
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -26399,7 +27056,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_GetNodeInfoRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_GetNodeInfoRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -26430,8 +27087,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -26444,7 +27101,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -26527,9 +27184,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -26549,7 +27206,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_GetNodeInfoRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_GetNodeInfoRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -26562,7 +27219,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -26699,7 +27356,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<GetNodeInfoRequest> getParserForType() {
       return PARSER;
     }
@@ -26741,7 +27398,7 @@ public final class IopLocNet {
     private GetNodeInfoResponse() {
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -26795,7 +27452,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_GetNodeInfoResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_GetNodeInfoResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -26854,8 +27511,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -26873,7 +27530,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -26960,9 +27617,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -26978,7 +27635,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_GetNodeInfoResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_GetNodeInfoResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -26991,7 +27648,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -27190,7 +27847,7 @@ public final class IopLocNet {
        * <code>optional .NodeInfo nodeInfo = 1;</code>
        */
       public IopLocNet.NodeInfo.Builder getNodeInfoBuilder() {
-        
+
         onChanged();
         return getNodeInfoFieldBuilder().getBuilder();
       }
@@ -27209,7 +27866,7 @@ public final class IopLocNet {
        * <code>optional .NodeInfo nodeInfo = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder> 
+          IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder>
           getNodeInfoFieldBuilder() {
         if (nodeInfoBuilder_ == null) {
           nodeInfoBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -27259,7 +27916,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<GetNodeInfoResponse> getParserForType() {
       return PARSER;
     }
@@ -27294,7 +27951,7 @@ public final class IopLocNet {
     private GetNeighbourNodesByDistanceClientRequest() {
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -27334,7 +27991,7 @@ public final class IopLocNet {
       return IopLocNet.internal_static_iop_locnet_GetNeighbourNodesByDistanceClientRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return IopLocNet.internal_static_iop_locnet_GetNeighbourNodesByDistanceClientRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -27365,8 +28022,8 @@ public final class IopLocNet {
     }
 
     private static final long serialVersionUID = 0L;
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
@@ -27379,7 +28036,7 @@ public final class IopLocNet {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -27462,9 +28119,9 @@ public final class IopLocNet {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -27486,7 +28143,7 @@ public final class IopLocNet {
         return IopLocNet.internal_static_iop_locnet_GetNeighbourNodesByDistanceClientRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return IopLocNet.internal_static_iop_locnet_GetNeighbourNodesByDistanceClientRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -27499,7 +28156,7 @@ public final class IopLocNet {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -27636,7 +28293,7 @@ public final class IopLocNet {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<GetNeighbourNodesByDistanceClientRequest> getParserForType() {
       return PARSER;
     }
@@ -27647,176 +28304,1621 @@ public final class IopLocNet {
 
   }
 
+  public interface ExploreNetworkNodesByDistanceRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:ExploreNetworkNodesByDistanceRequest)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional .GpsLocation location = 1;</code>
+     */
+    boolean hasLocation();
+    /**
+     * <code>optional .GpsLocation location = 1;</code>
+     */
+    IopLocNet.GpsLocation getLocation();
+    /**
+     * <code>optional .GpsLocation location = 1;</code>
+     */
+    IopLocNet.GpsLocationOrBuilder getLocationOrBuilder();
+
+    /**
+     * <code>optional uint32 targetNodeCount = 2;</code>
+     */
+    int getTargetNodeCount();
+
+    /**
+     * <code>optional uint32 maxNodeHops = 3;</code>
+     */
+    int getMaxNodeHops();
+  }
+  /**
+   * <pre>
+   * Explore the closest nodes around the specified location.
+   * While GetClosestNodesByDistanceResponse queries information only from this single node,
+   * this call requests the node to contact also other nodes which might know the location better
+   * so as the mobile client doesn't have to drain too much battery for such network communication.
+   * </pre>
+   *
+   * Protobuf type {@code ExploreNetworkNodesByDistanceRequest}
+   */
+  public  static final class ExploreNetworkNodesByDistanceRequest extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:ExploreNetworkNodesByDistanceRequest)
+      ExploreNetworkNodesByDistanceRequestOrBuilder {
+    // Use ExploreNetworkNodesByDistanceRequest.newBuilder() to construct.
+    private ExploreNetworkNodesByDistanceRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ExploreNetworkNodesByDistanceRequest() {
+      targetNodeCount_ = 0;
+      maxNodeHops_ = 0;
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+    }
+    private ExploreNetworkNodesByDistanceRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!input.skipField(tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              IopLocNet.GpsLocation.Builder subBuilder = null;
+              if (location_ != null) {
+                subBuilder = location_.toBuilder();
+              }
+              location_ = input.readMessage(IopLocNet.GpsLocation.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(location_);
+                location_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 16: {
+
+              targetNodeCount_ = input.readUInt32();
+              break;
+            }
+            case 24: {
+
+              maxNodeHops_ = input.readUInt32();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return IopLocNet.internal_static_iop_locnet_ExploreNetworkNodesByDistanceRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return IopLocNet.internal_static_iop_locnet_ExploreNetworkNodesByDistanceRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              IopLocNet.ExploreNetworkNodesByDistanceRequest.class, IopLocNet.ExploreNetworkNodesByDistanceRequest.Builder.class);
+    }
+
+    public static final int LOCATION_FIELD_NUMBER = 1;
+    private IopLocNet.GpsLocation location_;
+    /**
+     * <code>optional .GpsLocation location = 1;</code>
+     */
+    public boolean hasLocation() {
+      return location_ != null;
+    }
+    /**
+     * <code>optional .GpsLocation location = 1;</code>
+     */
+    public IopLocNet.GpsLocation getLocation() {
+      return location_ == null ? IopLocNet.GpsLocation.getDefaultInstance() : location_;
+    }
+    /**
+     * <code>optional .GpsLocation location = 1;</code>
+     */
+    public IopLocNet.GpsLocationOrBuilder getLocationOrBuilder() {
+      return getLocation();
+    }
+
+    public static final int TARGETNODECOUNT_FIELD_NUMBER = 2;
+    private int targetNodeCount_;
+    /**
+     * <code>optional uint32 targetNodeCount = 2;</code>
+     */
+    public int getTargetNodeCount() {
+      return targetNodeCount_;
+    }
+
+    public static final int MAXNODEHOPS_FIELD_NUMBER = 3;
+    private int maxNodeHops_;
+    /**
+     * <code>optional uint32 maxNodeHops = 3;</code>
+     */
+    public int getMaxNodeHops() {
+      return maxNodeHops_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (location_ != null) {
+        output.writeMessage(1, getLocation());
+      }
+      if (targetNodeCount_ != 0) {
+        output.writeUInt32(2, targetNodeCount_);
+      }
+      if (maxNodeHops_ != 0) {
+        output.writeUInt32(3, maxNodeHops_);
+      }
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (location_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getLocation());
+      }
+      if (targetNodeCount_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(2, targetNodeCount_);
+      }
+      if (maxNodeHops_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(3, maxNodeHops_);
+      }
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof IopLocNet.ExploreNetworkNodesByDistanceRequest)) {
+        return super.equals(obj);
+      }
+      IopLocNet.ExploreNetworkNodesByDistanceRequest other = (IopLocNet.ExploreNetworkNodesByDistanceRequest) obj;
+
+      boolean result = true;
+      result = result && (hasLocation() == other.hasLocation());
+      if (hasLocation()) {
+        result = result && getLocation()
+            .equals(other.getLocation());
+      }
+      result = result && (getTargetNodeCount()
+          == other.getTargetNodeCount());
+      result = result && (getMaxNodeHops()
+          == other.getMaxNodeHops());
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasLocation()) {
+        hash = (37 * hash) + LOCATION_FIELD_NUMBER;
+        hash = (53 * hash) + getLocation().hashCode();
+      }
+      hash = (37 * hash) + TARGETNODECOUNT_FIELD_NUMBER;
+      hash = (53 * hash) + getTargetNodeCount();
+      hash = (37 * hash) + MAXNODEHOPS_FIELD_NUMBER;
+      hash = (53 * hash) + getMaxNodeHops();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static IopLocNet.ExploreNetworkNodesByDistanceRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IopLocNet.ExploreNetworkNodesByDistanceRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IopLocNet.ExploreNetworkNodesByDistanceRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IopLocNet.ExploreNetworkNodesByDistanceRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IopLocNet.ExploreNetworkNodesByDistanceRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static IopLocNet.ExploreNetworkNodesByDistanceRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static IopLocNet.ExploreNetworkNodesByDistanceRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static IopLocNet.ExploreNetworkNodesByDistanceRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static IopLocNet.ExploreNetworkNodesByDistanceRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static IopLocNet.ExploreNetworkNodesByDistanceRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(IopLocNet.ExploreNetworkNodesByDistanceRequest prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     * Explore the closest nodes around the specified location.
+     * While GetClosestNodesByDistanceResponse queries information only from this single node,
+     * this call requests the node to contact also other nodes which might know the location better
+     * so as the mobile client doesn't have to drain too much battery for such network communication.
+     * </pre>
+     *
+     * Protobuf type {@code ExploreNetworkNodesByDistanceRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:ExploreNetworkNodesByDistanceRequest)
+        IopLocNet.ExploreNetworkNodesByDistanceRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return IopLocNet.internal_static_iop_locnet_ExploreNetworkNodesByDistanceRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return IopLocNet.internal_static_iop_locnet_ExploreNetworkNodesByDistanceRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                IopLocNet.ExploreNetworkNodesByDistanceRequest.class, IopLocNet.ExploreNetworkNodesByDistanceRequest.Builder.class);
+      }
+
+      // Construct using IopLocNet.ExploreNetworkNodesByDistanceRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        if (locationBuilder_ == null) {
+          location_ = null;
+        } else {
+          location_ = null;
+          locationBuilder_ = null;
+        }
+        targetNodeCount_ = 0;
+
+        maxNodeHops_ = 0;
+
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return IopLocNet.internal_static_iop_locnet_ExploreNetworkNodesByDistanceRequest_descriptor;
+      }
+
+      public IopLocNet.ExploreNetworkNodesByDistanceRequest getDefaultInstanceForType() {
+        return IopLocNet.ExploreNetworkNodesByDistanceRequest.getDefaultInstance();
+      }
+
+      public IopLocNet.ExploreNetworkNodesByDistanceRequest build() {
+        IopLocNet.ExploreNetworkNodesByDistanceRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public IopLocNet.ExploreNetworkNodesByDistanceRequest buildPartial() {
+        IopLocNet.ExploreNetworkNodesByDistanceRequest result = new IopLocNet.ExploreNetworkNodesByDistanceRequest(this);
+        if (locationBuilder_ == null) {
+          result.location_ = location_;
+        } else {
+          result.location_ = locationBuilder_.build();
+        }
+        result.targetNodeCount_ = targetNodeCount_;
+        result.maxNodeHops_ = maxNodeHops_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof IopLocNet.ExploreNetworkNodesByDistanceRequest) {
+          return mergeFrom((IopLocNet.ExploreNetworkNodesByDistanceRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(IopLocNet.ExploreNetworkNodesByDistanceRequest other) {
+        if (other == IopLocNet.ExploreNetworkNodesByDistanceRequest.getDefaultInstance()) return this;
+        if (other.hasLocation()) {
+          mergeLocation(other.getLocation());
+        }
+        if (other.getTargetNodeCount() != 0) {
+          setTargetNodeCount(other.getTargetNodeCount());
+        }
+        if (other.getMaxNodeHops() != 0) {
+          setMaxNodeHops(other.getMaxNodeHops());
+        }
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        IopLocNet.ExploreNetworkNodesByDistanceRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (IopLocNet.ExploreNetworkNodesByDistanceRequest) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private IopLocNet.GpsLocation location_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          IopLocNet.GpsLocation, IopLocNet.GpsLocation.Builder, IopLocNet.GpsLocationOrBuilder> locationBuilder_;
+      /**
+       * <code>optional .GpsLocation location = 1;</code>
+       */
+      public boolean hasLocation() {
+        return locationBuilder_ != null || location_ != null;
+      }
+      /**
+       * <code>optional .GpsLocation location = 1;</code>
+       */
+      public IopLocNet.GpsLocation getLocation() {
+        if (locationBuilder_ == null) {
+          return location_ == null ? IopLocNet.GpsLocation.getDefaultInstance() : location_;
+        } else {
+          return locationBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .GpsLocation location = 1;</code>
+       */
+      public Builder setLocation(IopLocNet.GpsLocation value) {
+        if (locationBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          location_ = value;
+          onChanged();
+        } else {
+          locationBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .GpsLocation location = 1;</code>
+       */
+      public Builder setLocation(
+          IopLocNet.GpsLocation.Builder builderForValue) {
+        if (locationBuilder_ == null) {
+          location_ = builderForValue.build();
+          onChanged();
+        } else {
+          locationBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .GpsLocation location = 1;</code>
+       */
+      public Builder mergeLocation(IopLocNet.GpsLocation value) {
+        if (locationBuilder_ == null) {
+          if (location_ != null) {
+            location_ =
+              IopLocNet.GpsLocation.newBuilder(location_).mergeFrom(value).buildPartial();
+          } else {
+            location_ = value;
+          }
+          onChanged();
+        } else {
+          locationBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .GpsLocation location = 1;</code>
+       */
+      public Builder clearLocation() {
+        if (locationBuilder_ == null) {
+          location_ = null;
+          onChanged();
+        } else {
+          location_ = null;
+          locationBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .GpsLocation location = 1;</code>
+       */
+      public IopLocNet.GpsLocation.Builder getLocationBuilder() {
+
+        onChanged();
+        return getLocationFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .GpsLocation location = 1;</code>
+       */
+      public IopLocNet.GpsLocationOrBuilder getLocationOrBuilder() {
+        if (locationBuilder_ != null) {
+          return locationBuilder_.getMessageOrBuilder();
+        } else {
+          return location_ == null ?
+              IopLocNet.GpsLocation.getDefaultInstance() : location_;
+        }
+      }
+      /**
+       * <code>optional .GpsLocation location = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          IopLocNet.GpsLocation, IopLocNet.GpsLocation.Builder, IopLocNet.GpsLocationOrBuilder>
+          getLocationFieldBuilder() {
+        if (locationBuilder_ == null) {
+          locationBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              IopLocNet.GpsLocation, IopLocNet.GpsLocation.Builder, IopLocNet.GpsLocationOrBuilder>(
+                  getLocation(),
+                  getParentForChildren(),
+                  isClean());
+          location_ = null;
+        }
+        return locationBuilder_;
+      }
+
+      private int targetNodeCount_ ;
+      /**
+       * <code>optional uint32 targetNodeCount = 2;</code>
+       */
+      public int getTargetNodeCount() {
+        return targetNodeCount_;
+      }
+      /**
+       * <code>optional uint32 targetNodeCount = 2;</code>
+       */
+      public Builder setTargetNodeCount(int value) {
+
+        targetNodeCount_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint32 targetNodeCount = 2;</code>
+       */
+      public Builder clearTargetNodeCount() {
+
+        targetNodeCount_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int maxNodeHops_ ;
+      /**
+       * <code>optional uint32 maxNodeHops = 3;</code>
+       */
+      public int getMaxNodeHops() {
+        return maxNodeHops_;
+      }
+      /**
+       * <code>optional uint32 maxNodeHops = 3;</code>
+       */
+      public Builder setMaxNodeHops(int value) {
+
+        maxNodeHops_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint32 maxNodeHops = 3;</code>
+       */
+      public Builder clearMaxNodeHops() {
+
+        maxNodeHops_ = 0;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:ExploreNetworkNodesByDistanceRequest)
+    }
+
+    // @@protoc_insertion_point(class_scope:ExploreNetworkNodesByDistanceRequest)
+    private static final IopLocNet.ExploreNetworkNodesByDistanceRequest DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new IopLocNet.ExploreNetworkNodesByDistanceRequest();
+    }
+
+    public static IopLocNet.ExploreNetworkNodesByDistanceRequest getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<ExploreNetworkNodesByDistanceRequest>
+        PARSER = new com.google.protobuf.AbstractParser<ExploreNetworkNodesByDistanceRequest>() {
+      public ExploreNetworkNodesByDistanceRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ExploreNetworkNodesByDistanceRequest(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ExploreNetworkNodesByDistanceRequest> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ExploreNetworkNodesByDistanceRequest> getParserForType() {
+      return PARSER;
+    }
+
+    public IopLocNet.ExploreNetworkNodesByDistanceRequest getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface ExploreNetworkNodesByDistanceResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:ExploreNetworkNodesByDistanceResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated .NodeInfo closestNodes = 1;</code>
+     */
+    java.util.List<IopLocNet.NodeInfo>
+        getClosestNodesList();
+    /**
+     * <code>repeated .NodeInfo closestNodes = 1;</code>
+     */
+    IopLocNet.NodeInfo getClosestNodes(int index);
+    /**
+     * <code>repeated .NodeInfo closestNodes = 1;</code>
+     */
+    int getClosestNodesCount();
+    /**
+     * <code>repeated .NodeInfo closestNodes = 1;</code>
+     */
+    java.util.List<? extends IopLocNet.NodeInfoOrBuilder>
+        getClosestNodesOrBuilderList();
+    /**
+     * <code>repeated .NodeInfo closestNodes = 1;</code>
+     */
+    IopLocNet.NodeInfoOrBuilder getClosestNodesOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code ExploreNetworkNodesByDistanceResponse}
+   */
+  public  static final class ExploreNetworkNodesByDistanceResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:ExploreNetworkNodesByDistanceResponse)
+      ExploreNetworkNodesByDistanceResponseOrBuilder {
+    // Use ExploreNetworkNodesByDistanceResponse.newBuilder() to construct.
+    private ExploreNetworkNodesByDistanceResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ExploreNetworkNodesByDistanceResponse() {
+      closestNodes_ = java.util.Collections.emptyList();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+    }
+    private ExploreNetworkNodesByDistanceResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!input.skipField(tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                closestNodes_ = new java.util.ArrayList<IopLocNet.NodeInfo>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              closestNodes_.add(
+                  input.readMessage(IopLocNet.NodeInfo.parser(), extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          closestNodes_ = java.util.Collections.unmodifiableList(closestNodes_);
+        }
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return IopLocNet.internal_static_iop_locnet_ExploreNetworkNodesByDistanceResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return IopLocNet.internal_static_iop_locnet_ExploreNetworkNodesByDistanceResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              IopLocNet.ExploreNetworkNodesByDistanceResponse.class, IopLocNet.ExploreNetworkNodesByDistanceResponse.Builder.class);
+    }
+
+    public static final int CLOSESTNODES_FIELD_NUMBER = 1;
+    private java.util.List<IopLocNet.NodeInfo> closestNodes_;
+    /**
+     * <code>repeated .NodeInfo closestNodes = 1;</code>
+     */
+    public java.util.List<IopLocNet.NodeInfo> getClosestNodesList() {
+      return closestNodes_;
+    }
+    /**
+     * <code>repeated .NodeInfo closestNodes = 1;</code>
+     */
+    public java.util.List<? extends IopLocNet.NodeInfoOrBuilder>
+        getClosestNodesOrBuilderList() {
+      return closestNodes_;
+    }
+    /**
+     * <code>repeated .NodeInfo closestNodes = 1;</code>
+     */
+    public int getClosestNodesCount() {
+      return closestNodes_.size();
+    }
+    /**
+     * <code>repeated .NodeInfo closestNodes = 1;</code>
+     */
+    public IopLocNet.NodeInfo getClosestNodes(int index) {
+      return closestNodes_.get(index);
+    }
+    /**
+     * <code>repeated .NodeInfo closestNodes = 1;</code>
+     */
+    public IopLocNet.NodeInfoOrBuilder getClosestNodesOrBuilder(
+        int index) {
+      return closestNodes_.get(index);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < closestNodes_.size(); i++) {
+        output.writeMessage(1, closestNodes_.get(i));
+      }
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < closestNodes_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, closestNodes_.get(i));
+      }
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof IopLocNet.ExploreNetworkNodesByDistanceResponse)) {
+        return super.equals(obj);
+      }
+      IopLocNet.ExploreNetworkNodesByDistanceResponse other = (IopLocNet.ExploreNetworkNodesByDistanceResponse) obj;
+
+      boolean result = true;
+      result = result && getClosestNodesList()
+          .equals(other.getClosestNodesList());
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (getClosestNodesCount() > 0) {
+        hash = (37 * hash) + CLOSESTNODES_FIELD_NUMBER;
+        hash = (53 * hash) + getClosestNodesList().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static IopLocNet.ExploreNetworkNodesByDistanceResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IopLocNet.ExploreNetworkNodesByDistanceResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IopLocNet.ExploreNetworkNodesByDistanceResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static IopLocNet.ExploreNetworkNodesByDistanceResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static IopLocNet.ExploreNetworkNodesByDistanceResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static IopLocNet.ExploreNetworkNodesByDistanceResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static IopLocNet.ExploreNetworkNodesByDistanceResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static IopLocNet.ExploreNetworkNodesByDistanceResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static IopLocNet.ExploreNetworkNodesByDistanceResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static IopLocNet.ExploreNetworkNodesByDistanceResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(IopLocNet.ExploreNetworkNodesByDistanceResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code ExploreNetworkNodesByDistanceResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:ExploreNetworkNodesByDistanceResponse)
+        IopLocNet.ExploreNetworkNodesByDistanceResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return IopLocNet.internal_static_iop_locnet_ExploreNetworkNodesByDistanceResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return IopLocNet.internal_static_iop_locnet_ExploreNetworkNodesByDistanceResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                IopLocNet.ExploreNetworkNodesByDistanceResponse.class, IopLocNet.ExploreNetworkNodesByDistanceResponse.Builder.class);
+      }
+
+      // Construct using IopLocNet.ExploreNetworkNodesByDistanceResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getClosestNodesFieldBuilder();
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        if (closestNodesBuilder_ == null) {
+          closestNodes_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          closestNodesBuilder_.clear();
+        }
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return IopLocNet.internal_static_iop_locnet_ExploreNetworkNodesByDistanceResponse_descriptor;
+      }
+
+      public IopLocNet.ExploreNetworkNodesByDistanceResponse getDefaultInstanceForType() {
+        return IopLocNet.ExploreNetworkNodesByDistanceResponse.getDefaultInstance();
+      }
+
+      public IopLocNet.ExploreNetworkNodesByDistanceResponse build() {
+        IopLocNet.ExploreNetworkNodesByDistanceResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public IopLocNet.ExploreNetworkNodesByDistanceResponse buildPartial() {
+        IopLocNet.ExploreNetworkNodesByDistanceResponse result = new IopLocNet.ExploreNetworkNodesByDistanceResponse(this);
+        int from_bitField0_ = bitField0_;
+        if (closestNodesBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            closestNodes_ = java.util.Collections.unmodifiableList(closestNodes_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.closestNodes_ = closestNodes_;
+        } else {
+          result.closestNodes_ = closestNodesBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof IopLocNet.ExploreNetworkNodesByDistanceResponse) {
+          return mergeFrom((IopLocNet.ExploreNetworkNodesByDistanceResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(IopLocNet.ExploreNetworkNodesByDistanceResponse other) {
+        if (other == IopLocNet.ExploreNetworkNodesByDistanceResponse.getDefaultInstance()) return this;
+        if (closestNodesBuilder_ == null) {
+          if (!other.closestNodes_.isEmpty()) {
+            if (closestNodes_.isEmpty()) {
+              closestNodes_ = other.closestNodes_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureClosestNodesIsMutable();
+              closestNodes_.addAll(other.closestNodes_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.closestNodes_.isEmpty()) {
+            if (closestNodesBuilder_.isEmpty()) {
+              closestNodesBuilder_.dispose();
+              closestNodesBuilder_ = null;
+              closestNodes_ = other.closestNodes_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              closestNodesBuilder_ =
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getClosestNodesFieldBuilder() : null;
+            } else {
+              closestNodesBuilder_.addAllMessages(other.closestNodes_);
+            }
+          }
+        }
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        IopLocNet.ExploreNetworkNodesByDistanceResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (IopLocNet.ExploreNetworkNodesByDistanceResponse) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<IopLocNet.NodeInfo> closestNodes_ =
+        java.util.Collections.emptyList();
+      private void ensureClosestNodesIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          closestNodes_ = new java.util.ArrayList<IopLocNet.NodeInfo>(closestNodes_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder> closestNodesBuilder_;
+
+      /**
+       * <code>repeated .NodeInfo closestNodes = 1;</code>
+       */
+      public java.util.List<IopLocNet.NodeInfo> getClosestNodesList() {
+        if (closestNodesBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(closestNodes_);
+        } else {
+          return closestNodesBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .NodeInfo closestNodes = 1;</code>
+       */
+      public int getClosestNodesCount() {
+        if (closestNodesBuilder_ == null) {
+          return closestNodes_.size();
+        } else {
+          return closestNodesBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .NodeInfo closestNodes = 1;</code>
+       */
+      public IopLocNet.NodeInfo getClosestNodes(int index) {
+        if (closestNodesBuilder_ == null) {
+          return closestNodes_.get(index);
+        } else {
+          return closestNodesBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .NodeInfo closestNodes = 1;</code>
+       */
+      public Builder setClosestNodes(
+          int index, IopLocNet.NodeInfo value) {
+        if (closestNodesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureClosestNodesIsMutable();
+          closestNodes_.set(index, value);
+          onChanged();
+        } else {
+          closestNodesBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .NodeInfo closestNodes = 1;</code>
+       */
+      public Builder setClosestNodes(
+          int index, IopLocNet.NodeInfo.Builder builderForValue) {
+        if (closestNodesBuilder_ == null) {
+          ensureClosestNodesIsMutable();
+          closestNodes_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          closestNodesBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .NodeInfo closestNodes = 1;</code>
+       */
+      public Builder addClosestNodes(IopLocNet.NodeInfo value) {
+        if (closestNodesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureClosestNodesIsMutable();
+          closestNodes_.add(value);
+          onChanged();
+        } else {
+          closestNodesBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .NodeInfo closestNodes = 1;</code>
+       */
+      public Builder addClosestNodes(
+          int index, IopLocNet.NodeInfo value) {
+        if (closestNodesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureClosestNodesIsMutable();
+          closestNodes_.add(index, value);
+          onChanged();
+        } else {
+          closestNodesBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .NodeInfo closestNodes = 1;</code>
+       */
+      public Builder addClosestNodes(
+          IopLocNet.NodeInfo.Builder builderForValue) {
+        if (closestNodesBuilder_ == null) {
+          ensureClosestNodesIsMutable();
+          closestNodes_.add(builderForValue.build());
+          onChanged();
+        } else {
+          closestNodesBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .NodeInfo closestNodes = 1;</code>
+       */
+      public Builder addClosestNodes(
+          int index, IopLocNet.NodeInfo.Builder builderForValue) {
+        if (closestNodesBuilder_ == null) {
+          ensureClosestNodesIsMutable();
+          closestNodes_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          closestNodesBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .NodeInfo closestNodes = 1;</code>
+       */
+      public Builder addAllClosestNodes(
+          java.lang.Iterable<? extends IopLocNet.NodeInfo> values) {
+        if (closestNodesBuilder_ == null) {
+          ensureClosestNodesIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, closestNodes_);
+          onChanged();
+        } else {
+          closestNodesBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .NodeInfo closestNodes = 1;</code>
+       */
+      public Builder clearClosestNodes() {
+        if (closestNodesBuilder_ == null) {
+          closestNodes_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          closestNodesBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .NodeInfo closestNodes = 1;</code>
+       */
+      public Builder removeClosestNodes(int index) {
+        if (closestNodesBuilder_ == null) {
+          ensureClosestNodesIsMutable();
+          closestNodes_.remove(index);
+          onChanged();
+        } else {
+          closestNodesBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .NodeInfo closestNodes = 1;</code>
+       */
+      public IopLocNet.NodeInfo.Builder getClosestNodesBuilder(
+          int index) {
+        return getClosestNodesFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .NodeInfo closestNodes = 1;</code>
+       */
+      public IopLocNet.NodeInfoOrBuilder getClosestNodesOrBuilder(
+          int index) {
+        if (closestNodesBuilder_ == null) {
+          return closestNodes_.get(index);  } else {
+          return closestNodesBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .NodeInfo closestNodes = 1;</code>
+       */
+      public java.util.List<? extends IopLocNet.NodeInfoOrBuilder>
+           getClosestNodesOrBuilderList() {
+        if (closestNodesBuilder_ != null) {
+          return closestNodesBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(closestNodes_);
+        }
+      }
+      /**
+       * <code>repeated .NodeInfo closestNodes = 1;</code>
+       */
+      public IopLocNet.NodeInfo.Builder addClosestNodesBuilder() {
+        return getClosestNodesFieldBuilder().addBuilder(
+            IopLocNet.NodeInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .NodeInfo closestNodes = 1;</code>
+       */
+      public IopLocNet.NodeInfo.Builder addClosestNodesBuilder(
+          int index) {
+        return getClosestNodesFieldBuilder().addBuilder(
+            index, IopLocNet.NodeInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .NodeInfo closestNodes = 1;</code>
+       */
+      public java.util.List<IopLocNet.NodeInfo.Builder>
+           getClosestNodesBuilderList() {
+        return getClosestNodesFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder>
+          getClosestNodesFieldBuilder() {
+        if (closestNodesBuilder_ == null) {
+          closestNodesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              IopLocNet.NodeInfo, IopLocNet.NodeInfo.Builder, IopLocNet.NodeInfoOrBuilder>(
+                  closestNodes_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          closestNodes_ = null;
+        }
+        return closestNodesBuilder_;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:ExploreNetworkNodesByDistanceResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:ExploreNetworkNodesByDistanceResponse)
+    private static final IopLocNet.ExploreNetworkNodesByDistanceResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new IopLocNet.ExploreNetworkNodesByDistanceResponse();
+    }
+
+    public static IopLocNet.ExploreNetworkNodesByDistanceResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<ExploreNetworkNodesByDistanceResponse>
+        PARSER = new com.google.protobuf.AbstractParser<ExploreNetworkNodesByDistanceResponse>() {
+      public ExploreNetworkNodesByDistanceResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ExploreNetworkNodesByDistanceResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ExploreNetworkNodesByDistanceResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ExploreNetworkNodesByDistanceResponse> getParserForType() {
+      return PARSER;
+    }
+
+    public IopLocNet.ExploreNetworkNodesByDistanceResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_ServiceInfo_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_ServiceInfo_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_GpsLocation_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_GpsLocation_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_NodeContact_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_NodeContact_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_NodeInfo_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_NodeInfo_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_MessageWithHeader_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_MessageWithHeader_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_Message_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_Message_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_Request_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_Request_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_Response_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_Response_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_LocalServiceRequest_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_LocalServiceRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_LocalServiceResponse_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_LocalServiceResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_RegisterServiceRequest_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_RegisterServiceRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_RegisterServiceResponse_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_RegisterServiceResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_DeregisterServiceRequest_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_DeregisterServiceRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_DeregisterServiceResponse_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_DeregisterServiceResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_GetNeighbourNodesByDistanceLocalRequest_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_GetNeighbourNodesByDistanceLocalRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_GetNeighbourNodesByDistanceResponse_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_GetNeighbourNodesByDistanceResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_NeighbourhoodChange_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_NeighbourhoodChange_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_NeighbourhoodChangedNotificationRequest_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_NeighbourhoodChangedNotificationRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_NeighbourhoodChangedNotificationResponse_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_NeighbourhoodChangedNotificationResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_RemoteNodeRequest_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_RemoteNodeRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_RemoteNodeResponse_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_RemoteNodeResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_BuildNetworkRequest_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_BuildNetworkRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_BuildNetworkResponse_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_BuildNetworkResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_GetNodeCountRequest_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_GetNodeCountRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_GetNodeCountResponse_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_GetNodeCountResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_GetRandomNodesRequest_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_GetRandomNodesRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_GetRandomNodesResponse_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_GetRandomNodesResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_GetClosestNodesByDistanceRequest_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_GetClosestNodesByDistanceRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_GetClosestNodesByDistanceResponse_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_GetClosestNodesByDistanceResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_ClientRequest_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_ClientRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_ClientResponse_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_ClientResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_GetNodeInfoRequest_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_GetNodeInfoRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_GetNodeInfoResponse_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_GetNodeInfoResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_iop_locnet_GetNeighbourNodesByDistanceClientRequest_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_iop_locnet_GetNeighbourNodesByDistanceClientRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_iop_locnet_ExploreNetworkNodesByDistanceRequest_descriptor;
+  private static final
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_iop_locnet_ExploreNetworkNodesByDistanceRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_iop_locnet_ExploreNetworkNodesByDistanceResponse_descriptor;
+  private static final
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_iop_locnet_ExploreNetworkNodesByDistanceResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -27825,7 +29927,7 @@ public final class IopLocNet {
   private static  com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
-    String[] descriptorData = {
+    java.lang.String[] descriptorData = {
       "\n\017IopLocNet.proto\022\niop.locnet\"W\n\013Service" +
       "Info\022%\n\004type\030\001 \001(\0162\027.ServiceT" +
       "ype\022\014\n\004port\030\002 \001(\r\022\023\n\013serviceData\030\003 \001(\014\"2" +
@@ -27871,86 +29973,96 @@ public final class IopLocNet {
       "hbourhoodChangedNotificationResponseH\000B\032" +
       "\n\030LocalServiceResponseType\"B\n\026RegisterSe" +
       "rviceRequest\022(\n\007service\030\001 \001(\0132\027.iop.locn" +
-      "et.ServiceInfo\"\031\n\027RegisterServiceRespons" +
-      "e\"H\n\030DeregisterServiceRequest\022,\n\013service" +
-      "Type\030\001 \001(\0162\027.ServiceType\"\033\n\031D" +
-      "eregisterServiceResponse\"J\n\'GetNeighbour" +
-      "NodesByDistanceLocalRequest\022\037\n\027keepAlive",
-      "AndSendUpdates\030\001 \001(\010\"J\n#GetNeighbourNode" +
-      "sByDistanceResponse\022#\n\005nodes\030\001 \003(\0132\024.iop" +
-      ".locnet.NodeInfo\"\234\001\n\023NeighbourhoodChange" +
-      "\022-\n\raddedNodeInfo\030\001 \001(\0132\024.Nod" +
-      "eInfoH\000\022/\n\017updatedNodeInfo\030\002 \001(\0132\024.iop.l" +
-      "ocnet.NodeInfoH\000\022\027\n\rremovedNodeId\030\003 \001(\014H" +
-      "\000B\014\n\nChangeType\"[\n\'NeighbourhoodChangedN" +
-      "otificationRequest\0220\n\007changes\030\001 \003(\0132\037.io" +
-      "p.locnet.NeighbourhoodChange\"*\n(Neighbou" +
-      "rhoodChangedNotificationResponse\"\220\004\n\021Rem",
-      "oteNodeRequest\022:\n\017acceptColleague\030\001 \001(\0132" +
-      "\037.BuildNetworkRequestH\000\0229\n\016re" +
-      "newColleague\030\002 \001(\0132\037.BuildNet" +
-      "workRequestH\000\022:\n\017acceptNeighbour\030\003 \001(\0132\037" +
-      ".BuildNetworkRequestH\000\0229\n\016ren" +
-      "ewNeighbour\030\004 \001(\0132\037.BuildNetw" +
-      "orkRequestH\000\0227\n\014getNodeCount\030\005 \001(\0132\037.iop" +
-      ".locnet.GetNodeCountRequestH\000\022;\n\016getRand" +
-      "omNodes\030\006 \001(\0132!.GetRandomNode" +
-      "sRequestH\000\022G\n\017getClosestNodes\030\007 \001(\0132,.io",
-      "p.locnet.GetClosestNodesByDistanceReques" +
-      "tH\000\0225\n\013getNodeInfo\030\010 \001(\0132\036.Ge" +
-      "tNodeInfoRequestH\000B\027\n\025RemoteNodeRequestT" +
-      "ype\"\232\004\n\022RemoteNodeResponse\022;\n\017acceptColl" +
-      "eague\030\001 \001(\0132 .BuildNetworkRes" +
-      "ponseH\000\022:\n\016renewColleague\030\002 \001(\0132 .iop.lo" +
-      "cnet.BuildNetworkResponseH\000\022;\n\017acceptNei" +
-      "ghbour\030\003 \001(\0132 .BuildNetworkRe" +
-      "sponseH\000\022:\n\016renewNeighbour\030\004 \001(\0132 .iop.l" +
-      "ocnet.BuildNetworkResponseH\000\0228\n\014getNodeC",
-      "ount\030\005 \001(\0132 .GetNodeCountResp" +
-      "onseH\000\022<\n\016getRandomNodes\030\006 \001(\0132\".iop.loc" +
-      "net.GetRandomNodesResponseH\000\022H\n\017getClose" +
-      "stNodes\030\007 \001(\0132-.GetClosestNod" +
-      "esByDistanceResponseH\000\0226\n\013getNodeInfo\030\010 " +
-      "\001(\0132\037.GetNodeInfoResponseH\000B\030" +
-      "\n\026RemoteNodeResponseType\"F\n\023BuildNetwork" +
-      "Request\022/\n\021requestorNodeInfo\030\001 \001(\0132\024.iop" +
-      ".locnet.NodeInfo\"q\n\024BuildNetworkResponse" +
-      "\022\020\n\010accepted\030\001 \001(\010\022.\n\020acceptorNodeInfo\030\002",
-      " \001(\0132\024.NodeInfo\022\027\n\017remoteIpAd" +
-      "dress\030\003 \001(\014\"\025\n\023GetNodeCountRequest\")\n\024Ge" +
-      "tNodeCountResponse\022\021\n\tnodeCount\030\001 \001(\r\"H\n" +
-      "\025GetRandomNodesRequest\022\024\n\014maxNodeCount\030\001" +
-      " \001(\r\022\031\n\021includeNeighbours\030\002 \001(\010\"=\n\026GetRa" +
-      "ndomNodesResponse\022#\n\005nodes\030\001 \003(\0132\024.iop.l" +
-      "ocnet.NodeInfo\"\223\001\n GetClosestNodesByDist" +
-      "anceRequest\022)\n\010location\030\001 \001(\0132\027.iop.locn" +
-      "et.GpsLocation\022\023\n\013maxRadiusKm\030\002 \001(\002\022\024\n\014m" +
-      "axNodeCount\030\003 \001(\r\022\031\n\021includeNeighbours\030\004",
-      " \001(\010\"H\n!GetClosestNodesByDistanceRespons" +
-      "e\022#\n\005nodes\030\001 \003(\0132\024.NodeInfo\"\367" +
-      "\001\n\rClientRequest\0225\n\013getNodeInfo\030\001 \001(\0132\036." +
-      "GetNodeInfoRequestH\000\022Q\n\021getNe" +
-      "ighbourNodes\030\002 \001(\01324.GetNeigh" +
-      "bourNodesByDistanceClientRequestH\000\022G\n\017ge" +
-      "tClosestNodes\030\003 \001(\0132,.GetClos" +
-      "estNodesByDistanceRequestH\000B\023\n\021ClientReq" +
-      "uestType\"\366\001\n\016ClientResponse\0226\n\013getNodeIn" +
-      "fo\030\001 \001(\0132\037.GetNodeInfoRespons",
-      "eH\000\022L\n\021getNeighbourNodes\030\002 \001(\0132/.iop.loc" +
-      "net.GetNeighbourNodesByDistanceResponseH" +
-      "\000\022H\n\017getClosestNodes\030\003 \001(\0132-." +
-      "GetClosestNodesByDistanceResponseH\000B\024\n\022C" +
-      "lientResponseType\"\024\n\022GetNodeInfoRequest\"" +
-      "=\n\023GetNodeInfoResponse\022&\n\010nodeInfo\030\001 \001(\013" +
-      "2\024.NodeInfo\"*\n(GetNeighbourNo" +
-      "desByDistanceClientRequest*y\n\006Status\022\r\n\t" +
-      "STATUS_OK\020\000\022\034\n\030ERROR_PROTOCOL_VIOLATION\020" +
-      "\001\022\025\n\021ERROR_UNSUPPORTED\020\002\022\022\n\016ERROR_INTERN",
-      "AL\020\010\022\027\n\023ERROR_INVALID_VALUE\0206*\226\001\n\013Servic" +
-      "eType\022\020\n\014Unstructured\020\000\022\013\n\007Content\020\001\022\013\n\007" +
-      "Latency\020\002\022\014\n\010Location\020\003\022\t\n\005Token\020\n\022\013\n\007Pr" +
-      "ofile\020\013\022\r\n\tProximity\020\014\022\t\n\005Relay\020\r\022\016\n\nRep" +
-      "utation\020\016\022\013\n\007Minting\020\017b\006proto3"
+      "et.ServiceInfo\"D\n\027RegisterServiceRespons" +
+      "e\022)\n\010location\030\001 \001(\0132\027.GpsLoca" +
+      "tion\"H\n\030DeregisterServiceRequest\022,\n\013serv" +
+      "iceType\030\001 \001(\0162\027.ServiceType\"\033" +
+      "\n\031DeregisterServiceResponse\"J\n\'GetNeighb",
+      "ourNodesByDistanceLocalRequest\022\037\n\027keepAl" +
+      "iveAndSendUpdates\030\001 \001(\010\"J\n#GetNeighbourN" +
+      "odesByDistanceResponse\022#\n\005nodes\030\001 \003(\0132\024." +
+      "NodeInfo\"\234\001\n\023NeighbourhoodCha" +
+      "nge\022-\n\raddedNodeInfo\030\001 \001(\0132\024." +
+      "NodeInfoH\000\022/\n\017updatedNodeInfo\030\002 \001(\0132\024.io" +
+      "p.locnet.NodeInfoH\000\022\027\n\rremovedNodeId\030\003 \001" +
+      "(\014H\000B\014\n\nChangeType\"[\n\'NeighbourhoodChang" +
+      "edNotificationRequest\0220\n\007changes\030\001 \003(\0132\037" +
+      ".NeighbourhoodChange\"*\n(Neigh",
+      "bourhoodChangedNotificationResponse\"\220\004\n\021" +
+      "RemoteNodeRequest\022:\n\017acceptColleague\030\001 \001" +
+      "(\0132\037.BuildNetworkRequestH\000\0229\n" +
+      "\016renewColleague\030\002 \001(\0132\037.Build" +
+      "NetworkRequestH\000\022:\n\017acceptNeighbour\030\003 \001(" +
+      "\0132\037.BuildNetworkRequestH\000\0229\n\016" +
+      "renewNeighbour\030\004 \001(\0132\037.BuildN" +
+      "etworkRequestH\000\0227\n\014getNodeCount\030\005 \001(\0132\037." +
+      "GetNodeCountRequestH\000\022;\n\016getR" +
+      "andomNodes\030\006 \001(\0132!.GetRandomN",
+      "odesRequestH\000\022G\n\017getClosestNodes\030\007 \001(\0132," +
+      ".GetClosestNodesByDistanceReq" +
+      "uestH\000\0225\n\013getNodeInfo\030\010 \001(\0132\036.iop.locnet" +
+      ".GetNodeInfoRequestH\000B\027\n\025RemoteNodeReque" +
+      "stType\"\232\004\n\022RemoteNodeResponse\022;\n\017acceptC" +
+      "olleague\030\001 \001(\0132 .BuildNetwork" +
+      "ResponseH\000\022:\n\016renewColleague\030\002 \001(\0132 .iop" +
+      ".locnet.BuildNetworkResponseH\000\022;\n\017accept" +
+      "Neighbour\030\003 \001(\0132 .BuildNetwor" +
+      "kResponseH\000\022:\n\016renewNeighbour\030\004 \001(\0132 .io",
+      "p.locnet.BuildNetworkResponseH\000\0228\n\014getNo" +
+      "deCount\030\005 \001(\0132 .GetNodeCountR" +
+      "esponseH\000\022<\n\016getRandomNodes\030\006 \001(\0132\".iop." +
+      "locnet.GetRandomNodesResponseH\000\022H\n\017getCl" +
+      "osestNodes\030\007 \001(\0132-.GetClosest" +
+      "NodesByDistanceResponseH\000\0226\n\013getNodeInfo" +
+      "\030\010 \001(\0132\037.GetNodeInfoResponseH" +
+      "\000B\030\n\026RemoteNodeResponseType\"F\n\023BuildNetw" +
+      "orkRequest\022/\n\021requestorNodeInfo\030\001 \001(\0132\024." +
+      "NodeInfo\"q\n\024BuildNetworkRespo",
+      "nse\022\020\n\010accepted\030\001 \001(\010\022.\n\020acceptorNodeInf" +
+      "o\030\002 \001(\0132\024.NodeInfo\022\027\n\017remoteI" +
+      "pAddress\030\003 \001(\014\"\025\n\023GetNodeCountRequest\")\n" +
+      "\024GetNodeCountResponse\022\021\n\tnodeCount\030\001 \001(\r" +
+      "\"H\n\025GetRandomNodesRequest\022\024\n\014maxNodeCoun" +
+      "t\030\001 \001(\r\022\031\n\021includeNeighbours\030\002 \001(\010\"=\n\026Ge" +
+      "tRandomNodesResponse\022#\n\005nodes\030\001 \003(\0132\024.io" +
+      "p.locnet.NodeInfo\"\223\001\n GetClosestNodesByD" +
+      "istanceRequest\022)\n\010location\030\001 \001(\0132\027.iop.l" +
+      "ocnet.GpsLocation\022\023\n\013maxRadiusKm\030\002 \001(\002\022\024",
+      "\n\014maxNodeCount\030\003 \001(\r\022\031\n\021includeNeighbour" +
+      "s\030\004 \001(\010\"H\n!GetClosestNodesByDistanceResp" +
+      "onse\022#\n\005nodes\030\001 \003(\0132\024.NodeInf" +
+      "o\"\301\002\n\rClientRequest\0225\n\013getNodeInfo\030\001 \001(\013" +
+      "2\036.GetNodeInfoRequestH\000\022Q\n\021ge" +
+      "tNeighbourNodes\030\002 \001(\01324.GetNe" +
+      "ighbourNodesByDistanceClientRequestH\000\022G\n" +
+      "\017getClosestNodes\030\003 \001(\0132,.GetC" +
+      "losestNodesByDistanceRequestH\000\022H\n\014explor" +
+      "eNodes\030\004 \001(\01320.ExploreNetwork",
+      "NodesByDistanceRequestH\000B\023\n\021ClientReques" +
+      "tType\"\301\002\n\016ClientResponse\0226\n\013getNodeInfo\030" +
+      "\001 \001(\0132\037.GetNodeInfoResponseH\000" +
+      "\022L\n\021getNeighbourNodes\030\002 \001(\0132/.iop.locnet" +
+      ".GetNeighbourNodesByDistanceResponseH\000\022H" +
+      "\n\017getClosestNodes\030\003 \001(\0132-.Get" +
+      "ClosestNodesByDistanceResponseH\000\022I\n\014expl" +
+      "oreNodes\030\004 \001(\01321.ExploreNetwo" +
+      "rkNodesByDistanceResponseH\000B\024\n\022ClientRes" +
+      "ponseType\"\024\n\022GetNodeInfoRequest\"=\n\023GetNo",
+      "deInfoResponse\022&\n\010nodeInfo\030\001 \001(\0132\024.iop.l" +
+      "ocnet.NodeInfo\"*\n(GetNeighbourNodesByDis" +
+      "tanceClientRequest\"\177\n$ExploreNetworkNode" +
+      "sByDistanceRequest\022)\n\010location\030\001 \001(\0132\027.i" +
+      "op.locnet.GpsLocation\022\027\n\017targetNodeCount" +
+      "\030\002 \001(\r\022\023\n\013maxNodeHops\030\003 \001(\r\"S\n%ExploreNe" +
+      "tworkNodesByDistanceResponse\022*\n\014closestN" +
+      "odes\030\001 \003(\0132\024.NodeInfo*y\n\006Stat" +
+      "us\022\r\n\tSTATUS_OK\020\000\022\034\n\030ERROR_PROTOCOL_VIOL" +
+      "ATION\020\001\022\025\n\021ERROR_UNSUPPORTED\020\002\022\022\n\016ERROR_",
+      "INTERNAL\020\010\022\027\n\023ERROR_INVALID_VALUE\0206*\226\001\n\013" +
+      "ServiceType\022\020\n\014Unstructured\020\000\022\013\n\007Content" +
+      "\020\001\022\013\n\007Latency\020\002\022\014\n\010Location\020\003\022\t\n\005Token\020\n" +
+      "\022\013\n\007Profile\020\013\022\r\n\tProximity\020\014\022\t\n\005Relay\020\r\022" +
+      "\016\n\nReputation\020\016\022\013\n\007Minting\020\017b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -27969,205 +30081,217 @@ public final class IopLocNet {
     internal_static_iop_locnet_ServiceInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_ServiceInfo_descriptor,
-        new String[] { "Type", "Port", "ServiceData", });
+        new java.lang.String[] { "Type", "Port", "ServiceData", });
     internal_static_iop_locnet_GpsLocation_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_iop_locnet_GpsLocation_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_GpsLocation_descriptor,
-        new String[] { "Latitude", "Longitude", });
+        new java.lang.String[] { "Latitude", "Longitude", });
     internal_static_iop_locnet_NodeContact_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_iop_locnet_NodeContact_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_NodeContact_descriptor,
-        new String[] { "IpAddress", "NodePort", "ClientPort", });
+        new java.lang.String[] { "IpAddress", "NodePort", "ClientPort", });
     internal_static_iop_locnet_NodeInfo_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_iop_locnet_NodeInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_NodeInfo_descriptor,
-        new String[] { "NodeId", "Contact", "Location", "Services", });
+        new java.lang.String[] { "NodeId", "Contact", "Location", "Services", });
     internal_static_iop_locnet_MessageWithHeader_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_iop_locnet_MessageWithHeader_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_MessageWithHeader_descriptor,
-        new String[] { "Header", "Body", });
+        new java.lang.String[] { "Header", "Body", });
     internal_static_iop_locnet_Message_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_iop_locnet_Message_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_Message_descriptor,
-        new String[] { "Id", "Request", "Response", "MessageType", });
+        new java.lang.String[] { "Id", "Request", "Response", "MessageType", });
     internal_static_iop_locnet_Request_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_iop_locnet_Request_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_Request_descriptor,
-        new String[] { "Version", "LocalService", "RemoteNode", "Client", "RequestType", });
+        new java.lang.String[] { "Version", "LocalService", "RemoteNode", "Client", "RequestType", });
     internal_static_iop_locnet_Response_descriptor =
       getDescriptor().getMessageTypes().get(7);
     internal_static_iop_locnet_Response_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_Response_descriptor,
-        new String[] { "Status", "Timestamp", "Details", "LocalService", "RemoteNode", "Client", "ResponseType", });
+        new java.lang.String[] { "Status", "Timestamp", "Details", "LocalService", "RemoteNode", "Client", "ResponseType", });
     internal_static_iop_locnet_LocalServiceRequest_descriptor =
       getDescriptor().getMessageTypes().get(8);
     internal_static_iop_locnet_LocalServiceRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_LocalServiceRequest_descriptor,
-        new String[] { "RegisterService", "DeregisterService", "GetNeighbourNodes", "NeighbourhoodChanged", "LocalServiceRequestType", });
+        new java.lang.String[] { "RegisterService", "DeregisterService", "GetNeighbourNodes", "NeighbourhoodChanged", "LocalServiceRequestType", });
     internal_static_iop_locnet_LocalServiceResponse_descriptor =
       getDescriptor().getMessageTypes().get(9);
     internal_static_iop_locnet_LocalServiceResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_LocalServiceResponse_descriptor,
-        new String[] { "RegisterService", "DeregisterService", "GetNeighbourNodes", "NeighbourhoodUpdated", "LocalServiceResponseType", });
+        new java.lang.String[] { "RegisterService", "DeregisterService", "GetNeighbourNodes", "NeighbourhoodUpdated", "LocalServiceResponseType", });
     internal_static_iop_locnet_RegisterServiceRequest_descriptor =
       getDescriptor().getMessageTypes().get(10);
     internal_static_iop_locnet_RegisterServiceRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_RegisterServiceRequest_descriptor,
-        new String[] { "Service", });
+        new java.lang.String[] { "Service", });
     internal_static_iop_locnet_RegisterServiceResponse_descriptor =
       getDescriptor().getMessageTypes().get(11);
     internal_static_iop_locnet_RegisterServiceResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_RegisterServiceResponse_descriptor,
-        new String[] { });
+        new java.lang.String[] { "Location", });
     internal_static_iop_locnet_DeregisterServiceRequest_descriptor =
       getDescriptor().getMessageTypes().get(12);
     internal_static_iop_locnet_DeregisterServiceRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_DeregisterServiceRequest_descriptor,
-        new String[] { "ServiceType", });
+        new java.lang.String[] { "ServiceType", });
     internal_static_iop_locnet_DeregisterServiceResponse_descriptor =
       getDescriptor().getMessageTypes().get(13);
     internal_static_iop_locnet_DeregisterServiceResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_DeregisterServiceResponse_descriptor,
-        new String[] { });
+        new java.lang.String[] { });
     internal_static_iop_locnet_GetNeighbourNodesByDistanceLocalRequest_descriptor =
       getDescriptor().getMessageTypes().get(14);
     internal_static_iop_locnet_GetNeighbourNodesByDistanceLocalRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_GetNeighbourNodesByDistanceLocalRequest_descriptor,
-        new String[] { "KeepAliveAndSendUpdates", });
+        new java.lang.String[] { "KeepAliveAndSendUpdates", });
     internal_static_iop_locnet_GetNeighbourNodesByDistanceResponse_descriptor =
       getDescriptor().getMessageTypes().get(15);
     internal_static_iop_locnet_GetNeighbourNodesByDistanceResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_GetNeighbourNodesByDistanceResponse_descriptor,
-        new String[] { "Nodes", });
+        new java.lang.String[] { "Nodes", });
     internal_static_iop_locnet_NeighbourhoodChange_descriptor =
       getDescriptor().getMessageTypes().get(16);
     internal_static_iop_locnet_NeighbourhoodChange_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_NeighbourhoodChange_descriptor,
-        new String[] { "AddedNodeInfo", "UpdatedNodeInfo", "RemovedNodeId", "ChangeType", });
+        new java.lang.String[] { "AddedNodeInfo", "UpdatedNodeInfo", "RemovedNodeId", "ChangeType", });
     internal_static_iop_locnet_NeighbourhoodChangedNotificationRequest_descriptor =
       getDescriptor().getMessageTypes().get(17);
     internal_static_iop_locnet_NeighbourhoodChangedNotificationRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_NeighbourhoodChangedNotificationRequest_descriptor,
-        new String[] { "Changes", });
+        new java.lang.String[] { "Changes", });
     internal_static_iop_locnet_NeighbourhoodChangedNotificationResponse_descriptor =
       getDescriptor().getMessageTypes().get(18);
     internal_static_iop_locnet_NeighbourhoodChangedNotificationResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_NeighbourhoodChangedNotificationResponse_descriptor,
-        new String[] { });
+        new java.lang.String[] { });
     internal_static_iop_locnet_RemoteNodeRequest_descriptor =
       getDescriptor().getMessageTypes().get(19);
     internal_static_iop_locnet_RemoteNodeRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_RemoteNodeRequest_descriptor,
-        new String[] { "AcceptColleague", "RenewColleague", "AcceptNeighbour", "RenewNeighbour", "GetNodeCount", "GetRandomNodes", "GetClosestNodes", "GetNodeInfo", "RemoteNodeRequestType", });
+        new java.lang.String[] { "AcceptColleague", "RenewColleague", "AcceptNeighbour", "RenewNeighbour", "GetNodeCount", "GetRandomNodes", "GetClosestNodes", "GetNodeInfo", "RemoteNodeRequestType", });
     internal_static_iop_locnet_RemoteNodeResponse_descriptor =
       getDescriptor().getMessageTypes().get(20);
     internal_static_iop_locnet_RemoteNodeResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_RemoteNodeResponse_descriptor,
-        new String[] { "AcceptColleague", "RenewColleague", "AcceptNeighbour", "RenewNeighbour", "GetNodeCount", "GetRandomNodes", "GetClosestNodes", "GetNodeInfo", "RemoteNodeResponseType", });
+        new java.lang.String[] { "AcceptColleague", "RenewColleague", "AcceptNeighbour", "RenewNeighbour", "GetNodeCount", "GetRandomNodes", "GetClosestNodes", "GetNodeInfo", "RemoteNodeResponseType", });
     internal_static_iop_locnet_BuildNetworkRequest_descriptor =
       getDescriptor().getMessageTypes().get(21);
     internal_static_iop_locnet_BuildNetworkRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_BuildNetworkRequest_descriptor,
-        new String[] { "RequestorNodeInfo", });
+        new java.lang.String[] { "RequestorNodeInfo", });
     internal_static_iop_locnet_BuildNetworkResponse_descriptor =
       getDescriptor().getMessageTypes().get(22);
     internal_static_iop_locnet_BuildNetworkResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_BuildNetworkResponse_descriptor,
-        new String[] { "Accepted", "AcceptorNodeInfo", "RemoteIpAddress", });
+        new java.lang.String[] { "Accepted", "AcceptorNodeInfo", "RemoteIpAddress", });
     internal_static_iop_locnet_GetNodeCountRequest_descriptor =
       getDescriptor().getMessageTypes().get(23);
     internal_static_iop_locnet_GetNodeCountRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_GetNodeCountRequest_descriptor,
-        new String[] { });
+        new java.lang.String[] { });
     internal_static_iop_locnet_GetNodeCountResponse_descriptor =
       getDescriptor().getMessageTypes().get(24);
     internal_static_iop_locnet_GetNodeCountResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_GetNodeCountResponse_descriptor,
-        new String[] { "NodeCount", });
+        new java.lang.String[] { "NodeCount", });
     internal_static_iop_locnet_GetRandomNodesRequest_descriptor =
       getDescriptor().getMessageTypes().get(25);
     internal_static_iop_locnet_GetRandomNodesRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_GetRandomNodesRequest_descriptor,
-        new String[] { "MaxNodeCount", "IncludeNeighbours", });
+        new java.lang.String[] { "MaxNodeCount", "IncludeNeighbours", });
     internal_static_iop_locnet_GetRandomNodesResponse_descriptor =
       getDescriptor().getMessageTypes().get(26);
     internal_static_iop_locnet_GetRandomNodesResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_GetRandomNodesResponse_descriptor,
-        new String[] { "Nodes", });
+        new java.lang.String[] { "Nodes", });
     internal_static_iop_locnet_GetClosestNodesByDistanceRequest_descriptor =
       getDescriptor().getMessageTypes().get(27);
     internal_static_iop_locnet_GetClosestNodesByDistanceRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_GetClosestNodesByDistanceRequest_descriptor,
-        new String[] { "Location", "MaxRadiusKm", "MaxNodeCount", "IncludeNeighbours", });
+        new java.lang.String[] { "Location", "MaxRadiusKm", "MaxNodeCount", "IncludeNeighbours", });
     internal_static_iop_locnet_GetClosestNodesByDistanceResponse_descriptor =
       getDescriptor().getMessageTypes().get(28);
     internal_static_iop_locnet_GetClosestNodesByDistanceResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_GetClosestNodesByDistanceResponse_descriptor,
-        new String[] { "Nodes", });
+        new java.lang.String[] { "Nodes", });
     internal_static_iop_locnet_ClientRequest_descriptor =
       getDescriptor().getMessageTypes().get(29);
     internal_static_iop_locnet_ClientRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_ClientRequest_descriptor,
-        new String[] { "GetNodeInfo", "GetNeighbourNodes", "GetClosestNodes", "ClientRequestType", });
+        new java.lang.String[] { "GetNodeInfo", "GetNeighbourNodes", "GetClosestNodes", "ExploreNodes", "ClientRequestType", });
     internal_static_iop_locnet_ClientResponse_descriptor =
       getDescriptor().getMessageTypes().get(30);
     internal_static_iop_locnet_ClientResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_ClientResponse_descriptor,
-        new String[] { "GetNodeInfo", "GetNeighbourNodes", "GetClosestNodes", "ClientResponseType", });
+        new java.lang.String[] { "GetNodeInfo", "GetNeighbourNodes", "GetClosestNodes", "ExploreNodes", "ClientResponseType", });
     internal_static_iop_locnet_GetNodeInfoRequest_descriptor =
       getDescriptor().getMessageTypes().get(31);
     internal_static_iop_locnet_GetNodeInfoRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_GetNodeInfoRequest_descriptor,
-        new String[] { });
+        new java.lang.String[] { });
     internal_static_iop_locnet_GetNodeInfoResponse_descriptor =
       getDescriptor().getMessageTypes().get(32);
     internal_static_iop_locnet_GetNodeInfoResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_GetNodeInfoResponse_descriptor,
-        new String[] { "NodeInfo", });
+        new java.lang.String[] { "NodeInfo", });
     internal_static_iop_locnet_GetNeighbourNodesByDistanceClientRequest_descriptor =
       getDescriptor().getMessageTypes().get(33);
     internal_static_iop_locnet_GetNeighbourNodesByDistanceClientRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_iop_locnet_GetNeighbourNodesByDistanceClientRequest_descriptor,
-        new String[] { });
+        new java.lang.String[] { });
+    internal_static_iop_locnet_ExploreNetworkNodesByDistanceRequest_descriptor =
+      getDescriptor().getMessageTypes().get(34);
+    internal_static_iop_locnet_ExploreNetworkNodesByDistanceRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_iop_locnet_ExploreNetworkNodesByDistanceRequest_descriptor,
+        new java.lang.String[] { "Location", "TargetNodeCount", "MaxNodeHops", });
+    internal_static_iop_locnet_ExploreNetworkNodesByDistanceResponse_descriptor =
+      getDescriptor().getMessageTypes().get(35);
+    internal_static_iop_locnet_ExploreNetworkNodesByDistanceResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_iop_locnet_ExploreNetworkNodesByDistanceResponse_descriptor,
+        new java.lang.String[] { "ClosestNodes", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)
