@@ -26,9 +26,10 @@ public class PrivateStorage {
 
     public void getFile(String name,byte[] buff) {
         File file = context.getDir(name,MODE_PRIVATE);
+        File fileTemp = new File(file.getAbsolutePath()+name);
         FileInputStream fileInputStream = null;
         try {
-            fileInputStream = new FileInputStream(file);
+            fileInputStream = new FileInputStream(fileTemp);
             fileInputStream.read(buff);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -45,12 +46,23 @@ public class PrivateStorage {
         }
     }
 
-    public void saveFile(String name,byte[] buf){
-        File file = context.getDir(name,MODE_PRIVATE);
+    /**
+     *
+     * @param name
+     * @return
+     */
+    public File getFile(String name) {
+        File file = new File(context.getDir("priv",MODE_PRIVATE).getAbsolutePath()+name);
+        return file;
+    }
 
+
+    public void saveFile(String name,byte[] buf){
+        File file = context.getDir("priv",MODE_PRIVATE);
+        File saveFile = new File(file.getAbsolutePath()+name);
         FileOutputStream fileOutputStream = null;
         try {
-            fileOutputStream = new FileOutputStream(file);
+            fileOutputStream = new FileOutputStream(saveFile);
             fileOutputStream.write(buf);
             fileOutputStream.flush();
         } catch (FileNotFoundException e) {

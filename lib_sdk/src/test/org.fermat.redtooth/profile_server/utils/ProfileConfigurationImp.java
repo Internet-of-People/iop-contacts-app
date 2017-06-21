@@ -208,4 +208,21 @@ public class ProfileConfigurationImp implements ProfileServerConfigurations {
     public boolean isPairingEnable() {
         return true;
     }
+
+    @Override
+    public Profile getProfile() {
+        Profile profile = new Profile(
+                getProtocolVersion(),
+                getUsername(),
+                getProfileType(),
+                (KeyEd25519) getUserKeys()
+        );
+        profile.setImg(getUserImage());
+        return profile;
+    }
+
+    @Override
+    public byte[] getUserImage() {
+        return null;
+    }
 }

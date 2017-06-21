@@ -1,16 +1,21 @@
 package com.example.furszy.contactsapp.ui.home;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.Toolbar;
 import android.view.ViewGroup;
 
 import com.example.furszy.contactsapp.BaseDrawerActivity;
+import com.example.furszy.contactsapp.App;
 import com.example.furszy.contactsapp.R;
+import com.example.furszy.contactsapp.StartActivity;
 import com.example.furszy.contactsapp.ui.home.contacts.ContactsFragment;
 import com.example.furszy.contactsapp.ui.home.requests.RequestsFragment;
 
@@ -25,7 +30,7 @@ public class HomeActivity extends BaseDrawerActivity {
 
     private TabLayout tabLayout;
     private ViewPager viewPager;
-
+    private Toolbar toolbar;
     private FloatingActionButton fab_add;
 
     @Override
@@ -39,6 +44,26 @@ public class HomeActivity extends BaseDrawerActivity {
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
         fab_add = (FloatingActionButton) findViewById(R.id.fab_add);
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if(!App.getInstance().createProfSerConfig().isIdentityCreated()){
+            Intent intent = new Intent(this, StartActivity.class);
+            startActivity(intent);
+            finish();
+        }else {
+            setContentView(R.layout.home_main);
+            toolbar = (Toolbar) findViewById(R.id.toolbar);
+            setSupportActionBar(toolbar);
+
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+            viewPager = (ViewPager) findViewById(R.id.viewpager);
+            setupViewPager(viewPager);
+
+            tabLayout = (TabLayout) findViewById(R.id.tabs);
+            tabLayout.setupWithViewPager(viewPager);
+            fab_add = (FloatingActionButton) findViewById(R.id.fab_add);
+        }
     }
 
     private void setupViewPager(ViewPager viewPager) {

@@ -81,8 +81,6 @@ public class ProfSerEngine {
     private PsSocketHandler handler;
     /** Listener to receive incomingCallNotifications and incomingMessages from calls */
     private org.fermat.redtooth.profile_server.engine.app_services.CallsListener callListener;
-    /** Engine listenerv*/
-    private final CopyOnWriteArrayList<org.fermat.redtooth.profile_server.engine.listeners.EngineListener> engineListeners = new CopyOnWriteArrayList<>();
     /** Messages listeners:  id -> listner */
     private final ConcurrentMap<Integer,ProfSerMsgListener> msgListeners = new ConcurrentHashMap<>();
     private final ConcurrentMap<String,SearchProfilesQuery> profilesQuery = new ConcurrentHashMap<>();
@@ -129,19 +127,6 @@ public class ProfSerEngine {
         byte[] connChallenge = new byte[32];
         crypto.random(connChallenge,32);
         return connChallenge;
-    }
-
-
-    /**
-     *
-     * @param listener
-     */
-    public void addEngineListener(org.fermat.redtooth.profile_server.engine.listeners.EngineListener listener){
-        this.engineListeners.add(listener);
-    }
-
-    public void removeEngineListener(org.fermat.redtooth.profile_server.engine.listeners.EngineListener listener){
-        this.engineListeners.remove(listener);
     }
 
     public void setCallListener(CallsListener callListener) {
@@ -593,10 +578,6 @@ public class ProfSerEngine {
 
     ProfSerDb getProfSerDb() {
         return profSerDb;
-    }
-
-    CopyOnWriteArrayList<EngineListener> getEngineListeners() {
-        return engineListeners;
     }
 
     /**

@@ -20,6 +20,8 @@ import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.Signer;
+import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
+import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
 import org.fermat.redtooth.profile_server.engine.SearchProfilesQuery;
 import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
@@ -114,20 +116,31 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public void connect(String pubKey) throws Exception {
-        ioPConnect.connectProfileSync(pubKey,this,pairingListener,null);
-        onCheckInCompleted(profile);
+        MsgListenerFuture<Boolean> msgListenerFuture = new MsgListenerFuture();
+        msgListenerFuture.setListener(new BaseMsgFuture.Listener<Boolean>() {
+            @Override
+            public void onAction(int messageId, Boolean object) {
+                onCheckInCompleted(profile);
+            }
+
+            @Override
+            public void onFail(int messageId, int status, String statusDetail) {
+                onCheckInFail(profile,status,statusDetail);
+            }
+        });
+        ioPConnect.connectProfile(pubKey,pairingListener,null,msgListenerFuture);
     }
 
     @Override
     public String registerProfile(String name,String type, byte[] img, int latitude, int longitude, String extraData) throws Exception {
-        profile = ioPConnect.createProfile(null,name,type,extraData,null);
+        profile = ioPConnect.createProfile(null,name,type,img,extraData,null);
         configurationsPreferences.setIsCreated(true);
         return profile.getHexPublicKey();
     }
 
     @Override
-    public String registerProfile(String name) throws Exception {
-        return registerProfile(name,"IoP-contacts",null,0,0,null);
+    public String registerProfile(String name,byte[] img) throws Exception {
+        return registerProfile(name,"IoP-contacts",img,0,0,null);
     }
 
     @Override
@@ -180,7 +193,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public boolean isIdentityCreated() {
-        return configurationsPreferences.isRegisteredInServer();
+        return configurationsPreferences.isIdentityCreated();
     }
 
     @Override
@@ -285,6 +298,13 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
             profileListener.onConnect(profile);
         }
     }
+
+    private void onCheckInFail(Profile profile, int status, String statusDetail) {
+        if (profileListener!=null){
+            profileListener.onCheckInFail(profile,status,statusDetail);
+        }
+    }
+
     @Override
     public boolean isDeviceLocationEnabled() {
         return false;
