@@ -3,8 +3,10 @@ package iop.org.iop_sdk_android.core.profile_server;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.google.common.io.Files;
 import com.google.gson.JsonArray;
 
+import org.apache.commons.io.IOUtils;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.global.HardCodedConstans;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
@@ -14,6 +16,9 @@ import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.json.JSONArray;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -148,10 +153,6 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
         return privKey;
     }
 
-    public void setPrivKey(byte[] privKey){
-        privateStorage.saveFile(PREFS_USER_PRIV_KEY,privKey);
-    }
-
     public void setMainPsPrimaryPort(int primaryPort){
         final SharedPreferences.Editor edit = prefs.edit();
         edit.putInt(PREFS_PRIMARY, primaryPort);
@@ -181,18 +182,6 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
         edit.apply();
     }
 
-    public void setUserPubKey(String userPubKeyHex){
-        final SharedPreferences.Editor edit = prefs.edit();
-        edit.putString(PREFS_USER_PK, userPubKeyHex);
-        edit.apply();
-    }
-
-    public void setUserPubKey(byte[] userPubKeyHex){
-        final SharedPreferences.Editor edit = prefs.edit();
-        edit.putString(PREFS_USER_PK, CryptoBytes.toHexString(userPubKeyHex));
-        edit.apply();
-    }
-
     public void setProfileVersion(byte[] version){
         final SharedPreferences.Editor edit = prefs.edit();
         edit.putString(PREFS_USER_VERSION, CryptoBytes.toHexString(version));
@@ -212,9 +201,10 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
         edit.apply();
     }
 
+
     @Override
     public File getUserImageFile() {
-        return null;
+        return privateStorage.getFile(PREFS_USER_IMAGE);
     }
 
     @Override
@@ -247,6 +237,9 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
         if (profile.getApplicationServices()!=null && !profile.getApplicationServices().isEmpty()){
             save(PREFS_APPS_SERVICES,convertToJson(profile.getApplicationServices()));
         }
+        if (profile.getImg()!=null){
+            privateStorage.saveFile(PREFS_USER_PRIV_KEY,profile.getImg());
+        }
     }
 
     @Override
@@ -258,6 +251,18 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
     public boolean isPairingEnable() {
         // default true for now..
         return true;
+    }
+
+    @Override
+    public Profile getProfile() {
+        Profile profile = new Profile(
+                getProtocolVersion(),
+                getUsername(),
+                getProfileType(),
+                getUserKeys()
+        );
+        profile.setImg(getUserImage());
+        return profile;
     }
 
 
@@ -306,6 +311,22 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
 
     public void setMainServerNetworkId(byte[] networkId) {
         save(PREFS_NETWORK_ID,CryptoBytes.toHexString(networkId));
+    }
+
+    @Override
+    public byte[] getUserImage() {
+        try {
+            File fileImg = privateStorage.getFile(PREFS_USER_IMAGE);
+            if (fileImg.exists()) {
+                FileInputStream fileInputStream = new FileInputStream(fileImg);
+                return IOUtils.toByteArray(fileInputStream);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
 

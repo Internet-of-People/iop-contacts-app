@@ -38,9 +38,12 @@ import iop.org.iop_sdk_android.core.profile_server.ProfileServerConfigurationsIm
 public class App extends Application implements IoPConnectContext, PairingListener {
 
     public static final String INTENT_ACTION_PROFILE_CONNECTED = "profile_connected";
+    public static final String INTENT_ACTION_PROFILE_CHECK_IN_FAIL= "profile_check_in_fail";
     public static final String INTENT_ACTION_PROFILE_DISCONNECTED = "profile_disconnected";
 
+    private static Logger log;
     private static App instance;
+
     AnRedtooth anRedtooth;
     private LocalBroadcastManager broadcastManager;
     private NotificationManager notificationManager;
@@ -56,6 +59,7 @@ public class App extends Application implements IoPConnectContext, PairingListen
         super.onCreate();
         instance = this;
         initLogging();
+        log = LoggerFactory.getLogger(App.class);
         broadcastManager = LocalBroadcastManager.getInstance(this);
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         anRedtooth = AnRedtooth.init(this, new InitListener() {
@@ -70,7 +74,8 @@ public class App extends Application implements IoPConnectContext, PairingListen
                                 ModuleRedtooth module = anRedtooth.getRedtooth();
                                 module.setPairListener(App.this);
                                 module.setProfileListener(new ProfileListenerImp(App.this));
-                                if (module.isProfileRegistered()) {
+                                if (module.isIdentityCreated()) {
+                                    log.info("Trying to connect profile");
                                     Profile profile = module.getProfile();
                                     if (profile != null)
                                         module.connect(profile.getHexPublicKey());
@@ -98,7 +103,7 @@ public class App extends Application implements IoPConnectContext, PairingListen
     @Override
     public ProfileServerConfigurations createProfSerConfig() {
         ProfileServerConfigurationsImp conf = new ProfileServerConfigurationsImp(this,getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));
-        conf.setHost("192.168.0.102");
+        conf.setHost("10.0.2.2");
         return conf;
         }
 
@@ -187,6 +192,7 @@ public class App extends Application implements IoPConnectContext, PairingListen
 
         @Override
         public void onConnect(Profile profile) {
+            log.info("Profile connected");
             Intent intent = new Intent(INTENT_ACTION_PROFILE_CONNECTED);
             app.broadcastManager.sendBroadcast(intent);
         }
@@ -194,6 +200,13 @@ public class App extends Application implements IoPConnectContext, PairingListen
         @Override
         public void onDisconnect(Profile profile) {
             Intent intent = new Intent(INTENT_ACTION_PROFILE_DISCONNECTED);
+            app.broadcastManager.sendBroadcast(intent);
+        }
+
+        @Override
+        public void onCheckInFail(Profile profile, int status, String statusDetail) {
+            log.info("onCheckInFail",profile,status,statusDetail);
+            Intent intent = new Intent(INTENT_ACTION_PROFILE_CHECK_IN_FAIL);
             app.broadcastManager.sendBroadcast(intent);
         }
     }

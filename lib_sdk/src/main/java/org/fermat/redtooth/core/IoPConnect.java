@@ -80,15 +80,15 @@ public class IoPConnect {
      * @param secretPassword -> encription password for the profile keys
      * @return profile pubKey
      */
-    public Profile createProfile(byte[] profileOwnerChallenge,String name,String type,String extraData,String secretPassword){
+    public Profile createProfile(byte[] profileOwnerChallenge,String name,String type,byte[] img,String extraData,String secretPassword){
         byte[] version = new byte[]{0,0,1};
         ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
         KeyEd25519 keyEd25519 = profileServerConfigurations.createNewUserKeys();
         Profile profile = new Profile(version, name,type,keyEd25519);
         profile.setExtraData(extraData);
+        profile.setImg(img);
         // save
         profileServerConfigurations.saveUserKeys(profile.getKey());
-        profileServerConfigurations.saveProfile(profile);
         profileServerConfigurations.setIsCreated(true);
         // save profile
         profileServerConfigurations.saveProfile(profile);
@@ -101,16 +101,22 @@ public class IoPConnect {
         // todo: backup the profile on an external dir file.
     }
 
-    public void connectProfile(String profilePublicKey,byte[] ownerChallenge) throws Exception {
-         managers.get(profilePublicKey).init();
-    }
-
-    public boolean connectProfileSync(String profilePublicKey, EngineListener engineListener, PairingListener pairingListener, byte[] ownerChallenge) throws CantConnectException, ExecutionException, InterruptedException {
+    public void connectProfile(String profilePublicKey, PairingListener pairingListener, byte[] ownerChallenge,MsgListenerFuture<Boolean> future) throws Exception {
         if (!managers.containsKey(profilePublicKey)){
             ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
             KeyEd25519 keyEd25519 = (KeyEd25519) profileServerConfigurations.getUserKeys();
             if (keyEd25519==null) throw new IllegalStateException("no pubkey saved");
-            addConnection(profileServerConfigurations,keyEd25519,engineListener,pairingListener);
+            addConnection(profileServerConfigurations,keyEd25519,pairingListener);
+        }
+        getProfileConnection(profilePublicKey).init(future);
+    }
+
+    public boolean connectProfileSync(String profilePublicKey, PairingListener pairingListener, byte[] ownerChallenge) throws CantConnectException, ExecutionException, InterruptedException {
+        if (!managers.containsKey(profilePublicKey)){
+            ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
+            KeyEd25519 keyEd25519 = (KeyEd25519) profileServerConfigurations.getUserKeys();
+            if (keyEd25519==null) throw new IllegalStateException("no pubkey saved");
+            addConnection(profileServerConfigurations,keyEd25519,pairingListener);
         }
         MsgListenerFuture<Boolean> initFuture = new MsgListenerFuture<Boolean>();
         getProfileConnection(profilePublicKey).init(initFuture);
@@ -126,7 +132,7 @@ public class IoPConnect {
         return getProfileConnection(profile.getHexPublicKey()).updateProfile(profile.getVersion(),profile.getName(),profile.getImg(),profile.getLatitude(),profile.getLongitude(),profile.getExtraData(),msgListener);
     }
 
-    private IoPProfileConnection addConnection(ProfileServerConfigurations profileServerConfigurations, KeyEd25519 keyEd25519, EngineListener profServerEngineListener, PairingListener pairingListener){
+    private IoPProfileConnection addConnection(ProfileServerConfigurations profileServerConfigurations, KeyEd25519 keyEd25519, PairingListener pairingListener){
         // profile connection
         IoPProfileConnection ioPProfileConnection = new IoPProfileConnection(
                 context,
@@ -135,7 +141,6 @@ public class IoPConnect {
                 cryptoWrapper,
                 sslContextFactory,
                 deviceLocation);
-        ioPProfileConnection.setProfServerEngineListener(profServerEngineListener);
         // map the profile connection with his public key
         managers.put(keyEd25519.getPublicKeyHex(), ioPProfileConnection);
         return ioPProfileConnection;
@@ -146,17 +151,12 @@ public class IoPConnect {
         Profile profile = null;
         if (profileServerConfigurations.isIdentityCreated()) {
             // load profileCache
-            KeyEd25519 keyEd25519 = (KeyEd25519) profileServerConfigurations.getUserKeys();
-            profile = new Profile(
-                    profileServerConfigurations.getProtocolVersion(),
-                    profileServerConfigurations.getUsername(),
-                    profileServerConfigurations.getProfileType(),
-                    keyEd25519
-            );
+            profile = profileServerConfigurations.getProfile();
         } else {
             // create and save
             KeyEd25519 keyEd25519 = profileServerConfigurations.createUserKeys();
             profile = new Profile(profileServerConfigurations.getProfileVersion(), profileServerConfigurations.getUsername(), profileServerConfigurations.getProfileType(),keyEd25519);
+            profile.setImg(profileServerConfigurations.getUserImage());
             // save
             profileServerConfigurations.saveUserKeys(profile.getKey());
         }

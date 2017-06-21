@@ -63,8 +63,6 @@ public class IoPProfileConnection implements CallsListener {
     private SslContextFactory sslContextFactory;
     /** Location helper dependent on the platform */
     private DeviceLocation deviceLocation;
-    /** Engine listener */
-    private EngineListener profServerEngineListener;
     /** Open profile app service calls -> remote profile pk -> call in progress */
     private ConcurrentMap<String,CallProfileAppService> openCall = new ConcurrentHashMap<>();
     /**  */
@@ -156,7 +154,6 @@ public class IoPProfileConnection implements CallsListener {
                     cryptoWrapper,
                     sslContextFactory
             );
-            profSerEngine.addEngineListener(profServerEngineListener);
             profSerEngine.setCallListener(this);
         }else {
             throw new IllegalStateException("Profile server not found, please set one first using LOC");
@@ -165,10 +162,6 @@ public class IoPProfileConnection implements CallsListener {
 
     public void stop() {
         profSerEngine.stop();
-    }
-
-    public void setProfServerEngineListener(EngineListener profServerEngineListener) {
-        this.profServerEngineListener = profServerEngineListener;
     }
 
     public ProfileServerConfigurations getProfileServerConfigurations() {
