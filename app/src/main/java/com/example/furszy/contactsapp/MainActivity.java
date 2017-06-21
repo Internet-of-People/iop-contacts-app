@@ -142,12 +142,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         super.onResume();
     }
 
-    private boolean checkPermission(String permission) {
-        int result = ContextCompat.checkSelfPermission(getApplicationContext(),permission);
-
-        return result == PackageManager.PERMISSION_GRANTED;
-    }
-
     @Override
     public void onClick(View v) {
         int which = v.getId();

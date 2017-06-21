@@ -6,8 +6,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -119,8 +121,14 @@ public class BaseActivity extends AppCompatActivity{
             dialogBuilder.show();
 
         }
-
     }
+
+    protected boolean checkPermission(String permission) {
+        int result = ContextCompat.checkSelfPermission(getApplicationContext(),permission);
+
+        return result == PackageManager.PERMISSION_GRANTED;
+    }
+
 
 
 }
