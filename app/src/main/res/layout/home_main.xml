@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/container"
     android:orientation="vertical"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/white">
@@ -28,8 +29,9 @@
         android:layout_height="56dp"
         android:id="@+id/fab_add"
         android:src="@drawable/profile"
-        app:layout_anchor="@id/viewpager"
+        app:layout_anchor="@id/container"
         app:layout_anchorGravity="bottom|right|end"
+        android:layout_gravity="bottom|end"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="20dp"
         app:borderWidth="0dp"
@@ -38,5 +40,5 @@
 
 
 
-</LinearLayout>
+</FrameLayout>
 

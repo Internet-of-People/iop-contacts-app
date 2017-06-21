@@ -10,6 +10,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.furszy.contactsapp.BaseDrawerActivity;
@@ -18,6 +19,7 @@ import com.example.furszy.contactsapp.R;
 import com.example.furszy.contactsapp.StartActivity;
 import com.example.furszy.contactsapp.ui.home.contacts.ContactsFragment;
 import com.example.furszy.contactsapp.ui.home.requests.RequestsFragment;
+import com.example.furszy.contactsapp.ui.new_contact.NewContactActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,27 +37,13 @@ public class HomeActivity extends BaseDrawerActivity {
 
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
-        getLayoutInflater().inflate(R.layout.home_main, container);
-        setTitle("IoP Connections");
-
-        viewPager = (ViewPager) findViewById(R.id.viewpager);
-        setupViewPager(viewPager);
-
-        tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(viewPager);
-        fab_add = (FloatingActionButton) findViewById(R.id.fab_add);
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         if(!App.getInstance().createProfSerConfig().isIdentityCreated()){
             Intent intent = new Intent(this, StartActivity.class);
             startActivity(intent);
             finish();
         }else {
-            setContentView(R.layout.home_main);
-            toolbar = (Toolbar) findViewById(R.id.toolbar);
-            setSupportActionBar(toolbar);
-
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getLayoutInflater().inflate(R.layout.home_main, container);
+            setTitle("IoP Connections");
 
             viewPager = (ViewPager) findViewById(R.id.viewpager);
             setupViewPager(viewPager);
@@ -63,6 +51,12 @@ public class HomeActivity extends BaseDrawerActivity {
             tabLayout = (TabLayout) findViewById(R.id.tabs);
             tabLayout.setupWithViewPager(viewPager);
             fab_add = (FloatingActionButton) findViewById(R.id.fab_add);
+            fab_add.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(v.getContext(), NewContactActivity.class));
+                }
+            });
         }
     }
 
