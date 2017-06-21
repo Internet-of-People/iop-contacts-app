@@ -2,6 +2,7 @@ package org.fermat.redtooth.profile_server;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import org.fermat.redtooth.profile_server.engine.ProfSerDb;
@@ -81,4 +82,8 @@ public interface ProfileServerConfigurations extends ProfSerDb{
     void setProfileType(String type);
 
     boolean isPairingEnable();
+
+    Profile getProfile();
+
+    byte[] getUserImage();
 }
