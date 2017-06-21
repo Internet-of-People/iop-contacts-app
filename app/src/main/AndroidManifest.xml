@@ -33,6 +33,7 @@
         <activity android:name=".BaseDrawerActivity"></activity>
         <activity android:name=".RestoreActivity"></activity>
         <activity android:name=".CreateProfileActivity"></activity>
+        <activity android:name=".ui.settings.SettingsActivity"></activity>
         <activity android:name=".contacts.ProfilesInformationActivity"/>
         <activity android:name=".requests.PairingRequestsActivity"/>
 

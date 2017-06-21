@@ -10,24 +10,18 @@
         android:paddingBottom="40dp"
         >
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:id="@+id/img_qr"
-            android:src="@drawable/ic_qr_code_gray"
-            android:layout_marginEnd="32dp"
-            android:layout_marginBottom="4dp"
-            android:layout_gravity="end|center"/>
+
 
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/edit_uri"
+            android:background="@drawable/bg_inputs"
             android:hint="Add URI"
             android:gravity="center"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:backgroundTint="@color/blue_base"
+            android:paddingRight="30dp"
             android:paddingTop="9dp"
             android:paddingBottom="12dp"
             android:layout_marginStart="24dp"
@@ -36,21 +30,28 @@
             android:textColor="#4d4d4d"
             />
 
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/img_qr"
+            android:src="@drawable/ic_qr_code_gray"
+            android:layout_marginEnd="32dp"
+            android:layout_marginBottom="2dp"
+            android:layout_gravity="end|center"/>
+
     </FrameLayout>
 
 
     <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/btn_width"
+        android:layout_height="@dimen/btn_height"
         android:id="@+id/btn_add"
-        android:text="Add contact"
+        android:text="@string/send_request"
         android:textColor="#fff"
-        android:layout_marginEnd="92dp"
-        android:layout_marginStart="92dp"
         android:paddingTop="5dp"
         android:paddingBottom="5dp"
         android:gravity="center"
-        android:background="@color/bgBlue"
+        android:background="@drawable/bg_button_blue"
         android:layout_centerInParent="true"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="32dp"/>

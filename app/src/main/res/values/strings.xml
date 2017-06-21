@@ -12,8 +12,10 @@
     <!-- start screen -->
     <string name="create_profile">Create Profile</string>
     <string name="restore_profile">Restore Profile</string>
+    <string name="backup_profile">Backup Profile</string>
     <string name="select_file">Select File</string>
     <string name="add_name">Write your name</string>
     <string name="restore_message">Select a backup of  your account \n from a storage unit</string>
-
+    <string name="security">Security</string>
+    <string name="send_request">Send Request</string>
 </resources>
