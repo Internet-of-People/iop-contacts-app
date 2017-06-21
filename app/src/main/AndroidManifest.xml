@@ -45,6 +45,7 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".ui.new_contact.NewContactActivity"/>
 
         <service android:name="iop.org.iop_sdk_android.core.profile_server.IoPConnectService"/>
 
