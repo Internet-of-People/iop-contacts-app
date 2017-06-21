@@ -19,6 +19,9 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
+        app:itemTextColor="@color/white"
+        app:itemIconTint="@color/white"
+        android:background="#2998ff"
         app:headerLayout="@layout/nav_header_main"
         app:menu="@menu/activity_main_drawer" >
 
@@ -32,13 +35,8 @@
                 android:id="@+id/imgFooterLogo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/img_nav_logo"  />
-            <TextView
-                android:id="@+id/appVer"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:gravity="center"
-                android:text="Version 1.01" />
+                android:src="@drawable/img_nav_logo"
+                android:adjustViewBounds="true"/>
         </LinearLayout>
 
 

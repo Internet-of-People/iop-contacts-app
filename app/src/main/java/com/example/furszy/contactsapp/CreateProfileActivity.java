@@ -34,6 +34,14 @@ public class CreateProfileActivity extends BaseActivity {
         buttonCreate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent myIntent = new Intent(v.getContext(), HomeActivity.class);
+                startActivityForResult(myIntent, 0);
+            }
+        });
+        /*
+        buttonCreate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 try {
                     String name = edit_name.getText().toString();
                     if (name.length() > 0) {
@@ -49,7 +57,7 @@ public class CreateProfileActivity extends BaseActivity {
                     log.error("Profile registration fail",e);
                 }
             }
-        });
+        });*/
 
     }
 }

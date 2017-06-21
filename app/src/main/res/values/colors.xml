@@ -16,5 +16,7 @@
     <color name="scan_result_view">#b0000000</color>
     <color name="scan_result_dots">#c099cc00</color>
     <color name="blue_base">#2998FF</color>
+    <color name="tab_active">#444444</color>
+    <color name="tab_inactive">#99444444</color>
 
 </resources>

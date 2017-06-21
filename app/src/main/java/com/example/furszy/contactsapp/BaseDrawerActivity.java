@@ -11,6 +11,8 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.example.furszy.contactsapp.ui.home.HomeActivity;
+
 /**
  * Created by Neoperol on 6/20/17.
  */
@@ -92,7 +94,7 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
         }
 
         if (id == R.id.nav_contact) {
-
+            startActivity(new Intent(getApplicationContext(), HomeActivity.class));
         } else if (id == R.id.nav_settings) {
 
         } else if (id == R.id.nav_qr_code) {

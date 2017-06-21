@@ -1,16 +1,15 @@
 package com.example.furszy.contactsapp.ui.home;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.widget.Toolbar;
+import android.view.ViewGroup;
 
-import com.example.furszy.contactsapp.BaseActivity;
+import com.example.furszy.contactsapp.BaseDrawerActivity;
 import com.example.furszy.contactsapp.R;
 import com.example.furszy.contactsapp.ui.home.contacts.ContactsFragment;
 import com.example.furszy.contactsapp.ui.home.requests.RequestsFragment;
@@ -22,22 +21,17 @@ import java.util.List;
  * Created by furszy on 6/20/17.
  */
 
-public class HomeActivity extends BaseActivity {
+public class HomeActivity extends BaseDrawerActivity {
 
-    private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
 
     private FloatingActionButton fab_add;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.home_main);
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
+        getLayoutInflater().inflate(R.layout.home_main, container);
+        setTitle("IoP Connections");
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         setupViewPager(viewPager);

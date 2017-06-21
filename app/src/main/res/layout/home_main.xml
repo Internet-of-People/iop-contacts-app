@@ -1,53 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/white">
 
-    <android.support.design.widget.AppBarLayout
+
+    <android.support.design.widget.TabLayout
+        android:id="@+id/tabs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/appbar"
-        android:fitsSystemWindows="true"
-        >
+        android:textColor="@drawable/tabs_text"
+        app:tabMode="fixed"
+        app:tabGravity="fill"/>
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?android:attr/actionBarSize"
-            android:background="?android:attr/colorPrimary"
-            app:layout_scrollFlags="scroll|enterAlways"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        />
 
-        <android.support.design.widget.TabLayout
-            android:id="@+id/tabs"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:tabMode="fixed"
-            app:tabGravity="fill"/>
-
-    </android.support.design.widget.AppBarLayout>
-
-        <android.support.v4.view.ViewPager
-            android:id="@+id/viewpager"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            />
-
-        <android.support.design.widget.FloatingActionButton
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:id="@+id/fab_add"
-            android:src="@drawable/profile"
-            app:layout_anchor="@id/viewpager"
-            app:layout_anchorGravity="bottom|right|end"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="20dp"
-            app:borderWidth="0dp"
-            android:clickable="true"
-            />
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:id="@+id/fab_add"
+        android:src="@drawable/profile"
+        app:layout_anchor="@id/viewpager"
+        app:layout_anchorGravity="bottom|right|end"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        app:borderWidth="0dp"
+        android:clickable="true"
+        />
 
 
 
-</android.support.design.widget.CoordinatorLayout>
+</LinearLayout>
+
