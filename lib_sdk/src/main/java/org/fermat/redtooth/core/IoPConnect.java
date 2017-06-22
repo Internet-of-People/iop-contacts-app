@@ -284,15 +284,13 @@ public class IoPConnect {
     /**
      * Send a pair acceptance
      *
-     * @param senderHexPublicKey
-     * @param profileServerId
-     * @param publicKey
+     * @param pairingRequest
      */
-    public void acceptPairingRequest(String senderHexPublicKey, byte[] profileServerId, byte[] publicKey) {
+    public void acceptPairingRequest(PairingRequest pairingRequest) {
         try {
-            String remotePubKeyHex = CryptoBytes.toHexString(publicKey);
+            String remotePubKeyHex =  pairingRequest.getRemotePubKey();
             logger.info("acceptPairingRequest, remote: " + remotePubKeyHex);
-            final IoPProfileConnection connection = getProfileConnection(senderHexPublicKey);
+            final IoPProfileConnection connection = getProfileConnection(pairingRequest.getSenderPubKey());
             CallProfileAppService call = connection.getActiveAppCallService(remotePubKeyHex);
             final MsgListenerFuture<Boolean> future = new MsgListenerFuture();
             //future.setListener(); -> todo: add future listener and save acceptPairing sent
@@ -320,8 +318,8 @@ public class IoPConnect {
                 connection.callProfileAppService(remotePubKeyHex,DefaultServices.PROFILE_PAIRING.getName(),true,false,callFuture);
             }
             // todo: here i have to add the pair request db and tick this as done. and save the profile with paired true.
-            profilesManager.updatePaired(publicKey, ProfileInformationImp.PairStatus.PAIRED);
-            pairingRequestsManager.updateStatus(remotePubKeyHex,senderHexPublicKey,PairingMsgTypes.PAIR_ACCEPT);
+            profilesManager.updatePaired(CryptoBytes.fromHexToBytes(remotePubKeyHex), ProfileInformationImp.PairStatus.PAIRED);
+            pairingRequestsManager.updateStatus(remotePubKeyHex,pairingRequest.getSenderPubKey(),PairingMsgTypes.PAIR_ACCEPT);
             // requestsDbManager.removeRequest(remotePubKeyHex);
         } catch (Exception e) {
             e.printStackTrace();

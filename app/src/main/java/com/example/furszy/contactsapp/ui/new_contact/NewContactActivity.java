@@ -64,6 +64,7 @@ public class NewContactActivity extends BaseActivity implements View.OnClickList
         }else if (id == R.id.btn_add){
             String uri = edit_uri.getText().toString();
             ProfileUtils.UriProfile profile = ProfileUtils.fromUri(uri);
+
         }
     }
 

@@ -48,10 +48,11 @@ public interface ModuleRedtooth {
     /**
      * Accept a pairing request.
      *
-     * @param profileServerId
-     * @param publicKey
+     * @param pairingRequest
      */
-    void acceptPairingProfile(byte[] profileServerId, byte[] publicKey);
+    void acceptPairingProfile(PairingRequest pairingRequest);
+
+    void cancelPairingRequest(PairingRequest pairingRequest);
 
     boolean isIdentityCreated();
 
@@ -83,7 +84,5 @@ public interface ModuleRedtooth {
 
     List<PairingRequest> getPairingRequests();
 
-    void acceptPairingProfile(PairingRequest pairingRequest);
-
-    void cancelPairingRequest(PairingRequest pairingRequest);
+    String getPsHost();
 }

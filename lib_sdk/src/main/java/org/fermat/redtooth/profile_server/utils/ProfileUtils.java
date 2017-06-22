@@ -13,11 +13,11 @@ import org.fermat.redtooth.profiles_manager.PairingRequest;
 public class ProfileUtils {
 
     /**
-     * Profile URI example: IoP:profile/<hash>/update?name=Matias
+     * Profile URI example: IoP:profile/<hash>/update?name=Matias?ps=192.168.0.1
      * @return
      */
-    public static String getProfileURI(ProfileBase profileBase){
-        return "IoP:profile/"+profileBase.getHexPublicKey()+"/update?name="+profileBase.getName();
+    public static String getProfileURI(ProfileBase profileBase,String psHost){
+        return "IoP:profile/"+profileBase.getHexPublicKey()+"/update?name="+profileBase.getName()+"&ps="+psHost;
     }
 
     /**
@@ -27,8 +27,10 @@ public class ProfileUtils {
      */
     public static UriProfile fromUri(String uri){
         String[] str = uri.split("/");
-        String name = str[2].substring(str[2].indexOf("=")+1);
-        UriProfile uriProfile = new UriProfile(name,str[1]);
+        int indexOfAnd = str[2].indexOf("=&");
+        String name = str[2].substring(str[2].indexOf("=")+1,indexOfAnd);
+        String psHost = str[2].substring(indexOfAnd+4);
+        UriProfile uriProfile = new UriProfile(name,str[1],psHost);
         return uriProfile;
     }
 
@@ -52,10 +54,12 @@ public class ProfileUtils {
 
         String name;
         String pubKey;
+        String profSerHost;
 
-        public UriProfile(String name, String pubKey) {
+        public UriProfile(String name, String pubKey,String profSerHost) {
             this.name = name;
             this.pubKey = pubKey;
+            this.profSerHost = profSerHost;
         }
 
         public String getName() {
@@ -64,6 +68,10 @@ public class ProfileUtils {
 
         public String getPubKey() {
             return pubKey;
+        }
+
+        public String getProfSerHost() {
+            return profSerHost;
         }
     }
 
