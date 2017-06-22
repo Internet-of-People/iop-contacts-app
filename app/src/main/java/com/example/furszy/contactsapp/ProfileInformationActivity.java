@@ -130,13 +130,13 @@ public class ProfileInformationActivity extends BaseActivity {
                             } else if (profileInformation.getPairStatus() == ProfileInformationImp.PairStatus.WAITING_FOR_MY_RESPONSE){
                                 // if is not paired and the search is true i can accept the pairing invitation
                                 if (searchForProfile) {
-                                    module.acceptPairingProfile(profileInformation.getProfileServerId(), profileInformation.getPublicKey());
+                                    /*module.acceptPairingProfile(profileInformation.getProfileServerId(), profileInformation.getPublicKey());
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
                                             Toast.makeText(ProfileInformationActivity.this, "Sending acceptance", Toast.LENGTH_LONG).show();
                                         }
-                                    });
+                                    });*/
                                 }else {
                                     runOnUiThread(new Runnable() {
                                         @Override

@@ -19,4 +19,5 @@
     <string name="security">Security</string>
     <string name="send_request">Send Request</string>
     <string name="request_message">Add an address to send a request</string>
+    <string name="share_qr_text">Share profile URI</string>
 </resources>
