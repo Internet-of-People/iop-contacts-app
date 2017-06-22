@@ -187,8 +187,13 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
-    public void acceptPairingProfile(byte[] profileServerId, byte[] publicKey) {
-        ioPConnect.acceptPairingRequest(profile.getHexPublicKey(),profileServerId,publicKey);
+    public void acceptPairingProfile(PairingRequest pairingRequest) {
+        ioPConnect.acceptPairingRequest(pairingRequest);
+    }
+
+    @Override
+    public void cancelPairingRequest(PairingRequest pairingRequest) {
+        // todo: improve this
     }
 
     @Override
@@ -269,13 +274,8 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
-    public void acceptPairingProfile(PairingRequest pairingRequest) {
-        // todo: improve this
-    }
-
-    @Override
-    public void cancelPairingRequest(PairingRequest pairingRequest) {
-        // todo: improve this
+    public String getPsHost() {
+        return configurationsPreferences.getMainProfileServer().getHost();
     }
 
     @Override
