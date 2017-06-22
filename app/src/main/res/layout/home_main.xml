@@ -28,7 +28,7 @@
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:id="@+id/fab_add"
-        android:src="@drawable/profile"
+        android:src="@drawable/ic_add_contact"
         app:layout_anchor="@id/container"
         app:layout_anchorGravity="bottom|right|end"
         android:layout_gravity="bottom|end"

@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.example.furszy.contactsapp.ui.home.HomeActivity;
+import com.example.furszy.contactsapp.ui.my_qr.MyQrActivity;
 import com.example.furszy.contactsapp.ui.settings.SettingsActivity;
 
 /**
@@ -99,7 +100,7 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
         } else if (id == R.id.nav_settings) {
             startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
         } else if (id == R.id.nav_qr_code) {
-
+            startActivity(new Intent(getApplicationContext(), MyQrActivity.class));
         }
 
         drawer.closeDrawer(GravityCompat.START);

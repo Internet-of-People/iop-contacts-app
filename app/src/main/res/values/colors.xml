@@ -10,6 +10,7 @@
     <color name="mainText">#4d4d4d</color>
     <color name="white">#ffffff</color>
     <color name="bgWhite30">#4Dffffff</color>
+    <color name="bgBlack30">#4D000000</color>
     <!-- scanner -->
     <color name="scan_mask">#60000000</color>
     <color name="scan_laser">#cc0000</color>
