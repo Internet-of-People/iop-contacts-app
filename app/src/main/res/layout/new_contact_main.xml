@@ -1,59 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <FrameLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/sendMessage"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:paddingBottom="40dp"
-        >
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:id="@+id/img_qr"
-            android:src="@drawable/ic_qr_code_gray"
-            android:layout_marginEnd="32dp"
-            android:layout_marginBottom="4dp"
-            android:layout_gravity="end|center"/>
-
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/edit_uri"
-            android:hint="Add URI"
-            android:gravity="center"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:backgroundTint="@color/blue_base"
-            android:paddingTop="9dp"
-            android:paddingBottom="12dp"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"
-            android:paddingEnd="10dp"
-            android:textColor="#4d4d4d"
-            />
-
-    </FrameLayout>
+        android:layout_marginTop="72dp"
+        android:gravity="center_vertical|center_horizontal"
+        android:text="@string/request_message"
+        android:textColor="@color/mainText"
+        android:textSize="18sp"
+        android:layout_below="@+id/imgCurve"
+        android:layout_alignEnd="@+id/addFile" />
 
 
-    <Button
-        android:layout_width="match_parent"
+
+    <EditText
+        android:layout_width="@dimen/inputs_width"
         android:layout_height="wrap_content"
-        android:id="@+id/btn_add"
-        android:text="Add contact"
-        android:textColor="#fff"
-        android:layout_marginEnd="92dp"
-        android:layout_marginStart="92dp"
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp"
+        android:id="@+id/edit_uri"
+        android:background="@drawable/bg_inputs"
+        android:hint="Add URI"
+        android:layout_marginTop="100dp"
+        android:layout_marginBottom="20dp"
         android:gravity="center"
-        android:background="@color/bgBlue"
-        android:layout_centerInParent="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="32dp"/>
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:padding="12dp"
+        android:textColor="#4d4d4d"
+        />
+
+    <ImageView
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/img_qr"
+        android:src="@drawable/ic_qr_code_gray" />
 
 
-</RelativeLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:gravity="center|bottom"
+        android:orientation="vertical" >
+
+        <Button
+            android:layout_width="@dimen/btn_width"
+            android:layout_height="@dimen/btn_height"
+            android:id="@+id/btn_add"
+            android:text="@string/send_request"
+            android:textColor="#fff"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:gravity="center"
+            android:background="@drawable/bg_button_blue"
+            android:layout_marginBottom="32dp"/>
+    </LinearLayout>
+
+
+</LinearLayout>

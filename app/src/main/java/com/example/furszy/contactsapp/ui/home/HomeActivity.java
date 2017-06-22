@@ -60,6 +60,13 @@ public class HomeActivity extends BaseDrawerActivity {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // to check current activity in the navigation drawer
+        setNavigationMenuItemChecked(0);
+    }
+
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFragment(new ContactsFragment(), "Contacts");
