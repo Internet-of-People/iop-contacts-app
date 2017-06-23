@@ -8,6 +8,7 @@ import android.widget.Button;
 
 import com.example.furszy.contactsapp.BaseDrawerActivity;
 import com.example.furszy.contactsapp.R;
+import com.example.furszy.contactsapp.ui.settings_backup.SettingsBackupActivity;
 import com.example.furszy.contactsapp.ui.settings_restore.SettingsRestoreActivity;
 
 /**
@@ -34,6 +35,13 @@ public class SettingsActivity  extends BaseDrawerActivity {
 
         // Backup Profile
         buttonBackup = (Button) findViewById(R.id.btn_backup);
+        buttonBackup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent myIntent = new Intent(v.getContext(), SettingsBackupActivity.class);
+                startActivityForResult(myIntent, 0);
+            }
+        });
 
 
     }
