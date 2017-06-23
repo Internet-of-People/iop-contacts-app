@@ -79,7 +79,7 @@ public class CallProfileAppService {
     public CallProfileAppService(String appService, Profile localProfile,String remotePubKey,ProfSerEngine profSerEngine,CryptoAlgo cryptoAlgo) {
         this(appService,localProfile,remotePubKey,profSerEngine);
         this.cryptoAlgo = cryptoAlgo;
-        this.isEncrypted = true;
+        this.isEncrypted = (cryptoAlgo != null);
     }
 
     public CallProfileAppService(String appService, Profile localProfile,String remotePubKey,ProfSerEngine profSerEngine) {
@@ -128,6 +128,14 @@ public class CallProfileAppService {
 
     public boolean isEncrypted() {
         return isEncrypted;
+    }
+
+    public boolean isStablished() {
+        return status == CALL_AS_ESTABLISH;
+    }
+
+    public String getErrorStatus() {
+        return errorStatus;
     }
 
     /**

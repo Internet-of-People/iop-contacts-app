@@ -267,25 +267,30 @@ public class IoPConnect {
             @Override
             public void onAction(int messageId, final CallProfileAppService call) {
                 try {
-                    logger.info("call establish, remote: " + call.getRemotePubKey());
-                    // now send the pairing message
-                    MsgListenerFuture<Boolean> pairingMsgFuture = new MsgListenerFuture();
-                    pairingMsgFuture.setListener(new BaseMsgFuture.Listener<Boolean>() {
-                        @Override
-                        public void onAction(int messageId, Boolean res) {
-                            logger.info("pairing msg sent, remote: " + call.getRemotePubKey());
-                            int pairingRequestId = pairingRequestsManager.savePairingRequest(pairingRequest);
-                            listener.onMessageReceive(messageId,pairingRequestId);
-                        }
+                    if (call.isStablished()) {
+                        logger.info("call establish, remote: " + call.getRemotePubKey());
+                        // now send the pairing message
+                        MsgListenerFuture<Boolean> pairingMsgFuture = new MsgListenerFuture();
+                        pairingMsgFuture.setListener(new BaseMsgFuture.Listener<Boolean>() {
+                            @Override
+                            public void onAction(int messageId, Boolean res) {
+                                logger.info("pairing msg sent, remote: " + call.getRemotePubKey());
+                                int pairingRequestId = pairingRequestsManager.savePairingRequest(pairingRequest);
+                                listener.onMessageReceive(messageId, pairingRequestId);
+                            }
 
-                        @Override
-                        public void onFail(int messageId, int status, String statusDetail) {
-                            logger.info("pairing msg fail, remote: " + call.getRemotePubKey());
-                            listener.onMsgFail(messageId,status,statusDetail);
-                        }
-                    });
-                    PairingMsg pairingMsg = new PairingMsg(pairingRequest.getSenderName());
-                    call.sendMsg(pairingMsg, pairingMsgFuture);
+                            @Override
+                            public void onFail(int messageId, int status, String statusDetail) {
+                                logger.info("pairing msg fail, remote: " + call.getRemotePubKey());
+                                listener.onMsgFail(messageId, status, statusDetail);
+                            }
+                        });
+                        PairingMsg pairingMsg = new PairingMsg(pairingRequest.getSenderName());
+                        call.sendMsg(pairingMsg, pairingMsgFuture);
+                    }else {
+                        logger.info("call fail with status: "+call.getStatus()+", error: "+call.getErrorStatus());
+                        listener.onMsgFail(messageId,0,call.getStatus().toString()+" "+call.getErrorStatus());
+                    }
 
                 } catch (CantSendMessageException e) {
                     e.printStackTrace();

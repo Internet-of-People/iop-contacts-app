@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -85,11 +86,13 @@ public class NewContactActivity extends BaseActivity implements View.OnClickList
                             public void onAction(int messageId, Integer object) {
                                 //TODO: ver porqué devuelvo un int y no un boolean o algo más especifico..
                                 Log.i(TAG, "pairing request sent");
+                                Snackbar.make(root,"Pairing request sent!",Snackbar.LENGTH_LONG).show();
                             }
 
                             @Override
                             public void onFail(int messageId, int status, String statusDetail) {
                                 Log.i(TAG, "pairing request fail");
+                                Snackbar.make(root,"Pairing request fail\n"+statusDetail,Snackbar.LENGTH_LONG).show();
                             }
                         });
                         anRedtooth.requestPairingProfile(CryptoBytes.fromHexToBytes(profile.getPubKey()), profile.getProfSerHost(), future);
