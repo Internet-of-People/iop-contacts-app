@@ -8,6 +8,7 @@ import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.crypto.CryptoWrapper;
 import org.fermat.redtooth.global.DeviceLocation;
 import org.fermat.redtooth.locnet.Explorer;
+import org.fermat.redtooth.locnet.NodeInfo;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ProfileInformation;
@@ -21,6 +22,7 @@ import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
+import org.fermat.redtooth.profile_server.model.ProfServerData;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
@@ -34,6 +36,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 /**
  * Created by mati on 17/05/17.
@@ -102,16 +105,39 @@ public class IoPConnect {
     }
 
     public void connectProfile(String profilePublicKey, PairingListener pairingListener, byte[] ownerChallenge,MsgListenerFuture<Boolean> future) throws Exception {
-        if (!managers.containsKey(profilePublicKey)){
-            ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
-            KeyEd25519 keyEd25519 = (KeyEd25519) profileServerConfigurations.getUserKeys();
-            if (keyEd25519==null) throw new IllegalStateException("no pubkey saved");
-            addConnection(profileServerConfigurations,keyEd25519,pairingListener);
+        if (managers.containsKey(profilePublicKey))throw new IllegalArgumentException("Profile connection already initialized");
+        ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
+        ProfServerData profServerData = null;
+        if(profileServerConfigurations.getMainProfileServerContract()==null){
+            // search in LOC for a profile server or use a trusted one from the user.
+            // todo: here i have to do the LOC Network flow.
+            // Sync explore profile servers around Argentina
+            if (false){
+                Explorer explorer = new Explorer( NodeInfo.ServiceType.Profile, deviceLocation.getDeviceLocation(), 10000, 10 );
+                FutureTask< List<NodeInfo> > task = new FutureTask<>(explorer);
+                task.run();
+                List<NodeInfo> resultNodes = task.get();
+                // chose the first one - closest
+                if (!resultNodes.isEmpty()) {
+                    NodeInfo selectedNode = resultNodes.get(0);
+                    profServerData = new ProfServerData(
+                            selectedNode.getNodeId(),
+                            selectedNode.getContact().getAddress().getHostAddress(),
+                            selectedNode.getContact().getPort(),
+                            selectedNode.getLocation().getLatitude(),
+                            selectedNode.getLocation().getLongitude()
+                    );
+                }
+            }else {
+                profServerData = profileServerConfigurations.getMainProfileServer();
+            }
         }
-        getProfileConnection(profilePublicKey).init(future);
+        KeyEd25519 keyEd25519 = (KeyEd25519) profileServerConfigurations.getUserKeys();
+        if (keyEd25519==null) throw new IllegalStateException("no pubkey saved");
+        addConnection(profileServerConfigurations,profServerData,keyEd25519,pairingListener).init(future);
     }
 
-    public boolean connectProfileSync(String profilePublicKey, PairingListener pairingListener, byte[] ownerChallenge) throws CantConnectException, ExecutionException, InterruptedException {
+    /*public boolean connectProfileSync(String profilePublicKey, PairingListener pairingListener, byte[] ownerChallenge) throws CantConnectException, ExecutionException, InterruptedException {
         if (!managers.containsKey(profilePublicKey)){
             ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
             KeyEd25519 keyEd25519 = (KeyEd25519) profileServerConfigurations.getUserKeys();
@@ -126,18 +152,19 @@ public class IoPConnect {
         }else {
             throw new CantConnectException("Error code: "+initFuture.getStatus()+", detail: "+initFuture.getStatusDetail());
         }
-    }
+    }*/
 
     public int updateProfile(Profile profile, ProfSerMsgListener msgListener) throws Exception {
         return getProfileConnection(profile.getHexPublicKey()).updateProfile(profile.getVersion(),profile.getName(),profile.getImg(),profile.getLatitude(),profile.getLongitude(),profile.getExtraData(),msgListener);
     }
 
-    private IoPProfileConnection addConnection(ProfileServerConfigurations profileServerConfigurations, KeyEd25519 keyEd25519, PairingListener pairingListener){
+    private IoPProfileConnection addConnection(ProfileServerConfigurations profileServerConfigurations,ProfServerData profConn, KeyEd25519 keyEd25519, PairingListener pairingListener){
         // profile connection
         IoPProfileConnection ioPProfileConnection = new IoPProfileConnection(
                 context,
                 initClientData(profileServerConfigurations,pairingListener),
                 profileServerConfigurations,
+                profConn,
                 cryptoWrapper,
                 sslContextFactory,
                 deviceLocation);
@@ -229,7 +256,7 @@ public class IoPConnect {
      * Send a request pair notification to a remote profile
      *
      * @param pairingRequest
-     * @param listener
+     * @param listener -> returns the pairing request id
      */
     public void requestPairingProfile(final PairingRequest pairingRequest, final ProfSerMsgListener<Integer> listener) {
         logger.info("requestPairingProfile, remote: "+pairingRequest.getRemotePubKey());

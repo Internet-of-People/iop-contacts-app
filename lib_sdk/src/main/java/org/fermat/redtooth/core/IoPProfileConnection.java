@@ -41,7 +41,7 @@ import java.util.concurrent.FutureTask;
 /**
  * Created by mati on 08/05/17.
  *
- * Core class to manage a single profile connection with the redtooth
+ * Core class to manage a single profile connection to the IoP network.
  *
  */
 
@@ -53,6 +53,8 @@ public class IoPProfileConnection implements CallsListener {
     private IoPConnectContext contextWrapper;
     /** Profile cached */
     private Profile profileCache;
+    /** PS */
+    private ProfServerData psConnData;
     /** profile server engine */
     private ProfSerEngine profSerEngine;
     /** profile server configurations */
@@ -68,11 +70,12 @@ public class IoPProfileConnection implements CallsListener {
     /**  */
     private ConcurrentMap<String,AppService> openServices = new ConcurrentHashMap<>();
 
-    public IoPProfileConnection(IoPConnectContext contextWrapper, Profile profile, ProfileServerConfigurations profileServerConfigurations, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, DeviceLocation deviceLocation){
+    public IoPProfileConnection(IoPConnectContext contextWrapper, Profile profile, ProfileServerConfigurations profileServerConfigurations,ProfServerData psConnData, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, DeviceLocation deviceLocation){
         this.contextWrapper = contextWrapper;
         this.profileServerConfigurations = profileServerConfigurations;
         this.cryptoWrapper = cryptoWrapper;
         this.sslContextFactory = sslContextFactory;
+        this.psConnData = psConnData;
         this.profileCache = profile;
         this.deviceLocation = deviceLocation;
     }
@@ -83,42 +86,7 @@ public class IoPProfileConnection implements CallsListener {
      * @throws Exception
      */
     public void init(final MsgListenerFuture<Boolean> initFuture) throws ExecutionException, InterruptedException {
-        // the flow is:
-        // If the profile server main contract is active the connection with the profile server is clear.
-        // If the hosting contract is null i have to search for a profile server using the LOC network and start the flow again
-        //
-        if (profileServerConfigurations.getMainProfileServerContract()!=null){
-            //
-            ProfServerData profServerData = profileServerConfigurations.getMainProfileServer();
-            initProfileServer(profServerData);
-        }else {
-            // search in LOC for a profile server or use a trusted one from the user.
-            // todo: here i have to do the LOC Network flow.
-            // Sync explore profile servers around Argentina
-            ProfServerData profServerData = null;
-            if (false){
-                Explorer explorer = new Explorer( NodeInfo.ServiceType.Profile, deviceLocation.getDeviceLocation(), 10000, 10 );
-                FutureTask< List<NodeInfo> > task = new FutureTask<>(explorer);
-                task.run();
-                List<NodeInfo> resultNodes = task.get();
-                // chose the first one - closest
-                if (!resultNodes.isEmpty()) {
-                    NodeInfo selectedNode = resultNodes.get(0);
-                    profServerData = new ProfServerData(
-                            selectedNode.getNodeId(),
-                            selectedNode.getContact().getAddress().getHostAddress(),
-                            selectedNode.getContact().getPort(),
-                            selectedNode.getLocation().getLatitude(),
-                            selectedNode.getLocation().getLongitude()
-                    );
-                }
-            }else {
-                 profServerData = profileServerConfigurations.getMainProfileServer();
-            }
-            // Until Istvan push his client i will connect to a single local host server putting a hardcoded local server on the configurations.
-            initProfileServer(profServerData);
-            //profileServerConfigurations.setHost("localhost");
-        }
+        initProfileServer(psConnData);
         MsgListenerFuture<Boolean> initWrapper = new MsgListenerFuture<>();
         initFuture.setListener(new BaseMsgFuture.Listener<Boolean>() {
             @Override
@@ -162,10 +130,6 @@ public class IoPProfileConnection implements CallsListener {
 
     public void stop() {
         profSerEngine.stop();
-    }
-
-    public ProfileServerConfigurations getProfileServerConfigurations() {
-        return profileServerConfigurations;
     }
 
     /**
@@ -224,34 +188,6 @@ public class IoPProfileConnection implements CallsListener {
      */
     public boolean isReady() {
         return profSerEngine.isClConnectionReady();
-    }
-
-    /**
-     * Add the profile name
-     * @param profileName
-     */
-    public void setProfileName(String profileName) {
-        if (profileCache!=null)
-            this.profileCache.setName(profileName);
-        else {
-            this.profileServerConfigurations.setUsername(profileName);
-        }
-    }
-
-    public void setProfileType(String profileType) {
-        if (profileCache!=null)
-            this.profileCache.setType(profileType);
-        this.profileServerConfigurations.setProfileType(profileType);
-    }
-
-    public void setProfileKeys(KeyEd25519 key) {
-        if (profileCache!=null) {
-            profileCache.setKey(key);
-            profileServerConfigurations.saveUserKeys(key);
-        }else {
-            profileServerConfigurations.saveUserKeys(key);
-        }
-
     }
 
     /**

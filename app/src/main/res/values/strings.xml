@@ -18,6 +18,6 @@
     <string name="restore_message">Select a backup of  your account \n from a storage unit</string>
     <string name="security">Security</string>
     <string name="send_request">Send Request</string>
-    <string name="request_message">Add an address to send a request</string>
+    <string name="request_message">Paste the URI here to add a contact</string>
     <string name="share_qr_text">Share profile URI</string>
 </resources>

@@ -27,7 +27,7 @@ public class ProfileUtils {
      */
     public static UriProfile fromUri(String uri){
         String[] str = uri.split("/");
-        int indexOfAnd = str[2].indexOf("=&");
+        int indexOfAnd = str[2].indexOf("&");
         String name = str[2].substring(str[2].indexOf("=")+1,indexOfAnd);
         String psHost = str[2].substring(indexOfAnd+4);
         UriProfile uriProfile = new UriProfile(name,str[1],psHost);

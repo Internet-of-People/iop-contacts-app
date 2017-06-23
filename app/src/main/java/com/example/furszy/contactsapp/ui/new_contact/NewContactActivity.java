@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -18,10 +19,12 @@ import com.example.furszy.contactsapp.MainActivity;
 import com.example.furszy.contactsapp.R;
 import com.example.furszy.contactsapp.scanner.ScanActivity;
 
+import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileInformation;
+import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.utils.ProfileUtils;
 
@@ -36,16 +39,22 @@ import static com.example.furszy.contactsapp.scanner.ScanActivity.INTENT_EXTRA_R
 
 public class NewContactActivity extends BaseActivity implements View.OnClickListener {
 
+    private static final String TAG = "NewContactActivity";
+
     private static final int SCANNER_RESULT = 122;
+    private View root;
     private EditText edit_uri;
+    private Button btn_add;
 
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
         super.onCreateView(savedInstanceState, container);
-        getLayoutInflater().inflate(R.layout.new_contact_main,container,true);
-        edit_uri = (EditText) findViewById(R.id.edit_uri);
-        findViewById(R.id.img_qr).setOnClickListener(this);
-        findViewById(R.id.btn_add).setOnClickListener(this);
+        setTitle("Add Contact");
+        root = getLayoutInflater().inflate(R.layout.new_contact_main,container,true);
+        edit_uri = (EditText) root.findViewById(R.id.edit_uri);
+        root.findViewById(R.id.img_qr).setOnClickListener(this);
+        btn_add = (Button) root.findViewById(R.id.btn_add);
+        btn_add.setOnClickListener(this);
     }
 
     @Override
@@ -62,9 +71,33 @@ public class NewContactActivity extends BaseActivity implements View.OnClickList
             Intent intent = new Intent(v.getContext(), ScanActivity.class);
             startActivityForResult(intent,SCANNER_RESULT);
         }else if (id == R.id.btn_add){
+            btn_add.setEnabled(false);
             String uri = edit_uri.getText().toString();
-            ProfileUtils.UriProfile profile = ProfileUtils.fromUri(uri);
+            if (uri.length()<1)return;
+            final ProfileUtils.UriProfile profile = ProfileUtils.fromUri(uri);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        MsgListenerFuture<Integer> future = new MsgListenerFuture<>();
+                        future.setListener(new BaseMsgFuture.Listener<Integer>() {
+                            @Override
+                            public void onAction(int messageId, Integer object) {
+                                //TODO: ver porqué devuelvo un int y no un boolean o algo más especifico..
+                                Log.i(TAG, "pairing request sent");
+                            }
 
+                            @Override
+                            public void onFail(int messageId, int status, String statusDetail) {
+                                Log.i(TAG, "pairing request fail");
+                            }
+                        });
+                        anRedtooth.requestPairingProfile(CryptoBytes.fromHexToBytes(profile.getPubKey()), profile.getProfSerHost(), future);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
         }
     }
 

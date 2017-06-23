@@ -39,11 +39,13 @@ public interface ModuleRedtooth {
     /**
      * Request pair profile, This will notify to the other user that you want to connect with him.
      *
-     * @param pubKey
+     * @param remotePubKey
      * @param profileServerId
      * @param listener
      */
-    void requestPairingProfile(byte[] pubKey, byte[] profileServerId, ProfSerMsgListener<Integer> listener);
+    void requestPairingProfile(byte[] remotePubKey, byte[] profileServerId, ProfSerMsgListener<Integer> listener);
+
+    void requestPairingProfile(byte[] remotePubKey, String psHost, ProfSerMsgListener<Integer> listener);
 
     /**
      * Accept a pairing request.
