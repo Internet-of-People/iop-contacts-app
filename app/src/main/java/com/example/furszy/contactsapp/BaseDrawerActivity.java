@@ -8,12 +8,16 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
 
 import com.example.furszy.contactsapp.ui.home.HomeActivity;
+import com.example.furszy.contactsapp.ui.my_profile.MyProfileActivity;
 import com.example.furszy.contactsapp.ui.my_qr.MyQrActivity;
 import com.example.furszy.contactsapp.ui.settings.SettingsActivity;
+import com.example.furszy.contactsapp.ui.settings_restore.SettingsRestoreActivity;
 
 /**
  * Created by Neoperol on 6/20/17.
@@ -25,7 +29,6 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
     private FrameLayout frameLayout;
     private Toolbar toolbar;
     private DrawerLayout drawer;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
