@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.furszy.contactsapp.App;
 import com.example.furszy.contactsapp.ProfileInformationActivity;
 import com.example.furszy.contactsapp.R;
 import com.example.furszy.contactsapp.adapter.BaseAdapter;
@@ -19,11 +20,17 @@ import com.example.furszy.contactsapp.contacts.ProfileAdapter;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-public class RequestsFragment extends RecyclerFragment<ProfileInformation> {
- 
+public class RequestsFragment extends RecyclerFragment<PairingRequest> {
+
+    private static final Logger log = LoggerFactory.getLogger(RequestsFragment.class);
+
+
     public RequestsFragment() {
         // Required empty public constructor
     }
@@ -44,7 +51,16 @@ public class RequestsFragment extends RecyclerFragment<ProfileInformation> {
     }
 
     @Override
-    protected List<ProfileInformation> onLoading() {
+    protected List<PairingRequest> onLoading() {
+        try {
+            while (module == null) {
+                module = App.getInstance().getAnRedtooth().getRedtooth();
+                TimeUnit.SECONDS.sleep(5);
+            }
+            return module.getPairingOpenRequests();
+        }catch (Exception e){
+            log.info("onLoading",e);
+        }
         return null;
     }
 

@@ -37,15 +37,18 @@ public class CreateProfileActivity extends BaseActivity {
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1000;
     private static final int RESULT_LOAD_IMAGE = 100;
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL = 500;
+
+    private View root;
     private Button buttonCreate;
     private EditText edit_name;
     private CircleImageView img_profile_image;
     private byte[] profImgData;
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
-        getLayoutInflater().inflate(R.layout.create_profile_activity, container);
-        edit_name = (EditText) findViewById(R.id.edit_name);
-        img_profile_image = (CircleImageView) findViewById(R.id.img_profile_image);
+        root = getLayoutInflater().inflate(R.layout.create_profile_activity, container);
+        edit_name = (EditText) root.findViewById(R.id.edit_name);
+        img_profile_image = (CircleImageView) root.findViewById(R.id.img_profile_image);
+        buttonCreate = (Button) root.findViewById(R.id.btnCreate);
         setTitle("Create profile");
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);

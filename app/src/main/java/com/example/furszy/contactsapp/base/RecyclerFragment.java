@@ -139,6 +139,9 @@ public abstract class RecyclerFragment<T> extends BaseAppFragment {
 
     protected void setEmptyText(String text){
         this.emptyText = text;
+        if (txt_empty!=null){
+            txt_empty.setText(emptyText);
+        }
     }
 
     protected void setEmptyTextColor(int color){

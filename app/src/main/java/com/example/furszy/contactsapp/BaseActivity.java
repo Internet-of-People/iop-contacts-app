@@ -1,5 +1,8 @@
 package com.example.furszy.contactsapp;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -18,6 +21,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+
+import com.example.furszy.contactsapp.ui.home.HomeActivity;
 
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
@@ -39,6 +44,7 @@ public class BaseActivity extends AppCompatActivity{
     public static final String NOTIF_DIALOG_EVENT = "nde";
     protected ModuleRedtooth anRedtooth;
     protected LocalBroadcastManager localBroadcastManager;
+    protected NotificationManager notificationManager;
     private NotifReceiver notifReceiver;
     protected Toolbar toolbar;
     protected FrameLayout childContainer;
@@ -49,6 +55,7 @@ public class BaseActivity extends AppCompatActivity{
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_base);
         this.localBroadcastManager = LocalBroadcastManager.getInstance(this);
+        this.notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         this.notifReceiver = new NotifReceiver();
         anRedtooth = App.getInstance().anRedtooth.getRedtooth();
         init();
@@ -96,36 +103,24 @@ public class BaseActivity extends AppCompatActivity{
             Log.i("BaseActivity","onReceive dialog");
             final String name = intent.getStringExtra(INTENT_EXTRA_PROF_NAME);
             final String requesteeKey = intent.getStringExtra(INTENT_EXTRA_PROF_KEY);
-            DialogBuilder dialogBuilder = new DialogBuilder(BaseActivity.this)
-                    .setTitle("Pairing received")
-                    .setMessage("Do you want to pair with "+name+"?")
-                    .twoButtons(new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    }, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            // open profile info
-                            Intent profileInfoIntent = new Intent(BaseActivity.this, ProfileInformationActivity.class);
-                            profileInfoIntent.putExtra(INTENT_EXTRA_PROF_KEY, CryptoBytes.fromHexToBytes(requesteeKey));
-                            profileInfoIntent.putExtra(INTENT_EXTRA_PROF_NAME,name);
-                            profileInfoIntent.putExtra(INTENT_EXTRA_SEARCH,true);
-                            // server id to not waste time looking on the network
-                            profileInfoIntent.putExtra(INTENT_EXTRA_PROF_SERVER_ID,"");
-                            startActivity(profileInfoIntent);
-                            dialog.dismiss();
-                        }
-                    });
-            dialogBuilder.show();
-
+            Intent notificationIntent = new Intent(context, HomeActivity.class);
+            notificationIntent.putExtra(HomeActivity.INIT_REQUESTS,true);
+            PendingIntent contentIntent = PendingIntent.getActivity(
+                    context,
+                    0,
+                    notificationIntent,
+                    PendingIntent.FLAG_CANCEL_CURRENT);
+            Notification.Builder builder = new Notification.Builder(context)
+                    .setTicker("Pairing received")
+                    .setContentText(name+" wants to connect with you!")
+                    .setContentIntent(contentIntent)
+                    .setSmallIcon(R.drawable.img_profile);
+            notificationManager.notify(200,builder.build());
         }
     }
 
     protected boolean checkPermission(String permission) {
         int result = ContextCompat.checkSelfPermission(getApplicationContext(),permission);
-
         return result == PackageManager.PERMISSION_GRANTED;
     }
 

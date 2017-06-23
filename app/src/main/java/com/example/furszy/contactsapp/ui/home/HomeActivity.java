@@ -30,10 +30,13 @@ import java.util.List;
 
 public class HomeActivity extends BaseDrawerActivity {
 
+    public static final String INIT_REQUESTS = "in_req";
+    private View root;
     private TabLayout tabLayout;
     private ViewPager viewPager;
-    private Toolbar toolbar;
     private FloatingActionButton fab_add;
+
+    private boolean initInRequest;
 
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
@@ -42,15 +45,21 @@ public class HomeActivity extends BaseDrawerActivity {
             startActivity(intent);
             finish();
         }else {
-            getLayoutInflater().inflate(R.layout.home_main, container);
+            root = getLayoutInflater().inflate(R.layout.home_main, container);
             setTitle("IoP Connections");
 
-            viewPager = (ViewPager) findViewById(R.id.viewpager);
+            if (getIntent()!=null){
+                if (getIntent().hasExtra(INIT_REQUESTS)){
+                    initInRequest = true;
+                }
+            }
+
+            viewPager = (ViewPager) root.findViewById(R.id.viewpager);
             setupViewPager(viewPager);
 
-            tabLayout = (TabLayout) findViewById(R.id.tabs);
+            tabLayout = (TabLayout) root.findViewById(R.id.tabs);
             tabLayout.setupWithViewPager(viewPager);
-            fab_add = (FloatingActionButton) findViewById(R.id.fab_add);
+            fab_add = (FloatingActionButton) root.findViewById(R.id.fab_add);
             fab_add.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -61,10 +70,14 @@ public class HomeActivity extends BaseDrawerActivity {
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
         // to check current activity in the navigation drawer
         setNavigationMenuItemChecked(0);
+        if (initInRequest){
+            viewPager.setCurrentItem(1);
+            initInRequest = false;
+        }
     }
 
     private void setupViewPager(ViewPager viewPager) {

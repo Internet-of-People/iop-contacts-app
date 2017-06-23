@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/base_background"
+    android:background="@color/bgBlue"
     >
 
     <LinearLayout
@@ -21,7 +21,7 @@
             android:id="@+id/profile_image"
             android:layout_width="148dp"
             android:layout_height="128dp"
-            android:src="@drawable/profile"
+            android:src="@drawable/img_profile"
             app:civ_border_width="1dp"
             android:layout_marginRight="12dp"
 

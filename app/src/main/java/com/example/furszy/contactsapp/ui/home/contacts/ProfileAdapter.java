@@ -32,7 +32,7 @@ public class ProfileAdapter extends BaseAdapter<ProfileInformation, ProfileHolde
 
     @Override
     protected int getCardViewResource(int type) {
-        return R.layout.community_proposal_row;
+        return R.layout.my_contacts_row;
     }
 
     @Override

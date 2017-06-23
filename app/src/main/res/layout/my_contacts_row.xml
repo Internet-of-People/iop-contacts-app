@@ -4,7 +4,6 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="@drawable/degradado_black"
     android:orientation="vertical">
 
     <RelativeLayout
@@ -18,8 +17,8 @@
             android:layout_height="38.4dp"
             android:id="@+id/img_profile"
             android:layout_centerVertical="true"
-            android:src="@drawable/profile"
-            app:civ_border_color="#fff"
+            android:src="@drawable/img_profile"
+            app:civ_border_color="@color/colorPrimary"
             app:civ_border_width="1dp"
             />
 
@@ -32,7 +31,8 @@
             android:paddingBottom="9dp"
             android:gravity="center_vertical"
             android:lines="1"
-            android:textColor="#fff"
+            android:textSize="15sp"
+            android:textColor="#333333"
             android:layout_toRightOf="@+id/img_profile"
             android:paddingLeft="12dp"
             />

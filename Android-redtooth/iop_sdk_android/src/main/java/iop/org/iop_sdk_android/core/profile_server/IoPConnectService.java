@@ -275,6 +275,10 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public List<PairingRequest> getPairingRequests() {
+        return pairingRequestDb.pairingRequests(profile.getHexPublicKey());
+    }
+    @Override
+    public List<PairingRequest> getPairingOpenRequests(){
         return pairingRequestDb.openPairingRequests(profile.getHexPublicKey());
     }
 

@@ -324,6 +324,7 @@ public class ProfSerEngine {
      * @return
      */
     public int addApplicationService(AppService appService){
+        LOG.info("addApplicationService, "+appService);
         profNodeConnection.getProfile().addApplicationService(appService);
         return addApplicationServiceRequest(appService.getName(),appService);
     }

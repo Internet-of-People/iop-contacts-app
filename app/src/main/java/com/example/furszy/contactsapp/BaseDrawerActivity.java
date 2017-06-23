@@ -1,6 +1,8 @@
 package com.example.furszy.contactsapp;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -10,25 +12,32 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.FrameLayout;
-
+import android.widget.TextView;
 import com.example.furszy.contactsapp.ui.home.HomeActivity;
-import com.example.furszy.contactsapp.ui.my_profile.MyProfileActivity;
 import com.example.furszy.contactsapp.ui.my_qr.MyQrActivity;
 import com.example.furszy.contactsapp.ui.settings.SettingsActivity;
-import com.example.furszy.contactsapp.ui.settings_restore.SettingsRestoreActivity;
+import org.fermat.redtooth.profile_server.model.Profile;
+import java.util.Arrays;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
  * Created by Neoperol on 6/20/17.
  */
 
-public class BaseDrawerActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class BaseDrawerActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
     private NavigationView navigationView;
     private FrameLayout frameLayout;
     private Toolbar toolbar;
     private DrawerLayout drawer;
+
+    private View navHeader;
+    private CircleImageView imgProfile;
+    private TextView txtName;
+
+    private byte[] cachedProfImage;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,8 +55,34 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        navHeader = navigationView.getHeaderView(0);
+        navHeader.setOnClickListener(this);
+
+        imgProfile = (CircleImageView) navHeader.findViewById(R.id.profile_image);
+        txtName = (TextView) navHeader.findViewById(R.id.txt_name);
+
         onCreateView(savedInstanceState,frameLayout);
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshProfile();
+    }
+
+    private void refreshProfile() {
+        if (anRedtooth!=null) {
+            Profile profile = anRedtooth.getProfile();
+            txtName.setText(profile.getName());
+            if (profile.getImg()!=null) {
+                if (cachedProfImage == null || !Arrays.equals(profile.getImg(), cachedProfImage)) {
+                    cachedProfImage = profile.getImg();
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(cachedProfImage, 0, cachedProfImage.length);
+                    imgProfile.setImageBitmap(bitmap);
+                }
+            }
+        }
     }
 
     /**
@@ -115,4 +150,11 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
     }
 
 
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+        if (id==R.id.container_profile){
+            startActivity(new Intent(v.getContext(),ProfileActivity.class));
+        }
+    }
 }

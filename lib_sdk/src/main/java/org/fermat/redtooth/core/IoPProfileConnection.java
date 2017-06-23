@@ -88,7 +88,7 @@ public class IoPProfileConnection implements CallsListener {
     public void init(final MsgListenerFuture<Boolean> initFuture) throws ExecutionException, InterruptedException {
         initProfileServer(psConnData);
         MsgListenerFuture<Boolean> initWrapper = new MsgListenerFuture<>();
-        initFuture.setListener(new BaseMsgFuture.Listener<Boolean>() {
+        initWrapper.setListener(new BaseMsgFuture.Listener<Boolean>() {
             @Override
             public void onAction(int messageId, Boolean object) {
                 // not that this is initialized, init the app services
@@ -252,8 +252,13 @@ public class IoPProfileConnection implements CallsListener {
                             if (!getProfileInformationResponse.getIsOnline()) {
                                 // remote profile not online.
                                 // todo: launch notification and end the flow here
-                                callProfileAppService.setStatus(CallProfileAppService.Status.CALL_FAIL);
-                                callProfileAppService.setErrorStatus("Remote profile not online");
+                                logger.info("call fail, remote is not online");
+                                notifyCallError(
+                                        callProfileAppService,
+                                        profSerMsgListener,
+                                        messageId,
+                                        CallProfileAppService.Status.CALL_FAIL,
+                                        "Remote profile not online");
                                 return;
                             }
                             boolean isServiceSupported = false;
@@ -267,18 +272,23 @@ public class IoPProfileConnection implements CallsListener {
                             if (!isServiceSupported) {
                                 // service not supported
                                 // todo: launch notification and end the flow here
-                                callProfileAppService.setStatus(CallProfileAppService.Status.CALL_FAIL);
-                                callProfileAppService.setErrorStatus("Remote profile not accept service " + appService);
+                                logger.info("call fail, remote not support appService");
+                                notifyCallError(
+                                        callProfileAppService,
+                                        profSerMsgListener,
+                                        messageId,
+                                        CallProfileAppService.Status.CALL_FAIL,
+                                        "Remote profile not accept service " + appService);
                                 return;
                             }
                             // call profile
                             callProfileAppService(callProfileAppService,profSerMsgListener);
                         } catch (CantSendMessageException e) {
                             e.printStackTrace();
-                            callProfileAppService.setStatus(CallProfileAppService.Status.CALL_FAIL);
+                            notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
                         } catch (CantConnectException e) {
                             e.printStackTrace();
-                            callProfileAppService.setStatus(CallProfileAppService.Status.CALL_FAIL);
+                            notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
                         }
                     }
 
@@ -286,8 +296,7 @@ public class IoPProfileConnection implements CallsListener {
                     public void onFail(int messageId, int status, String statusDetail) {
                         // todo: launch notification..
                         logger.info("callProfileAppService getProfileInformation fail");
-                        callProfileAppService.setStatus(CallProfileAppService.Status.CALL_FAIL);
-                        callProfileAppService.setErrorStatus(statusDetail);
+                        notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,statusDetail);
 
                     }
                 });
@@ -298,10 +307,10 @@ public class IoPProfileConnection implements CallsListener {
 
         } catch (CantSendMessageException e) {
             e.printStackTrace();
-            callProfileAppService.setStatus(CallProfileAppService.Status.CALL_FAIL);
+            notifyCallError(callProfileAppService,profSerMsgListener,0, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
         } catch (CantConnectException e) {
             e.printStackTrace();
-            callProfileAppService.setStatus(CallProfileAppService.Status.CALL_FAIL);
+            notifyCallError(callProfileAppService,profSerMsgListener,0, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
         }
     }
 
@@ -327,18 +336,25 @@ public class IoPProfileConnection implements CallsListener {
                     setupCallAppServiceInitMessage(callProfileAppService,true,profSerMsgListener);
                 } catch (CantSendMessageException e) {
                     e.printStackTrace();
-                    callProfileAppService.setStatus(CallProfileAppService.Status.CALL_FAIL);
+                    notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
                 } catch (CantConnectException e) {
                     e.printStackTrace();
-                    callProfileAppService.setStatus(CallProfileAppService.Status.CALL_FAIL);
+                    notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
                 }
             }
             @Override
             public void onFail(int messageId, int status, String statusDetail) {
                 logger.info("callProfileAppService rejected, "+statusDetail);
+                notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,statusDetail);
             }
         });
         profSerEngine.callProfileAppService(callProfileAppService.getRemotePubKey(), callProfileAppService.getAppService(), callProfileFuture);
+    }
+
+    private void notifyCallError(CallProfileAppService callProfileAppService,ProfSerMsgListener<CallProfileAppService> listener,int msgId,CallProfileAppService.Status status,String errorStatus){
+        callProfileAppService.setStatus(status);
+        callProfileAppService.setErrorStatus(errorStatus);
+        listener.onMessageReceive(msgId,callProfileAppService);
     }
 
 
