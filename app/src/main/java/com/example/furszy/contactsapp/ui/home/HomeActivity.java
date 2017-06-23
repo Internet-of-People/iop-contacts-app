@@ -30,10 +30,13 @@ import java.util.List;
 
 public class HomeActivity extends BaseDrawerActivity {
 
+    public static final String INIT_REQUESTS = "in_req";
     private View root;
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private FloatingActionButton fab_add;
+
+    private boolean initInRequest;
 
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
@@ -44,6 +47,12 @@ public class HomeActivity extends BaseDrawerActivity {
         }else {
             root = getLayoutInflater().inflate(R.layout.home_main, container);
             setTitle("IoP Connections");
+
+            if (getIntent()!=null){
+                if (getIntent().hasExtra(INIT_REQUESTS)){
+                    initInRequest = true;
+                }
+            }
 
             viewPager = (ViewPager) root.findViewById(R.id.viewpager);
             setupViewPager(viewPager);
@@ -65,6 +74,10 @@ public class HomeActivity extends BaseDrawerActivity {
         super.onResume();
         // to check current activity in the navigation drawer
         setNavigationMenuItemChecked(0);
+        if (initInRequest){
+            viewPager.setCurrentItem(1);
+            initInRequest = false;
+        }
     }
 
     private void setupViewPager(ViewPager viewPager) {
