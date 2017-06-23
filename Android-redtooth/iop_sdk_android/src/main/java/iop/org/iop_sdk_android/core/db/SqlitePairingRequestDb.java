@@ -19,7 +19,7 @@ import java.util.List;
 
 public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> implements PairingRequestsManager {
 
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
 
     public static final String DATABASE_NAME = "requests";
     public static final String CONTACTS_TABLE_NAME = "pairing_request";
@@ -27,6 +27,7 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
     public static final String CONTACTS_COLUMN_SENDER_KEY = "senderPubKey";
     public static final String CONTACTS_COLUMN_REMOTE_KEY = "remotePubKey";
     public static final String CONTACTS_COLUMN_REMOTE_SERVER_ID = "remoteServerId";
+    public static final String CONTACTS_COLUMN_REMOTE_SERVER_HOST_ID = "remoteHost";
     public static final String CONTACTS_COLUMN_SENDER_NAME = "senderName";
     public static final String CONTACTS_COLUMN_TIMESTAMP = "timestamp";
     public static final String CONTACTS_COLUMN_STATUS = "status";
@@ -35,9 +36,10 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
     public static final int CONTACTS_COLUMN_POS_SENDER_KEY = 1;
     public static final int CONTACTS_COLUMN_POS_REMOTE_KEY = 2;
     public static final int CONTACTS_COLUMN_POS_REMOTE_SERVER_ID = 3;
-    public static final int CONTACTS_COLUMN_POS_SENDER_NAME = 4;
-    public static final int CONTACTS_COLUMN_POS_TIMESTAMP = 5;
-    public static final int CONTACTS_COLUMN_POS_STATUS = 6;
+    public static final int CONTACTS_COLUMN_POS_REMOTE_SERVER_HOST_ID = 4;
+    public static final int CONTACTS_COLUMN_POS_SENDER_NAME = 5;
+    public static final int CONTACTS_COLUMN_POS_TIMESTAMP = 6;
+    public static final int CONTACTS_COLUMN_POS_STATUS = 7;
 
     public SqlitePairingRequestDb(Context context) {
         super(context, DATABASE_NAME , null, DATABASE_VERSION);
@@ -53,6 +55,7 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
                         CONTACTS_COLUMN_SENDER_KEY + " TEXT, "+
                         CONTACTS_COLUMN_REMOTE_KEY + " TEXT, "+
                         CONTACTS_COLUMN_REMOTE_SERVER_ID + " TEXT, "+
+                        CONTACTS_COLUMN_REMOTE_SERVER_HOST_ID + " TEXT, "+
                         CONTACTS_COLUMN_SENDER_NAME + " TEXT, "+
                         CONTACTS_COLUMN_TIMESTAMP + " LONG , "+
                         CONTACTS_COLUMN_STATUS + " TEXT "
@@ -77,10 +80,13 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
         ContentValues contentValues = new ContentValues();
         contentValues.put(CONTACTS_COLUMN_SENDER_KEY,obj.getSenderPubKey());
         contentValues.put(CONTACTS_COLUMN_REMOTE_KEY,obj.getRemotePubKey());
-        contentValues.put(CONTACTS_COLUMN_REMOTE_SERVER_ID,obj.getRemoteServerId());
+        if (obj.getRemoteServerId()!=null)
+            contentValues.put(CONTACTS_COLUMN_REMOTE_SERVER_ID,obj.getRemoteServerId());
         contentValues.put(CONTACTS_COLUMN_SENDER_NAME,obj.getSenderName());
         contentValues.put(CONTACTS_COLUMN_TIMESTAMP,obj.getTimestamp());
         contentValues.put(CONTACTS_COLUMN_STATUS,obj.getStatus().getType());
+        if (obj.getRemotePubKey()!=null)
+            contentValues.put(CONTACTS_COLUMN_REMOTE_SERVER_HOST_ID,obj.getRemoteHost());
         return contentValues;
     }
 
@@ -93,7 +99,8 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
         String remoteServerId = cursor.getString(CONTACTS_COLUMN_POS_REMOTE_SERVER_ID);
         long timestamp = cursor.getLong(CONTACTS_COLUMN_POS_TIMESTAMP);
         PairingMsgTypes status = PairingMsgTypes.getByName(cursor.getString(CONTACTS_COLUMN_POS_STATUS));
-        return new PairingRequest(id,senderKey,remoteKey,remoteServerId,senderName,timestamp,status);
+        String remotePsHost = cursor.getString(CONTACTS_COLUMN_POS_REMOTE_SERVER_HOST_ID);
+        return new PairingRequest(id,senderKey,remoteKey,remoteServerId,remotePsHost,senderName,timestamp,status);
     }
 
     @Override

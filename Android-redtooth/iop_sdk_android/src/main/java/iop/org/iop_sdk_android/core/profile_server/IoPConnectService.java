@@ -180,9 +180,14 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
-    public void requestPairingProfile(byte[] pubKey, byte[] profileServerId, ProfSerMsgListener<Integer> listener) {
-        // String senderPubKey, String remotePubKey, String remoteServerId, String senderName,long timestamp
-        PairingRequest pairingRequest = PairingRequest.buildPairingRequest(profile.getHexPublicKey(),CryptoBytes.toHexString(pubKey),null,profile.getName());
+    public void requestPairingProfile(byte[] remotePubKey, byte[] profileServerId, ProfSerMsgListener<Integer> listener) {
+        PairingRequest pairingRequest = PairingRequest.buildPairingRequest(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey),null,profile.getName());
+        ioPConnect.requestPairingProfile(pairingRequest,listener);
+    }
+
+    @Override
+    public void requestPairingProfile(byte[] remotePubKey, String psHost, ProfSerMsgListener<Integer> listener) {
+        PairingRequest pairingRequest = PairingRequest.buildPairingRequestFromHost(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey),psHost,profile.getName());
         ioPConnect.requestPairingProfile(pairingRequest,listener);
     }
 
