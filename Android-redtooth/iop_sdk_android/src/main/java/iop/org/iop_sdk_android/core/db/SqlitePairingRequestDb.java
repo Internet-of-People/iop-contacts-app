@@ -11,6 +11,7 @@ import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
 import org.fermat.redtooth.profiles_manager.PairingRequestsManager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -120,8 +121,20 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
     }
 
     @Override
-    public List<PairingRequest> openPairingRequests(String senderPubKey) {
+    public List<PairingRequest> pairingRequests(String senderPubKey) {
         return list();
+    }
+
+    @Override
+    public List<PairingRequest> openPairingRequests(String senderPubKey) {
+        Cursor cursor = getData(CONTACTS_COLUMN_STATUS+" != '"+PairingMsgTypes.PAIR_ACCEPT.getType()+"'");
+        List<PairingRequest> list = new ArrayList<>();
+        if (cursor.moveToFirst()){
+            do {
+                list.add(buildFrom(cursor));
+            }while (cursor.moveToNext());
+        }
+        return list;
     }
 
     @Override

@@ -47,6 +47,13 @@ public abstract class AbstractSqliteDb<T> extends SQLiteOpenHelper {
         return list;
     }
 
+    public Cursor getData(String where) {
+        if (where==null) throw new IllegalArgumentException("where cannot be null");
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( "select * from "+getTableName()+" where "+where, null );
+        return res;
+    }
+
     public Cursor getData(String whereColumn,Object whereObjValue) {
         if (whereObjValue==null) throw new IllegalArgumentException("value cannot be null");
         SQLiteDatabase db = this.getReadableDatabase();
