@@ -86,5 +86,7 @@ public interface ModuleRedtooth {
 
     List<PairingRequest> getPairingRequests();
 
+    List<PairingRequest> getPairingOpenRequests();
+
     String getPsHost();
 }

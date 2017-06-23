@@ -30,9 +30,9 @@ import java.util.List;
 
 public class HomeActivity extends BaseDrawerActivity {
 
+    private View root;
     private TabLayout tabLayout;
     private ViewPager viewPager;
-    private Toolbar toolbar;
     private FloatingActionButton fab_add;
 
     @Override
@@ -42,15 +42,15 @@ public class HomeActivity extends BaseDrawerActivity {
             startActivity(intent);
             finish();
         }else {
-            getLayoutInflater().inflate(R.layout.home_main, container);
+            root = getLayoutInflater().inflate(R.layout.home_main, container);
             setTitle("IoP Connections");
 
-            viewPager = (ViewPager) findViewById(R.id.viewpager);
+            viewPager = (ViewPager) root.findViewById(R.id.viewpager);
             setupViewPager(viewPager);
 
-            tabLayout = (TabLayout) findViewById(R.id.tabs);
+            tabLayout = (TabLayout) root.findViewById(R.id.tabs);
             tabLayout.setupWithViewPager(viewPager);
-            fab_add = (FloatingActionButton) findViewById(R.id.fab_add);
+            fab_add = (FloatingActionButton) root.findViewById(R.id.fab_add);
             fab_add.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
