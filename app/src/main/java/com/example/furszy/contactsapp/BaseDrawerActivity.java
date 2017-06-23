@@ -12,20 +12,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-
 import com.example.furszy.contactsapp.ui.home.HomeActivity;
-import com.example.furszy.contactsapp.ui.my_profile.MyProfileActivity;
 import com.example.furszy.contactsapp.ui.my_qr.MyQrActivity;
 import com.example.furszy.contactsapp.ui.settings.SettingsActivity;
-import com.example.furszy.contactsapp.ui.settings_restore.SettingsRestoreActivity;
-
 import org.fermat.redtooth.profile_server.model.Profile;
-
 import java.util.Arrays;
-
 import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
