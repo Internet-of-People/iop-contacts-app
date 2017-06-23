@@ -61,7 +61,7 @@ public class HomeActivity extends BaseDrawerActivity {
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
         // to check current activity in the navigation drawer
         setNavigationMenuItemChecked(0);

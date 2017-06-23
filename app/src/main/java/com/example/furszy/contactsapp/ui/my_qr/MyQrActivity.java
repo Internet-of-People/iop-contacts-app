@@ -67,7 +67,7 @@ public class MyQrActivity extends BaseDrawerActivity implements View.OnClickList
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
         // to check current activity in the navigation drawer
         setNavigationMenuItemChecked(2);
