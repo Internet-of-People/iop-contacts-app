@@ -26,6 +26,11 @@
     <string name="create_backup">Create Backup</string>
     <string name="edit">Edit</string>
     <string name="set_backup_message">Set automatic Backups</string>
+    <string name="set_password_message">Select  your password</string>
+    <string name="set_folder_message">Select  where your back up will be save</string>
     <string name="active">Active</string>
     <string name="inactive">Inactive</string>
+    <string name="select_folder">Select Folder</string>
+    <string name="set_password">Set Password</string>
+    <string name="set_folder">Set Folder</string>
 </resources>

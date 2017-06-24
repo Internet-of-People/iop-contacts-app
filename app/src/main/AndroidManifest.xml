@@ -36,7 +36,8 @@
         <activity android:name=".ui.settings.SettingsActivity"></activity>
         <activity android:name=".ui.settings_restore.SettingsRestoreActivity"></activity>
         <activity android:name=".ui.settings_backup.SettingsBackupActivity"></activity>
-        <activity android:name=".ui.settings_backup_process.SettingsBackupProcessActivity"></activity>
+        <activity android:name=".ui.settings_backup_process.SettingsBackupPasswordActivity"></activity>
+        <activity android:name=".ui.settings_backup_folder.SettingsBackupFolderActivity"></activity>
         <activity android:name=".ui.my_qr.MyQrActivity"></activity>
 
         <activity android:name=".contacts.ProfilesInformationActivity"/>

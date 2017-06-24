@@ -68,12 +68,12 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="40dp"
-        android:background="@drawable/bg_button_blue"
+        android:background="@drawable/bg_button_blue_border"
         android:gravity="center_vertical|center_horizontal"
         android:onClick="tryCreate"
         android:visibility="gone"
-        android:text="@string/create_profile"
-        android:textColor="@color/white"
+        android:text="@string/create_backup"
+        android:textColor="@color/mainBlue"
         android:textSize="14sp" />
 
 
