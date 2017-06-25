@@ -50,7 +50,9 @@ public class NewContactActivity extends BaseActivity implements View.OnClickList
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
         super.onCreateView(savedInstanceState, container);
-        setTitle("Add Contact");
+        getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setTitle("Send Request");
         root = getLayoutInflater().inflate(R.layout.new_contact_main,container,true);
         edit_uri = (EditText) root.findViewById(R.id.edit_uri);
         root.findViewById(R.id.img_qr).setOnClickListener(this);
