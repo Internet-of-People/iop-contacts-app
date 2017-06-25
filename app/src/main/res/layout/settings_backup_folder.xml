@@ -9,15 +9,8 @@
 
     <TextView
         android:id="@+id/folderMessage"
-        android:layout_width="280dp"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="20dp"
-        android:layout_marginTop="100dp"
-        android:gravity="center_vertical|center_horizontal"
         android:text="@string/set_folder_message"
-        android:textColor="@color/mainText"
-        android:textSize="18sp" />
+        style="@style/MessageText"/>
 
 
     <Button
@@ -38,20 +31,20 @@
         android:textColor="@color/mainText"
         android:textSize="14sp" />
 
-
-
-    <Button
-        android:id="@+id/btnSetFolder"
-        android:layout_width="@dimen/btn_width"
-        android:layout_height="@dimen/btn_height"
+    <LinearLayout
+        android:layout_below="@+id/btnSelectFolder"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="40dp"
-        android:background="@drawable/bg_button_blue_border"
-        android:gravity="center_vertical|center_horizontal"
-        android:onClick="tryRestore"
-        android:text="@string/set_folder"
-        android:textColor="@color/mainBlue"
-        android:textSize="14sp" />
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:gravity="center|bottom"
+        android:orientation="vertical" >
+
+        <Button
+            android:id="@+id/btnSetFolder"
+            android:text="@string/set_folder"
+            style="@style/ButtomWhite"/>
+    </LinearLayout>
+
 
 </RelativeLayout>

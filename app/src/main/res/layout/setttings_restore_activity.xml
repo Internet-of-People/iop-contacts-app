@@ -8,13 +8,9 @@
 
     <TextView
         android:id="@+id/restoreMessage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="172dp"
-        android:gravity="center_vertical|center_horizontal"
         android:text="@string/restore_message"
         android:textColor="@color/mainText"
-        android:textSize="18sp"
+        style="@style/MessageText"
         android:layout_alignEnd="@+id/addFile" />
 
     <Button
@@ -36,18 +32,20 @@
 
 
 
-    <Button
-        android:id="@+id/btnRestore"
-        android:layout_width="@dimen/btn_width"
-        android:layout_height="@dimen/btn_height"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="40dp"
-        android:background="@drawable/bg_button_blue"
-        android:gravity="center_vertical|center_horizontal"
-        android:onClick="tryRestore"
-        android:text="@string/restore_profile"
-        android:textColor="@color/white"
-        android:textSize="14sp" />
+    <LinearLayout
+        android:layout_below="@+id/addFile"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:gravity="center|bottom"
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true">
+
+        <Button
+            android:id="@+id/btnRestore"
+            android:text="@string/restore_profile"
+            style="@style/ButtomBlue"/>
+    </LinearLayout>
+
 
 </RelativeLayout>

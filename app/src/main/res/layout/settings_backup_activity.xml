@@ -9,15 +9,10 @@
 
     <TextView
         android:id="@+id/backupMessage"
-        android:layout_width="280dp"
-        android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="20dp"
-        android:layout_marginTop="60dp"
-        android:gravity="center_vertical|center_horizontal"
         android:text="@string/set_backup_message"
-        android:textColor="@color/mainText"
-        android:textSize="18sp" />
+
+        style="@style/MessageText"/>
 
     <RadioGroup
         android:layout_below="@+id/backupMessage"
@@ -61,20 +56,19 @@
             android:textColor="@drawable/switcher_text_selector" />
     </RadioGroup>
 
-    <Button
-        android:id="@+id/createBackup"
-        android:layout_width="@dimen/btn_width"
-        android:layout_height="@dimen/btn_height"
+    <LinearLayout
+        android:layout_below="@+id/backupMessage"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="40dp"
-        android:background="@drawable/bg_button_blue_border"
-        android:gravity="center_vertical|center_horizontal"
-        android:onClick="tryCreate"
-        android:visibility="gone"
-        android:text="@string/create_backup"
-        android:textColor="@color/mainBlue"
-        android:textSize="14sp" />
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:gravity="center|bottom"
+        android:orientation="vertical" >
 
+        <Button
+            android:id="@+id/createBackup"
+            android:text="@string/create_backup"
+            style="@style/ButtomWhite"/>
+    </LinearLayout>
 
 </RelativeLayout>
