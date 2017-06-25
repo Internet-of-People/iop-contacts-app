@@ -68,7 +68,7 @@
         <Button
             android:id="@+id/createBackup"
             android:text="@string/create_backup"
-            style="@style/ButtomWhite"/>
+            style="@style/ButtonWhiteBorderBlue"/>
     </LinearLayout>
 
 </RelativeLayout>

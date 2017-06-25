@@ -43,7 +43,7 @@
         <Button
             android:id="@+id/btnSetFolder"
             android:text="@string/set_folder"
-            style="@style/ButtomWhite"/>
+            style="@style/ButtonWhiteBorderBlue"/>
     </LinearLayout>
 
 

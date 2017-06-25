@@ -67,10 +67,18 @@
         <item name="android:stateListAnimator">@null</item>
     </style>
 
-    <style name="ButtomWhite" parent="ButtomBlue">
+    <style name="ButtonWhiteBorderBlue" parent="ButtomBlue">
         <item name="android:padding">6dp</item>
         <item name="android:textColor">@color/mainBlue</item>
         <item name="android:background">@drawable/bg_button_blue_border</item>
     </style>
+
+    <style name="ButtonBlueBorderWhite" parent="ButtomBlue">
+        <item name="android:padding">6dp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:background">@drawable/bg_button_blue</item>
+    </style>
+
+
 
 </resources>
