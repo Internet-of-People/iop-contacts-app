@@ -21,6 +21,7 @@ import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.Signer;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
+import org.fermat.redtooth.profile_server.engine.futures.ConnectionFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
 import org.fermat.redtooth.profile_server.engine.SearchProfilesQuery;
@@ -116,10 +117,12 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public void connect(String pubKey) throws Exception {
-        MsgListenerFuture<Boolean> msgListenerFuture = new MsgListenerFuture();
+        final ConnectionFuture msgListenerFuture = new ConnectionFuture();
         msgListenerFuture.setListener(new BaseMsgFuture.Listener<Boolean>() {
             @Override
             public void onAction(int messageId, Boolean object) {
+                profile.setHomeHost(msgListenerFuture.getProfServerData().getHost());
+                profile.setHomeHostId(msgListenerFuture.getProfServerData().getNetworkId());
                 onCheckInCompleted(profile);
             }
 
@@ -167,6 +170,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
             if (version==null){
                 profile.setVersion(this.profile.getVersion());
             }
+            configurationsPreferences.saveProfile(profile);
             return ioPConnect.updateProfile(profile,msgListener);
         }catch (Exception e){
             e.printStackTrace();
@@ -181,24 +185,25 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public void requestPairingProfile(byte[] remotePubKey, byte[] profileServerId, ProfSerMsgListener<Integer> listener) {
-        PairingRequest pairingRequest = PairingRequest.buildPairingRequest(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey),null,profile.getName());
+        PairingRequest pairingRequest = PairingRequest.buildPairingRequest(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey),null,profile.getName(),profile.getHomeHost());
         ioPConnect.requestPairingProfile(pairingRequest,listener);
     }
 
     @Override
     public void requestPairingProfile(byte[] remotePubKey, String psHost, ProfSerMsgListener<Integer> listener) {
-        PairingRequest pairingRequest = PairingRequest.buildPairingRequestFromHost(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey),psHost,profile.getName());
+        PairingRequest pairingRequest = PairingRequest.buildPairingRequestFromHost(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey),psHost,profile.getName(),profile.getHomeHost());
         ioPConnect.requestPairingProfile(pairingRequest,listener);
     }
 
     @Override
-    public void acceptPairingProfile(PairingRequest pairingRequest) {
+    public void acceptPairingProfile(PairingRequest pairingRequest) throws Exception {
         ioPConnect.acceptPairingRequest(pairingRequest);
     }
 
     @Override
     public void cancelPairingRequest(PairingRequest pairingRequest) {
         // todo: improve this
+        ioPConnect.cancelPairingRequest(pairingRequest);
     }
 
     @Override

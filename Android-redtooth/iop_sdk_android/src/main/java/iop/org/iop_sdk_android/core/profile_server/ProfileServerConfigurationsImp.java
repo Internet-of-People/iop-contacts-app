@@ -69,7 +69,7 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
 
     @Override
     public ProfServerData getMainProfileServer() {
-        return new ProfServerData(getMainServerNetworkId(),getHost(),getPrimaryPort(),getClPort(),getNonClPort(),getAppServicePort(),true);
+        return new ProfServerData(getMainServerNetworkId(),getHost(),getPrimaryPort(),getClPort(),getNonClPort(),getAppServicePort(),true,isRegisteredInServer());
     }
 
     @Override
@@ -78,6 +78,7 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
     }
 
     public String getHost() {
+        //todo: remove this, hardcoded home host..
         return prefs.getString(PREFS_HOST,HardCodedConstans.HOME_HOST);
     }
 
@@ -237,6 +238,9 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
         if (profile.getApplicationServices()!=null && !profile.getApplicationServices().isEmpty()){
             save(PREFS_APPS_SERVICES,convertToJson(profile.getApplicationServices()));
         }
+        if (profile.getHomeHost()!=null){
+            save(PREFS_HOST,profile.getHomeHost());
+        }
         if (profile.getImg()!=null){
             privateStorage.saveFile(PREFS_USER_PRIV_KEY,profile.getImg());
         }
@@ -262,6 +266,7 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
                 getUserKeys()
         );
         profile.setImg(getUserImage());
+        profile.setHomeHost(getHost());
         return profile;
     }
 
