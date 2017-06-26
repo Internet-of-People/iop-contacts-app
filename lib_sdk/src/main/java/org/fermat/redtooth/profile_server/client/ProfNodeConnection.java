@@ -10,8 +10,10 @@ public class ProfNodeConnection {
 
     /** User identity */
     private Profile profile;
-    /** If the user is already registered in the server */
+    /** If the profile is already registered in the server */
     private boolean isRegistered;
+    /** If the profile use or want to use this connection as home */
+    private boolean isHome;
     /** Random 32 bytes number created by the client and sended to the server in the StartConversationRequest message */
     private byte[] connectionChallenge;
     /** Signed client challenge from the server  */
@@ -23,8 +25,9 @@ public class ProfNodeConnection {
     /*  **/
     private boolean needRegisterProfile;
 
-    public ProfNodeConnection(Profile profile,boolean isRegistered,byte[] connectionChallenge) {
+    public ProfNodeConnection(Profile profile,boolean isRegistered,boolean isHome,byte[] connectionChallenge) {
         this.profile = profile;
+        this.isHome = isHome;
         this.connectionChallenge = connectionChallenge;
         this.isRegistered = isRegistered;
     }
@@ -59,6 +62,10 @@ public class ProfNodeConnection {
 
     public boolean isRegistered() {
         return isRegistered;
+    }
+
+    public boolean isHome() {
+        return isHome;
     }
 
     /**

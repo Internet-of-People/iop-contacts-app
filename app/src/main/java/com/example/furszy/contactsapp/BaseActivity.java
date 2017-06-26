@@ -114,7 +114,8 @@ public class BaseActivity extends AppCompatActivity{
                     .setTicker("Pairing received")
                     .setContentText(name+" wants to connect with you!")
                     .setContentIntent(contentIntent)
-                    .setSmallIcon(R.drawable.img_profile);
+                    .setSmallIcon(R.drawable.img_profile)
+                    .setAutoCancel(true);
             notificationManager.notify(200,builder.build());
         }
     }

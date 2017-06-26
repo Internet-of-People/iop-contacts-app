@@ -20,27 +20,30 @@ import java.util.List;
 
 public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> implements PairingRequestsManager {
 
-    public static final int DATABASE_VERSION = 2;
+    public static final int DATABASE_VERSION = 3;
 
     public static final String DATABASE_NAME = "requests";
-    public static final String CONTACTS_TABLE_NAME = "pairing_request";
-    public static final String CONTACTS_COLUMN_ID = "id";
-    public static final String CONTACTS_COLUMN_SENDER_KEY = "senderPubKey";
-    public static final String CONTACTS_COLUMN_REMOTE_KEY = "remotePubKey";
-    public static final String CONTACTS_COLUMN_REMOTE_SERVER_ID = "remoteServerId";
-    public static final String CONTACTS_COLUMN_REMOTE_SERVER_HOST_ID = "remoteHost";
-    public static final String CONTACTS_COLUMN_SENDER_NAME = "senderName";
-    public static final String CONTACTS_COLUMN_TIMESTAMP = "timestamp";
-    public static final String CONTACTS_COLUMN_STATUS = "status";
+    public static final String PAIRING_TABLE_NAME = "pairing_request";
+    public static final String PAIRING_COLUMN_ID = "id";
+    public static final String PAIRING_COLUMN_SENDER_KEY = "senderPubKey";
+    public static final String PAIRING_COLUMN_REMOTE_KEY = "remotePubKey";
+    public static final String PAIRING_COLUMN_REMOTE_SERVER_ID = "remoteServerId";
+    public static final String PAIRING_COLUMN_REMOTE_SERVER_HOST_ID = "remoteHost";
+    public static final String PAIRING_COLUMN_SENDER_NAME = "senderName";
+    public static final String PAIRING_COLUMN_TIMESTAMP = "timestamp";
+    public static final String PAIRING_COLUMN_STATUS = "status";
+    public static final String PAIRING_COLUMN_SENDER_PS_HOST = "sender_ps_host";
 
-    public static final int CONTACTS_COLUMN_POS_ID = 0;
-    public static final int CONTACTS_COLUMN_POS_SENDER_KEY = 1;
-    public static final int CONTACTS_COLUMN_POS_REMOTE_KEY = 2;
-    public static final int CONTACTS_COLUMN_POS_REMOTE_SERVER_ID = 3;
-    public static final int CONTACTS_COLUMN_POS_REMOTE_SERVER_HOST_ID = 4;
-    public static final int CONTACTS_COLUMN_POS_SENDER_NAME = 5;
-    public static final int CONTACTS_COLUMN_POS_TIMESTAMP = 6;
-    public static final int CONTACTS_COLUMN_POS_STATUS = 7;
+
+    public static final int PAIRING_COLUMN_POS_ID = 0;
+    public static final int PAIRING_COLUMN_POS_SENDER_KEY = 1;
+    public static final int PAIRING_COLUMN_POS_REMOTE_KEY = 2;
+    public static final int PAIRING_COLUMN_POS_REMOTE_SERVER_ID = 3;
+    public static final int PAIRING_COLUMN_POS_REMOTE_SERVER_HOST_ID = 4;
+    public static final int PAIRING_COLUMN_POS_SENDER_NAME = 5;
+    public static final int PAIRING_COLUMN_POS_TIMESTAMP = 6;
+    public static final int PAIRING_COLUMN_POS_STATUS = 7;
+    public static final int PAIRING_COLUMN_POS_SENDER_PS_HOST = 8;
 
     public SqlitePairingRequestDb(Context context) {
         super(context, DATABASE_NAME , null, DATABASE_VERSION);
@@ -50,16 +53,17 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
     public void onCreate(SQLiteDatabase db) {
         // TODO Auto-generated method stub
         db.execSQL(
-                "create table " +CONTACTS_TABLE_NAME+
+                "create table " +PAIRING_TABLE_NAME+
                         "(" +
-                        CONTACTS_COLUMN_ID + " INTEGER primary key autoincrement, "+
-                        CONTACTS_COLUMN_SENDER_KEY + " TEXT, "+
-                        CONTACTS_COLUMN_REMOTE_KEY + " TEXT, "+
-                        CONTACTS_COLUMN_REMOTE_SERVER_ID + " TEXT, "+
-                        CONTACTS_COLUMN_REMOTE_SERVER_HOST_ID + " TEXT, "+
-                        CONTACTS_COLUMN_SENDER_NAME + " TEXT, "+
-                        CONTACTS_COLUMN_TIMESTAMP + " LONG , "+
-                        CONTACTS_COLUMN_STATUS + " TEXT "
+                        PAIRING_COLUMN_ID + " INTEGER primary key autoincrement, "+
+                        PAIRING_COLUMN_SENDER_KEY + " TEXT, "+
+                        PAIRING_COLUMN_REMOTE_KEY + " TEXT, "+
+                        PAIRING_COLUMN_REMOTE_SERVER_ID + " TEXT, "+
+                        PAIRING_COLUMN_REMOTE_SERVER_HOST_ID + " TEXT, "+
+                        PAIRING_COLUMN_SENDER_NAME + " TEXT, "+
+                        PAIRING_COLUMN_TIMESTAMP + " LONG , "+
+                        PAIRING_COLUMN_STATUS + " TEXT ,"+
+                        PAIRING_COLUMN_SENDER_PS_HOST + " TEXT "
                         +")"
         );
     }
@@ -67,41 +71,43 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // TODO Auto-generated method stub
-        db.execSQL("DROP TABLE IF EXISTS "+CONTACTS_TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS "+PAIRING_TABLE_NAME);
         onCreate(db);
     }
 
     @Override
     String getTableName() {
-        return CONTACTS_TABLE_NAME;
+        return PAIRING_TABLE_NAME;
     }
 
     @Override
     public ContentValues buildContent(PairingRequest obj) {
         ContentValues contentValues = new ContentValues();
-        contentValues.put(CONTACTS_COLUMN_SENDER_KEY,obj.getSenderPubKey());
-        contentValues.put(CONTACTS_COLUMN_REMOTE_KEY,obj.getRemotePubKey());
+        contentValues.put(PAIRING_COLUMN_SENDER_KEY,obj.getSenderPubKey());
+        contentValues.put(PAIRING_COLUMN_REMOTE_KEY,obj.getRemotePubKey());
         if (obj.getRemoteServerId()!=null)
-            contentValues.put(CONTACTS_COLUMN_REMOTE_SERVER_ID,obj.getRemoteServerId());
-        contentValues.put(CONTACTS_COLUMN_SENDER_NAME,obj.getSenderName());
-        contentValues.put(CONTACTS_COLUMN_TIMESTAMP,obj.getTimestamp());
-        contentValues.put(CONTACTS_COLUMN_STATUS,obj.getStatus().getType());
+            contentValues.put(PAIRING_COLUMN_REMOTE_SERVER_ID,obj.getRemoteServerId());
+        contentValues.put(PAIRING_COLUMN_SENDER_NAME,obj.getSenderName());
+        contentValues.put(PAIRING_COLUMN_TIMESTAMP,obj.getTimestamp());
+        contentValues.put(PAIRING_COLUMN_STATUS,obj.getStatus().getType());
         if (obj.getRemotePubKey()!=null)
-            contentValues.put(CONTACTS_COLUMN_REMOTE_SERVER_HOST_ID,obj.getRemoteHost());
+            contentValues.put(PAIRING_COLUMN_REMOTE_SERVER_HOST_ID,obj.getRemoteHost());
+        contentValues.put(PAIRING_COLUMN_SENDER_PS_HOST,obj.getSenderPsHost());
         return contentValues;
     }
 
     @Override
     public PairingRequest buildFrom(Cursor cursor) {
-        int id = cursor.getInt(CONTACTS_COLUMN_POS_ID);
-        String senderKey = cursor.getString(CONTACTS_COLUMN_POS_SENDER_KEY);
-        String senderName = cursor.getString(CONTACTS_COLUMN_POS_SENDER_NAME);
-        String remoteKey = cursor.getString(CONTACTS_COLUMN_POS_REMOTE_KEY);
-        String remoteServerId = cursor.getString(CONTACTS_COLUMN_POS_REMOTE_SERVER_ID);
-        long timestamp = cursor.getLong(CONTACTS_COLUMN_POS_TIMESTAMP);
-        PairingMsgTypes status = PairingMsgTypes.getByName(cursor.getString(CONTACTS_COLUMN_POS_STATUS));
-        String remotePsHost = cursor.getString(CONTACTS_COLUMN_POS_REMOTE_SERVER_HOST_ID);
-        return new PairingRequest(id,senderKey,remoteKey,remoteServerId,remotePsHost,senderName,timestamp,status);
+        int id = cursor.getInt(PAIRING_COLUMN_POS_ID);
+        String senderKey = cursor.getString(PAIRING_COLUMN_POS_SENDER_KEY);
+        String senderName = cursor.getString(PAIRING_COLUMN_POS_SENDER_NAME);
+        String remoteKey = cursor.getString(PAIRING_COLUMN_POS_REMOTE_KEY);
+        String remoteServerId = cursor.getString(PAIRING_COLUMN_POS_REMOTE_SERVER_ID);
+        long timestamp = cursor.getLong(PAIRING_COLUMN_POS_TIMESTAMP);
+        PairingMsgTypes status = PairingMsgTypes.getByName(cursor.getString(PAIRING_COLUMN_POS_STATUS));
+        String remotePsHost = cursor.getString(PAIRING_COLUMN_POS_REMOTE_SERVER_HOST_ID);
+        String senderPsHost = cursor.getString(PAIRING_COLUMN_POS_SENDER_PS_HOST);
+        return new PairingRequest(id,senderKey,remoteKey,remoteServerId,remotePsHost,senderName,timestamp,status,senderPsHost);
     }
 
     @Override
@@ -117,7 +123,7 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
     @Override
     public PairingRequest getPairingRequest(String senderPubKey,String remotePubkey) {
         // todo: do this ok with both values for more apps and not just one..
-        return get(CONTACTS_COLUMN_REMOTE_KEY,remotePubkey);
+        return get(PAIRING_COLUMN_REMOTE_KEY,remotePubkey);
     }
 
     @Override
@@ -127,7 +133,7 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
 
     @Override
     public List<PairingRequest> openPairingRequests(String senderPubKey) {
-        Cursor cursor = getData(CONTACTS_COLUMN_STATUS+" != '"+PairingMsgTypes.PAIR_ACCEPT.getType()+"'");
+        Cursor cursor = getData(PAIRING_COLUMN_STATUS+" != '"+PairingMsgTypes.PAIR_ACCEPT.getType()+"'");
         List<PairingRequest> list = new ArrayList<>();
         if (cursor.moveToFirst()){
             do {
@@ -139,13 +145,18 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
 
     @Override
     public boolean updateStatus(String senderPubKey,String remotePubKey,PairingMsgTypes status){
-        return updateFieldByKey(CONTACTS_COLUMN_REMOTE_KEY,remotePubKey,CONTACTS_COLUMN_STATUS,status.getType())==1;
+        return updateFieldByKey(PAIRING_COLUMN_REMOTE_KEY,remotePubKey,PAIRING_COLUMN_STATUS,status.getType())==1;
     }
 
     @Override
     public int removeRequest(String senderPubKey, String remotePubkey) {
         // todo: do this ok with both values for more apps and not just one..
-        return delete(CONTACTS_COLUMN_REMOTE_KEY,remotePubkey);
+        return delete(PAIRING_COLUMN_REMOTE_KEY,remotePubkey);
+    }
+
+    @Override
+    public void delete(long id) {
+        delete(PAIRING_COLUMN_ID,String.valueOf(id));
     }
 
 }

@@ -16,7 +16,8 @@ import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.SslContextFactory;
 import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
 import org.fermat.redtooth.profile_server.engine.app_services.PairingListener;
-import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
+import org.fermat.redtooth.profile_server.engine.futures.ConnectionFuture;
+import org.fermat.redtooth.profile_server.engine.listeners.ConnectionListener;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
@@ -35,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
 /**
@@ -43,12 +43,14 @@ import java.util.concurrent.FutureTask;
  * todo: clase encargada de crear perfiles, agregar aplication services y hablar con las capas superiores.
  */
 
-public class IoPConnect {
+public class IoPConnect implements ConnectionListener {
 
     private final Logger logger = LoggerFactory.getLogger(IoPConnect.class);
 
-    /** Profiles connection manager */
+    /** Map of device profiles pubKey connected to the home PS, profile public key -> host PS manager*/
     private ConcurrentMap<String,IoPProfileConnection> managers;
+    /** Map of device profiles connected to remote PS */
+    private ConcurrentMap<PsKey,IoPProfileConnection> remoteManagers = new ConcurrentHashMap<>();
     /** Enviroment context */
     private IoPConnectContext context;
     /** Profiles manager db */
@@ -62,6 +64,25 @@ public class IoPConnect {
     /** Socket factory */
     private SslContextFactory sslContextFactory;
 
+    private class PsKey{
+
+        private String deviceProfPubKey;
+        private String psHost;
+
+        public PsKey(String deviceProfPubKey, String psHost) {
+            this.deviceProfPubKey = deviceProfPubKey;
+            this.psHost = psHost;
+        }
+
+        public String getDeviceProfPubKey() {
+            return deviceProfPubKey;
+        }
+
+        public String getPsHost() {
+            return psHost;
+        }
+    }
+
     public IoPConnect(IoPConnectContext contextWrapper, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, ProfilesManager profilesManager, PairingRequestsManager pairingRequestsManager,DeviceLocation deviceLocation) {
         this.context = contextWrapper;
         this.cryptoWrapper = cryptoWrapper;
@@ -70,6 +91,30 @@ public class IoPConnect {
         this.profilesManager = profilesManager;
         this.pairingRequestsManager = pairingRequestsManager;
         this.deviceLocation = deviceLocation;
+    }
+
+
+    @Override
+    public void onPortsReceived(String psHost, int nonClPort, int clPort, int appSerPort) {
+        ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
+        // todo: implement a db for profile servers..
+        // But for now i'm lazy.. save this in my own profile server
+        profileServerConfigurations.setMainPfClPort(clPort);
+        profileServerConfigurations.setMainPsNonClPort(nonClPort);
+        profileServerConfigurations.setMainAppServicePort(appSerPort);
+    }
+
+    @Override
+    public void onHostingPlanReceived(String host, IopProfileServer.HostingPlanContract contract) {
+        ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
+        // todo: implement this for multi profiles..
+        // for now i don't have to worry, i just have one profile.
+        profileServerConfigurations.setProfileRegistered(host,CryptoBytes.toHexString(contract.getIdentityPublicKey().toByteArray()));
+    }
+
+    @Override
+    public void onNonClConnectionStablished(String host) {
+
     }
 
 
@@ -104,7 +149,7 @@ public class IoPConnect {
         // todo: backup the profile on an external dir file.
     }
 
-    public void connectProfile(String profilePublicKey, PairingListener pairingListener, byte[] ownerChallenge,MsgListenerFuture<Boolean> future) throws Exception {
+    public void connectProfile(String profilePublicKey, PairingListener pairingListener, byte[] ownerChallenge,ConnectionFuture future) throws Exception {
         if (managers.containsKey(profilePublicKey))throw new IllegalArgumentException("Profile connection already initialized");
         ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
         ProfServerData profServerData = null;
@@ -134,7 +179,8 @@ public class IoPConnect {
         }
         KeyEd25519 keyEd25519 = (KeyEd25519) profileServerConfigurations.getUserKeys();
         if (keyEd25519==null) throw new IllegalStateException("no pubkey saved");
-        addConnection(profileServerConfigurations,profServerData,keyEd25519,pairingListener).init(future);
+        future.setProfServerData(profServerData);
+        addConnection(profileServerConfigurations,profServerData,keyEd25519,pairingListener).init(future,this);
     }
 
     /*public boolean connectProfileSync(String profilePublicKey, PairingListener pairingListener, byte[] ownerChallenge) throws CantConnectException, ExecutionException, InterruptedException {
@@ -158,18 +204,49 @@ public class IoPConnect {
         return getProfileConnection(profile.getHexPublicKey()).updateProfile(profile.getVersion(),profile.getName(),profile.getImg(),profile.getLatitude(),profile.getLongitude(),profile.getExtraData(),msgListener);
     }
 
-    private IoPProfileConnection addConnection(ProfileServerConfigurations profileServerConfigurations,ProfServerData profConn, KeyEd25519 keyEd25519, PairingListener pairingListener){
+    /**
+     *
+     * Add PS home connection
+     *
+     * @param profileServerConfigurations
+     * @param profConn
+     * @param profKey
+     * @param pairingListener
+     * @return
+     */
+    private IoPProfileConnection addConnection(ProfileServerConfigurations profileServerConfigurations,ProfServerData profConn, KeyEd25519 profKey, PairingListener pairingListener){
         // profile connection
         IoPProfileConnection ioPProfileConnection = new IoPProfileConnection(
                 context,
                 initClientData(profileServerConfigurations,pairingListener),
-                profileServerConfigurations,
                 profConn,
                 cryptoWrapper,
                 sslContextFactory,
                 deviceLocation);
         // map the profile connection with his public key
-        managers.put(keyEd25519.getPublicKeyHex(), ioPProfileConnection);
+        managers.put(profKey.getPublicKeyHex(), ioPProfileConnection);
+        return ioPProfileConnection;
+    }
+
+    /**
+     * Add PS guest connection looking for a remote profile.
+     *
+     * @param profConn
+     * @param deviceProfile
+     * @param psKey
+     * @return
+     */
+    private IoPProfileConnection addConnection(ProfServerData profConn, Profile deviceProfile ,PsKey psKey){
+        // profile connection
+        IoPProfileConnection ioPProfileConnection = new IoPProfileConnection(
+                context,
+                deviceProfile,
+                profConn,
+                cryptoWrapper,
+                sslContextFactory,
+                deviceLocation);
+        // map the profile connection with his public key
+        remoteManagers.put(psKey, ioPProfileConnection);
         return ioPProfileConnection;
     }
 
@@ -259,7 +336,7 @@ public class IoPConnect {
      * @param listener -> returns the pairing request id
      */
     public void requestPairingProfile(final PairingRequest pairingRequest, final ProfSerMsgListener<Integer> listener) {
-        logger.info("requestPairingProfile, remote: "+pairingRequest.getRemotePubKey());
+        logger.info("requestPairingProfile, remote: " + pairingRequest.getRemotePubKey());
         final IoPProfileConnection connection = getProfileConnection(pairingRequest.getSenderPubKey());
         // first the call
         MsgListenerFuture<CallProfileAppService> callListener = new MsgListenerFuture();
@@ -285,32 +362,32 @@ public class IoPConnect {
                                 listener.onMsgFail(messageId, status, statusDetail);
                             }
                         });
-                        PairingMsg pairingMsg = new PairingMsg(pairingRequest.getSenderName());
+                        PairingMsg pairingMsg = new PairingMsg(pairingRequest.getSenderName(),pairingRequest.getSenderPsHost());
                         call.sendMsg(pairingMsg, pairingMsgFuture);
-                    }else {
-                        logger.info("call fail with status: "+call.getStatus()+", error: "+call.getErrorStatus());
-                        listener.onMsgFail(messageId,0,call.getStatus().toString()+" "+call.getErrorStatus());
+                    } else {
+                        logger.info("call fail with status: " + call.getStatus() + ", error: " + call.getErrorStatus());
+                        listener.onMsgFail(messageId, 0, call.getStatus().toString() + " " + call.getErrorStatus());
                     }
 
                 } catch (CantSendMessageException e) {
                     e.printStackTrace();
-                    listener.onMsgFail(messageId,400,e.getMessage());
+                    listener.onMsgFail(messageId, 400, e.getMessage());
                 } catch (CantConnectException e) {
                     e.printStackTrace();
-                    listener.onMsgFail(messageId,400,e.getMessage());
+                    listener.onMsgFail(messageId, 400, e.getMessage());
                 } catch (Exception e) {
                     e.printStackTrace();
-                    listener.onMsgFail(messageId,400,e.getMessage());
+                    listener.onMsgFail(messageId, 400, e.getMessage());
                 }
             }
 
             @Override
             public void onFail(int messageId, int status, String statusDetail) {
-                logger.info("call fail, remote: "+statusDetail);
-                listener.onMsgFail(messageId,status,statusDetail);
+                logger.info("call fail, remote: " + statusDetail);
+                listener.onMsgFail(messageId, status, statusDetail);
             }
         });
-        connection.callProfileAppService(pairingRequest.getRemotePubKey(), DefaultServices.PROFILE_PAIRING.getName(),false,false,callListener);
+        connection.callProfileAppService(pairingRequest.getRemotePubKey(), DefaultServices.PROFILE_PAIRING.getName(), false, false, callListener);
     }
 
     /**
@@ -318,53 +395,72 @@ public class IoPConnect {
      *
      * @param pairingRequest
      */
-    public void acceptPairingRequest(PairingRequest pairingRequest) {
-        try {
-            String remotePubKeyHex =  pairingRequest.getRemotePubKey();
-            logger.info("acceptPairingRequest, remote: " + remotePubKeyHex);
-            final IoPProfileConnection connection = getProfileConnection(pairingRequest.getSenderPubKey());
-            CallProfileAppService call = connection.getActiveAppCallService(remotePubKeyHex);
-            final MsgListenerFuture<Boolean> future = new MsgListenerFuture();
-            //future.setListener(); -> todo: add future listener and save acceptPairing sent
-            if (call != null) {
-                call.sendMsg(PairingMsgTypes.PAIR_ACCEPT.getType(), future);
+    public void acceptPairingRequest(PairingRequest pairingRequest) throws Exception {
+        String remotePubKeyHex =  pairingRequest.getRemotePubKey();
+        logger.info("acceptPairingRequest, remote: " + remotePubKeyHex);
+        // update in db the acceptance first
+        // todo: here i have to add the pair request db and tick this as done. and save the profile with paired true.
+        profilesManager.updatePaired(CryptoBytes.fromHexToBytes(remotePubKeyHex), ProfileInformationImp.PairStatus.PAIRED);
+        pairingRequestsManager.updateStatus(remotePubKeyHex,pairingRequest.getSenderPubKey(),PairingMsgTypes.PAIR_ACCEPT);
+        // requestsDbManager.removeRequest(remotePubKeyHex);
+
+        // Notify the other side if it's connected.
+        // first check if i have a connection with the server hosting the pairing sender
+        // tengo que ver si el remote profile tiene como home host la conexion principal de el sender profile al PS
+        // si no la tiene abro otra conexion.
+        final IoPProfileConnection connection;
+        if (pairingRequest.getSenderPsHost().equals(pairingRequest.getRemoteHost())) {
+            connection = getProfileConnection(pairingRequest.getRemotePubKey());
+        }else {
+            PsKey psKey = new PsKey(pairingRequest.getRemotePubKey(),pairingRequest.getSenderPsHost());
+            if(remoteManagers.containsKey(psKey)){
+                connection = remoteManagers.get(psKey);
             }else {
-                MsgListenerFuture<CallProfileAppService> callFuture = new MsgListenerFuture<>();
-                callFuture.setListener(new BaseMsgFuture.Listener<CallProfileAppService>() {
-                    @Override
-                    public void onAction(int messageId, CallProfileAppService call) {
-                        try {
-                            call.sendMsg(PairingMsgTypes.PAIR_ACCEPT.getType(), future);
-                        } catch (Exception e) {
-                            logger.error("call sendMsg error",e);
-                            future.onMsgFail(messageId,400,e.getMessage());
-                        }
-                    }
-
-                    @Override
-                    public void onFail(int messageId, int status, String statusDetail) {
-                        logger.error("call sendMsg fail",statusDetail);
-                        future.onMsgFail(messageId,status,statusDetail);
-                    }
-                });
-                connection.callProfileAppService(remotePubKeyHex,DefaultServices.PROFILE_PAIRING.getName(),true,false,callFuture);
+                ProfServerData profServerData = new ProfServerData(pairingRequest.getSenderPsHost());
+                Profile profile = createEmptyProfileServerConf().getProfile();
+                connection = addConnection(profServerData,profile,psKey);
+                connection.init(this);
             }
-            // todo: here i have to add the pair request db and tick this as done. and save the profile with paired true.
-            profilesManager.updatePaired(CryptoBytes.fromHexToBytes(remotePubKeyHex), ProfileInformationImp.PairStatus.PAIRED);
-            pairingRequestsManager.updateStatus(remotePubKeyHex,pairingRequest.getSenderPubKey(),PairingMsgTypes.PAIR_ACCEPT);
-            // requestsDbManager.removeRequest(remotePubKeyHex);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+        CallProfileAppService call = connection.getActiveAppCallService(remotePubKeyHex);
+        final MsgListenerFuture<Boolean> future = new MsgListenerFuture();
+        //future.setListener(); -> todo: add future listener and save acceptPairing sent
+        if (call != null) {
+            call.sendMsg(PairingMsgTypes.PAIR_ACCEPT.getType(), future);
+        }else {
+            MsgListenerFuture<CallProfileAppService> callFuture = new MsgListenerFuture<>();
+            callFuture.setListener(new BaseMsgFuture.Listener<CallProfileAppService>() {
+                @Override
+                public void onAction(int messageId, CallProfileAppService call) {
+                    try {
+                        call.sendMsg(PairingMsgTypes.PAIR_ACCEPT.getType(), future);
+                    } catch (Exception e) {
+                        logger.error("call sendMsg error",e);
+                        future.onMsgFail(messageId,400,e.getMessage());
+                    }
+                }
 
+                @Override
+                public void onFail(int messageId, int status, String statusDetail) {
+                    logger.error("call sendMsg fail",statusDetail);
+                    future.onMsgFail(messageId,status,statusDetail);
+                }
+            });
+            connection.callProfileAppService(remotePubKeyHex,DefaultServices.PROFILE_PAIRING.getName(),true,false,callFuture);
+        }
     }
+
+    public void cancelPairingRequest(PairingRequest pairingRequest) {
+        pairingRequestsManager.delete(pairingRequest.getId());
+    }
+
 
     private ProfileServerConfigurations createEmptyProfileServerConf(){
         return context.createProfSerConfig();
     }
 
-    private IoPProfileConnection getProfileConnection(String profPubKey){
-        if (!managers.containsKey(profPubKey)) throw new IllegalStateException("Profile connection not established");
+    private IoPProfileConnection getProfileConnection(String profPubKey) throws org.fermat.redtooth.core.exceptions.ProfileNotConectedException {
+        if (!managers.containsKey(profPubKey)) throw new org.fermat.redtooth.core.exceptions.ProfileNotConectedException("Profile connection not established");
         return managers.get(profPubKey);
     }
 

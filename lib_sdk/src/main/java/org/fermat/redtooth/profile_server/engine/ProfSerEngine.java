@@ -75,10 +75,10 @@ public class ProfSerEngine {
     private ProfNodeConnection profNodeConnection;
     /** Crypto wrapper implementation */
     private CryptoWrapper crypto;
-    /** Db */
-    private ProfSerDb profSerDb;
     /** Internal server handler */
     private PsSocketHandler handler;
+    /** Connection listeners */
+    private CopyOnWriteArrayList<ConnectionListener> connectionListener = new CopyOnWriteArrayList<>();
     /** Listener to receive incomingCallNotifications and incomingMessages from calls */
     private org.fermat.redtooth.profile_server.engine.app_services.CallsListener callListener;
     /** Messages listeners:  id -> listner */
@@ -91,19 +91,20 @@ public class ProfSerEngine {
 
     /**
      *
-     * @param profServerData
-     * @param profile -> use a profile for the restriction of 1 per connection that the server have.
+     * @param contextWrapper
+     * @param profServerData -> server data
+     * @param profile -> profile data
+     * @param crypto
+     * @param sslContextFactory
      */
-    public ProfSerEngine(IoPConnectContext contextWrapper, ProfSerDb profSerDb , ProfServerData profServerData, Profile profile, CryptoWrapper crypto, SslContextFactory sslContextFactory) {
+    public ProfSerEngine(IoPConnectContext contextWrapper, ProfServerData profServerData, Profile profile, CryptoWrapper crypto, SslContextFactory sslContextFactory) {
         this.profServerData = profServerData;
         this.crypto = crypto;
-        this.profSerDb = profSerDb;
         this.profSerConnectionState=NO_SERVER;
         this.profNodeConnection = new ProfNodeConnection(
                 profile,
-                profSerDb.isRegistered(
-                        profServerData.getHost(),
-                        profile.getHexPublicKey()),
+                profServerData.isRegistered(),
+                profServerData.isHome(),
                 randomChallenge()
         );
         handler = new ProfileServerHanlder();
@@ -131,6 +132,10 @@ public class ProfSerEngine {
 
     public void setCallListener(CallsListener callListener) {
         this.callListener = callListener;
+    }
+
+    public void addConnectionListener(ConnectionListener listener){
+        this.connectionListener.add(listener);
     }
 
     /**
@@ -577,10 +582,6 @@ public class ProfSerEngine {
         return profServerData;
     }
 
-    ProfSerDb getProfSerDb() {
-        return profSerDb;
-    }
-
     /**
      * Close a specific port
      * @param port
@@ -625,6 +626,10 @@ public class ProfSerEngine {
             }
         },5,15, TimeUnit.SECONDS);
         pingExecutors.put(portType,service);
+    }
+
+    public CopyOnWriteArrayList<ConnectionListener> getConnectionListeners() {
+        return connectionListener;
     }
 
 
