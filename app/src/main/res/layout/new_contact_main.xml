@@ -10,6 +10,7 @@
         android:text="@string/request_message"
         android:textColor="@color/mainText"
         android:textSize="18sp"
+        android:paddingTop="40dp"
         style="@style/MessageText"/>
 
 
@@ -20,7 +21,7 @@
         android:id="@+id/edit_uri"
         android:background="@drawable/bg_inputs"
         android:hint="Add URI"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="40dp"
         android:layout_marginBottom="20dp"
         android:gravity="center"
         android:textSize="18sp"
