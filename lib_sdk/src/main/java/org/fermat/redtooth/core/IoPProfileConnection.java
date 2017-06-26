@@ -17,6 +17,7 @@ import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppServ
 import org.fermat.redtooth.profile_server.engine.app_services.CallsListener;
 import org.fermat.redtooth.profile_server.engine.app_services.CryptoMsg;
 import org.fermat.redtooth.profile_server.engine.crypto.BoxAlgo;
+import org.fermat.redtooth.profile_server.engine.listeners.ConnectionListener;
 import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
 import org.fermat.redtooth.profile_server.engine.ProfSerEngine;
 import org.fermat.redtooth.profile_server.engine.SearchProfilesQuery;
@@ -57,8 +58,6 @@ public class IoPProfileConnection implements CallsListener {
     private ProfServerData psConnData;
     /** profile server engine */
     private ProfSerEngine profSerEngine;
-    /** profile server configurations */
-    private ProfileServerConfigurations profileServerConfigurations;
     /** Crypto implmentation dependent on the platform */
     private CryptoWrapper cryptoWrapper;
     /** Ssl context factory */
@@ -70,9 +69,8 @@ public class IoPProfileConnection implements CallsListener {
     /**  */
     private ConcurrentMap<String,AppService> openServices = new ConcurrentHashMap<>();
 
-    public IoPProfileConnection(IoPConnectContext contextWrapper, Profile profile, ProfileServerConfigurations profileServerConfigurations,ProfServerData psConnData, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, DeviceLocation deviceLocation){
+    public IoPProfileConnection(IoPConnectContext contextWrapper, Profile profile,ProfServerData psConnData, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, DeviceLocation deviceLocation){
         this.contextWrapper = contextWrapper;
-        this.profileServerConfigurations = profileServerConfigurations;
         this.cryptoWrapper = cryptoWrapper;
         this.sslContextFactory = sslContextFactory;
         this.psConnData = psConnData;
@@ -85,8 +83,8 @@ public class IoPProfileConnection implements CallsListener {
      *
      * @throws Exception
      */
-    public void init(final MsgListenerFuture<Boolean> initFuture) throws ExecutionException, InterruptedException {
-        initProfileServer(psConnData);
+    public void init(final MsgListenerFuture<Boolean> initFuture,ConnectionListener connectionListener) throws ExecutionException, InterruptedException {
+        initProfileServer(psConnData,connectionListener);
         MsgListenerFuture<Boolean> initWrapper = new MsgListenerFuture<>();
         initWrapper.setListener(new BaseMsgFuture.Listener<Boolean>() {
             @Override
@@ -104,25 +102,25 @@ public class IoPProfileConnection implements CallsListener {
         profSerEngine.start(initWrapper);
     }
 
-    public void init() throws Exception {
-        init(null);
+    public void init(ConnectionListener connectionListener) throws Exception {
+        init(null,connectionListener);
     }
 
     /**
      * Initialize the profile server
      * @throws Exception
      */
-    private void initProfileServer(ProfServerData profServerData) {
+    private void initProfileServer(ProfServerData profServerData, ConnectionListener connectionListener) {
         if (profServerData.getHost()!=null) {
             profSerEngine = new ProfSerEngine(
                     contextWrapper,
-                    profileServerConfigurations,
                     profServerData,
                     profileCache,
                     cryptoWrapper,
                     sslContextFactory
             );
             profSerEngine.setCallListener(this);
+            profSerEngine.addConnectionListener(connectionListener);
         }else {
             throw new IllegalStateException("Profile server not found, please set one first using LOC");
         }
@@ -162,7 +160,6 @@ public class IoPProfileConnection implements CallsListener {
 
     public int updateProfile(byte[] version, String name, byte[] img, int latitude, int longitude, String extraData, ProfSerMsgListener msgListener) {
         profileCache.setName(name);
-        profileServerConfigurations.setUsername(name);
         return profSerEngine.updateProfile(
                 version,
                 name,
@@ -197,7 +194,6 @@ public class IoPProfileConnection implements CallsListener {
      */
     public void addApplicationService(AppService appService) {
         profileCache.addApplicationService(appService);
-        profileServerConfigurations.saveProfile(profileCache);
         openServices.put(appService.getName(),appService);
         profSerEngine.addApplicationService(appService);
     }
@@ -304,7 +300,6 @@ public class IoPProfileConnection implements CallsListener {
             }else {
                 callProfileAppService(callProfileAppService,profSerMsgListener);
             }
-
         } catch (CantSendMessageException e) {
             e.printStackTrace();
             notifyCallError(callProfileAppService,profSerMsgListener,0, CallProfileAppService.Status.CALL_FAIL,e.getMessage());

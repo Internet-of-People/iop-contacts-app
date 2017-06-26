@@ -52,7 +52,7 @@ public interface ModuleRedtooth {
      *
      * @param pairingRequest
      */
-    void acceptPairingProfile(PairingRequest pairingRequest);
+    void acceptPairingProfile(PairingRequest pairingRequest) throws Exception;
 
     void cancelPairingRequest(PairingRequest pairingRequest);
 

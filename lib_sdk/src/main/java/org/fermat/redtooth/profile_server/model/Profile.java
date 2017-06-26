@@ -30,6 +30,8 @@ public class Profile implements Signer,ProfileBase {
     private int longitude;
     private String extraData;
 
+    private String homeHost;
+    private byte[] homeHostId;
     private HashSet<AppService> applicationServices;
 
     /** Key del profile */
@@ -133,8 +135,24 @@ public class Profile implements Signer,ProfileBase {
         this.keyEd25519 = keyEd25519;
     }
 
+    public void setHomeHost(String homeHost) {
+        this.homeHost = homeHost;
+    }
+
+    public void setHomeHostId(byte[] homeHostId) {
+        this.homeHostId = homeHostId;
+    }
+
     public long getId() {
         return id;
+    }
+
+    public String getHomeHost() {
+        return homeHost;
+    }
+
+    public byte[] getHomeHostId() {
+        return homeHostId;
     }
 
     @Override
@@ -163,4 +181,5 @@ public class Profile implements Signer,ProfileBase {
     public String getNetworkIdHex() {
         return CryptoBytes.toHexString(Sha256Hash.hash(getPublicKey()));
     }
+
 }

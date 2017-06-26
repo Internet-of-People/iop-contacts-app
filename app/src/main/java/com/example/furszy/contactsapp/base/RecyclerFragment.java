@@ -80,7 +80,11 @@ public abstract class RecyclerFragment<T> extends BaseAppFragment {
      */
     private void load() {
         loading_bar.setVisibility(View.VISIBLE);
-        executor.execute(loadContacts);
+        executor.execute(loadRunnable);
+    }
+
+    protected void refresh(){
+        load();
     }
 
 
@@ -105,7 +109,7 @@ public abstract class RecyclerFragment<T> extends BaseAppFragment {
      */
     protected abstract BaseAdapter<T,? extends BaseViewHolder> initAdapter();
 
-    Runnable loadContacts = new Runnable() {
+    protected Runnable loadRunnable = new Runnable() {
         @Override
         public void run() {
             boolean res = false;
@@ -123,9 +127,9 @@ public abstract class RecyclerFragment<T> extends BaseAppFragment {
                 public void run() {
                     loading_bar.setVisibility(View.GONE);
                     if (finalRes) {
+                        adapter.changeDataSet(list);
                         if (list!=null && !list.isEmpty()) {
                             hideEmptyScreen();
-                            adapter.changeDataSet(list);
                         } else {
                             showEmptyScreen();
                             txt_empty.setText(emptyText);

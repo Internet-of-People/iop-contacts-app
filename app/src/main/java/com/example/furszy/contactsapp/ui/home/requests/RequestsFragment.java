@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.furszy.contactsapp.App;
 import com.example.furszy.contactsapp.ProfileInformationActivity;
@@ -68,13 +69,29 @@ public class RequestsFragment extends RecyclerFragment<PairingRequest> {
     protected BaseAdapter initAdapter() {
         RequestAdapter profileAdapter = new RequestAdapter(getActivity(), module, new RequestAdapter.RequestListener() {
             @Override
-            public void onAcceptRequest(PairingRequest pairingRequest) {
-                module.acceptPairingProfile(pairingRequest);
+            public void onAcceptRequest(final PairingRequest pairingRequest) {
+                Toast.makeText(getActivity(),"Sending acceptance..",Toast.LENGTH_SHORT).show();
+                executor.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            module.acceptPairingProfile(pairingRequest);
+                        } catch (Exception e) {
+                            // todo: show this exception..
+                            e.printStackTrace();
+                        }
+                        loadRunnable.run();
+                    }
+                });
+
+
             }
 
             @Override
             public void onCancelRequest(PairingRequest pairingRequest) {
                 module.cancelPairingRequest(pairingRequest);
+                Toast.makeText(getActivity(),"Connection cancelled..",Toast.LENGTH_SHORT).show();
+                refresh();
             }
         });
         return profileAdapter;

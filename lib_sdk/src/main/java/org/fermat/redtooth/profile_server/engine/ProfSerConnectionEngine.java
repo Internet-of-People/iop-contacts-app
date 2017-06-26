@@ -1,6 +1,7 @@
 package org.fermat.redtooth.profile_server.engine;
 
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
+import org.fermat.redtooth.profile_server.engine.listeners.ConnectionListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.processors.MessageProcessor;
@@ -69,7 +70,6 @@ public class ProfSerConnectionEngine {
 
             // Client connected, now the identity have to do the check in
             requestCheckin();
-
 
         } catch (InvalidStateException e) {
             e.printStackTrace();
@@ -180,19 +180,25 @@ public class ProfSerConnectionEngine {
 
         public void execute(int messageId,IopProfileServer.ListRolesResponse message) {
             LOG.info("ListRolesProcessor execute..");
+            int cPort = 0;
+            int nonClPort = 0;
+            int appSerPort = 0;
             for (IopProfileServer.ServerRole serverRole : message.getRolesList()) {
                 switch (serverRole.getRole()){
                     case CL_NON_CUSTOMER:
-                        profSerEngine.getProfServerData().setNonCustPort(serverRole.getPort());
+                        nonClPort = serverRole.getPort();
+                        profSerEngine.getProfServerData().setNonCustPort(nonClPort);
                         break;
                     case CL_CUSTOMER:
-                        profSerEngine.getProfServerData().setCustPort(serverRole.getPort());
+                        cPort = serverRole.getPort();
+                        profSerEngine.getProfServerData().setCustPort(cPort);
                         break;
                     case PRIMARY:
                         // nothing
                         break;
                     case CL_APP_SERVICE:
-                        profSerEngine.getProfServerData().setAppServicePort(serverRole.getPort());
+                        appSerPort = serverRole.getPort();
+                        profSerEngine.getProfServerData().setAppServicePort(appSerPort);
                         break;
                     default:
                         //nothing
@@ -205,10 +211,11 @@ public class ProfSerConnectionEngine {
             }catch (Exception e){
                 e.printStackTrace();
             }
-            // save ports
-            profSerEngine.getProfSerDb().setMainPfClPort(profSerEngine.getProfServerData().getCustPort());
-            profSerEngine.getProfSerDb().setMainPsNonClPort(profSerEngine.getProfServerData().getNonCustPort());
-            profSerEngine.getProfSerDb().setMainAppServicePort(profSerEngine.getProfServerData().getAppServicePort());
+            // notify ports
+            for (ConnectionListener connectionListener : profSerEngine.getConnectionListeners()) {
+                connectionListener.onPortsReceived(profSerEngine.getProfServerData().getHost(),nonClPort,cPort,appSerPort);
+            }
+
 
             LOG.info("ListRolesProcessor no cl port: "+ profSerEngine.getProfServerData().getNonCustPort());
             engine();
@@ -243,7 +250,13 @@ public class ProfSerConnectionEngine {
             profSerEngine.setProfSerConnectionState(START_CONVERSATION_NON_CL);
             // set the node challenge
             profSerEngine.getProfNodeConnection().setNodeChallenge(message.getChallenge().toByteArray());
-            engine();
+            // if the host is not home finish the engine here and notify connection.
+            if (!profSerEngine.getProfNodeConnection().isHome()){
+                for (ConnectionListener connectionListener : profSerEngine.getConnectionListeners()) {
+                    connectionListener.onNonClConnectionStablished(profSerEngine.getProfServerData().getHost());
+                }
+            }else
+                engine();
         }
 
         @Override
@@ -275,9 +288,14 @@ public class ProfSerConnectionEngine {
             profSerEngine.setProfSerConnectionState(HOME_NODE_REQUEST);
             // save data
 
-            profSerEngine.getProfSerDb().setProfileRegistered(profSerEngine.getProfServerData().getHost(),profSerEngine.getProfNodeConnection().getProfile().getHexPublicKey());
+            // todo: Save this as the home PS.. maybe with a listener from the IoPConnect and not from the engine.
+
+            for (ConnectionListener connectionListener : profSerEngine.getConnectionListeners()) {
+                connectionListener.onHostingPlanReceived(profSerEngine.getProfServerData().getHost(),message.getContract());
+            }
             profSerEngine.getProfNodeConnection().setIsRegistered(true);
             profSerEngine.getProfNodeConnection().setNeedRegisterProfile(true);
+
             engine();
         }
 

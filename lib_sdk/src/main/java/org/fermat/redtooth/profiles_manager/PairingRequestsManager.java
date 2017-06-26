@@ -23,4 +23,6 @@ public interface PairingRequestsManager {
     boolean updateStatus(String senderPubKey, String remotePubKey, PairingMsgTypes status);
 
     int removeRequest(String senderPubKey, String remotePubkey);
+
+    void delete(long id);
 }

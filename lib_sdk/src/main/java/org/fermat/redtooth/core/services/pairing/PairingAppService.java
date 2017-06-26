@@ -68,7 +68,8 @@ public class PairingAppService extends AppService {
                             case PAIR_REQUEST:
                                 PairingMsg pairingMsg = (PairingMsg) msgWrapper.getMsg();
                                 // save pair request -> todo: this should be in another place..
-                                PairingRequest pairingRequest = PairingRequest.buildPairingRequest(callProfileAppService.getRemotePubKey(),profileServiceOwner.getHexPublicKey(),profileServiceOwner.getNetworkIdHex(),pairingMsg.getName());
+                                PairingRequest pairingRequest = PairingRequest.buildPairingRequest(callProfileAppService.getRemotePubKey(),profileServiceOwner.getHexPublicKey(),profileServiceOwner.getNetworkIdHex(),pairingMsg.getName(),pairingMsg.getSenderHost());
+                                pairingRequest.setRemotePsHome(profileServiceOwner.getHomeHost());
                                 pairingRequestsManager.saveIfNotExistPairingRequest(pairingRequest);
                                 profilesManager.updatePaired(CryptoBytes.fromHexToBytes(pairingRequest.getSenderPubKey()), ProfileInformationImp.PairStatus.WAITING_FOR_MY_RESPONSE);
                                 if (pairingListener!=null){
