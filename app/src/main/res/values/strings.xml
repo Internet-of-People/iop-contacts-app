@@ -20,12 +20,17 @@
     <string name="send_request">Send Request</string>
     <string name="request_message">Paste the URI here to add a contact</string>
     <string name="share_qr_text">Share profile URI</string>
-    <string name="backup_profile_message">Add a password to secure your backup</string>
+    <string name="backup_profile_message">Add a password \n to secure your backup</string>
     <string name="repeat_password">Repeat Password</string>
     <string name="password">Password</string>
     <string name="create_backup">Create Backup</string>
     <string name="edit">Edit</string>
     <string name="set_backup_message">Set automatic Backups</string>
+    <string name="set_password_message">Select  \n your password</string>
+    <string name="set_folder_message">Select  where \n your back up will be save</string>
     <string name="active">Active</string>
     <string name="inactive">Inactive</string>
+    <string name="select_folder">Select Folder</string>
+    <string name="set_password">Set Password</string>
+    <string name="set_folder">Set Folder</string>
 </resources>

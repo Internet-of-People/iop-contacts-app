@@ -62,19 +62,19 @@
         android:textColorHint="@color/white"
         android:textSize="14sp" />
 
+    <LinearLayout
+        android:layout_below="@+id/edit_name"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:gravity="center|bottom"
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true">
 
-    <Button
-        android:id="@+id/btnCreate"
-        android:layout_width="@dimen/btn_width"
-        android:layout_height="@dimen/btn_height"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="40dp"
-        android:background="@drawable/bg_button_white"
-        android:gravity="center_vertical|center_horizontal"
-        android:onClick="tryCreate"
-        android:text="@string/create_profile"
-        android:textColor="@color/mainBlue"
-        android:textSize="14sp" />
+        <Button
+            android:id="@+id/btnCreate"
+            android:text="@string/create_profile"
+            style="@style/ButtonWhiteBorderBlue"/>
+    </LinearLayout>
 
 </RelativeLayout>

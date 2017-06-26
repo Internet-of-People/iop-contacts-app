@@ -10,6 +10,7 @@
     android:gravity="center_horizontal">
 
     <LinearLayout
+        android:id="@+id/qrInfo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -44,7 +45,7 @@
             android:paddingEnd="12dp"
             android:paddingStart="12dp"
             android:textIsSelectable="true"
-            android:textColor="@color/base_background"
+            android:textColor="@color/white"
             android:autoLink="all"
             android:textColorLink="@color/colorAccent"
             tools:text="p3214asdeaf343facdaf1234v"/>
@@ -53,13 +54,14 @@
     </LinearLayout>
 
     <LinearLayout
+        android:layout_marginTop="20dp"
+        android:layout_below="@+id/qrInfo"
         android:layout_width="300dp"
         android:layout_height="48dp"
         android:paddingBottom="3dp"
-        android:paddingTop="12dp"
+        android:paddingTop="2dp"
         android:orientation="horizontal"
         android:background="@color/bgBlack30"
-        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="32dp">
 

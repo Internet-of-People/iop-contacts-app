@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.furszy.contactsapp.BaseActivity;
 import com.example.furszy.contactsapp.BaseDrawerActivity;
 import com.example.furszy.contactsapp.QrUtils;
 import com.example.furszy.contactsapp.R;
@@ -32,7 +33,7 @@ import static com.example.furszy.contactsapp.Util.convertDpToPx;
  * Created by Neoperol on 6/22/17.
  */
 
-public class MyQrActivity extends BaseDrawerActivity implements View.OnClickListener {
+public class MyQrActivity extends BaseActivity implements View.OnClickListener {
 
     private View root;
     private ImageView img_qr;
@@ -43,6 +44,8 @@ public class MyQrActivity extends BaseDrawerActivity implements View.OnClickList
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
         root = getLayoutInflater().inflate(R.layout.my_qr_activity, container);
         setTitle("My QR");
+        getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         // Button Copy address
         findViewById(R.id.btn_copy).setOnClickListener(this);
         // Button Share address
@@ -66,12 +69,6 @@ public class MyQrActivity extends BaseDrawerActivity implements View.OnClickList
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        // to check current activity in the navigation drawer
-        setNavigationMenuItemChecked(2);
-    }
 
     @Override
     public void onClick(View v) {

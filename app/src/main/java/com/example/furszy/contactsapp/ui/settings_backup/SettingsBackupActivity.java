@@ -2,17 +2,14 @@ package com.example.furszy.contactsapp.ui.settings_backup;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import com.example.furszy.contactsapp.BaseActivity;
 import com.example.furszy.contactsapp.R;
-import com.example.furszy.contactsapp.ui.settings_backup_process.SettingsBackupProcessActivity;
-import com.example.furszy.contactsapp.ui.settings_restore.SettingsRestoreActivity;
+import com.example.furszy.contactsapp.ui.settings_backup_process.SettingsBackupPasswordActivity;
 
 /**
  * Created by Neoperol on 6/23/17.
@@ -52,7 +49,7 @@ public class SettingsBackupActivity extends BaseActivity {
         btnCreateBackup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent myIntent = new Intent(v.getContext(), SettingsBackupProcessActivity.class);
+                Intent myIntent = new Intent(v.getContext(), SettingsBackupPasswordActivity.class);
                 startActivityForResult(myIntent, 0);
             }
         });
