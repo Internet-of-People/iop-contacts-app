@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
  * Esta clase basicamente se encarga de controlar la conexión con un profile server en especifico.
  * Abriendo,cerrando y/o manteniendo los sockets
  *
+ * todo: Add idle channel agent.
  */
 
 public class ProfSerConnectionManager {
