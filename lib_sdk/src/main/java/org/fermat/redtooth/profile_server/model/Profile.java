@@ -1,6 +1,7 @@
 package org.fermat.redtooth.profile_server.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,7 +33,7 @@ public class Profile implements Signer,ProfileBase {
 
     private String homeHost;
     private byte[] homeHostId;
-    private HashSet<AppService> applicationServices;
+    private HashMap<String,AppService> applicationServices;
 
     /** Key del profile */
     private KeyEd25519 keyEd25519;
@@ -43,7 +44,7 @@ public class Profile implements Signer,ProfileBase {
         this.name = name;
         this.type = type;
         this.keyEd25519 = keyEd25519;
-        applicationServices = new HashSet<>();
+        applicationServices = new HashMap<>();
     }
 
     public Profile(byte[] version, String name, byte[] img, int latitude, int longitude, String extraData) {
@@ -128,7 +129,7 @@ public class Profile implements Signer,ProfileBase {
     }
 
     public void addApplicationService(AppService service){
-        applicationServices.add(service);
+        applicationServices.put(service.getName(),service);
     }
 
     public void setKey(KeyEd25519 keyEd25519) {
@@ -166,8 +167,12 @@ public class Profile implements Signer,ProfileBase {
     }
 
 
-    public HashSet<AppService> getApplicationServices() {
+    public HashMap<String,AppService> getApplicationServices() {
         return applicationServices;
+    }
+
+    public <T extends AppService> T getAppService(String name,Class<T> clazz){
+        return (T) applicationServices.get(name);
     }
 
     public Object getKey() {

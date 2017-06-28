@@ -1,15 +1,13 @@
 package org.fermat.redtooth.core;
 
 
+import org.fermat.redtooth.core.services.DefaultServices;
+import org.fermat.redtooth.core.services.pairing.PairingAppService;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.crypto.CryptoWrapper;
 import org.fermat.redtooth.global.DeviceLocation;
-import org.fermat.redtooth.global.GpsLocation;
-import org.fermat.redtooth.locnet.Explorer;
-import org.fermat.redtooth.locnet.NodeInfo;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
-import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.SslContextFactory;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 import org.fermat.redtooth.profile_server.engine.app_services.AppServiceMsg;
@@ -18,7 +16,6 @@ import org.fermat.redtooth.profile_server.engine.app_services.CallsListener;
 import org.fermat.redtooth.profile_server.engine.app_services.CryptoMsg;
 import org.fermat.redtooth.profile_server.engine.crypto.BoxAlgo;
 import org.fermat.redtooth.profile_server.engine.listeners.ConnectionListener;
-import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
 import org.fermat.redtooth.profile_server.engine.ProfSerEngine;
 import org.fermat.redtooth.profile_server.engine.SearchProfilesQuery;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
@@ -26,18 +23,17 @@ import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SubsequentSearchMsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
-import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.ProfServerData;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 
 /**
  * Created by mati on 08/05/17.
@@ -66,8 +62,6 @@ public class IoPProfileConnection implements CallsListener {
     private DeviceLocation deviceLocation;
     /** Open profile app service calls -> remote profile pk -> call in progress */
     private ConcurrentMap<String,CallProfileAppService> openCall = new ConcurrentHashMap<>();
-    /**  */
-    private ConcurrentMap<String,AppService> openServices = new ConcurrentHashMap<>();
 
     public IoPProfileConnection(IoPConnectContext contextWrapper, Profile profile,ProfServerData psConnData, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, DeviceLocation deviceLocation){
         this.contextWrapper = contextWrapper;
@@ -136,7 +130,7 @@ public class IoPProfileConnection implements CallsListener {
     private void registerApplicationServices() {
         // registerConnect application services
         final Profile profile = profSerEngine.getProfNodeConnection().getProfile();
-        for (final AppService service : profile.getApplicationServices()) {
+        for (final AppService service : profile.getApplicationServices().values()) {
             addApplicationService(service);
         }
     }
@@ -194,7 +188,6 @@ public class IoPProfileConnection implements CallsListener {
      */
     public void addApplicationService(AppService appService) {
         profileCache.addApplicationService(appService);
-        openServices.put(appService.getName(),appService);
         profSerEngine.addApplicationService(appService);
     }
 
@@ -225,14 +218,17 @@ public class IoPProfileConnection implements CallsListener {
      * @param appService
      * @param tryWithoutGetInfo -> if the redtooth knows the profile data there is no necesity to get the data again.
      */
-    public void callProfileAppService(final String remoteProfilePublicKey, final String appService, boolean tryWithoutGetInfo,final boolean encryptMsg ,final ProfSerMsgListener<CallProfileAppService> profSerMsgListener) {
+    public void callProfileAppService(final String remoteProfilePublicKey, final String appService, boolean tryWithoutGetInfo, final boolean encryptMsg, final ProfSerMsgListener<CallProfileAppService> profSerMsgListener) {
         logger.info("callProfileAppService from "+remoteProfilePublicKey+" using "+appService);
         final CallProfileAppService callProfileAppService = new CallProfileAppService(
                 appService,
                 profileCache,
                 remoteProfilePublicKey,
                 profSerEngine,
-                (encryptMsg)?new BoxAlgo():null);
+                (encryptMsg)?new BoxAlgo():null
+        );
+        // wrap call in a Pairing call.
+        profileCache.getAppService(DefaultServices.PROFILE_PAIRING.getName(),PairingAppService.class).wrapCall(callProfileAppService);
         try {
             if (!tryWithoutGetInfo) {
                 callProfileAppService.setStatus(CallProfileAppService.Status.PENDING_AS_INFO);
@@ -326,7 +322,9 @@ public class IoPProfileConnection implements CallsListener {
                 logger.info("callProfileAppService accepted");
                 try {
                     callProfileAppService.setCallToken(appServiceResponse.getCallerToken().toByteArray());
-                    openCall.put(CryptoBytes.toHexString(appServiceResponse.getCallerToken().toByteArray()),callProfileAppService);
+                    String callToken = CryptoBytes.toHexString(appServiceResponse.getCallerToken().toByteArray());
+                    logger.info("Adding call, token: "+callToken);
+                    openCall.put(callToken,callProfileAppService);
                     // setup call app service
                     setupCallAppServiceInitMessage(callProfileAppService,true,profSerMsgListener);
                 } catch (CantSendMessageException e) {
@@ -364,6 +362,7 @@ public class IoPProfileConnection implements CallsListener {
             callProfileAppService.setCallToken(message.getCalleeToken().toByteArray());
 
             // accept every single call
+            logger.info("Adding call, token: "+callToken);
             openCall.put(callToken, callProfileAppService);
             profSerEngine.acceptCall(messageId);
 
@@ -372,7 +371,7 @@ public class IoPProfileConnection implements CallsListener {
                 @Override
                 public void onMessageReceive(int messageId, CallProfileAppService message) {
                     // once everything is correct, launch notification
-                    openServices.get(message.getAppService()).onNewCallReceived(callProfileAppService);
+                    profileCache.getAppService(message.getAppService(), PairingAppService.class).wrapCall(callProfileAppService);
                 }
 
                 @Override
@@ -451,6 +450,10 @@ public class IoPProfileConnection implements CallsListener {
         // todo: Como puedo saber a donde deberia ir este mensaje..
         // todo: una vez sabido a qué openCall vá, la open call debe tener un listener de los mensajes entrantes (quizás una queue) y debe ir respondiendo con el ReceiveMessageNotificationResponse
         // todo: para notificar al otro lado que todo llegó bien.
+
+        // todo: por alguna razon llega un mensaje para una llamada la cual no tiene listener asociado.. esto no deberia pasar.
+        logger.info("Open calls keys: "+Arrays.toString(openCall.keySet().toArray()));
+        logger.info("Open calls "+Arrays.toString(openCall.values().toArray()));
         if (openCall.containsKey(message.getCallTokenId())){
             // launch notification
             openCall.get(message.getCallTokenId()).onMessageReceived(message.getMsg());
@@ -465,7 +468,7 @@ public class IoPProfileConnection implements CallsListener {
                 e.printStackTrace();
             }
         }else {
-            logger.warn("incomingAppServiceMessage -> openCall not found");
+            logger.warn("incomingAppServiceMessage -> openCall not found",message);
         }
     }
 

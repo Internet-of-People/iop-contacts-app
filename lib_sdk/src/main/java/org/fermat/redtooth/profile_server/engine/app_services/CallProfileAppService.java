@@ -13,6 +13,8 @@ import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+
 import static org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService.Status.CALL_AS_ESTABLISH;
 import static org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService.Status.NO_INFORMATION;
 
@@ -228,5 +230,22 @@ public class CallProfileAppService {
         }else {
             logger.warn("CallAppService msg received, not msgListener attached..");
         }
+    }
+
+    @Override
+    public String toString() {
+        return "CallProfileAppService{" +
+                "appService='" + appService + '\'' +
+                ", localProfile=" + localProfile +
+                ", remoteProfilePk='" + remoteProfilePk + '\'' +
+                ", callToken=" + Arrays.toString(callToken) +
+                ", status=" + status +
+                ", errorStatus='" + errorStatus + '\'' +
+                ", isCallCreator=" + isCallCreator +
+                ", isEncrypted=" + isEncrypted +
+                ", cryptoAlgo=" + cryptoAlgo +
+                ", msgListener=" + msgListener +
+                ", profSerEngine=" + profSerEngine +
+                '}';
     }
 }

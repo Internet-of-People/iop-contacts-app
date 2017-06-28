@@ -1157,7 +1157,7 @@ public class ProfSerEngine {
 
         @Override
         public void execute(IoSession session, int messageId, IopProfileServer.ApplicationServiceReceiveMessageNotificationRequest message) {
-            LOG.info("ApplicationServiceReceiveMessageNotificationRequestProcessor");
+            LOG.info("ApplicationServiceReceiveMessageNotificationRequestProcessor, "+session.toString());
             if (callListener!=null) {
                 callListener.incomingAppServiceMessage(messageId, org.fermat.redtooth.profile_server.engine.app_services.AppServiceMsg.wrap(session.getSessionTokenId(),message));
             }else

@@ -217,4 +217,14 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
             }
         }
     }
+
+    @Override
+    public String toString() {
+        return "ProfileServerSocket{" +
+                "tokenId='" + tokenId + '\'' +
+                ", port=" + port +
+                ", host='" + host + '\'' +
+                ", portType=" + portType +
+                '}';
+    }
 }

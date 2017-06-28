@@ -46,7 +46,7 @@ public abstract class AppService implements ProfSerMsgListener{
     /**
      * New calls will appear here
      */
-    public abstract void onNewCallReceived(CallProfileAppService callProfileAppService);
+    public abstract void wrapCall(CallProfileAppService callProfileAppService);
 
     public String getName() {
         return name;
