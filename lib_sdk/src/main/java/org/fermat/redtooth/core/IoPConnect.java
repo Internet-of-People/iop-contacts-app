@@ -396,7 +396,7 @@ public class IoPConnect implements ConnectionListener {
      * @param pairingRequest
      */
     public void acceptPairingRequest(PairingRequest pairingRequest) throws Exception {
-        String remotePubKeyHex =  pairingRequest.getRemotePubKey();
+        String remotePubKeyHex =  pairingRequest.getSenderPubKey();
         logger.info("acceptPairingRequest, remote: " + remotePubKeyHex);
         // update in db the acceptance first
         // todo: here i have to add the pair request db and tick this as done. and save the profile with paired true.
@@ -423,7 +423,7 @@ public class IoPConnect implements ConnectionListener {
             }
         }
         CallProfileAppService call = connection.getActiveAppCallService(remotePubKeyHex);
-        final MsgListenerFuture<Boolean> future = new MsgListenerFuture();
+        final MsgListenerFuture<Boolean> future = new MsgListenerFuture<>();
         //future.setListener(); -> todo: add future listener and save acceptPairing sent
         if (call != null) {
             call.sendMsg(PairingMsgTypes.PAIR_ACCEPT.getType(), future);
