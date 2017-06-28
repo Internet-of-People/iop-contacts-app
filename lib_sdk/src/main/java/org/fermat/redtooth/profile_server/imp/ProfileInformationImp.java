@@ -39,6 +39,7 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
     private byte[] imgHash;
 
     private byte[] profileServerId;
+    private String homeHost;
     private boolean isOnline;
     private long updateTimestamp;
     private PairStatus pairStatus = NOT_PAIRED;
@@ -47,7 +48,14 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
     public ProfileInformationImp() {
     }
 
-    public ProfileInformationImp(byte[] version, byte[] pubKey, String name, String type, byte[] imgHash, byte[] thumbnailImg, int latitude, int longitude, String extraData, Set<String> services, byte[] profileServerId) {
+    public ProfileInformationImp(byte[] pubKey, String name, String homeHost,PairStatus pairStatus) {
+        this.pubKey = pubKey;
+        this.name = name;
+        this.homeHost = homeHost;
+        this.pairStatus = pairStatus;
+    }
+
+    public ProfileInformationImp(byte[] version, byte[] pubKey, String name, String type, byte[] imgHash, byte[] thumbnailImg, int latitude, int longitude, String extraData, Set<String> services, byte[] profileServerId, String homeHost) {
         this.version = version;
         this.pubKey = pubKey;
         this.name = name;
@@ -59,6 +67,7 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
         this.extraData = extraData;
         this.services = services;
         this.profileServerId = profileServerId;
+        this.homeHost = homeHost;
     }
 
     public byte[] getVersion() {
@@ -114,6 +123,10 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
 
     public byte[] getProfileServerId() {
         return profileServerId;
+    }
+
+    public String getHomeHost() {
+        return homeHost;
     }
 
     @Override

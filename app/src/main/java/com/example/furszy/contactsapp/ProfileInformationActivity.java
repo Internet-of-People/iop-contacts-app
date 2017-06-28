@@ -78,7 +78,7 @@ public class ProfileInformationActivity extends BaseActivity {
         if (extras!=null && extras.containsKey(INTENT_EXTRA_PROF_KEY)){
             byte[] pubKey = extras.getByteArray(INTENT_EXTRA_PROF_KEY);
             if (!extras.containsKey(INTENT_EXTRA_SEARCH)){
-                profileInformation = module.getKnownProfile(pubKey);
+                profileInformation = module.getKnownProfile(CryptoBytes.toHexString(pubKey));
             }else{
                 keyToSearch = pubKey;
                 nameToSearch = extras.getString(INTENT_EXTRA_PROF_NAME);

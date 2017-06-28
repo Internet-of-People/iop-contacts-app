@@ -143,6 +143,10 @@ public class CallProfileAppService {
         return errorStatus;
     }
 
+    public Profile getLocalProfile() {
+        return localProfile;
+    }
+
     /**
      *
      *

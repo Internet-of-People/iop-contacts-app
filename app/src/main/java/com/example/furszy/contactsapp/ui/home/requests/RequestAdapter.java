@@ -8,8 +8,10 @@ import com.example.furszy.contactsapp.R;
 import com.example.furszy.contactsapp.adapter.BaseAdapter;
 import com.example.furszy.contactsapp.adapter.FermatListItemListeners;
 
+import org.fermat.redtooth.core.services.pairing.PairingMsgTypes;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileInformation;
+import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
 
 /**
@@ -46,13 +48,17 @@ public class RequestAdapter extends BaseAdapter<PairingRequest, RequestHolder> {
     @Override
     protected void bindHolder(final RequestHolder holder, final PairingRequest data, int position) {
         holder.txt_name.setText(data.getSenderName());
-        holder.btn_confirm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (requestListener!=null)
-                    requestListener.onAcceptRequest(data);
-            }
-        });
+        if (data.getPairStatus() == ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE){
+            holder.btn_confirm.setVisibility(View.GONE);
+        }else {
+            holder.btn_confirm.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (requestListener != null)
+                        requestListener.onAcceptRequest(data);
+                }
+            });
+        }
         holder.btn_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -16,20 +16,19 @@ import java.util.List;
 public interface ProfilesManager {
 
 
+    long saveProfile(String localProfilePubKeyOwnerOfContact, ProfileInformation profile);
 
-    long saveProfile(ProfileInformation profile);
-
-    boolean updateProfile(ProfileInformation profile);
+    boolean updateProfile(String localProfilePubKeyOwnerOfContact, ProfileInformation profile);
 
     ProfileInformation getProfile(long id);
 
-    ProfileInformation getProfile(byte[] pubKey);
+    List<ProfileInformation> listOwnProfiles(String localProfileOwnerOfContacts);
 
-    List<ProfileInformation> listOwnProfiles(byte[] pubKey);
+    ProfileInformation getProfile(String localProfileOwnerOfContacts, String pubKey);
 
-    List<ProfileInformation> listConnectedProfiles(byte[] pubKey);
+    List<ProfileInformation> listConnectedProfiles(String localProfileOwnerOfContacts);
 
-    List<ProfileInformation> listAll();
+    List<ProfileInformation> listAll(String localProfilePubKeyOwnerOfContact);
 
-    void updatePaired(byte[] publicKey, ProfileInformationImp.PairStatus value);
+    boolean updatePaired(String localProfilePubKey, String remotePubKey, ProfileInformationImp.PairStatus value);
 }

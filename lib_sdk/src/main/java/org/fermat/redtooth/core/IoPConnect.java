@@ -184,23 +184,6 @@ public class IoPConnect implements ConnectionListener {
         addConnection(profileServerConfigurations,profServerData,keyEd25519,pairingListener).init(future,this);
     }
 
-    /*public boolean connectProfileSync(String profilePublicKey, PairingListener pairingListener, byte[] ownerChallenge) throws CantConnectException, ExecutionException, InterruptedException {
-        if (!managers.containsKey(profilePublicKey)){
-            ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
-            KeyEd25519 keyEd25519 = (KeyEd25519) profileServerConfigurations.getUserKeys();
-            if (keyEd25519==null) throw new IllegalStateException("no pubkey saved");
-            addConnection(profileServerConfigurations,keyEd25519,pairingListener);
-        }
-        MsgListenerFuture<Boolean> initFuture = new MsgListenerFuture<Boolean>();
-        getProfileConnection(profilePublicKey).init(initFuture);
-        Boolean res = initFuture.get();
-        if (res!=null){
-            return res;
-        }else {
-            throw new CantConnectException("Error code: "+initFuture.getStatus()+", detail: "+initFuture.getStatusDetail());
-        }
-    }*/
-
     public int updateProfile(Profile profile, ProfSerMsgListener msgListener) throws Exception {
         return getProfileConnection(profile.getHexPublicKey()).updateProfile(profile.getVersion(),profile.getName(),profile.getImg(),profile.getLatitude(),profile.getLongitude(),profile.getExtraData(),msgListener);
     }
@@ -282,9 +265,9 @@ public class IoPConnect implements ConnectionListener {
      * @throws CantConnectException
      * @throws CantSendMessageException
      */
-    public void searchAndGetProfile(String requeteerPubKey,String profPubKey,final ProfSerMsgListener<ProfileInformation> future) throws CantConnectException, CantSendMessageException {
+    public void searchAndGetProfile(final String requeteerPubKey, String profPubKey, final ProfSerMsgListener<ProfileInformation> future) throws CantConnectException, CantSendMessageException {
         if (!managers.containsKey(requeteerPubKey)) throw new IllegalStateException("Profile connection not established");
-        ProfileInformation info = profilesManager.getProfile(CryptoBytes.fromHexToBytes(profPubKey));
+        ProfileInformation info = profilesManager.getProfile(requeteerPubKey,profPubKey);
         if (info!=null){
             //todo: add TTL and expiration -> info.getLastUpdateTime().
             // if it's not valid go to CAN.
@@ -316,7 +299,7 @@ public class IoPConnect implements ConnectionListener {
                         profileInformation.addAppService(message.getApplicationServices(i));
                     }
                     // save unknown profile
-                    profilesManager.saveProfile(profileInformation);
+                    profilesManager.saveProfile(requeteerPubKey,profileInformation);
 
                     future.onMessageReceive(messageId, profileInformation);
                 }
@@ -336,9 +319,12 @@ public class IoPConnect implements ConnectionListener {
      * @param pairingRequest
      * @param listener -> returns the pairing request id
      */
-    public void requestPairingProfile(final PairingRequest pairingRequest, final ProfSerMsgListener<Integer> listener) {
+    public void requestPairingProfile(final PairingRequest pairingRequest, final ProfSerMsgListener<Integer> listener) throws Exception {
         logger.info("requestPairingProfile, remote: " + pairingRequest.getRemotePubKey());
-        final IoPProfileConnection connection = getProfileConnection(pairingRequest.getSenderPubKey());
+        // save request
+        final int pairingRequestId = pairingRequestsManager.savePairingRequest(pairingRequest);
+        // Connection
+        final IoPProfileConnection connection = getOrStablishConnection(pairingRequest.getRemotePsHost(),pairingRequest.getSenderPubKey(),pairingRequest.getSenderPsHost());
         // first the call
         MsgListenerFuture<CallProfileAppService> callListener = new MsgListenerFuture();
         callListener.setListener(new BaseMsgFuture.Listener<CallProfileAppService>() {
@@ -353,7 +339,6 @@ public class IoPConnect implements ConnectionListener {
                             @Override
                             public void onAction(int messageId, Boolean res) {
                                 logger.info("pairing msg sent, remote: " + call.getRemotePubKey());
-                                int pairingRequestId = pairingRequestsManager.savePairingRequest(pairingRequest);
                                 listener.onMessageReceive(messageId, pairingRequestId);
                             }
 
@@ -397,32 +382,27 @@ public class IoPConnect implements ConnectionListener {
      * @param pairingRequest
      */
     public void acceptPairingRequest(PairingRequest pairingRequest) throws Exception {
+        // Remember that here the local device is the pairingRequest.getSender()
         String remotePubKeyHex =  pairingRequest.getSenderPubKey();
+        String localPubKeyHex = pairingRequest.getRemotePubKey();
         logger.info("acceptPairingRequest, remote: " + remotePubKeyHex);
         // update in db the acceptance first
         // todo: here i have to add the pair request db and tick this as done. and save the profile with paired true.
-        profilesManager.updatePaired(CryptoBytes.fromHexToBytes(remotePubKeyHex), ProfileInformationImp.PairStatus.PAIRED);
-        pairingRequestsManager.updateStatus(remotePubKeyHex,pairingRequest.getSenderPubKey(),PairingMsgTypes.PAIR_ACCEPT);
+        profilesManager.updatePaired(
+                localPubKeyHex,
+                remotePubKeyHex,
+                ProfileInformationImp.PairStatus.PAIRED);
+        pairingRequestsManager.updateStatus(
+                remotePubKeyHex,
+                localPubKeyHex,
+                PairingMsgTypes.PAIR_ACCEPT, ProfileInformationImp.PairStatus.PAIRED);
         // requestsDbManager.removeRequest(remotePubKeyHex);
 
         // Notify the other side if it's connected.
         // first check if i have a connection with the server hosting the pairing sender
         // tengo que ver si el remote profile tiene como home host la conexion principal de el sender profile al PS
         // si no la tiene abro otra conexion.
-        final IoPProfileConnection connection;
-        if (pairingRequest.getSenderPsHost().equals(pairingRequest.getRemoteHost())) {
-            connection = getProfileConnection(pairingRequest.getRemotePubKey());
-        }else {
-            PsKey psKey = new PsKey(pairingRequest.getRemotePubKey(),pairingRequest.getSenderPsHost());
-            if(remoteManagers.containsKey(psKey)){
-                connection = remoteManagers.get(psKey);
-            }else {
-                ProfServerData profServerData = new ProfServerData(pairingRequest.getSenderPsHost());
-                Profile profile = createEmptyProfileServerConf().getProfile();
-                connection = addConnection(profServerData,profile,psKey);
-                connection.init(this);
-            }
-        }
+        final IoPProfileConnection connection = getOrStablishConnection(pairingRequest.getRemotePsHost(),pairingRequest.getRemotePubKey(),pairingRequest.getSenderPsHost());
         final CallProfileAppService call = connection.getActiveAppCallService(remotePubKeyHex);
         final MsgListenerFuture<Boolean> future = new MsgListenerFuture<>();
         // Add listener -> todo: add future listener and save acceptPairing sent
@@ -495,6 +475,34 @@ public class IoPConnect implements ConnectionListener {
     }
 
     /**
+     *
+     * If the remote ps host is the same as the home node return the main connection if not create another one to the remote server.
+     *
+     * @param localPsHost
+     * @param localProfPubKey
+     * @param remotePsHost
+     * @return
+     * @throws Exception
+     */
+    private IoPProfileConnection getOrStablishConnection(String localPsHost,String localProfPubKey,String remotePsHost) throws Exception {
+        IoPProfileConnection connection = null;
+        if (localPsHost.equals(remotePsHost)) {
+            connection = getProfileConnection(localProfPubKey);
+        }else {
+            PsKey psKey = new PsKey(localProfPubKey,remotePsHost);
+            if(remoteManagers.containsKey(psKey)){
+                connection = remoteManagers.get(psKey);
+            }else {
+                ProfServerData profServerData = new ProfServerData(remotePsHost);
+                Profile profile = createEmptyProfileServerConf().getProfile();
+                connection = addConnection(profServerData,profile,psKey);
+                connection.init(this);
+            }
+        }
+        return connection;
+    }
+
+    /**
      * Load a profile server configuration from one profile
      * @param profPk
      * @return
@@ -504,12 +512,12 @@ public class IoPConnect implements ConnectionListener {
     }
 
 
-    public List<ProfileInformation> getKnownProfiles(byte[] pubKey){
+    public List<ProfileInformation> getKnownProfiles(String pubKey){
         return profilesManager.listConnectedProfiles(pubKey);
     }
 
-    public ProfileInformation getKnownProfile(byte[] pubKey) {
-        return profilesManager.getProfile(pubKey);
+    public ProfileInformation getKnownProfile(String contactOwnerPubKey,String pubKey) {
+        return profilesManager.getProfile(contactOwnerPubKey,pubKey);
     }
 
     public void stop() {
