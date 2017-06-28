@@ -236,7 +236,7 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
         if (profile.getName()!=null)
             save(PREFS_USER_NAME,profile.getName());
         if (profile.getApplicationServices()!=null && !profile.getApplicationServices().isEmpty()){
-            save(PREFS_APPS_SERVICES,convertToJson(profile.getApplicationServices()));
+            save(PREFS_APPS_SERVICES,convertToJson(profile.getApplicationServices().values()));
         }
         if (profile.getHomeHost()!=null){
             save(PREFS_HOST,profile.getHomeHost());
