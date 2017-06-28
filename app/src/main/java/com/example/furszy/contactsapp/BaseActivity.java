@@ -19,7 +19,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.furszy.contactsapp.ui.home.HomeActivity;
@@ -48,6 +50,7 @@ public class BaseActivity extends AppCompatActivity{
     private NotifReceiver notifReceiver;
     protected Toolbar toolbar;
     protected FrameLayout childContainer;
+    private LinearLayout btnReload;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +64,17 @@ public class BaseActivity extends AppCompatActivity{
         init();
         // onCreateChildMethod
         onCreateView(savedInstanceState,childContainer);
+
+        //Layout reload
+
+        LinearLayout btnReload = (LinearLayout )findViewById(R.id.btnReload);
+        btnReload.setVisibility(LinearLayout.GONE);
+        btnReload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
     }
 
     private void init(){
