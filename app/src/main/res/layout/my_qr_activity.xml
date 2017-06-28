@@ -46,7 +46,7 @@
             android:paddingStart="12dp"
             android:textIsSelectable="true"
             android:textColor="@color/white"
-            android:autoLink="all"
+            android:autoLink="web"
             android:textColorLink="@color/colorAccent"
             tools:text="p3214asdeaf343facdaf1234v"/>
 

@@ -32,6 +32,7 @@ import org.fermat.redtooth.profiles_manager.ProfilesManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -396,7 +397,7 @@ public class IoPConnect implements ConnectionListener {
      * @param pairingRequest
      */
     public void acceptPairingRequest(PairingRequest pairingRequest) throws Exception {
-        String remotePubKeyHex =  pairingRequest.getRemotePubKey();
+        String remotePubKeyHex =  pairingRequest.getSenderPubKey();
         logger.info("acceptPairingRequest, remote: " + remotePubKeyHex);
         // update in db the acceptance first
         // todo: here i have to add the pair request db and tick this as done. and save the profile with paired true.
@@ -422,9 +423,38 @@ public class IoPConnect implements ConnectionListener {
                 connection.init(this);
             }
         }
-        CallProfileAppService call = connection.getActiveAppCallService(remotePubKeyHex);
-        final MsgListenerFuture<Boolean> future = new MsgListenerFuture();
-        //future.setListener(); -> todo: add future listener and save acceptPairing sent
+        final CallProfileAppService call = connection.getActiveAppCallService(remotePubKeyHex);
+        final MsgListenerFuture<Boolean> future = new MsgListenerFuture<>();
+        // Add listener -> todo: add future listener and save acceptPairing sent
+        future.setListener(new BaseMsgFuture.Listener<Boolean>() {
+            @Override
+            public void onAction(int messageId, Boolean object) {
+                try {
+                    logger.info("PairAccept sent");
+                    if (call!=null)
+                        call.dispose();
+                    else
+                        logger.warn("call null trying to dispose pairing app service. Check this");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFail(int messageId, int status, String statusDetail) {
+                logger.info("PairAccept fail, "+status+", detail: "+statusDetail);
+                //todo: schedule and re try
+                try {
+                    if (call!=null)
+                        call.dispose();
+                    else
+                        logger.warn("call null trying to dispose pairing app service. Check this");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
         if (call != null) {
             call.sendMsg(PairingMsgTypes.PAIR_ACCEPT.getType(), future);
         }else {

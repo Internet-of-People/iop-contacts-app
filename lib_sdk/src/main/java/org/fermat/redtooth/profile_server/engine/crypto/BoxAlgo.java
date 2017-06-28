@@ -41,4 +41,8 @@ public class BoxAlgo implements CryptoAlgo {
         return ret;
     }
 
+    public String toString(){
+        return "BoxAlgo";
+    }
+
 }

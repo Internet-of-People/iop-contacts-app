@@ -261,6 +261,11 @@ public class ProfSerImp implements ProfileServer {
     }
 
     @Override
+    public void closeCallChannel(String callToken) throws IOException {
+        profSerConnectionManager.close(callToken);
+    }
+
+    @Override
     public void shutdown() throws IOException {
         profSerConnectionManager.shutdown();
     }

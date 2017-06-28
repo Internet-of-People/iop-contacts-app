@@ -10,6 +10,8 @@ import org.fermat.redtooth.core.services.pairing.PairingMsgTypes;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
 import org.fermat.redtooth.profiles_manager.PairingRequestsManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +21,8 @@ import java.util.List;
  */
 
 public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> implements PairingRequestsManager {
+
+    private static final Logger log = LoggerFactory.getLogger(SqlitePairingRequestDb.class);
 
     public static final int DATABASE_VERSION = 3;
 
@@ -116,7 +120,10 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
     }
     @Override
     public int saveIfNotExistPairingRequest(PairingRequest pairingRequest) {
-        if(getPairingRequest(pairingRequest.getSenderPubKey(),pairingRequest.getRemotePubKey())!=null) return 0;
+        if(getPairingRequest(pairingRequest.getSenderPubKey(),pairingRequest.getRemotePubKey())!=null){
+            log.info("Pairing request exist, "+pairingRequest);
+            return 0;
+        }
         return (int) insert(pairingRequest);
     }
 

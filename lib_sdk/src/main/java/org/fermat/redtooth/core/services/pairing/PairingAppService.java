@@ -35,8 +35,12 @@ public class PairingAppService extends AppService {
         this.pairingRequestsManager = pairingRequestsManager;
     }
 
+    /**
+     * Wrap call in a PairingAppService call.
+     * @param callProfileAppService
+     */
     @Override
-    public void onNewCallReceived(final CallProfileAppService callProfileAppService) {
+    public void wrapCall(final CallProfileAppService callProfileAppService) {
         if (pairingListener!=null){
             callProfileAppService.setMsgListener(new CallProfileAppService.CallMessagesListener() {
                 @Override
