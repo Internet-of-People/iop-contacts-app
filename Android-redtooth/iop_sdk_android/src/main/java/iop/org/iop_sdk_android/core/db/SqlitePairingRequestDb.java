@@ -4,10 +4,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 
 import org.fermat.redtooth.core.services.pairing.PairingMsgTypes;
-import org.fermat.redtooth.profile_server.ProfileInformation;
+import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
 import org.fermat.redtooth.profiles_manager.PairingRequestsManager;
 import org.slf4j.Logger;
@@ -37,6 +36,7 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
     public static final String PAIRING_COLUMN_TIMESTAMP = "timestamp";
     public static final String PAIRING_COLUMN_STATUS = "status";
     public static final String PAIRING_COLUMN_SENDER_PS_HOST = "sender_ps_host";
+    public static final String PAIRING_COLUMN_PAIR_STATUS = "request_pair_status";
 
 
     public static final int PAIRING_COLUMN_POS_ID = 0;
@@ -48,6 +48,7 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
     public static final int PAIRING_COLUMN_POS_TIMESTAMP = 6;
     public static final int PAIRING_COLUMN_POS_STATUS = 7;
     public static final int PAIRING_COLUMN_POS_SENDER_PS_HOST = 8;
+    public static final int PAIRING_COLUMN_POS_PAIR_STATUS = 9;
 
     public SqlitePairingRequestDb(Context context) {
         super(context, DATABASE_NAME , null, DATABASE_VERSION);
@@ -67,7 +68,8 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
                         PAIRING_COLUMN_SENDER_NAME + " TEXT, "+
                         PAIRING_COLUMN_TIMESTAMP + " LONG , "+
                         PAIRING_COLUMN_STATUS + " TEXT ,"+
-                        PAIRING_COLUMN_SENDER_PS_HOST + " TEXT "
+                        PAIRING_COLUMN_SENDER_PS_HOST + " TEXT ,"+
+                        PAIRING_COLUMN_PAIR_STATUS + " TEXT "
                         +")"
         );
     }
@@ -97,6 +99,7 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
         if (obj.getRemotePubKey()!=null)
             contentValues.put(PAIRING_COLUMN_REMOTE_SERVER_HOST_ID,obj.getRemoteHost());
         contentValues.put(PAIRING_COLUMN_SENDER_PS_HOST,obj.getSenderPsHost());
+        contentValues.put(PAIRING_COLUMN_PAIR_STATUS,obj.getPairStatus().name());
         return contentValues;
     }
 
@@ -111,7 +114,8 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
         PairingMsgTypes status = PairingMsgTypes.getByName(cursor.getString(PAIRING_COLUMN_POS_STATUS));
         String remotePsHost = cursor.getString(PAIRING_COLUMN_POS_REMOTE_SERVER_HOST_ID);
         String senderPsHost = cursor.getString(PAIRING_COLUMN_POS_SENDER_PS_HOST);
-        return new PairingRequest(id,senderKey,remoteKey,remoteServerId,remotePsHost,senderName,timestamp,status,senderPsHost);
+        ProfileInformationImp.PairStatus pairStatus = ProfileInformationImp.PairStatus.valueOf(cursor.getString(PAIRING_COLUMN_POS_PAIR_STATUS));
+        return new PairingRequest(id,senderKey,remoteKey,remoteServerId,remotePsHost,senderName,timestamp,status,senderPsHost,pairStatus);
     }
 
     @Override
@@ -151,8 +155,19 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
     }
 
     @Override
-    public boolean updateStatus(String senderPubKey,String remotePubKey,PairingMsgTypes status){
-        return updateFieldByKey(PAIRING_COLUMN_REMOTE_KEY,remotePubKey,PAIRING_COLUMN_STATUS,status.getType())==1;
+    public boolean updateStatus(String senderPubKey, String remotePubKey, PairingMsgTypes status, ProfileInformationImp.PairStatus pairStatus){
+        //return updateFieldByKey(PAIRING_COLUMN_REMOTE_KEY,remotePubKey,PAIRING_COLUMN_STATUS,status.getType())==1;
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(PAIRING_COLUMN_STATUS,status.getType());
+        contentValues.put(PAIRING_COLUMN_PAIR_STATUS,pairStatus.name());
+        return db.update(
+                getTableName(),
+                contentValues,
+                PAIRING_COLUMN_REMOTE_KEY+"=? and "+PAIRING_COLUMN_SENDER_KEY+"=?",
+                new String[]{remotePubKey,senderPubKey}
+        )==1;
+
     }
 
     @Override

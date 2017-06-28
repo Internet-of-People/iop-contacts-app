@@ -22,7 +22,6 @@ import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.Signer;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.ConnectionFuture;
-import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
 import org.fermat.redtooth.profile_server.engine.SearchProfilesQuery;
 import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
@@ -30,6 +29,7 @@ import org.fermat.redtooth.profile_server.engine.futures.SubsequentSearchMsgList
 import org.fermat.redtooth.profile_server.engine.app_services.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfileListener;
+import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
@@ -184,14 +184,35 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
-    public void requestPairingProfile(byte[] remotePubKey, byte[] profileServerId, ProfSerMsgListener<Integer> listener) {
-        PairingRequest pairingRequest = PairingRequest.buildPairingRequest(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey),null,profile.getName(),profile.getHomeHost());
+    public void requestPairingProfile(byte[] remotePubKey, byte[] profileServerId, ProfSerMsgListener<Integer> listener) throws Exception {
+        PairingRequest pairingRequest = PairingRequest.buildPairingRequest(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey),null,profile.getName(),profile.getHomeHost(), ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE);
         ioPConnect.requestPairingProfile(pairingRequest,listener);
     }
 
     @Override
-    public void requestPairingProfile(byte[] remotePubKey, String psHost, ProfSerMsgListener<Integer> listener) {
-        PairingRequest pairingRequest = PairingRequest.buildPairingRequestFromHost(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey),psHost,profile.getName(),profile.getHomeHost());
+    public void requestPairingProfile(byte[] remotePubKey, String psHost, ProfSerMsgListener<Integer> listener) throws Exception {
+        PairingRequest pairingRequest = PairingRequest.buildPairingRequestFromHost(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey),psHost,profile.getName(),profile.getHomeHost(), ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE);
+        ioPConnect.requestPairingProfile(pairingRequest,listener);
+    }
+
+    @Override
+    public void requestPairingProfile(byte[] remotePubKey, String name, String psHost, ProfSerMsgListener<Integer> listener) throws Exception {
+        // Save invisible contact
+        ProfileInformation profileInformation = new ProfileInformationImp(
+                remotePubKey,
+                name,
+                psHost,
+                ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE
+        );
+        profilesDb.saveProfile(profile.getHexPublicKey(),profileInformation);
+        // now send the request
+        PairingRequest pairingRequest = PairingRequest.buildPairingRequestFromHost(
+                profile.getHexPublicKey(),
+                CryptoBytes.toHexString(remotePubKey),
+                psHost,profile.getName(),
+                profile.getHomeHost(),
+                ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE
+        );
         ioPConnect.requestPairingProfile(pairingRequest,listener);
     }
 
@@ -258,7 +279,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     @Override
     public List<ProfileInformation> getKnownProfiles() {
         List<ProfileInformation> ret = new ArrayList<>();
-        List<ProfileInformation> knownProfiles = ioPConnect.getKnownProfiles(profile.getPublicKey());
+        List<ProfileInformation> knownProfiles = ioPConnect.getKnownProfiles(profile.getHexPublicKey());
         // todo: this is a lazy remove..
         for (ProfileInformation knownProfile : knownProfiles) {
             if (!Arrays.equals(knownProfile.getPublicKey(),profile.getPublicKey())){
@@ -269,8 +290,8 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
-    public ProfileInformation getKnownProfile(byte[] pubKey){
-        return ioPConnect.getKnownProfile(pubKey);
+    public ProfileInformation getKnownProfile(String pubKey){
+        return ioPConnect.getKnownProfile(profile.getHexPublicKey(),pubKey);
     }
 
     @Override
@@ -282,6 +303,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     public List<PairingRequest> getPairingRequests() {
         return pairingRequestDb.pairingRequests(profile.getHexPublicKey());
     }
+
     @Override
     public List<PairingRequest> getPairingOpenRequests(){
         return pairingRequestDb.openPairingRequests(profile.getHexPublicKey());
