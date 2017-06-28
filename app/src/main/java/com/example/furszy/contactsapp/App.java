@@ -103,7 +103,7 @@ public class App extends Application implements IoPConnectContext, PairingListen
     @Override
     public ProfileServerConfigurations createProfSerConfig() {
         ProfileServerConfigurationsImp conf = new ProfileServerConfigurationsImp(this,getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));
-        conf.setHost(TEST_PROFILE_SERVER_HOST);//"192.168.0.10");
+        conf.setHost("192.168.0.10");
         return conf;
         }
 
