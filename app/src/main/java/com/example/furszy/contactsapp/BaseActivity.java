@@ -56,16 +56,13 @@ public class BaseActivity extends AppCompatActivity{
 
     protected Toolbar toolbar;
     protected FrameLayout childContainer;
-    private LinearLayout btnReload;
+    protected LinearLayout btnReload;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_base);
-        this.localBroadcastManager = LocalBroadcastManager.getInstance(this);
-        this.notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        this.notifReceiver = new NotifReceiver();
         anRedtooth = App.getInstance().anRedtooth.getRedtooth();
         init();
         // onCreateChildMethod
@@ -106,6 +103,11 @@ public class BaseActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
+        if (localBroadcastManager==null){
+            this.localBroadcastManager = LocalBroadcastManager.getInstance(this);
+            this.notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            this.notifReceiver = new NotifReceiver();
+        }
         localBroadcastManager.registerReceiver(notifReceiver, new IntentFilter(NOTIF_DIALOG_EVENT));
         localBroadcastManager.registerReceiver(notifReceiver, new IntentFilter(INTENT_ACTION_PROFILE_DISCONNECTED));
     }

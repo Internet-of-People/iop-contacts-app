@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.example.furszy.contactsapp.ui.home.HomeActivity;
 import com.example.furszy.contactsapp.ui.my_qr.MyQrActivity;
@@ -60,6 +61,16 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
 
         imgProfile = (CircleImageView) navHeader.findViewById(R.id.profile_image);
         txtName = (TextView) navHeader.findViewById(R.id.txt_name);
+
+        //Layout reload
+        btnReload = (LinearLayout)findViewById(R.id.btnReload);
+        btnReload.setVisibility(LinearLayout.GONE);
+        btnReload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // nothing yet
+            }
+        });
 
         onCreateView(savedInstanceState,frameLayout);
 

@@ -98,6 +98,8 @@ public class App extends Application implements IoPConnectContext, PairingListen
 
             }
         });
+
+
     }
 
     @Override
