@@ -82,6 +82,12 @@ public class ProfSerConnectionManager {
             isActive = syncAddServer(portType,port,null);
         }else {
             isActive = serverSockets.get(portType).isActive();
+            if (!isActive){
+                // remove references and notify upper layer about it
+                serverSockets.remove(portType);
+                // todo: Improve this.
+                throw new IllegalStateException("Connection not available with port: "+portType);
+            }
         }
         return isActive;
     }
@@ -92,6 +98,12 @@ public class ProfSerConnectionManager {
             isActive = syncAddServer(IopProfileServer.ServerRoleType.CL_APP_SERVICE,port,tokenHex);
         }else {
             isActive = appServicesSockets.get(tokenHex).isActive();
+            if (!isActive){
+                // remove references and notify upper layer about it
+                appServicesSockets.remove(tokenHex);
+                // todo: Improve this.
+                throw new IllegalStateException("Connection not longer available with appService with token: "+tokenHex);
+            }
         }
         return isActive;
     }
@@ -220,9 +232,14 @@ public class ProfSerConnectionManager {
         this.serverSockets.remove(portType).closeNow();
     }
 
+    public void close(String callToken) throws IOException {
+        this.appServicesSockets.remove(callToken).closeNow();
+    }
+
     public void shutdown() throws IOException {
         for (ProfileServerSocket profileServerSocket : this.serverSockets.values()) {
             profileServerSocket.closeNow();
         }
     }
+
 }

@@ -94,6 +94,8 @@ public interface ProfileServer {
 
     void closePort(IopProfileServer.ServerRoleType portType) throws IOException;
 
+    void closeCallChannel(String callToken) throws IOException;
+
     void shutdown() throws IOException;
 
 }

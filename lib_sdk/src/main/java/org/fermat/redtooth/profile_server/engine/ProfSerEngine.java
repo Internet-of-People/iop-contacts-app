@@ -588,11 +588,12 @@ public class ProfSerEngine {
      * @throws IOException
      */
     public void closePort(IopProfileServer.ServerRoleType port) throws IOException {
+        stopPing(port);
         profileServer.closePort(port);
     }
 
-    public ExecutorService getExecutor() {
-        return executor;
+    public void closeChannel(String callToken) throws IOException {
+        profileServer.closeCallChannel(callToken);
     }
 
     /**
@@ -609,6 +610,7 @@ public class ProfSerEngine {
         if (pingExecutors==null){
             pingExecutors = new HashMap<>();
         }
+        if (pingExecutors.containsKey(portType)) throw new IllegalStateException("Ping agent already initilized for: "+portType);
         final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         service.scheduleAtFixedRate(new Runnable() {
             @Override
@@ -626,6 +628,16 @@ public class ProfSerEngine {
             }
         },5,15, TimeUnit.SECONDS);
         pingExecutors.put(portType,service);
+    }
+
+    public void stopPing(final IopProfileServer.ServerRoleType portType){
+        try {
+            LOG.info("stop ping for: "+portType);
+            ScheduledExecutorService executor = pingExecutors.get(portType);
+            executor.shutdownNow();
+        }catch (Exception e){
+            // nothing..
+        }
     }
 
     public CopyOnWriteArrayList<ConnectionListener> getConnectionListeners() {

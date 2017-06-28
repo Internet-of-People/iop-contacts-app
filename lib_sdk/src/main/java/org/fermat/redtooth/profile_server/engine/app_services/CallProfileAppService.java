@@ -2,6 +2,7 @@ package org.fermat.redtooth.profile_server.engine.app_services;
 
 import com.google.protobuf.ByteString;
 
+import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.engine.ProfSerEngine;
@@ -13,6 +14,7 @@ import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import static org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService.Status.CALL_AS_ESTABLISH;
@@ -63,6 +65,7 @@ public class CallProfileAppService {
     private String remoteProfilePk;
     /** Identifier token of the call in the server */
     private byte[] callToken;
+    private String callTokenHex;
     /** Call status */
     private Status status = NO_INFORMATION;
     /** Call error status */
@@ -75,7 +78,7 @@ public class CallProfileAppService {
     private CryptoAlgo cryptoAlgo;
     /** App call message listener */
     private CallMessagesListener msgListener;
-
+    /** Engine wrapped */
     private ProfSerEngine profSerEngine;
 
     public CallProfileAppService(String appService, Profile localProfile,String remotePubKey,ProfSerEngine profSerEngine,CryptoAlgo cryptoAlgo) {
@@ -230,6 +233,19 @@ public class CallProfileAppService {
         }else {
             logger.warn("CallAppService msg received, not msgListener attached..");
         }
+    }
+
+    /**
+     * Dispose the call channel
+     */
+    public void dispose() throws IOException {
+        profSerEngine.closeChannel(
+                (callTokenHex!=null)?
+                        callTokenHex
+                        :
+                        CryptoBytes.toHexString(callToken)
+        );
+        // todo: notify upper layers that the call was closed.
     }
 
     @Override
