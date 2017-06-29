@@ -4,31 +4,39 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bgBlue"
+    android:background="@color/white"
     >
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="48dp"
-        android:gravity="center"
-        android:id="@+id/user_image"
-        android:layout_marginBottom="24dp">
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="110dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="50dp"
+        android:id="@+id/user_image">
 
         <de.hdodenhof.circleimageview.CircleImageView
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/profile_image"
-            android:layout_width="148dp"
-            android:layout_height="128dp"
-            android:src="@drawable/img_profile"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/img_profile_grey"
             app:civ_border_width="1dp"
-            android:layout_marginRight="12dp"
+            app:civ_border_color="#71b6ff"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal = "true"/>
 
-            app:civ_border_color="#71b6ff"/>
+        <ImageView
+            android:id="@+id/imgAdd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/img_add_blue"
+            android:background="@android:color/transparent"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"/>
 
 
-    </LinearLayout>
+    </RelativeLayout>
 
 
 
@@ -55,13 +63,13 @@
                 android:id="@+id/txt_name"
                 android:ems="10"
                 tools:ignore="HardcodedText"
-                android:textColor="#E6E6E6"
+                android:textColor="@color/mainText"
                 android:hint="Username"
                 android:lines="1"
                 android:maxLines="1"
-                android:textColorHint="#E6E6E6"
+                android:textColorHint="@color/hintInput"
                 android:foregroundTint="#808080"
-                android:backgroundTint="#fff"
+                android:background="@drawable/bg_inputs_line"
                 android:paddingRight="12dp"
                 android:inputType="textFilter|textNoSuggestions"
                 android:gravity="center"

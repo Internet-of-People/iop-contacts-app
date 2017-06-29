@@ -39,6 +39,7 @@
         <activity android:name=".scanner.ScanActivity"/>
         <activity android:name=".BaseDrawerActivity"></activity>
         <activity android:name=".RestoreActivity"></activity>
+        <activity android:name=".ui.other_profile.OtherProfileActivity"/>
         <activity android:name=".CreateProfileActivity"></activity>
         <activity android:name=".ui.settings.SettingsActivity"></activity>
         <activity android:name=".ui.settings_restore.SettingsRestoreActivity"></activity>
@@ -46,6 +47,7 @@
         <activity android:name=".ui.settings_backup_process.SettingsBackupPasswordActivity"></activity>
         <activity android:name=".ui.settings_backup_folder.SettingsBackupFolderActivity"></activity>
         <activity android:name=".ui.my_qr.MyQrActivity"></activity>
+        <activity android:name=".ui.my_profile.MyProfileActivity"/>
 
         <activity android:name=".contacts.ProfilesInformationActivity"/>
         <activity android:name=".requests.PairingRequestsActivity"/>
