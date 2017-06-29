@@ -78,6 +78,12 @@
         <item name="android:background">@drawable/bg_button_blue</item>
     </style>
 
+    <style name="ButtomProfile" parent="ButtonWhiteBorderBlue">
+        <item name="android:layout_width">160dp</item>
+        <item name="android:layout_height">30dp</item>
+        <item name="android:padding">6dp</item>
+    </style>
+
 
 
 </resources>
