@@ -2,6 +2,7 @@ package com.example.furszy.contactsapp.base;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -33,10 +34,9 @@ public abstract class RecyclerFragment<T> extends BaseAppFragment {
     private View root;
     private RecyclerView.LayoutManager layoutManager;
     private RecyclerView recycler;
+    private SwipeRefreshLayout swipeRefreshLayout;
     private View container_empty_screen;
-    private ProgressBar loading_bar;
     private TextView txt_empty;
-
 
     private BaseAdapter adapter;
     private List<T> list;
@@ -54,8 +54,8 @@ public abstract class RecyclerFragment<T> extends BaseAppFragment {
         super.onCreateView(inflater,container,savedInstanceState);
         root = inflater.inflate(R.layout.contacts_fragment, container, false);
         recycler = (RecyclerView) root.findViewById(R.id.recycler_contacts);
+        swipeRefreshLayout = (SwipeRefreshLayout) root.findViewById(R.id.swipeRefresh);
         container_empty_screen = root.findViewById(R.id.container_empty_screen);
-        loading_bar = (ProgressBar) root.findViewById(R.id.loading_bar);
         txt_empty = (TextView) root.findViewById(R.id.txt_empty);
         recycler.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(getActivity());
@@ -63,6 +63,14 @@ public abstract class RecyclerFragment<T> extends BaseAppFragment {
         adapter = initAdapter();
         if (adapter==null) throw new IllegalStateException("Base adapter cannot be null");
         recycler.setAdapter(adapter);
+        swipeRefreshLayout.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        load();
+                    }
+                }
+        );
         return root;
     }
 
@@ -79,7 +87,7 @@ public abstract class RecyclerFragment<T> extends BaseAppFragment {
      * Method to override
      */
     private void load() {
-        loading_bar.setVisibility(View.VISIBLE);
+        swipeRefreshLayout.setRefreshing(true);
         executor.execute(loadRunnable);
     }
 
@@ -125,7 +133,7 @@ public abstract class RecyclerFragment<T> extends BaseAppFragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    loading_bar.setVisibility(View.GONE);
+                    swipeRefreshLayout.setRefreshing(false);
                     if (finalRes) {
                         adapter.changeDataSet(list);
                         if (list!=null && !list.isEmpty()) {

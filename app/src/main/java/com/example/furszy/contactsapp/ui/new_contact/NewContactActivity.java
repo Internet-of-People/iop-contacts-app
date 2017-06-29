@@ -97,7 +97,7 @@ public class NewContactActivity extends BaseActivity implements View.OnClickList
                                 Snackbar.make(root,"Pairing request fail\n"+statusDetail,Snackbar.LENGTH_LONG).show();
                             }
                         });
-                        anRedtooth.requestPairingProfile(CryptoBytes.fromHexToBytes(profile.getPubKey()), profile.getProfSerHost(), future);
+                        anRedtooth.requestPairingProfile(CryptoBytes.fromHexToBytes(profile.getPubKey()), profile.getName() ,profile.getProfSerHost(), future);
                     }catch (Exception e){
                         e.printStackTrace();
                     }

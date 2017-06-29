@@ -31,6 +31,8 @@ import iop.org.iop_sdk_android.core.AnRedtooth;
 import iop.org.iop_sdk_android.core.InitListener;
 import iop.org.iop_sdk_android.core.profile_server.ProfileServerConfigurationsImp;
 
+import static com.example.furszy.contactsapp.HardcodedConstants.TEST_PROFILE_SERVER_HOST;
+
 /**
  * Created by furszy on 5/25/17.
  */
@@ -47,8 +49,6 @@ public class App extends Application implements IoPConnectContext, PairingListen
     AnRedtooth anRedtooth;
     private LocalBroadcastManager broadcastManager;
     private NotificationManager notificationManager;
-
-    private ProfileListener profileListener;
 
     public static App getInstance() {
         return instance;
@@ -98,6 +98,8 @@ public class App extends Application implements IoPConnectContext, PairingListen
 
             }
         });
+
+
     }
 
     @Override

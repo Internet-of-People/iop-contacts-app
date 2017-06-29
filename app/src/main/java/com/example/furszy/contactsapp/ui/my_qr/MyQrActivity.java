@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,7 +54,8 @@ public class MyQrActivity extends BaseActivity implements View.OnClickListener {
         img_qr = (ImageView) root.findViewById(R.id.img_qr);
         txt_qr = (TextView) root.findViewById(R.id.txt_qr);
         uri = ProfileUtils.getProfileURI(anRedtooth.getProfile(),anRedtooth.getPsHost());
-        txt_qr.setText(Html.fromHtml("<a>"+uri+"</a>"));
+        txt_qr.setText(uri);
+        txt_qr.setMovementMethod(LinkMovementMethod.getInstance());
         try {
             // qr
             Bitmap qrBitmap = null;//Cache.getQrBigBitmapCache();

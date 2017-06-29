@@ -1,6 +1,7 @@
 package org.fermat.redtooth.profiles_manager;
 
 import org.fermat.redtooth.core.services.pairing.PairingMsgTypes;
+import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 
 import java.util.List;
 
@@ -20,7 +21,7 @@ public interface PairingRequestsManager {
 
     List<PairingRequest> openPairingRequests(String senderPubKey);
 
-    boolean updateStatus(String senderPubKey, String remotePubKey, PairingMsgTypes status);
+    boolean updateStatus(String senderPubKey, String remotePubKey, PairingMsgTypes status, ProfileInformationImp.PairStatus paired);
 
     int removeRequest(String senderPubKey, String remotePubkey);
 

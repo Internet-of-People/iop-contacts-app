@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 import javax.net.SocketFactory;
@@ -87,7 +88,6 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
             }catch (Exception e1){
                 e.printStackTrace();
             }
-
             throw new CantSendMessageException(e);
         }
     }
@@ -108,12 +108,12 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
         return overhead;
     }
 
-    private synchronized void read(){
+    private synchronized void read() {
         int count;
         byte[] buffer = new byte[8192];
         try {
             // read reply
-            if(!socket.isInputShutdown()) {
+            if (!socket.isInputShutdown()) {
                 count = socket.getInputStream().read(buffer);
                 logger.info("Reciving data..");
                 IopProfileServer.MessageWithHeader message1 = null;
@@ -128,7 +128,7 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
                     logger.info("Connection closed, read<0 with portType: " + portType + " , removing socket");
                     closeNow();
                 }
-            }else {
+            } else {
                 // input stream closed
                 // todo: falta notificar a las capas superiores que se cerró el socket.
                 logger.info("Connection closed, input stream shutdown with portType: " + portType + " , removing socket");
@@ -137,11 +137,20 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
         } catch (InvalidProtocolBufferException e) {
 //                throw new InvalidProtocolViolation("Invalid message",e);
             e.printStackTrace();
-        } catch (javax.net.ssl.SSLException e){
+        } catch (javax.net.ssl.SSLException e) {
             e.printStackTrace();
             // something bad happen..
             // todo: falta notificar a las capas superiores que se cerró el socket.
-            logger.info("Connection closed, sslException with portType: " + portType + " , "+tokenId+" removing socket");
+            logger.info("Connection closed, sslException with portType: " + portType + " , " + tokenId + " removing socket");
+            try {
+                closeNow();
+            } catch (IOException e1) {
+                // nothing..
+            }
+        } catch (SocketException e){
+            e.printStackTrace();
+            // todo: falta notificar a las capas superiores que se cerró el socket.
+            logger.info("Connection closed, sslException with portType: " + portType + " , " + tokenId + " removing socket");
             try {
                 closeNow();
             } catch (IOException e1) {
@@ -159,7 +168,8 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
     @Override
     public void closeNow() throws IOException {
         logger.info("Closing socket port: "+portType);
-        readThread.interrupt();
+        if (!readThread.isInterrupted())
+            readThread.interrupt();
         if (!socket.isClosed())
             socket.close();
 

@@ -151,6 +151,7 @@ public class ProfSerConnectionManager {
             try {
                 isActive = future.get(connectionTimeout, TimeUnit.SECONDS);
             }catch (TimeoutException exception){
+                logger.info("connection timeout on port: "+port);
                 throw new CantConnectException("Timeout exception, host "+host+":"+port+", type: "+portType,exception);
             }
             executorService.shutdownNow();

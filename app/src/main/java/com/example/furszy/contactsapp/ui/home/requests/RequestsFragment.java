@@ -83,8 +83,6 @@ public class RequestsFragment extends RecyclerFragment<PairingRequest> {
                         loadRunnable.run();
                     }
                 });
-
-
             }
 
             @Override

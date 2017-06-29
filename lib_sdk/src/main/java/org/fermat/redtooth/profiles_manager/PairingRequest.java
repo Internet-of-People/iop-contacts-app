@@ -1,6 +1,7 @@
 package org.fermat.redtooth.profiles_manager;
 
 import org.fermat.redtooth.core.services.pairing.PairingMsgTypes;
+import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 
 /**
  * Created by furszy on 6/6/17.
@@ -17,16 +18,18 @@ public class PairingRequest {
     private String remotePsHost;
     private long timestamp;
     private PairingMsgTypes status;
+    // Extra info
+    private ProfileInformationImp.PairStatus pairStatus;
 
-    public static PairingRequest buildPairingRequest(String senderPubKey, String remotePubKey, String remoteServerId, String senderName,String senderPsHost){
-        return new PairingRequest(senderPubKey,remotePubKey,remoteServerId,null,senderName,System.currentTimeMillis(),PairingMsgTypes.PAIR_REQUEST,senderPsHost);
+    public static PairingRequest buildPairingRequest(String senderPubKey, String remotePubKey, String remoteServerId, String senderName, String senderPsHost, ProfileInformationImp.PairStatus pairStatus){
+        return new PairingRequest(senderPubKey,remotePubKey,remoteServerId,null,senderName,System.currentTimeMillis(),PairingMsgTypes.PAIR_REQUEST,senderPsHost,pairStatus);
     }
 
-    public static PairingRequest buildPairingRequestFromHost(String senderPubKey, String remotePubKey, String remotePsHost, String senderName, String senderPsHost){
-        return new PairingRequest(senderPubKey,remotePubKey,null,remotePsHost,senderName,System.currentTimeMillis(),PairingMsgTypes.PAIR_REQUEST,senderPsHost);
+    public static PairingRequest buildPairingRequestFromHost(String senderPubKey, String remotePubKey, String remotePsHost, String senderName, String senderPsHost,ProfileInformationImp.PairStatus pairStatus){
+        return new PairingRequest(senderPubKey,remotePubKey,null,remotePsHost,senderName,System.currentTimeMillis(),PairingMsgTypes.PAIR_REQUEST,senderPsHost,pairStatus);
     }
 
-    public PairingRequest(int id, String senderPubKey, String remotePubKey, String remoteServerId,String remotePsHost, String senderName, long timestamp, PairingMsgTypes status,String senderPsHost) {
+    public PairingRequest(int id, String senderPubKey, String remotePubKey, String remoteServerId, String remotePsHost, String senderName, long timestamp, PairingMsgTypes status, String senderPsHost, ProfileInformationImp.PairStatus pairStatus) {
         this.id = id;
         this.senderPubKey = senderPubKey;
         this.remotePubKey = remotePubKey;
@@ -36,9 +39,10 @@ public class PairingRequest {
         this.status = status;
         this.remotePsHost = remotePsHost;
         this.senderPsHost = senderPsHost;
+        this.pairStatus = pairStatus;
     }
 
-    private PairingRequest(String senderPubKey, String remotePubKey, String remoteServerId,String remotePsHost, String senderName,long timestamp,PairingMsgTypes status,String senderPsHost) {
+    private PairingRequest(String senderPubKey, String remotePubKey, String remoteServerId, String remotePsHost, String senderName, long timestamp, PairingMsgTypes status, String senderPsHost, ProfileInformationImp.PairStatus pairStatus) {
         this.senderPubKey = senderPubKey;
         this.remotePubKey = remotePubKey;
         this.remoteServerId = remoteServerId;
@@ -47,6 +51,7 @@ public class PairingRequest {
         this.status = status;
         this.remotePsHost = remotePsHost;
         this.senderPsHost = senderPsHost;
+        this.pairStatus = pairStatus;
     }
 
     public String getSenderPubKey() {
@@ -95,5 +100,9 @@ public class PairingRequest {
 
     public void setRemotePsHome(String remotePsHome) {
         this.remotePsHost = remotePsHome;
+    }
+
+    public ProfileInformationImp.PairStatus getPairStatus() {
+        return pairStatus;
     }
 }

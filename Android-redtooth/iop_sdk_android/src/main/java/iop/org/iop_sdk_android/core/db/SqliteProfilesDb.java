@@ -25,7 +25,7 @@ import iop.org.iop_sdk_android.core.profile_server.PrivateStorage;
 public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManager {
 
 
-    public static final int DATABASE_VERSION = 9;
+    public static final int DATABASE_VERSION = 10;
 
     public static final String DATABASE_NAME = "profiles";
     public static final String CONTACTS_TABLE_NAME = "contacts";
@@ -39,7 +39,9 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
     public static final String CONTACTS_COLUMN_EXTRA_DATA = "extra";
     public static final String CONTACTS_COLUMN_PUB_KEY = "pubKey";
     public static final String CONTACTS_COLUMN_UPDATE_TIMESTAMP = "up_time";
+    // Local profile who knows this profile, todo: this should be splitted in different tables..
     public static final String CONTACTS_COLUMN_PAIR = "pair_status";
+    public static final String CONTACTS_COLUMN_DEVICE_PROFILE_PUB_KEY = "local_pub_key";
 
 
     public static final int CONTACTS_POS_COLUMN_ID = 0;
@@ -53,6 +55,7 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
     public static final int CONTACTS_POS_COLUMN_PUB_KEY = 8;
     public static final int CONTACTS_POS_COLUMN_UPDATE_TIMESTAMP = 9;
     public static final int CONTACTS_POS_COLUMN_PAIR = 10;
+    public static final int CONTACTS_POS_COLUMN_DEVICE_PROFILE_PUB_KEY = 11;
 
     public SqliteProfilesDb(Context context) {
         super(context, DATABASE_NAME , null, DATABASE_VERSION);
@@ -74,7 +77,8 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
                         CONTACTS_COLUMN_EXTRA_DATA + " TEXT ,"+
                         CONTACTS_COLUMN_PUB_KEY + " TEXT ,"+
                         CONTACTS_COLUMN_UPDATE_TIMESTAMP + " LONG ,"+
-                        CONTACTS_COLUMN_PAIR + " TEXT "
+                        CONTACTS_COLUMN_PAIR + " TEXT ,"+
+                        CONTACTS_COLUMN_DEVICE_PROFILE_PUB_KEY + " TEXT "
                 +")"
         );
     }
@@ -86,13 +90,13 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         onCreate(db);
     }
 
-    public long insertContact (ProfileInformation profile) {
+    public long insertContact (String localProfileOwnerOfThisContact,ProfileInformation profile) {
         SQLiteDatabase db = this.getWritableDatabase();
-        long id = db.insert(CONTACTS_TABLE_NAME, null, buildContent(profile));
+        long id = db.insert(CONTACTS_TABLE_NAME, null, buildContent(profile,localProfileOwnerOfThisContact));
         return id;
     }
 
-    public ContentValues buildContent(ProfileInformation profile){
+    public ContentValues buildContent(ProfileInformation profile,String localProfileWhoKnowThis){
         ContentValues contentValues = new ContentValues();
         contentValues.put(CONTACTS_COLUMN_NAME, profile.getName());
         contentValues.put(CONTACTS_COLUMN_TYPE, profile.getType());
@@ -100,15 +104,17 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         contentValues.put(CONTACTS_COLUMN_PUB_KEY, CryptoBytes.toHexString(profile.getPublicKey()));
         contentValues.put(CONTACTS_COLUMN_UPDATE_TIMESTAMP,profile.getLastUpdateTime());
         contentValues.put(CONTACTS_COLUMN_PAIR,profile.getPairStatus().name());
+        contentValues.put(CONTACTS_COLUMN_DEVICE_PROFILE_PUB_KEY,localProfileWhoKnowThis);
         return contentValues;
     }
 
-    public ProfileInformation buildFrom(Cursor cursor){
+    public ProfileInformationWrapper buildFrom(Cursor cursor){
         String name = cursor.getString(CONTACTS_POS_COLUMN_NAME);
         byte[] pubKey = CryptoBytes.fromHexToBytes(cursor.getString(CONTACTS_POS_COLUMN_PUB_KEY));
         String extraData = cursor.getString(CONTACTS_POS_COLUMN_EXTRA_DATA);
         String type = cursor.getString(CONTACTS_POS_COLUMN_TYPE);
         long timestamp = cursor.getLong(CONTACTS_POS_COLUMN_UPDATE_TIMESTAMP);
+        String localProfilePubKey = cursor.getString(CONTACTS_POS_COLUMN_DEVICE_PROFILE_PUB_KEY);
         ProfileInformationImp.PairStatus pairStatus = ProfileInformationImp.PairStatus.valueOf(cursor.getString(CONTACTS_POS_COLUMN_PAIR));
         ProfileInformationImp profile = new ProfileInformationImp();
         profile.setVersion(new byte[]{0,0,1});
@@ -117,7 +123,7 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         profile.setPubKey(pubKey);
         profile.setUpdateTimestamp(timestamp);
         profile.setPairStatus(pairStatus);
-        return profile;
+        return new ProfileInformationWrapper(localProfilePubKey,profile);
     }
 
     public Cursor getData(long id) {
@@ -126,11 +132,10 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         return res;
     }
 
-    public Cursor getData(byte[] pubKey) {
+    public Cursor getData(String localProfileOwnerOfContacts,String pubKey) {
         if (pubKey==null) throw new IllegalArgumentException("pubKey cannot be null");
         SQLiteDatabase db = this.getReadableDatabase();
-        String pubKeyStr = CryptoBytes.toHexString(pubKey);
-        Cursor res =  db.rawQuery( "select * from "+CONTACTS_TABLE_NAME+" where "+CONTACTS_COLUMN_PUB_KEY+"='"+pubKeyStr+"'", null );
+        Cursor res =  db.rawQuery( "select * from "+CONTACTS_TABLE_NAME+" where "+CONTACTS_COLUMN_PUB_KEY+"='"+pubKey+"' and "+CONTACTS_COLUMN_DEVICE_PROFILE_PUB_KEY+" = '"+localProfileOwnerOfContacts+"'", null );
         return res;
     }
 
@@ -140,10 +145,10 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         return numRows;
     }
 
-    public boolean updateContact (ProfileInformation profile) {
+    public boolean updateContact (String localProfileOwnerOfThisContact,ProfileInformation profile) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = buildContent(profile);
-        db.update(CONTACTS_TABLE_NAME, contentValues, CONTACTS_COLUMN_PUB_KEY+" = ? ", new String[] { profile.getHexPublicKey() } );
+        ContentValues contentValues = buildContent(profile,localProfileOwnerOfThisContact);
+        db.update(CONTACTS_TABLE_NAME, contentValues, CONTACTS_COLUMN_PUB_KEY+" = ? and "+CONTACTS_COLUMN_DEVICE_PROFILE_PUB_KEY+" = ?", new String[] { profile.getHexPublicKey(),localProfileOwnerOfThisContact } );
         return true;
     }
 
@@ -154,11 +159,11 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         db.update(CONTACTS_TABLE_NAME,contentValues,CONTACTS_COLUMN_PUB_KEY+"=?",new String[]{CryptoBytes.toHexString(publicKey)});
     }
 
-    private void updateFieldByKey(byte[] publicKey, String column, String value) {
+    private boolean updateFieldByKey(byte[] publicKey, String column, String value) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(column,value);
-        db.update(CONTACTS_TABLE_NAME,contentValues,CONTACTS_COLUMN_PUB_KEY+"=?",new String[]{CryptoBytes.toHexString(publicKey)});
+        return db.update(CONTACTS_TABLE_NAME,contentValues,CONTACTS_COLUMN_PUB_KEY+"=?",new String[]{CryptoBytes.toHexString(publicKey)})==1;
     }
 
     public Integer deleteContact (Integer id) {
@@ -168,7 +173,7 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
                 new String[] { Integer.toString(id) });
     }
 
-    public ArrayList<ProfileInformation> getAllCotacts() {
+    public ArrayList<ProfileInformation> getAllCotacts(String localProfileOwnerOfThisContact) {
         ArrayList<ProfileInformation> list = new ArrayList<>();
 
         //hp = new HashMap();
@@ -176,59 +181,77 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         Cursor res =  db.rawQuery( "select * from "+CONTACTS_TABLE_NAME, null );
         if(res.moveToFirst()) {
             do {
-                list.add(buildFrom(res));
+                list.add(buildFrom(res).profileInformation);
             } while (res.moveToNext());
         }
         return list;
     }
 
     @Override
-    public List<ProfileInformation> listAll() {
-        return getAllCotacts();
+    public List<ProfileInformation> listAll(String localProfilePubKeyOwnerOfContact) {
+        return getAllCotacts(localProfilePubKeyOwnerOfContact);
     }
 
     @Override
-    public void updatePaired(byte[] publicKey, ProfileInformationImp.PairStatus value) {
-        updateFieldByKey(publicKey,CONTACTS_COLUMN_PAIR,value.name());
+    public boolean updatePaired(String localProfilePubKeyOwnerOfContact,String remotePubKey, ProfileInformationImp.PairStatus value) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(CONTACTS_COLUMN_PAIR, ProfileInformationImp.PairStatus.PAIRED.name());
+        return db.update(
+                CONTACTS_TABLE_NAME,
+                contentValues,
+                CONTACTS_COLUMN_PUB_KEY+"=? and "+CONTACTS_COLUMN_DEVICE_PROFILE_PUB_KEY+" =?",
+                new String[]{remotePubKey,localProfilePubKeyOwnerOfContact})==1;
+    }
+
+
+    @Override
+    public long saveProfile(String localProfilePubKeyOwnerOfContact, ProfileInformation profile) {
+        return insertContact(localProfilePubKeyOwnerOfContact,profile);
     }
 
     @Override
-    public long saveProfile(ProfileInformation profile) {
-        return insertContact(profile);
-    }
-
-    @Override
-    public boolean updateProfile(ProfileInformation profile) {
-        return updateContact(profile);
+    public boolean updateProfile(String localProfilePubKeyOwnerOfContact, ProfileInformation profile) {
+        return updateContact(localProfilePubKeyOwnerOfContact,profile);
     }
 
     @Override
     public ProfileInformation getProfile(long id) {
         Cursor cursor = getData(id);
         if (cursor.moveToFirst()){
-            return buildFrom(cursor);
+            return buildFrom(cursor).profileInformation;
         }
         return null;
     }
 
     @Override
-    public ProfileInformation getProfile(byte[] pubKey) {
-        Cursor cursor = getData(pubKey);
+    public ProfileInformation getProfile(String localProfileOwnerOfContacts, String pubKey) {
+        Cursor cursor = getData(localProfileOwnerOfContacts,pubKey);
         if (cursor.moveToFirst()){
-            return buildFrom(cursor);
+            return buildFrom(cursor).profileInformation;
         }
         return null;
     }
 
     @Override
-    public List<ProfileInformation> listOwnProfiles(byte[] pubKey) {
+    public List<ProfileInformation> listOwnProfiles(String localProfileOwnerOfContacts) {
         return null;
     }
 
     @Override
-    public List<ProfileInformation> listConnectedProfiles(byte[] pubKey) {
+    public List<ProfileInformation> listConnectedProfiles(String localProfileOwnerOfContacts) {
         // todo: return the real data and not all profiles
-        return getAllCotacts();
+        return getAllCotacts(localProfileOwnerOfContacts);
+    }
+
+    private class ProfileInformationWrapper{
+        String localProfilePubKey;
+        ProfileInformation profileInformation;
+
+        public ProfileInformationWrapper(String localProfilePubKey, ProfileInformation profileInformation) {
+            this.localProfilePubKey = localProfilePubKey;
+            this.profileInformation = profileInformation;
+        }
     }
 
 

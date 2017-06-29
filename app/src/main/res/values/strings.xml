@@ -33,8 +33,9 @@
     <string name="select_folder">Select Folder</string>
     <string name="set_password">Set Password</string>
     <string name="set_folder">Set Folder</string>
-    <string name="reload_message">There is a problem with your connection \n press to retry </string>
+
     <string name="btn_connected">Connected</string>
     <string name="btn_disconnected">Disconnected</string>
     <string name="disconnect_message">Do you really want to \n disconnect from</string>
+    <string name="reload_message">Connection lost, trying to reconnect</string>
 </resources>

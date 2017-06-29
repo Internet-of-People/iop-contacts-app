@@ -43,9 +43,11 @@ public interface ModuleRedtooth {
      * @param profileServerId
      * @param listener
      */
-    void requestPairingProfile(byte[] remotePubKey, byte[] profileServerId, ProfSerMsgListener<Integer> listener);
+    void requestPairingProfile(byte[] remotePubKey, byte[] profileServerId, ProfSerMsgListener<Integer> listener) throws Exception;
 
-    void requestPairingProfile(byte[] remotePubKey, String psHost, ProfSerMsgListener<Integer> listener);
+    void requestPairingProfile(byte[] remotePubKey, String psHost, ProfSerMsgListener<Integer> listener) throws Exception;
+
+    void requestPairingProfile(byte[] remotePubKey, String name, String psHost, ProfSerMsgListener<Integer> listener) throws Exception;
 
     /**
      * Accept a pairing request.
@@ -80,7 +82,7 @@ public interface ModuleRedtooth {
 
     List<ProfileInformation> getKnownProfiles();
 
-    ProfileInformation getKnownProfile(byte[] pubKey);
+    ProfileInformation getKnownProfile(String pubKey);
 
     PairingRequest getProfilePairingRequest(String hexPublicKey);
 
