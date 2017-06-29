@@ -4,7 +4,7 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/create_backup"
+            android:id="@+id/editProfile"
             android:title="@string/edit"
             android:visible="true"
             app:showAsAction="always"/>

@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.example.furszy.contactsapp.BaseActivity;
 import com.example.furszy.contactsapp.DialogBuilder;
@@ -17,13 +18,13 @@ import com.example.furszy.contactsapp.R;
 public class OtherProfileActivity extends BaseActivity {
 
     Button btnConnect;
-
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
         getLayoutInflater().inflate(R.layout.other_profile_activity, container);
         setTitle("Name of the user");
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         //Open File Folder
 
         btnConnect = (Button) findViewById(R.id.btnConnectStatus);
