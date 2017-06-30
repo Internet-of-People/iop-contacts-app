@@ -16,7 +16,7 @@ import com.example.furszy.contactsapp.R;
  */
 
 public class OtherProfileActivity extends BaseActivity {
-
+    TextView chatStatus;
     Button btnConnect;
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
@@ -40,6 +40,8 @@ public class OtherProfileActivity extends BaseActivity {
             }
 
         });
+
+        chatStatus = (TextView) findViewById(R.id.chatStatus);
 
     }
 }
