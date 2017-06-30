@@ -10,6 +10,9 @@
     <string name="scan_result_title">Scanner result</string>
 
     <!-- start screen -->
+    <string name="location">Location</string>
+    <string name="username">Username</string>
+    <string name="save">Save</string>
     <string name="create_profile">Create Profile</string>
     <string name="restore_profile">Restore Profile</string>
     <string name="backup_profile">Backup Profile</string>
