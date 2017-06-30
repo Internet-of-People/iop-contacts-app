@@ -16,6 +16,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.example.furszy.contactsapp.ui.home.HomeActivity;
+import com.example.furszy.contactsapp.ui.my_profile.MyProfileActivity;
 import com.example.furszy.contactsapp.ui.my_qr.MyQrActivity;
 import com.example.furszy.contactsapp.ui.settings.SettingsActivity;
 import org.fermat.redtooth.profile_server.model.Profile;
@@ -165,7 +166,7 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
     public void onClick(View v) {
         int id = v.getId();
         if (id==R.id.container_profile){
-            startActivity(new Intent(v.getContext(),ProfileActivity.class));
+            startActivity(new Intent(v.getContext(), MyProfileActivity.class));
         }
     }
 }
