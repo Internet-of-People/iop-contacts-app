@@ -33,10 +33,12 @@
     <string name="select_folder">Select Folder</string>
     <string name="set_password">Set Password</string>
     <string name="set_folder">Set Folder</string>
-    <string name="profile_system">Systems installed</string>
+    <string name="profile_system">App services</string>
     <string name="btn_connected">Connected</string>
     <string name="btn_disconnected">Disconnected</string>
     <string name="disconnect_message">Do you really want to \n disconnect from</string>
     <string name="reload_message">Connection lost, trying to reconnect</string>
     <string name="settings_dev">Development</string>
+    <string name="chat_status">Chat</string>
+    <string name="pairing_status">Pairing</string>
 </resources>

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.furszy.contactsapp.BaseActivity;
@@ -20,6 +21,10 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class MyProfileActivity extends BaseActivity {
 
     TextView myName;
+    TextView myLocation;
+    TextView pairingStatus;
+    TextView chatStatus;
+    Button btnConnectStatus;
     CircleImageView imgProfile;
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
@@ -31,8 +36,21 @@ public class MyProfileActivity extends BaseActivity {
         // User Name
         myName = (TextView) findViewById(R.id.myName);
 
+        // User Location
+        myLocation = (TextView) findViewById(R.id.myLocation);
+
         // User Image
         imgProfile = (CircleImageView) findViewById(R.id.img_profile);
+
+        // Show app pairing status
+        pairingStatus = (TextView) findViewById(R.id.pairingStatus);
+
+        // Show app chat status
+        chatStatus = (TextView) findViewById(R.id.chatStatus);
+
+        // User status
+        btnConnectStatus = (Button) findViewById(R.id.btnConnectStatus);
+
     }
 
     @Override

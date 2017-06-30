@@ -9,7 +9,6 @@ public class ProfileActivity extends BaseActivity {
 
     ProfileFragment profileFragment;
 
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
