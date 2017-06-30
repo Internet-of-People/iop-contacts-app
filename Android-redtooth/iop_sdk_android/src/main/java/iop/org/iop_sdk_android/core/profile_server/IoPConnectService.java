@@ -197,6 +197,13 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public void requestPairingProfile(byte[] remotePubKey, String name, String psHost, ProfSerMsgListener<Integer> listener) throws Exception {
+        // check if the profile already exist
+        ProfileInformation profileInformationDb = null;
+        if((profileInformationDb = profilesDb.getProfile(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey)))!=null){
+            if(profileInformationDb.getPairStatus() != null)
+                throw new IllegalArgumentException("Profile already known");
+        }
+
         // Save invisible contact
         ProfileInformation profileInformation = new ProfileInformationImp(
                 remotePubKey,
@@ -276,6 +283,10 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         return profile;
     }
 
+    /**
+     * Return profiles that this profile is paired or it's waiting for some pair answer from the other side.
+     * @return
+     */
     @Override
     public List<ProfileInformation> getKnownProfiles() {
         List<ProfileInformation> ret = new ArrayList<>();
@@ -312,6 +323,16 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     @Override
     public String getPsHost() {
         return configurationsPreferences.getMainProfileServer().getHost();
+    }
+
+    @Override
+    public void deteleContacts() {
+        profilesDb.truncate();
+    }
+
+    @Override
+    public void deletePairingRequests() {
+        pairingRequestDb.truncate();
     }
 
     @Override

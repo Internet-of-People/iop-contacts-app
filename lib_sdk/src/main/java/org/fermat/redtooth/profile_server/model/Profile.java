@@ -175,6 +175,10 @@ public class Profile implements Signer,ProfileBase {
         return (T) applicationServices.get(name);
     }
 
+    public AppService getAppService(String name){
+        return applicationServices.get(name);
+    }
+
     public Object getKey() {
         return keyEd25519;
     }

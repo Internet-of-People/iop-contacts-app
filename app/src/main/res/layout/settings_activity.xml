@@ -54,6 +54,54 @@
 
         </LinearLayout>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:paddingLeft="16dp"
+            android:textAllCaps="true"
+            android:gravity="center_vertical"
+            android:background="#F0F0F0"
+            android:text="@string/settings_dev"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/btn_delete_contacts"
+            android:background="@drawable/settings_items"
+            android:stateListAnimator="@null"
+            android:padding="8dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:height="40dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:textColor="#444444"
+            android:text="Delete contacts"/>
+
+        <Button
+            android:id="@+id/btn_delete_requests"
+            android:background="@drawable/settings_items"
+            android:stateListAnimator="@null"
+            android:padding="8dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:height="40dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:textColor="#444444"
+            android:text="Delete pairing requests"/>
+
+
+        </LinearLayout>
+
 
     </LinearLayout>
 </ScrollView>

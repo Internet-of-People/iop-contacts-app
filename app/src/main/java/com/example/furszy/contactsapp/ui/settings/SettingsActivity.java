@@ -5,8 +5,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.example.furszy.contactsapp.BaseDrawerActivity;
+import com.example.furszy.contactsapp.ProfileActivity;
 import com.example.furszy.contactsapp.R;
 import com.example.furszy.contactsapp.ui.settings_backup.SettingsBackupActivity;
 import com.example.furszy.contactsapp.ui.settings_restore.SettingsRestoreActivity;
@@ -16,15 +18,16 @@ import com.example.furszy.contactsapp.ui.settings_restore.SettingsRestoreActivit
  */
 
 public class SettingsActivity  extends BaseDrawerActivity {
-    Button buttonRestore;
-    Button buttonBackup;
+    private View root;
+    private Button buttonRestore;
+    private Button buttonBackup;
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
-        getLayoutInflater().inflate(R.layout.settings_activity, container);
+        root = getLayoutInflater().inflate(R.layout.settings_activity, container);
         setTitle("Settings");
 
         // Open Restore
-        buttonRestore = (Button) findViewById(R.id.btn_restore);
+        buttonRestore = (Button) root.findViewById(R.id.btn_restore);
         buttonRestore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -34,7 +37,7 @@ public class SettingsActivity  extends BaseDrawerActivity {
         });
 
         // Backup Profile
-        buttonBackup = (Button) findViewById(R.id.btn_backup);
+        buttonBackup = (Button) root.findViewById(R.id.btn_backup);
         buttonBackup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -43,7 +46,22 @@ public class SettingsActivity  extends BaseDrawerActivity {
             }
         });
 
+        root.findViewById(R.id.btn_delete_contacts).setOnClickListener(this);
+        root.findViewById(R.id.btn_delete_requests).setOnClickListener(this);
 
+    }
+
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+        if (id == R.id.btn_delete_contacts){
+            anRedtooth.deteleContacts();
+            Toast.makeText(this,"Contacts deleted",Toast.LENGTH_LONG).show();
+        }else if(id == R.id.btn_delete_requests){
+            anRedtooth.deletePairingRequests();
+            Toast.makeText(this,"Pairing requests deleted",Toast.LENGTH_LONG).show();
+        }else
+            super.onClick(v);
     }
 
     @Override

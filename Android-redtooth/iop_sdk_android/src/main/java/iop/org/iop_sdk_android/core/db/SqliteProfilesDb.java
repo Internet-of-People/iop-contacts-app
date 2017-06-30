@@ -192,6 +192,11 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         return getAllCotacts(localProfilePubKeyOwnerOfContact);
     }
 
+    public void truncate() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(CONTACTS_TABLE_NAME,null,null);
+    }
+
     @Override
     public boolean updatePaired(String localProfilePubKeyOwnerOfContact,String remotePubKey, ProfileInformationImp.PairStatus value) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -240,9 +245,20 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
 
     @Override
     public List<ProfileInformation> listConnectedProfiles(String localProfileOwnerOfContacts) {
-        // todo: return the real data and not all profiles
-        return getAllCotacts(localProfileOwnerOfContacts);
+        ArrayList<ProfileInformation> list = new ArrayList<>();
+
+        //hp = new HashMap();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( "select * from "+CONTACTS_TABLE_NAME+" where "+CONTACTS_COLUMN_DEVICE_PROFILE_PUB_KEY+" = '"+localProfileOwnerOfContacts+"'", null );
+        if(res.moveToFirst()) {
+            do {
+                list.add(buildFrom(res).profileInformation);
+            } while (res.moveToNext());
+        }
+        return list;
     }
+
+
 
     private class ProfileInformationWrapper{
         String localProfilePubKey;
