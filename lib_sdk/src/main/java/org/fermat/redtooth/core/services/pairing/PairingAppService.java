@@ -70,6 +70,15 @@ public class PairingAppService extends AppService {
                                 }
                                 break;
                             case PAIR_REFUSE:
+                                // check if we already have the contact or already have the request
+                                ProfileInformation profileInformationDb = profilesManager.getProfile(profileServiceOwner.getHexPublicKey(),callProfileAppService.getRemotePubKey());
+                                if (profileInformationDb!=null && profileInformationDb.getPairStatus()!=null){
+                                    // Already known profile, shutdown the call now.
+                                    logger.info("Pairing profile receive from a known profile, disposing the appService call..");
+                                    callProfileAppService.dispose();
+                                    return;
+                                }
+
                                 // update pair request -> todo: this should be in another place..
                                 pairingRequestsManager.updateStatus(
                                         profileServiceOwner.getHexPublicKey(),

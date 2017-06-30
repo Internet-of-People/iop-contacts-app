@@ -371,7 +371,7 @@ public class IoPProfileConnection implements CallsListener {
                 @Override
                 public void onMessageReceive(int messageId, CallProfileAppService message) {
                     // once everything is correct, launch notification
-                    profileCache.getAppService(message.getAppService(), PairingAppService.class).wrapCall(callProfileAppService);
+                    profileCache.getAppService(message.getAppService()).wrapCall(callProfileAppService);
                 }
 
                 @Override

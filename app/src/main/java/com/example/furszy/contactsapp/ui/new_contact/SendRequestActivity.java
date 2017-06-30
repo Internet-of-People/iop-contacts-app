@@ -38,9 +38,9 @@ import static com.example.furszy.contactsapp.scanner.ScanActivity.INTENT_EXTRA_R
  * Created by furszy on 6/21/17.
  */
 
-public class NewContactActivity extends BaseActivity implements View.OnClickListener {
+public class SendRequestActivity extends BaseActivity implements View.OnClickListener {
 
-    private static final String TAG = "NewContactActivity";
+    private static final String TAG = "SendRequestActivity";
 
     private static final int SCANNER_RESULT = 122;
     private View root;
@@ -75,6 +75,7 @@ public class NewContactActivity extends BaseActivity implements View.OnClickList
             startActivityForResult(intent,SCANNER_RESULT);
         }else if (id == R.id.btn_add){
             btn_add.setEnabled(false);
+            btn_add.setBackground(getResources().getDrawable(R.drawable.bg_button_light_blue,null));
             String uri = edit_uri.getText().toString();
             if (uri.length()<1)return;
             final ProfileUtils.UriProfile profile = ProfileUtils.fromUri(uri);
@@ -86,15 +87,27 @@ public class NewContactActivity extends BaseActivity implements View.OnClickList
                         future.setListener(new BaseMsgFuture.Listener<Integer>() {
                             @Override
                             public void onAction(int messageId, Integer object) {
-                                //TODO: ver porqué devuelvo un int y no un boolean o algo más especifico..
-                                Log.i(TAG, "pairing request sent");
-                                Snackbar.make(root,"Pairing request sent!",Snackbar.LENGTH_LONG).show();
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        //TODO: ver porqué devuelvo un int y no un boolean o algo más especifico..
+                                        Log.i(TAG, "pairing request sent");
+                                        Snackbar.make(root,"Pairing request sent!",Snackbar.LENGTH_LONG).show();
+                                        enableSendBtn();
+                                    }
+                                });
                             }
 
                             @Override
-                            public void onFail(int messageId, int status, String statusDetail) {
-                                Log.i(TAG, "pairing request fail");
-                                Snackbar.make(root,"Pairing request fail\n"+statusDetail,Snackbar.LENGTH_LONG).show();
+                            public void onFail(int messageId, int status, final String statusDetail) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Log.i(TAG, "pairing request fail");
+                                        Snackbar.make(root,"Pairing request fail\n"+statusDetail,Snackbar.LENGTH_LONG).show();
+                                        enableSendBtn();
+                                    }
+                                });
                             }
                         });
                         anRedtooth.requestPairingProfile(CryptoBytes.fromHexToBytes(profile.getPubKey()), profile.getName() ,profile.getProfSerHost(), future);
@@ -104,6 +117,11 @@ public class NewContactActivity extends BaseActivity implements View.OnClickList
                 }
             }).start();
         }
+    }
+
+    private void enableSendBtn(){
+        btn_add.setEnabled(true);
+        btn_add.setBackground(getResources().getDrawable(R.drawable.bg_button_blue,null));
     }
 
     @Override

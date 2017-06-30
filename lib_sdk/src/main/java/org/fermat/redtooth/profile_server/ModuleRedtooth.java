@@ -91,4 +91,8 @@ public interface ModuleRedtooth {
     List<PairingRequest> getPairingOpenRequests();
 
     String getPsHost();
+
+    void deteleContacts();
+
+    void deletePairingRequests();
 }
