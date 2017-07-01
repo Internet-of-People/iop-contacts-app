@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
@@ -45,6 +46,7 @@ public class MyQrActivity extends BaseActivity implements View.OnClickListener {
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
         root = getLayoutInflater().inflate(R.layout.my_qr_activity, container);
         setTitle("My QR");
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#2998ff")));
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         // Button Copy address
