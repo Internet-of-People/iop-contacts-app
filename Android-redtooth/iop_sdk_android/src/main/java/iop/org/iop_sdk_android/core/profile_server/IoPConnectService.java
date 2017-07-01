@@ -3,6 +3,7 @@ package iop.org.iop_sdk_android.core.profile_server;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -34,12 +35,15 @@ import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
+import org.fermat.redtooth.wallet.utils.Iso8601Format;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -108,6 +112,16 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public File backupProfile(String password) throws IOException {
+        File file = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File backupFile = new File(file.getAbsolutePath()+"/backup-iop-connect-"+profile.getName()+"-"+Iso8601Format.formatDateTime(new Date(System.currentTimeMillis())));
+        logger.info("Backup file path: "+backupFile.getAbsolutePath());
+        backupFile.createNewFile();
+        ioPConnect.backupProfile(profile,backupFile,password);
+        return backupFile;
     }
 
     @Override
