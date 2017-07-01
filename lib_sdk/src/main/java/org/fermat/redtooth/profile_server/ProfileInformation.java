@@ -1,5 +1,6 @@
 package org.fermat.redtooth.profile_server;
 
+import org.fermat.redtooth.global.IoPSerializable;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 
 import java.util.Set;
@@ -39,4 +40,6 @@ public interface ProfileInformation extends ProfileBase {
     ProfileInformationImp.PairStatus getPairStatus();
 
     void setPairStatus(ProfileInformationImp.PairStatus pairStatus);
+
+    String getHomeHost();
 }

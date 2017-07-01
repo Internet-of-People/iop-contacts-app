@@ -28,23 +28,11 @@ public class SettingsActivity  extends BaseDrawerActivity {
 
         // Open Restore
         buttonRestore = (Button) root.findViewById(R.id.btn_restore);
-        buttonRestore.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent myIntent = new Intent(v.getContext(), SettingsRestoreActivity.class);
-                startActivityForResult(myIntent, 0);
-            }
-        });
+        buttonRestore.setOnClickListener(this);
 
         // Backup Profile
         buttonBackup = (Button) root.findViewById(R.id.btn_backup);
-        buttonBackup.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent myIntent = new Intent(v.getContext(), SettingsBackupActivity.class);
-                startActivityForResult(myIntent, 0);
-            }
-        });
+        buttonBackup.setOnClickListener(this);
 
         root.findViewById(R.id.btn_delete_contacts).setOnClickListener(this);
         root.findViewById(R.id.btn_delete_requests).setOnClickListener(this);
@@ -57,9 +45,15 @@ public class SettingsActivity  extends BaseDrawerActivity {
         if (id == R.id.btn_delete_contacts){
             anRedtooth.deteleContacts();
             Toast.makeText(this,"Contacts deleted",Toast.LENGTH_LONG).show();
-        }else if(id == R.id.btn_delete_requests){
+        }else if(id == R.id.btn_delete_requests) {
             anRedtooth.deletePairingRequests();
-            Toast.makeText(this,"Pairing requests deleted",Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Pairing requests deleted", Toast.LENGTH_LONG).show();
+        }else if(id == R.id.btn_backup) {
+            Intent myIntent = new Intent(v.getContext(), SettingsBackupActivity.class);
+            startActivityForResult(myIntent, 0);
+        }else if(id == R.id.btn_restore){
+            Intent myIntent = new Intent(v.getContext(), SettingsRestoreActivity.class);
+            startActivityForResult(myIntent, 0);
         }else
             super.onClick(v);
     }

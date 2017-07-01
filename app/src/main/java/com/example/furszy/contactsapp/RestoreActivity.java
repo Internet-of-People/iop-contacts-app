@@ -19,9 +19,7 @@ public class RestoreActivity extends BaseActivity {
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-
         //Open File Folder
-
         buttonFile = (Button) findViewById(R.id.addFile);
         buttonFile.setOnClickListener(new View.OnClickListener() {
             @Override

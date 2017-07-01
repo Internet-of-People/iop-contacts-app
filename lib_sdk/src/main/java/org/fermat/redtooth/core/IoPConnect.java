@@ -1,5 +1,7 @@
 package org.fermat.redtooth.core;
 
+import com.google.protobuf.ByteString;
+
 import org.fermat.redtooth.core.services.DefaultServices;
 import org.fermat.redtooth.core.services.pairing.PairingAppService;
 import org.fermat.redtooth.core.services.pairing.PairingMsg;
@@ -7,6 +9,7 @@ import org.fermat.redtooth.core.services.pairing.PairingMsgTypes;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.crypto.CryptoWrapper;
 import org.fermat.redtooth.global.DeviceLocation;
+import org.fermat.redtooth.global.PlatformSerializer;
 import org.fermat.redtooth.locnet.Explorer;
 import org.fermat.redtooth.locnet.NodeInfo;
 import org.fermat.redtooth.profile_server.CantConnectException;
@@ -28,16 +31,25 @@ import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
 import org.fermat.redtooth.profiles_manager.PairingRequestsManager;
+import org.fermat.redtooth.profiles_manager.ProfileOuterClass;
 import org.fermat.redtooth.profiles_manager.ProfilesManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.FutureTask;
+
+import sun.misc.IOUtils;
 
 /**
  * Created by mati on 17/05/17.
@@ -143,11 +155,6 @@ public class IoPConnect implements ConnectionListener {
         profileServerConfigurations.saveProfile(profile);
         // todo: return profile connection pk
         return profile;
-    }
-
-    public void backupProfile(long profId,String backupDir){
-        //Profile profile = profilesManager.getProfile(profId);
-        // todo: backup the profile on an external dir file.
     }
 
     public void connectProfile(String profilePublicKey, PairingListener pairingListener, byte[] ownerChallenge,ConnectionFuture future) throws Exception {
@@ -518,6 +525,143 @@ public class IoPConnect implements ConnectionListener {
 
     public ProfileInformation getKnownProfile(String contactOwnerPubKey,String pubKey) {
         return profilesManager.getProfile(contactOwnerPubKey,pubKey);
+    }
+
+    /**
+     * Backup the profile on a single encrypted file.
+     *
+     * Including keys, connections, pairing requests
+     * to be restored in other device.
+     *
+     * @param profile
+     * @param externalFile
+     */
+    public void backupProfile(Profile profile,File externalFile,String password){
+        // The file is going to be built in this way:
+        // First the main profile
+        ProfileOuterClass.ProfileInfo.Builder mainInfo = ProfileOuterClass.ProfileInfo.newBuilder()
+                .setVersion(ByteString.copyFrom(profile.getVersion()))
+                .setName(profile.getName())
+                .setType(profile.getType())
+                .setHomeHost(profile.getHomeHost())
+                .setPubKey(ByteString.copyFrom(profile.getPublicKey()));
+        if (profile.getExtraData()!=null){
+            mainInfo.setExtraData(profile.getExtraData());
+        }
+        if (profile.getImg()!=null){
+            mainInfo.setImg(ByteString.copyFrom(profile.getImg()));
+        }
+        ProfileOuterClass.Profile.Builder mainProfile = ProfileOuterClass.Profile.newBuilder()
+                .setProfileInfo(mainInfo)
+                .setPrivKey(ByteString.copyFrom(profile.getPrivKey()));
+
+        // Then connections
+        List<ProfileOuterClass.ProfileInfo> remoteBackups = new ArrayList<>();
+        List<ProfileInformation> profileInformationList = profilesManager.listAll(profile.getHexPublicKey());
+        for (ProfileInformation profileInformation : profileInformationList) {
+            ProfileOuterClass.ProfileInfo.Builder profileInfoBuilder = ProfileOuterClass.ProfileInfo.newBuilder()
+                    .setVersion(ByteString.copyFrom(profileInformation.getVersion()))
+                    .setName(profileInformation.getName())
+                    .setPubKey(ByteString.copyFrom(CryptoBytes.fromHexToBytes(profileInformation.getHexPublicKey())))
+                    ;
+            if (profileInformation.getHomeHost()!=null){
+                profileInfoBuilder.setHomeHost(profileInformation.getHomeHost());
+            }
+            if (profileInformation.getType()!=null){
+                profileInfoBuilder.setType(profileInformation.getType());
+            }
+            if (profileInformation.getExtraData()!=null){
+                profileInfoBuilder.setExtraData(profile.getExtraData());
+            }
+            if (profileInformation.getImg()!=null){
+                profileInfoBuilder.setImg(ByteString.copyFrom(profile.getImg()));
+            }
+            remoteBackups.add(profileInfoBuilder.build());
+        }
+
+        ProfileOuterClass.Wrapper wrapper = ProfileOuterClass.Wrapper.newBuilder()
+                .setProfile(mainProfile)
+                .addAllProfilesInfo(remoteBackups)
+                .build();
+
+        byte[] writeBuffer = wrapper.toByteArray();
+        // todo: encrypt this with the password..
+
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(externalFile);
+            fileOutputStream.write(writeBuffer);
+            fileOutputStream.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        logger.info("backup succed");
+    }
+
+    /**
+     * Todo: decrypt with the password this..
+     * @param backupFile
+     * @param password
+     * @param platformSerializer
+     * @return
+     */
+    public ProfileRestored restoreFromBackup(File backupFile, String password, PlatformSerializer platformSerializer){
+        try {
+            byte[] bytes = Files.readAllBytes(backupFile.toPath());
+            ProfileOuterClass.Wrapper wrapper = ProfileOuterClass.Wrapper.parseFrom(bytes);
+            ProfileOuterClass.Profile mainProfile = wrapper.getProfile();
+            Profile profile = new Profile(
+                    mainProfile.getProfileInfo().getVersion().toByteArray(),
+                    mainProfile.getProfileInfo().getName(),
+                    mainProfile.getProfileInfo().getType(),
+                    mainProfile.getProfileInfo().getExtraData(),
+                    mainProfile.getProfileInfo().getImg().toByteArray(),
+                    mainProfile.getProfileInfo().getHomeHost(),
+                    platformSerializer.toPlatformKey(
+                            mainProfile.getPrivKey().toByteArray(),
+                            mainProfile.getProfileInfo().getPubKey().toByteArray()
+                    )
+            );
+            List<ProfileInformation> list = new ArrayList<>();
+            for (int i=0;i<wrapper.getProfilesInfoCount();i++){
+                ProfileOuterClass.ProfileInfo profileInfo = wrapper.getProfilesInfo(i);
+                list.add(
+                    new ProfileInformationImp(
+                            profileInfo.getVersion().toByteArray(),
+                            profileInfo.getPubKey().toByteArray(),
+                            profileInfo.getName(),
+                            profileInfo.getType(),
+                            profileInfo.getExtraData(),
+                            profileInfo.getImg().toByteArray(),
+                            profileInfo.getHomeHost()
+                    )
+                );
+            }
+            return new ProfileRestored(profile,list);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static class ProfileRestored{
+
+        private Profile profile;
+        private List<ProfileInformation> profileInformationList;
+
+        public ProfileRestored(Profile profile, List<ProfileInformation> profileInformationList) {
+            this.profile = profile;
+            this.profileInformationList = profileInformationList;
+        }
+
+        public Profile getProfile() {
+            return profile;
+        }
+
+        public List<ProfileInformation> getProfileInformationList() {
+            return profileInformationList;
+        }
     }
 
     public void stop() {
