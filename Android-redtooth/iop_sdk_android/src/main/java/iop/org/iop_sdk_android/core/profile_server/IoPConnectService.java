@@ -116,9 +116,12 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public File backupProfile(String password) throws IOException {
-        File file = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        File backupFile = new File(file.getAbsolutePath()+"/backup-iop-connect-"+profile.getName()+"-"+Iso8601Format.formatDateTime(new Date(System.currentTimeMillis())));
+        File backupFile = new File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                "backup_iop_connect_"+profile.getName()+Iso8601Format.formatDateTimeT(new Date(System.currentTimeMillis()))+".dat"
+        );
         logger.info("Backup file path: "+backupFile.getAbsolutePath());
+        backupFile.getParentFile().mkdirs();
         backupFile.createNewFile();
         ioPConnect.backupProfile(profile,backupFile,password);
         return backupFile;
