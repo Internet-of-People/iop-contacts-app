@@ -108,7 +108,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
 
         module = ((App)getActivity().getApplication()).anRedtooth.getRedtooth();
 
-        getActivity().setTitle("Profile");
+        getActivity().setTitle("Edit Profile");
 
         root = inflater.inflate(R.layout.profile_main,container);
 
