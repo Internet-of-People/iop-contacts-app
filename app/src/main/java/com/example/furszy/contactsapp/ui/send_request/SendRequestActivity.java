@@ -1,6 +1,5 @@
-package com.example.furszy.contactsapp.ui.new_contact;
+package com.example.furszy.contactsapp.ui.send_request;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -10,26 +9,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.example.furszy.contactsapp.App;
 import com.example.furszy.contactsapp.BaseActivity;
-import com.example.furszy.contactsapp.DialogBuilder;
-import com.example.furszy.contactsapp.MainActivity;
 import com.example.furszy.contactsapp.R;
 import com.example.furszy.contactsapp.scanner.ScanActivity;
 
 import org.fermat.redtooth.crypto.CryptoBytes;
-import org.fermat.redtooth.profile_server.CantConnectException;
-import org.fermat.redtooth.profile_server.CantSendMessageException;
-import org.fermat.redtooth.profile_server.ModuleRedtooth;
-import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.utils.ProfileUtils;
-
-import java.util.concurrent.ExecutionException;
 
 import static android.Manifest.permission.CAMERA;
 import static com.example.furszy.contactsapp.scanner.ScanActivity.INTENT_EXTRA_RESULT;
@@ -53,7 +42,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setTitle("Send Request");
-        root = getLayoutInflater().inflate(R.layout.new_contact_main,container,true);
+        root = getLayoutInflater().inflate(R.layout.send_request_activity,container,true);
         edit_uri = (EditText) root.findViewById(R.id.edit_uri);
         root.findViewById(R.id.img_qr).setOnClickListener(this);
         btn_add = (Button) root.findViewById(R.id.btn_add);

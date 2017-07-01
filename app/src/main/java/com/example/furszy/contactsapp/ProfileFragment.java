@@ -23,6 +23,8 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -73,6 +75,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
     private View root;
     private CircleImageView imgProfile;
     private EditText txt_name;
+    private EditText text_location;
     private Button btn_create;
     private ProgressBar progressBar;
 
@@ -473,5 +476,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
             // permissions this app might request
         }
     }
+
+
 }
 

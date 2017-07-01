@@ -17,7 +17,7 @@ import com.example.furszy.contactsapp.R;
 import com.example.furszy.contactsapp.StartActivity;
 import com.example.furszy.contactsapp.ui.home.contacts.ContactsFragment;
 import com.example.furszy.contactsapp.ui.home.requests.RequestsFragment;
-import com.example.furszy.contactsapp.ui.new_contact.SendRequestActivity;
+import com.example.furszy.contactsapp.ui.send_request.SendRequestActivity;
 
 import java.util.ArrayList;
 import java.util.List;
