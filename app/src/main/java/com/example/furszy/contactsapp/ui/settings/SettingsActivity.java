@@ -1,10 +1,12 @@
 package com.example.furszy.contactsapp.ui.settings;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.furszy.contactsapp.BaseDrawerActivity;
@@ -21,6 +23,8 @@ public class SettingsActivity  extends BaseDrawerActivity {
     private View root;
     private Button buttonRestore;
     private Button buttonBackup;
+    private String versionName = "";
+    TextView text_version ;
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
         root = getLayoutInflater().inflate(R.layout.settings_activity, container);
@@ -37,6 +41,14 @@ public class SettingsActivity  extends BaseDrawerActivity {
         root.findViewById(R.id.btn_delete_contacts).setOnClickListener(this);
         root.findViewById(R.id.btn_delete_requests).setOnClickListener(this);
 
+        // APP Version
+        text_version = (TextView) root.findViewById(R.id.text_version);
+        try {
+            versionName = getApplicationContext().getPackageManager().getPackageInfo(getApplicationContext().getPackageName(), 0).versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        text_version.setText(versionName);
     }
 
     @Override
