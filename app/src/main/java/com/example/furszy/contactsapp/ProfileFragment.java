@@ -436,11 +436,11 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
     }
 
 
-    private void checkPermissions() {
-        // Assume thisActivity is the current activity
-        if (Build.VERSION.SDK_INT > 22) {
+      private void checkPermissions() {
+                // Assume thisActivity is the current activity
+                if (Build.VERSION.SDK_INT > 22) {
 
-            int permissionCheck = ContextCompat.checkSelfPermission(getActivity(),
+                    int permissionCheck = ContextCompat.checkSelfPermission(getActivity(),
                     Manifest.permission.READ_EXTERNAL_STORAGE);
 
             // Here, thisActivity is the current activity

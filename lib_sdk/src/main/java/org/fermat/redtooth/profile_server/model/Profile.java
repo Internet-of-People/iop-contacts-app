@@ -1,17 +1,26 @@
 package org.fermat.redtooth.profile_server.model;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.bitcoinj.core.Sha256Hash;
+import org.fermat.redtooth.core.pure.KeyEd25519Java;
 import org.fermat.redtooth.crypto.CryptoBytes;
+import org.fermat.redtooth.global.IoPSerializable;
+import org.fermat.redtooth.global.PlatformSerializer;
+import org.fermat.redtooth.global.utils.Preconditions;
 import org.fermat.redtooth.profile_server.ProfileBase;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.Signer;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
+import org.fermat.redtooth.wallet.utils.Iso8601Format;
 
 /**
  * Created by mati on 06/02/17.
@@ -23,12 +32,16 @@ public class Profile implements Signer,ProfileBase {
     private long id;
 
     // specific fields
+    /** 3 bytes version */
     private byte[] version;
+    /** 32 char name */
     private String name;
+    /*** 32 char type  */
     private String type;
     private byte[] img;
     private int latitude;
     private int longitude;
+    /** 128 char extra data */
     private String extraData;
 
     private String homeHost;
@@ -38,6 +51,7 @@ public class Profile implements Signer,ProfileBase {
     /** Key del profile */
     private KeyEd25519 keyEd25519;
 
+    public Profile(){};
 
     public Profile(byte[] version,String name,String type,KeyEd25519 keyEd25519) {
         this.version = version;
@@ -54,6 +68,16 @@ public class Profile implements Signer,ProfileBase {
         this.latitude = latitude;
         this.longitude = longitude;
         this.extraData = extraData;
+    }
+
+    public Profile(byte[] version, String name, String type, String extraData, byte[] img, String homeHost, KeyEd25519 keyEd25519) {
+        this.version = version;
+        this.name = name;
+        this.type = type;
+        this.extraData = extraData;
+        this.img = img;
+        this.homeHost = homeHost;
+        this.keyEd25519 = keyEd25519;
     }
 
     public void setVersion(byte[] version) {
@@ -190,5 +214,4 @@ public class Profile implements Signer,ProfileBase {
     public String getNetworkIdHex() {
         return CryptoBytes.toHexString(Sha256Hash.hash(getPublicKey()));
     }
-
 }

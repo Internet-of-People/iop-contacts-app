@@ -1,6 +1,7 @@
 package org.fermat.redtooth.profile_server;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import org.fermat.redtooth.profile_server.engine.SearchProfilesQuery;
@@ -18,6 +19,8 @@ import org.fermat.redtooth.profiles_manager.PairingRequest;
  */
 
 public interface ModuleRedtooth {
+
+    File backupProfile(String password) throws IOException;
 
     boolean isProfileRegistered();
 
