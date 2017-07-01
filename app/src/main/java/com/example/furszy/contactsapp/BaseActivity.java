@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
@@ -145,7 +146,9 @@ public class BaseActivity extends AppCompatActivity{
                         .setTicker("Pairing received")
                         .setContentText(name + " wants to connect with you!")
                         .setContentIntent(contentIntent)
-                        .setSmallIcon(R.drawable.img_profile)
+                        .setSmallIcon(R.mipmap.ic_notification)
+                        .setLargeIcon(BitmapFactory.decodeResource(context.getResources(),
+                                R.mipmap.ic_notification))
                         .setAutoCancel(true);
                 notificationManager.notify(200, builder.build());
             }
