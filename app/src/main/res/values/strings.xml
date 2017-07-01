@@ -44,4 +44,5 @@
     <string name="settings_dev">Development</string>
     <string name="chat_status">Chat</string>
     <string name="pairing_status">Pairing</string>
+    <string name="show_location">Show location</string>
 </resources>
