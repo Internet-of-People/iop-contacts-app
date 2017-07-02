@@ -43,6 +43,7 @@ public class ContactsFragment extends RecyclerFragment<ProfileInformation> {
         View view = super.onCreateView(inflater, container, savedInstanceState);
         setEmptyText("No available contacts");
         setEmptyTextColor(Color.GRAY);
+        setEmptyView(R.drawable.img_contact_empty);
         return view;
     }
 
@@ -76,4 +77,6 @@ public class ContactsFragment extends RecyclerFragment<ProfileInformation> {
         }
         return null;
     }
+
+
 }
