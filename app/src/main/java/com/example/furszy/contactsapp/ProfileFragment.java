@@ -28,8 +28,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
@@ -75,7 +77,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
     private View root;
     private CircleImageView imgProfile;
     private EditText txt_name;
-    private EditText text_location;
+    private Switch show_location;
     private Button btn_create;
     private ProgressBar progressBar;
 
@@ -106,7 +108,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
 
         module = ((App)getActivity().getApplication()).anRedtooth.getRedtooth();
 
-        getActivity().setTitle("Profile");
+        getActivity().setTitle("Edit Profile");
 
         root = inflater.inflate(R.layout.profile_main,container);
 
@@ -124,6 +126,25 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
             public void onClick(View v) {
                 Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivityForResult(i, RESULT_LOAD_IMAGE);
+            }
+        });
+
+        //Show Locaiton
+
+        show_location = (Switch) root.findViewById(R.id.show_location);
+        show_location.setChecked(false);
+        show_location.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView,
+                                         boolean isChecked) {
+
+                if(isChecked){
+
+                }else{
+
+                }
+
             }
         });
 

@@ -7,9 +7,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.text.InputType;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.example.furszy.contactsapp.BaseActivity;
@@ -25,6 +29,9 @@ import java.io.IOException;
 public class SettingsBackupPasswordActivity extends BaseActivity {
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL = 500;
     Button btnSetPassword;
+    ImageButton showPassword;
+    EditText password;
+    EditText repeat_password;
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
         View root = getLayoutInflater().inflate(R.layout.settings_backup_password, container);
@@ -52,6 +59,63 @@ public class SettingsBackupPasswordActivity extends BaseActivity {
                 }
             }
         });
+        //Show Password
+        repeat_password = (EditText) findViewById(R.id.repeat_password);
+        password = (EditText) findViewById(R.id.password);
+        showPassword = (ImageButton) findViewById(R.id.showPassword);
+        showPassword.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent event) {
+
+                switch ( event.getAction() ) {
+                    case MotionEvent.ACTION_DOWN:
+                        password.setInputType(InputType.TYPE_CLASS_TEXT);
+                        repeat_password.setInputType(InputType.TYPE_CLASS_TEXT);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        password.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                        repeat_password.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                        break;
+                }
+                return true;
+            }
+        });
+
+    }
+
+    private void checkPermissions() {
+        // Assume thisActivity is the current activity
+        if (Build.VERSION.SDK_INT > 22) {
+
+            int permissionCheck = ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+            // Here, thisActivity is the current activity
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                // Should we show an explanation?
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+                    // Show an expanation to the user *asynchronously* -- don't block
+                    // this thread waiting for the user's response! After the user
+                    // sees the explanation, try again to request the permission.
+
+                } else {
+
+                    // No explanation needed, we can request the permission.
+
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL);
+
+                    // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                    // app-defined int constant. The callback method gets the
+                    // result of the request.
+                }
+            }
+        }
     }
 
     private void checkPermissions() {
