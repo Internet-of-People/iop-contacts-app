@@ -13,8 +13,8 @@
         style="@style/MessageText"
         android:layout_alignEnd="@+id/addFile" />
 
-    <Button
-        android:id="@+id/addFile"
+    <Spinner
+        android:id="@+id/spinner_files"
         android:layout_width="260dp"
         android:layout_height="40dp"
         android:layout_below="@+id/restoreMessage"
@@ -23,12 +23,11 @@
         android:background="@drawable/bg_inputs"
         android:drawableRight="@drawable/ic_add_file_dark"
         android:gravity="center_horizontal|center_vertical"
-        android:onClick="addFile"
         android:paddingLeft="10dip"
         android:paddingRight="10dip"
         android:text="@string/select_file"
         android:textColor="@color/mainText"
-        android:textSize="14sp" />
+        android:textSize="15sp" />
 
 
 

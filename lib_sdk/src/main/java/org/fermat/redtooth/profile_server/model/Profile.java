@@ -1,5 +1,6 @@
 package org.fermat.redtooth.profile_server.model;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 import org.bitcoinj.core.Sha256Hash;
@@ -207,5 +208,21 @@ public class Profile implements Signer,ProfileBase {
         return CryptoBytes.toHexString(Sha256Hash.hash(getPublicKey()));
     }
 
-
+    @Override
+    public String toString() {
+        return "Profile{" +
+                "id=" + id +
+                ", version=" + Arrays.toString(version) +
+                ", name='" + name + '\'' +
+                ", type='" + type + '\'' +
+                ", img=" + Arrays.toString(img) +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                ", extraData='" + extraData + '\'' +
+                ", homeHost='" + homeHost + '\'' +
+                ", homeHostId=" + Arrays.toString(homeHostId) +
+                ", applicationServices=" + applicationServices +
+                ", keyEd25519=" + keyEd25519 +
+                '}';
+    }
 }

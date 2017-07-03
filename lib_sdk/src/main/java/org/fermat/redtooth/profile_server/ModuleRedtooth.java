@@ -22,7 +22,9 @@ import org.fermat.redtooth.services.chat.ChatMsg;
 
 public interface ModuleRedtooth {
 
-    File backupProfile(String password) throws IOException;
+    File backupProfile(File backupDir, String password) throws IOException;
+
+    void restoreFrom(File file, String password);
 
     boolean isProfileRegistered();
 
@@ -106,4 +108,5 @@ public interface ModuleRedtooth {
     void deteleContacts();
 
     void deletePairingRequests();
+
 }

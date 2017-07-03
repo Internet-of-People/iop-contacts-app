@@ -40,11 +40,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -657,6 +659,7 @@ public class IoPConnect implements ConnectionListener {
 
     /**
      * Todo: decrypt with the password this..
+     * todo: remove the old profile and add the new one if this methos is called from the settings.
      * @param backupFile
      * @param password
      * @param platformSerializer
@@ -664,8 +667,9 @@ public class IoPConnect implements ConnectionListener {
      */
     public ProfileRestored restoreFromBackup(File backupFile, String password, PlatformSerializer platformSerializer){
         try {
-            byte[] bytes = Files.readAllBytes(backupFile.toPath());
-            ProfileOuterClass.Wrapper wrapper = ProfileOuterClass.Wrapper.parseFrom(bytes);
+            FileInputStream inputStream = new FileInputStream(backupFile);
+            ProfileOuterClass.Wrapper wrapper = ProfileOuterClass.Wrapper.parseFrom(inputStream);
+            inputStream.close();
             ProfileOuterClass.Profile mainProfile = wrapper.getProfile();
             Profile profile = new Profile(
                     mainProfile.getProfileInfo().getVersion().toByteArray(),
@@ -694,7 +698,10 @@ public class IoPConnect implements ConnectionListener {
                     )
                 );
             }
-            return new ProfileRestored(profile,list);
+
+            ProfileRestored profileRestored = new ProfileRestored(profile,list);
+            logger.info("Profile restored: "+profileRestored.toString());
+            return profileRestored;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -718,6 +725,14 @@ public class IoPConnect implements ConnectionListener {
         public List<ProfileInformation> getProfileInformationList() {
             return profileInformationList;
         }
+
+        @Override
+        public String toString() {
+            return "ProfileRestored{" +
+                    "profile=" + profile +
+                    ", profileInformationList=" + Arrays.toString(profileInformationList.toArray()) +
+                    '}';
+        }
     }
 
     public void stop() {
@@ -729,5 +744,6 @@ public class IoPConnect implements ConnectionListener {
             }
         }
     }
+
 
 }

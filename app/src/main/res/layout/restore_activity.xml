@@ -19,6 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="72dp"
+        android:layout_centerHorizontal="true"
         android:gravity="center_vertical|center_horizontal"
         android:text="@string/restore_message"
         android:textColor="@color/white"
@@ -26,8 +27,8 @@
         android:layout_below="@+id/imgCurve"
         android:layout_alignEnd="@+id/addFile" />
 
-    <Button
-        android:id="@+id/addFile"
+    <Spinner
+        android:id="@+id/spinner_files"
         android:layout_width="260dp"
         android:layout_height="40dp"
         android:layout_below="@+id/restoreMessage"
@@ -37,7 +38,6 @@
         android:drawableRight="@drawable/ic_add_file"
         android:elevation="2dp"
         android:gravity="center_horizontal|center_vertical"
-        android:onClick="addFile"
         android:paddingLeft="10dip"
         android:paddingRight="10dip"
         android:text="@string/select_file"
