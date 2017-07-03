@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.fermat.redtooth.core.services.AppServiceListener;
 import org.fermat.redtooth.profile_server.engine.SearchProfilesQuery;
 import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SubsequentSearchMsgListenerFuture;
@@ -13,6 +14,7 @@ import org.fermat.redtooth.profile_server.engine.listeners.ProfileListener;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
+import org.fermat.redtooth.services.chat.ChatMsg;
 
 /**
  * Created by mati on 22/11/16.
@@ -23,6 +25,8 @@ public interface ModuleRedtooth {
     File backupProfile(String password) throws IOException;
 
     boolean isProfileRegistered();
+
+    void addService(String serviceName, Object... args);
 
     void connect(String pubKey) throws Exception;
 
@@ -60,6 +64,10 @@ public interface ModuleRedtooth {
     void acceptPairingProfile(PairingRequest pairingRequest) throws Exception;
 
     void cancelPairingRequest(PairingRequest pairingRequest);
+
+    void requestChat(ProfileInformation remoteProfileInformation, ProfSerMsgListener<Boolean> readyListener);
+
+    void sendMsgToChat(ProfileInformation remoteProfileInformation, ChatMsg msg, ProfSerMsgListener<Boolean> msgListener) throws Exception;
 
     boolean isIdentityCreated();
 

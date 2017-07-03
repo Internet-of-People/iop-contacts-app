@@ -1,26 +1,12 @@
 package org.fermat.redtooth.profile_server.model;
 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import org.bitcoinj.core.Sha256Hash;
-import org.fermat.redtooth.core.pure.KeyEd25519Java;
 import org.fermat.redtooth.crypto.CryptoBytes;
-import org.fermat.redtooth.global.IoPSerializable;
-import org.fermat.redtooth.global.PlatformSerializer;
-import org.fermat.redtooth.global.utils.Preconditions;
 import org.fermat.redtooth.profile_server.ProfileBase;
-import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.Signer;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
-import org.fermat.redtooth.wallet.utils.Iso8601Format;
 
 /**
  * Created by mati on 06/02/17.
@@ -46,6 +32,7 @@ public class Profile implements Signer,ProfileBase {
 
     private String homeHost;
     private byte[] homeHostId;
+    /** Hash map of name-service of available AppServices */
     private HashMap<String,AppService> applicationServices;
 
     /** Key del profile */
@@ -126,6 +113,11 @@ public class Profile implements Signer,ProfileBase {
 
     public String getName() {
         return name;
+    }
+
+    @Override
+    public boolean hasService(String serviceName) {
+        return applicationServices.containsKey(serviceName);
     }
 
     public byte[] getImg() {
@@ -214,4 +206,6 @@ public class Profile implements Signer,ProfileBase {
     public String getNetworkIdHex() {
         return CryptoBytes.toHexString(Sha256Hash.hash(getPublicKey()));
     }
+
+
 }

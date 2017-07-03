@@ -1,6 +1,6 @@
 package org.fermat.redtooth.core.services.pairing;
 
-import org.fermat.redtooth.core.services.DefaultServices;
+import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.engine.app_services.MsgWrapper;
 import org.fermat.redtooth.crypto.CryptoBytes;
@@ -29,7 +29,7 @@ public class PairingAppService extends AppService {
     private ProfilesManager profilesManager;
 
     public PairingAppService(Profile profileServiceOwner,PairingRequestsManager pairingRequestsManager, ProfilesManager profilesManager,PairingListener pairingListener) {
-        super(DefaultServices.PROFILE_PAIRING.getName());
+        super(EnabledServices.PROFILE_PAIRING.getName());
         this.profilesManager = profilesManager;
         this.profileServiceOwner = profileServiceOwner;
         this.pairingListener = pairingListener;
@@ -41,7 +41,7 @@ public class PairingAppService extends AppService {
      * @param callProfileAppService
      */
     @Override
-    public void wrapCall(final CallProfileAppService callProfileAppService) {
+    public void onWrapCall(final CallProfileAppService callProfileAppService) {
         if (pairingListener!=null){
             callProfileAppService.setMsgListener(new CallProfileAppService.CallMessagesListener() {
                 @Override

@@ -6,6 +6,6 @@ package com.example.furszy.contactsapp;
 
 public class HardcodedConstants {
 
-    public static final String TEST_PROFILE_SERVER_HOST = "104.197.68.8";
+    public static final String TEST_PROFILE_SERVER_HOST = "10.0.2.2";//"104.197.68.8";
 
 }
