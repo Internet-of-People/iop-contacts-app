@@ -11,6 +11,7 @@ import android.util.Log;
 import org.fermat.redtooth.core.IoPConnect;
 import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.core.services.AppServiceListener;
+import org.fermat.redtooth.global.PlatformSerializer;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.crypto.CryptoBytes;
@@ -50,7 +51,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import iop.org.iop_sdk_android.core.crypto.CryptoWrapperAndroid;
 import iop.org.iop_sdk_android.core.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
@@ -82,6 +82,13 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     /** Databases */
     private SqlitePairingRequestDb pairingRequestDb;
     private SqliteProfilesDb profilesDb;
+
+    private PlatformSerializer platformSerializer = new PlatformSerializer(){
+        @Override
+        public KeyEd25519 toPlatformKey(byte[] privKey, byte[] pubKey) {
+            return iop.org.iop_sdk_android.core.crypto.KeyEd25519.wrap(privKey,pubKey);
+        }
+    };
 
     public class ProfServerBinder extends Binder {
         public IoPConnectService getService() {
@@ -118,9 +125,9 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
-    public File backupProfile(String password) throws IOException {
+    public File backupProfile(File backupDir, String password) throws IOException {
         File backupFile = new File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                backupDir,
                 "backup_iop_connect_"+profile.getName()+Iso8601Format.formatDateTimeT(new Date(System.currentTimeMillis()))+".dat"
         );
         logger.info("Backup file path: "+backupFile.getAbsolutePath());
@@ -128,6 +135,15 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         backupFile.createNewFile();
         ioPConnect.backupProfile(profile,backupFile,password);
         return backupFile;
+    }
+
+    @Override
+    public void restoreFrom(File file, String password) {
+        logger.info("Restoring profile");
+        if (file.exists()){
+            ioPConnect.restoreFromBackup(file,password,platformSerializer);
+        }else
+            throw new IllegalArgumentException("File not exist, "+file.getAbsolutePath());
     }
 
     @Override
