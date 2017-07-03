@@ -1,4 +1,4 @@
-include ':app', ':iopj', ':lib_sdk', ':non-blocking-client'
+include ':app', ':iopj', ':lib_sdk', ':non-blocking-client', ':ui.helper.lib'
 
 
 include ':libsodium-jni-aar-1.0.3'

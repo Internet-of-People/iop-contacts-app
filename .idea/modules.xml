@@ -10,6 +10,7 @@
       <module fileurl="file://$PROJECT_DIR$/lib_sdk/lib_sdk.iml" filepath="$PROJECT_DIR$/lib_sdk/lib_sdk.iml" />
       <module fileurl="file://$PROJECT_DIR$/Android-redtooth/libsodium-jni-aar-1.0.3/libsodium-jni-aar-1.0.3.iml" filepath="$PROJECT_DIR$/Android-redtooth/libsodium-jni-aar-1.0.3/libsodium-jni-aar-1.0.3.iml" />
       <module fileurl="file://$PROJECT_DIR$/non-blocking-client/non-blocking-client.iml" filepath="$PROJECT_DIR$/non-blocking-client/non-blocking-client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ui.helper.lib/ui.helper.lib.iml" filepath="$PROJECT_DIR$/ui.helper.lib/ui.helper.lib.iml" />
     </modules>
   </component>
 </project>

@@ -15,6 +15,7 @@
             <option value="$PROJECT_DIR$/iopj" />
             <option value="$PROJECT_DIR$/lib_sdk" />
             <option value="$PROJECT_DIR$/non-blocking-client" />
+            <option value="$PROJECT_DIR$/ui.helper.lib" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
