@@ -23,6 +23,7 @@
     <color name="hintInput">#604d4d4d</color>
     <color name="transparent">#00000000</color>
     <color name="subtitles">#7F7F7F</color>
+    <color name="time">#AFAFAF</color>
 
 
 </resources>

@@ -53,6 +53,8 @@ public class ProfileInformationActivity extends BaseActivity {
     private Button btn_connect;
     private ProgressBar progress_bar;
 
+    private TextView txt_chat;
+
     private ExecutorService executor;
 
     private boolean searchForProfile = false;
@@ -92,6 +94,7 @@ public class ProfileInformationActivity extends BaseActivity {
         txt_name = (TextView) findViewById(R.id.txt_name);
         btn_connect = (Button) findViewById(R.id.btn_connect);
         progress_bar = (ProgressBar) findViewById(R.id.progress_bar);
+        txt_chat = (TextView) findViewById(R.id.txt_chat);
 
         btn_connect.setOnClickListener(new View.OnClickListener() {
             @Override
