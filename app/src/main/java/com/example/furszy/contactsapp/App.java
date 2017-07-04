@@ -213,7 +213,7 @@ public class App extends Application implements IoPConnectContext, PairingListen
                     // todo: negro acá abrí la vista de incoming para aceptar el request..
                     //PendingIntent pendingIntent = PendingIntent.getActivity(this,0,new Intent(this, HomeActivity.class),0);
                     Notification not = new Notification.Builder(App.this)
-                            .setContentTitle("Pair response received")
+                            .setContentTitle("Hey, chat notification received")
                             .setContentText(remoteProflie.getName()+" want to chat with you!")
                             .setSmallIcon(R.drawable.ic_chat_disable)
                       //      .setContentIntent(pendingIntent)
