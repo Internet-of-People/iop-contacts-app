@@ -47,5 +47,7 @@
     <string name="show_location">Show location</string>
     <string name="copyright">Made by Furszy</string>
     <string name="version">Version</string>
+    <string name="send">Send</string>
+    <string name="incoming_message">Wants to chat \n with you</string>
     <string name="lorem_impsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
 </resources>
