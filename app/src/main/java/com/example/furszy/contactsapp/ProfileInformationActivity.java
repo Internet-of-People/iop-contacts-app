@@ -1,6 +1,7 @@
 package com.example.furszy.contactsapp;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -38,7 +39,7 @@ import static org.fermat.redtooth.profile_server.imp.ProfileInformationImp.PairS
 /**
  * Created by furszy on 5/27/17.
  */
-public class ProfileInformationActivity extends BaseActivity {
+public class ProfileInformationActivity extends BaseActivity implements View.OnClickListener {
 
     public static final String INTENT_EXTRA_PROF_KEY = "prof_key";
     public static final String INTENT_EXTRA_PROF_NAME = "prof_name";
@@ -95,6 +96,7 @@ public class ProfileInformationActivity extends BaseActivity {
         btn_connect = (Button) findViewById(R.id.btn_connect);
         progress_bar = (ProgressBar) findViewById(R.id.progress_bar);
         txt_chat = (TextView) findViewById(R.id.txt_chat);
+        txt_name.setOnClickListener(this);
 
         btn_connect.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -253,5 +255,13 @@ public class ProfileInformationActivity extends BaseActivity {
 
     private void hideLoading(){
         progress_bar.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+        if (id==R.id.txt_chat){
+            //Intent intent = new Intent()
+        }
     }
 }

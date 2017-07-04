@@ -4,13 +4,12 @@
     android:layout_height="match_parent"
     >
 
-
     <fragment
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:name="com.example.furszy.contactsapp.ui.chat.MessagesFragment"
+        android:id="@+id/fragment_messages"/>
 
-    <include layout="@layout/chat_row_left" />
-    <include layout="@layout/chat_row_right" />
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

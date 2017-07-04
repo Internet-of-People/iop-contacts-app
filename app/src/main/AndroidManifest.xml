@@ -17,13 +17,11 @@
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity"/>
         <activity android:name=".StartActivity">
-            <!--
-            <intent-filter>
+            <!--<intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            -->
+            </intent-filter>-->
         </activity>
         <activity android:name=".ProfileActivity"></activity>
 
@@ -57,18 +55,22 @@
 
         <activity android:name=".ui.home.HomeActivity"
             android:theme="@style/AppTheme">
+            <intent-filter>
+                            <action android:name="android.intent.action.MAIN" />
 
+                            <category android:name="android.intent.category.LAUNCHER" />
+                        </intent-filter>
         </activity>
         <activity android:name=".ui.chat.contact_list.ChatContactActivity">
 
         </activity>
 
         <activity android:name=".ui.chat.ChatActivity">
-            <intent-filter>
+            <!--<intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            </intent-filter>-->
         </activity>
 
         <activity android:name=".ui.send_request.SendRequestActivity"/>

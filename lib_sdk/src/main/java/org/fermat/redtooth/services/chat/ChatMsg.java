@@ -13,6 +13,7 @@ import java.io.Serializable;
 public class ChatMsg extends BaseMsg<ChatMsg> implements Serializable{
 
     private String text;
+    private long timestamp;
 
     public ChatMsg(String text) {
         this.text = text;
@@ -35,5 +36,9 @@ public class ChatMsg extends BaseMsg<ChatMsg> implements Serializable{
     @Override
     public byte[] encode() throws Exception {
         return SerializationUtils.serialize(this);
+    }
+
+    public long getTimestamp() {
+        return timestamp;
     }
 }

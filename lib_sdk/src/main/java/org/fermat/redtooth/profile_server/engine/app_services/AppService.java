@@ -4,6 +4,7 @@ import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.model.Profile;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -13,7 +14,7 @@ import java.util.concurrent.ConcurrentMap;
 public abstract class AppService implements ProfSerMsgListener{
 
     private String name;
-    private ConcurrentMap<String,CallProfileAppService> openCalls;
+    private ConcurrentMap<String,CallProfileAppService> openCalls = new ConcurrentHashMap<>();
 
     public AppService(String name) {
         this.name = name;
