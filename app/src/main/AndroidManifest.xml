@@ -57,6 +57,13 @@
 
         <activity android:name=".ui.home.HomeActivity"
             android:theme="@style/AppTheme">
+
+        </activity>
+        <activity android:name=".ui.chat.contact_list.ChatContactActivity">
+
+        </activity>
+
+        <activity android:name=".ui.chat.ChatActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
