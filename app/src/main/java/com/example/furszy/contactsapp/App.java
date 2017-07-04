@@ -3,18 +3,23 @@ package com.example.furszy.contactsapp;
 import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.example.furszy.contactsapp.ui.home.HomeActivity;
+
 import org.fermat.redtooth.core.IoPConnectContext;
+import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.engine.app_services.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfileListener;
 import org.fermat.redtooth.profile_server.model.Profile;
+import org.fermat.redtooth.services.chat.ChatMsg;
 import org.fermat.redtooth.services.chat.ChatMsgListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,23 +84,6 @@ public class App extends Application implements IoPConnectContext, PairingListen
                                     log.info("Trying to connect profile");
                                     Profile profile = module.getProfile();
                                     if (profile != null) {
-                                        // add available services here
-                                        module.addService(EnabledServices.CHAT.getName(), new ChatMsgListener() {
-                                            @Override
-                                            public void onChatConnected(String remotePubKey) {
-                                                log.info("on chat connected: "+remotePubKey);
-                                            }
-
-                                            @Override
-                                            public void onChatDisconnected(String remotePubKey) {
-                                                log.info("on chat disconnected: "+remotePubKey);
-                                            }
-
-                                            @Override
-                                            public void onMsgReceived(String remotePubKey, byte[] msg) {
-                                                log.info("on chat msg received: "+remotePubKey);
-                                            }
-                                        });
                                         module.connect(profile.getHexPublicKey());
                                     }else
                                         Log.i("App", "Profile not found to connect");
@@ -193,10 +181,13 @@ public class App extends Application implements IoPConnectContext, PairingListen
 
     @Override
     public void onPairResponseReceived(String requesteePubKey, String responseDetail) {
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,0,new Intent(this, HomeActivity.class),0);
         Notification not = new Notification.Builder(this)
                 .setContentTitle("Pair response received")
                 .setContentText(responseDetail)
                 .setSmallIcon(R.drawable.profile)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
                 .build();
         notificationManager.notify(100,not);
     }
@@ -213,6 +204,35 @@ public class App extends Application implements IoPConnectContext, PairingListen
         @Override
         public void onConnect(Profile profile) {
             log.info("Profile connected");
+            // add available services here
+            anRedtooth.getRedtooth().addService(EnabledServices.CHAT.getName(), new ChatMsgListener() {
+                @Override
+                public void onChatConnected(Profile localProfile, String remoteProfilePubKey) {
+                    log.info("on chat connected: "+remoteProfilePubKey);
+                    ProfileInformation remoteProflie = anRedtooth.getRedtooth().getKnownProfile(remoteProfilePubKey);
+                    // todo: negro acá abrí la vista de incoming para aceptar el request..
+                    //PendingIntent pendingIntent = PendingIntent.getActivity(this,0,new Intent(this, HomeActivity.class),0);
+                    Notification not = new Notification.Builder(App.this)
+                            .setContentTitle("Pair response received")
+                            .setContentText(remoteProflie.getName()+" want to chat with you!")
+                            .setSmallIcon(R.drawable.ic_chat_disable)
+                      //      .setContentIntent(pendingIntent)
+                            .setAutoCancel(true)
+                            .build();
+                    notificationManager.notify(43,not);
+                }
+
+                @Override
+                public void onChatDisconnected(String remotePubKey) {
+                    log.info("on chat disconnected: "+remotePubKey);
+                }
+
+                @Override
+                public void onMsgReceived(String remotePubKey, ChatMsg msg) {
+                    log.info("on chat msg received: "+remotePubKey);
+                }
+            });
+            // notify
             Intent intent = new Intent(INTENT_ACTION_PROFILE_CONNECTED);
             app.broadcastManager.sendBroadcast(intent);
         }

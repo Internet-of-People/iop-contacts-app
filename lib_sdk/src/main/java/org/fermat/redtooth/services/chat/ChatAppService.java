@@ -3,8 +3,11 @@ package org.fermat.redtooth.services.chat;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
+import org.fermat.redtooth.profile_server.engine.app_services.MsgWrapper;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.services.EnabledServices;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,6 +18,8 @@ import java.util.concurrent.ConcurrentMap;
  */
 
 public class ChatAppService extends AppService{
+
+    private static final Logger logger = LoggerFactory.getLogger(ChatAppService.class);
 
     private LinkedList<ChatMsgListener> listeners;
 
@@ -36,10 +41,17 @@ public class ChatAppService extends AppService{
     public void onWrapCall(final CallProfileAppService callProfileAppService) {
         callProfileAppService.setMsgListener(new CallProfileAppService.CallMessagesListener() {
             @Override
-            public void onMessage(byte[] msg) {
-                for (ChatMsgListener listener : listeners) {
-                    listener.onMsgReceived(callProfileAppService.getRemotePubKey(),msg);
+            public void onMessage(MsgWrapper msg) {
+                if (msg.getMsgType().equals(ChatMsgTypes.TEXT.name())){
+                    for (ChatMsgListener listener : listeners) {
+                        // todo: Cambiar esto, en vez de enviar el chat message tengo que enviar el chatMsgWrapper con el local y remote profile..
+                        ChatMsg chatMsg = (ChatMsg)(msg.getMsg());
+                        listener.onMsgReceived(callProfileAppService.getRemotePubKey(),chatMsg);
+                    }
+                }else {
+                    logger.warn("### Unknown chat message arrive");
                 }
+
             }
         });
     }
@@ -48,7 +60,7 @@ public class ChatAppService extends AppService{
     public void onCallConnected(Profile localProfile, ProfileInformation remoteProfile) {
         super.onCallConnected(localProfile, remoteProfile);
         for (ChatMsgListener listener : listeners) {
-            listener.onChatConnected(remoteProfile.getHexPublicKey());
+            listener.onChatConnected(localProfile,remoteProfile.getHexPublicKey());
         }
     }
 }

@@ -12,9 +12,13 @@ import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profiles_manager.ProfilesManager;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import iop.org.iop_sdk_android.core.profile_server.PrivateStorage;
 
@@ -25,7 +29,7 @@ import iop.org.iop_sdk_android.core.profile_server.PrivateStorage;
 public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManager {
 
 
-    public static final int DATABASE_VERSION = 10;
+    public static final int DATABASE_VERSION = 12;
 
     public static final String DATABASE_NAME = "profiles";
     public static final String CONTACTS_TABLE_NAME = "contacts";
@@ -42,6 +46,8 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
     // Local profile who knows this profile, todo: this should be splitted in different tables..
     public static final String CONTACTS_COLUMN_PAIR = "pair_status";
     public static final String CONTACTS_COLUMN_DEVICE_PROFILE_PUB_KEY = "local_pub_key";
+    public static final String CONTACTS_COLUMN_APP_SERVICES = "app_services";
+    public static final String CONTACTS_COLUMN_HOME_HOST = "home_host";
 
 
     public static final int CONTACTS_POS_COLUMN_ID = 0;
@@ -56,6 +62,8 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
     public static final int CONTACTS_POS_COLUMN_UPDATE_TIMESTAMP = 9;
     public static final int CONTACTS_POS_COLUMN_PAIR = 10;
     public static final int CONTACTS_POS_COLUMN_DEVICE_PROFILE_PUB_KEY = 11;
+    public static final int CONTACTS_POS_COLUMN_APP_SERVICES = 12;
+    public static final int CONTACTS_POS_COLUMN_HOME_HOST = 13;
 
     public SqliteProfilesDb(Context context) {
         super(context, DATABASE_NAME , null, DATABASE_VERSION);
@@ -78,7 +86,9 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
                         CONTACTS_COLUMN_PUB_KEY + " TEXT ,"+
                         CONTACTS_COLUMN_UPDATE_TIMESTAMP + " LONG ,"+
                         CONTACTS_COLUMN_PAIR + " TEXT ,"+
-                        CONTACTS_COLUMN_DEVICE_PROFILE_PUB_KEY + " TEXT "
+                        CONTACTS_COLUMN_DEVICE_PROFILE_PUB_KEY + " TEXT ,"+
+                        CONTACTS_COLUMN_APP_SERVICES + " TEXT ,"+
+                        CONTACTS_COLUMN_HOME_HOST + " TEXT "
                 +")"
         );
     }
@@ -105,25 +115,51 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         contentValues.put(CONTACTS_COLUMN_UPDATE_TIMESTAMP,profile.getLastUpdateTime());
         contentValues.put(CONTACTS_COLUMN_PAIR,profile.getPairStatus().name());
         contentValues.put(CONTACTS_COLUMN_DEVICE_PROFILE_PUB_KEY,localProfileWhoKnowThis);
+        contentValues.put(CONTACTS_COLUMN_APP_SERVICES,convertToString(profile.getServices()));
+        contentValues.put(CONTACTS_COLUMN_HOME_HOST,profile.getHomeHost());
         return contentValues;
     }
 
     public ProfileInformationWrapper buildFrom(Cursor cursor){
-        String name = cursor.getString(CONTACTS_POS_COLUMN_NAME);
-        byte[] pubKey = CryptoBytes.fromHexToBytes(cursor.getString(CONTACTS_POS_COLUMN_PUB_KEY));
-        String extraData = cursor.getString(CONTACTS_POS_COLUMN_EXTRA_DATA);
-        String type = cursor.getString(CONTACTS_POS_COLUMN_TYPE);
-        long timestamp = cursor.getLong(CONTACTS_POS_COLUMN_UPDATE_TIMESTAMP);
-        String localProfilePubKey = cursor.getString(CONTACTS_POS_COLUMN_DEVICE_PROFILE_PUB_KEY);
-        ProfileInformationImp.PairStatus pairStatus = ProfileInformationImp.PairStatus.valueOf(cursor.getString(CONTACTS_POS_COLUMN_PAIR));
-        ProfileInformationImp profile = new ProfileInformationImp();
-        profile.setVersion(new byte[]{0,0,1});
-        profile.setName(name);
-        profile.setType(type);
-        profile.setPubKey(pubKey);
-        profile.setUpdateTimestamp(timestamp);
-        profile.setPairStatus(pairStatus);
-        return new ProfileInformationWrapper(localProfilePubKey,profile);
+        try {
+            String name = cursor.getString(CONTACTS_POS_COLUMN_NAME);
+            byte[] pubKey = CryptoBytes.fromHexToBytes(cursor.getString(CONTACTS_POS_COLUMN_PUB_KEY));
+            String extraData = cursor.getString(CONTACTS_POS_COLUMN_EXTRA_DATA);
+            String type = cursor.getString(CONTACTS_POS_COLUMN_TYPE);
+            long timestamp = cursor.getLong(CONTACTS_POS_COLUMN_UPDATE_TIMESTAMP);
+            String localProfilePubKey = cursor.getString(CONTACTS_POS_COLUMN_DEVICE_PROFILE_PUB_KEY);
+            ProfileInformationImp.PairStatus pairStatus = ProfileInformationImp.PairStatus.valueOf(cursor.getString(CONTACTS_POS_COLUMN_PAIR));
+            Set<String> appServices = convertToSet(cursor.getString(CONTACTS_POS_COLUMN_APP_SERVICES));
+            String homeHost = cursor.getString(CONTACTS_POS_COLUMN_HOME_HOST);
+            ProfileInformationImp profile = new ProfileInformationImp();
+            profile.setVersion(new byte[]{0, 0, 1});
+            profile.setName(name);
+            profile.setType(type);
+            profile.setPubKey(pubKey);
+            profile.setUpdateTimestamp(timestamp);
+            profile.setPairStatus(pairStatus);
+            profile.setExtraData(extraData);
+            profile.addAllAppServices(appServices);
+            profile.setHomeHost(homeHost);
+            return new ProfileInformationWrapper(localProfilePubKey, profile);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            throw new DbCursorBuildException("AppServices hashset malformed");
+        }
+    }
+
+    private Set<String> convertToSet(String jsonString) throws JSONException {
+        Set<String> set = new HashSet<>();
+        JSONArray jsonArray = new JSONArray(jsonString);
+        for (int i=0;i<jsonArray.length();i++){
+            set.add(jsonArray.getString(i));
+        }
+        return set;
+    }
+
+    private String convertToString(Set<String> set){
+        JSONArray jsonArray = new JSONArray(set);
+        return jsonArray.toString();
     }
 
     public Cursor getData(long id) {

@@ -45,11 +45,11 @@ public class PairingAppService extends AppService {
         if (pairingListener!=null){
             callProfileAppService.setMsgListener(new CallProfileAppService.CallMessagesListener() {
                 @Override
-                public void onMessage(byte[] msg) {
+                public void onMessage(MsgWrapper msg) {
                     try {
                         logger.info("pair msg received");
-                        MsgWrapper msgWrapper = MsgWrapper.decode(msg);
-                        PairingMsgTypes types = PairingMsgTypes.getByName(msgWrapper.getMsgType());
+
+                        PairingMsgTypes types = PairingMsgTypes.getByName(msg.getMsgType());
                         switch (types){
                             case PAIR_ACCEPT:
                                 // update pair request -> todo: this should be in another place..
@@ -91,7 +91,7 @@ public class PairingAppService extends AppService {
                                 }
                                 break;
                             case PAIR_REQUEST:
-                                PairingMsg pairingMsg = (PairingMsg) msgWrapper.getMsg();
+                                PairingMsg pairingMsg = (PairingMsg) msg.getMsg();
                                 // save pair request -> todo: this should be in another place..
                                 PairingRequest pairingRequest = PairingRequest.buildPairingRequest(
                                         callProfileAppService.getRemotePubKey(),
@@ -104,12 +104,11 @@ public class PairingAppService extends AppService {
                                 pairingRequest.setRemotePsHome(profileServiceOwner.getHomeHost());
                                 int prId = pairingRequestsManager.saveIfNotExistPairingRequest(pairingRequest);
 
-                                ProfileInformation profileInformation = new ProfileInformationImp(
-                                        CryptoBytes.fromHexToBytes(callProfileAppService.getRemotePubKey()),
-                                        pairingMsg.getName(),
-                                        pairingMsg.getSenderHost(),
-                                        ProfileInformationImp.PairStatus.WAITING_FOR_MY_RESPONSE
-                                );
+                                ProfileInformation profileInformation = callProfileAppService.getRemoteProfile();
+                                profileInformation.setName(pairingMsg.getName());
+                                profileInformation.setHomeHost(pairingMsg.getSenderHost());
+                                profileInformation.setPairStatus(ProfileInformationImp.PairStatus.WAITING_FOR_MY_RESPONSE);
+
                                 long profileSaved = profilesManager.saveProfile(
                                         callProfileAppService.getLocalProfile().getHexPublicKey(),
                                         profileInformation

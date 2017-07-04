@@ -13,4 +13,6 @@ public interface ProfileBase {
     String getName();
 
     boolean hasService(String serviceName);
+
+    void setVersion(byte[] bytes);
 }

@@ -15,6 +15,7 @@ import static org.fermat.redtooth.profile_server.imp.ProfileInformationImp.PairS
 
 public class ProfileInformationImp implements Serializable,ProfileInformation {
 
+
     public enum  PairStatus{
         PAIRED,
         NOT_PAIRED,
@@ -45,6 +46,10 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
 
 
     public ProfileInformationImp() {
+    }
+
+    public ProfileInformationImp(byte[] pubKey) {
+        this.pubKey = pubKey;
     }
 
     public ProfileInformationImp(byte[] pubKey, String name, String homeHost,PairStatus pairStatus) {
@@ -144,9 +149,19 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
     }
 
     @Override
+    public void setHomeHost(String homeHost) {
+        this.homeHost = homeHost;
+    }
+
+    @Override
     public void addAppService(String service) {
         if (services==null) services = new HashSet<String>();
         this.services.add(service);
+    }
+
+    public void addAllAppServices(Set<String> appServices) {
+        if (services==null) services = new HashSet<String>();
+        this.services.addAll(appServices);
     }
 
     @Override
@@ -227,6 +242,7 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
     public void setPairStatus(PairStatus pairStatus) {
         this.pairStatus = pairStatus;
     }
+
 
 
 

@@ -226,34 +226,25 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
-    public void requestPairingProfile(byte[] remotePubKey, byte[] profileServerId, ProfSerMsgListener<Integer> listener) throws Exception {
+    public void requestPairingProfile(byte[] remotePubKey, byte[] profileServerId, ProfSerMsgListener<ProfileInformation> listener) throws Exception {
         PairingRequest pairingRequest = PairingRequest.buildPairingRequest(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey),null,profile.getName(),profile.getHomeHost(), ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE);
         ioPConnect.requestPairingProfile(pairingRequest,listener);
     }
 
     @Override
-    public void requestPairingProfile(byte[] remotePubKey, String psHost, ProfSerMsgListener<Integer> listener) throws Exception {
+    public void requestPairingProfile(byte[] remotePubKey, String psHost, ProfSerMsgListener<ProfileInformation> listener) throws Exception {
         PairingRequest pairingRequest = PairingRequest.buildPairingRequestFromHost(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey),psHost,profile.getName(),profile.getHomeHost(), ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE);
         ioPConnect.requestPairingProfile(pairingRequest,listener);
     }
 
     @Override
-    public void requestPairingProfile(byte[] remotePubKey, String name, String psHost, ProfSerMsgListener<Integer> listener) throws Exception {
+    public void requestPairingProfile(byte[] remotePubKey, final String name, final String psHost, final ProfSerMsgListener<ProfileInformation> listener) throws Exception {
         // check if the profile already exist
         ProfileInformation profileInformationDb = null;
         if((profileInformationDb = profilesDb.getProfile(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey)))!=null){
             if(profileInformationDb.getPairStatus() != null)
                 throw new IllegalArgumentException("Profile already known");
         }
-
-        // Save invisible contact
-        ProfileInformation profileInformation = new ProfileInformationImp(
-                remotePubKey,
-                name,
-                psHost,
-                ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE
-        );
-        profilesDb.saveProfile(profile.getHexPublicKey(),profileInformation);
         // now send the request
         PairingRequest pairingRequest = PairingRequest.buildPairingRequestFromHost(
                 profile.getHexPublicKey(),
@@ -262,7 +253,26 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                 profile.getHomeHost(),
                 ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE
         );
-        ioPConnect.requestPairingProfile(pairingRequest,listener);
+        ioPConnect.requestPairingProfile(pairingRequest, new ProfSerMsgListener<ProfileInformation>() {
+            @Override
+            public void onMessageReceive(int messageId, ProfileInformation remote) {
+                remote.setHomeHost(psHost);
+                remote.setPairStatus(ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE);
+                // Save invisible contact
+                profilesDb.saveProfile(profile.getHexPublicKey(),remote);
+                listener.onMessageReceive(messageId,remote);
+            }
+
+            @Override
+            public void onMsgFail(int messageId, int statusValue, String details) {
+                listener.onMsgFail(messageId,statusValue,details);
+            }
+
+            @Override
+            public String getMessageName() {
+                return "Request pairing";
+            }
+        });
     }
 
     @Override
@@ -279,8 +289,8 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     @Override
     public void requestChat(ProfileInformation remoteProfileInformation, ProfSerMsgListener<Boolean> readyListener){
         if(!profile.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on local profile");
-        if(!remoteProfileInformation.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on remote profile");
-        ioPConnect.callService(EnabledServices.CHAT.getName(),profile,remoteProfileInformation,readyListener);
+        boolean tryUpdateRemoteServices = !remoteProfileInformation.hasService(EnabledServices.CHAT.getName());
+        ioPConnect.callService(EnabledServices.CHAT.getName(),profile,remoteProfileInformation,tryUpdateRemoteServices,readyListener);
     }
 
     @Override

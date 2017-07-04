@@ -29,6 +29,7 @@ import org.fermat.redtooth.profiles_manager.PairingRequest;
 import java.util.IllegalFormatCodePointException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -41,10 +42,13 @@ import static org.fermat.redtooth.profile_server.imp.ProfileInformationImp.PairS
  */
 public class ProfileInformationActivity extends BaseActivity implements View.OnClickListener {
 
+    private static final String TAG = "ProfInfoActivity";
+
     public static final String INTENT_EXTRA_PROF_KEY = "prof_key";
     public static final String INTENT_EXTRA_PROF_NAME = "prof_name";
     public static final String INTENT_EXTRA_PROF_SERVER_ID = "prof_name";
     public static final String INTENT_EXTRA_SEARCH = "prof_search";
+
 
     ModuleRedtooth module;
     ProfileInformation profileInformation;
@@ -96,7 +100,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         btn_connect = (Button) findViewById(R.id.btn_connect);
         progress_bar = (ProgressBar) findViewById(R.id.progress_bar);
         txt_chat = (TextView) findViewById(R.id.txt_chat);
-        txt_name.setOnClickListener(this);
+        txt_chat.setOnClickListener(this);
 
         btn_connect.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -262,6 +266,38 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         int id = v.getId();
         if (id==R.id.txt_chat){
             //Intent intent = new Intent()
+            //
+            Toast.makeText(v.getContext(),"Sending chat request..",Toast.LENGTH_LONG).show();
+            executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    MsgListenerFuture<Boolean> readyListener = new MsgListenerFuture<>();
+                    readyListener.setListener(new BaseMsgFuture.Listener<Boolean>() {
+                        @Override
+                        public void onAction(int messageId, Boolean object) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(ProfileInformationActivity.this,"Chat request sent",Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onFail(int messageId, int status, String statusDetail) {
+                            Log.e(TAG,"fail chat request: "+statusDetail);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(ProfileInformationActivity.this,"Chat request fail",Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+                    });
+                    anRedtooth.requestChat(profileInformation,readyListener);
+                }
+            });
+
         }
     }
 }

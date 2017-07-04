@@ -166,6 +166,7 @@ public class IoPConnect implements ConnectionListener {
      */
     public void addService(Profile profile, AppService appService) {
         profile.addApplicationService(appService);
+        getProfileConnection(profile.getHexPublicKey()).addApplicationService(appService);
     }
 
     public void connectProfile(String profilePublicKey, PairingListener pairingListener, byte[] ownerChallenge,ConnectionFuture future) throws Exception {
@@ -336,10 +337,11 @@ public class IoPConnect implements ConnectionListener {
      * @param serviceName
      * @param localProfile
      * @param remoteProfile
+     * @param tryUpdateRemoteServices -> param to update the profile information first and then request the call.
      * @param readyListener
      * @param args
      */
-    public void callService(String serviceName, final Profile localProfile, final ProfileInformation remoteProfile, final ProfSerMsgListener<Boolean> readyListener , Object... args) {
+    public void callService(String serviceName, final Profile localProfile, final ProfileInformation remoteProfile, final boolean tryUpdateRemoteServices , final ProfSerMsgListener<Boolean> readyListener , Object... args) {
         logger.info("RunService, remote: " + remoteProfile.getHexPublicKey());
         try {
             final AppService appService = localProfile.getAppService(serviceName);
@@ -354,6 +356,10 @@ public class IoPConnect implements ConnectionListener {
                     try {
                         if (call.isStablished()) {
                             logger.info("call establish, remote: " + call.getRemotePubKey());
+                            if (tryUpdateRemoteServices){
+                                // update remote profile
+                                profilesManager.updateProfile(localProfile.getHexPublicKey(),call.getRemoteProfile());
+                            }
                             appService.onCallConnected(localProfile,remoteProfile);
                         } else {
                             logger.info("call fail with status: " + call.getStatus() + ", error: " + call.getErrorStatus());
@@ -384,7 +390,7 @@ public class IoPConnect implements ConnectionListener {
      * @param pairingRequest
      * @param listener -> returns the pairing request id
      */
-    public void requestPairingProfile(final PairingRequest pairingRequest, final ProfSerMsgListener<Integer> listener) throws Exception {
+    public void requestPairingProfile(final PairingRequest pairingRequest, final ProfSerMsgListener<ProfileInformation> listener) throws Exception {
         logger.info("requestPairingProfile, remote: " + pairingRequest.getRemotePubKey());
         // save request
         final int pairingRequestId = pairingRequestsManager.savePairingRequest(pairingRequest);
@@ -404,7 +410,7 @@ public class IoPConnect implements ConnectionListener {
                             @Override
                             public void onAction(int messageId, Boolean res) {
                                 logger.info("pairing msg sent, remote: " + call.getRemotePubKey());
-                                listener.onMessageReceive(messageId, pairingRequestId);
+                                listener.onMessageReceive(messageId, call.getRemoteProfile());
                             }
 
                             @Override
@@ -550,6 +556,7 @@ public class IoPConnect implements ConnectionListener {
      * @throws Exception
      */
     private IoPProfileConnection getOrStablishConnection(String localPsHost,String localProfPubKey,String remotePsHost) throws Exception {
+        if (remotePsHost==null) throw new IllegalArgumentException("remotePsHost cannot be null");
         IoPProfileConnection connection = null;
         if (localPsHost.equals(remotePsHost)) {
             connection = getProfileConnection(localProfPubKey);

@@ -16,6 +16,7 @@ import com.example.furszy.contactsapp.R;
 import com.example.furszy.contactsapp.scanner.ScanActivity;
 
 import org.fermat.redtooth.crypto.CryptoBytes;
+import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.utils.ProfileUtils;
@@ -72,14 +73,13 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                 @Override
                 public void run() {
                     try {
-                        MsgListenerFuture<Integer> future = new MsgListenerFuture<>();
-                        future.setListener(new BaseMsgFuture.Listener<Integer>() {
+                        MsgListenerFuture<ProfileInformation> future = new MsgListenerFuture<>();
+                        future.setListener(new BaseMsgFuture.Listener<ProfileInformation>() {
                             @Override
-                            public void onAction(int messageId, Integer object) {
+                            public void onAction(int messageId, ProfileInformation object) {
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        //TODO: ver porqué devuelvo un int y no un boolean o algo más especifico..
                                         Log.i(TAG, "pairing request sent");
                                         Snackbar.make(root,"Pairing request sent!",Snackbar.LENGTH_LONG).show();
                                         enableSendBtn();
