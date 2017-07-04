@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.fermat.redtooth.core.services.AppServiceListener;
 import org.fermat.redtooth.profile_server.engine.SearchProfilesQuery;
 import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SubsequentSearchMsgListenerFuture;
@@ -13,6 +14,7 @@ import org.fermat.redtooth.profile_server.engine.listeners.ProfileListener;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
+import org.fermat.redtooth.services.chat.ChatMsg;
 
 /**
  * Created by mati on 22/11/16.
@@ -20,9 +22,13 @@ import org.fermat.redtooth.profiles_manager.PairingRequest;
 
 public interface ModuleRedtooth {
 
-    File backupProfile(String password) throws IOException;
+    File backupProfile(File backupDir, String password) throws IOException;
+
+    void restoreFrom(File file, String password);
 
     boolean isProfileRegistered();
+
+    void addService(String serviceName, Object... args);
 
     void connect(String pubKey) throws Exception;
 
@@ -61,6 +67,10 @@ public interface ModuleRedtooth {
 
     void cancelPairingRequest(PairingRequest pairingRequest);
 
+    void requestChat(ProfileInformation remoteProfileInformation, ProfSerMsgListener<Boolean> readyListener);
+
+    void sendMsgToChat(ProfileInformation remoteProfileInformation, ChatMsg msg, ProfSerMsgListener<Boolean> msgListener) throws Exception;
+
     boolean isIdentityCreated();
 
     void setPairListener(PairingListener pairListener);
@@ -98,4 +108,5 @@ public interface ModuleRedtooth {
     void deteleContacts();
 
     void deletePairingRequests();
+
 }

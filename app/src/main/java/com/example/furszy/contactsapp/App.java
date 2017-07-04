@@ -4,15 +4,18 @@ import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Intent;
+import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import org.fermat.redtooth.core.IoPConnectContext;
+import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.engine.app_services.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfileListener;
 import org.fermat.redtooth.profile_server.model.Profile;
+import org.fermat.redtooth.services.chat.ChatMsgListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,8 +33,6 @@ import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import iop.org.iop_sdk_android.core.AnRedtooth;
 import iop.org.iop_sdk_android.core.InitListener;
 import iop.org.iop_sdk_android.core.profile_server.ProfileServerConfigurationsImp;
-
-import static com.example.furszy.contactsapp.HardcodedConstants.TEST_PROFILE_SERVER_HOST;
 
 /**
  * Created by furszy on 5/25/17.
@@ -77,9 +78,26 @@ public class App extends Application implements IoPConnectContext, PairingListen
                                 if (module.isIdentityCreated()) {
                                     log.info("Trying to connect profile");
                                     Profile profile = module.getProfile();
-                                    if (profile != null)
+                                    if (profile != null) {
+                                        // add available services here
+                                        module.addService(EnabledServices.CHAT.getName(), new ChatMsgListener() {
+                                            @Override
+                                            public void onChatConnected(String remotePubKey) {
+                                                log.info("on chat connected: "+remotePubKey);
+                                            }
+
+                                            @Override
+                                            public void onChatDisconnected(String remotePubKey) {
+                                                log.info("on chat disconnected: "+remotePubKey);
+                                            }
+
+                                            @Override
+                                            public void onMsgReceived(String remotePubKey, byte[] msg) {
+                                                log.info("on chat msg received: "+remotePubKey);
+                                            }
+                                        });
                                         module.connect(profile.getHexPublicKey());
-                                    else
+                                    }else
                                         Log.i("App", "Profile not found to connect");
                                 }
                             } catch (Exception e) {
@@ -211,5 +229,9 @@ public class App extends Application implements IoPConnectContext, PairingListen
             Intent intent = new Intent(INTENT_ACTION_PROFILE_CHECK_IN_FAIL);
             app.broadcastManager.sendBroadcast(intent);
         }
+    }
+
+    public File getBackupDir(){
+        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
     }
 }

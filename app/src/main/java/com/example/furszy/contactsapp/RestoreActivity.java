@@ -3,24 +3,63 @@ package com.example.furszy.contactsapp;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckedTextView;
+import android.widget.Spinner;
 import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Created by Neoperol on 6/20/17.
  */
 
 public class RestoreActivity extends BaseActivity {
+
+    private static final int OPTIONS_RESTORE = 200;
+
     private static final int REQUEST_FILE = 5;
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 500;
-    Button buttonFile;
+    private Spinner spinner_files;
+    private List<File> fileList = new ArrayList<>();
+    private ArrayAdapter<String> adapter;
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuItem menuItem = menu.add(0,OPTIONS_RESTORE,0,"Restore");
+        menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId()==OPTIONS_RESTORE){
+            int selected = spinner_files.getSelectedItemPosition();
+            anRedtooth.restoreFrom(fileList.get(selected),null);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
         View root = getLayoutInflater().inflate(R.layout.restore_activity, container);
@@ -31,24 +70,61 @@ public class RestoreActivity extends BaseActivity {
         checkPermissions();
 
         //Open File Folder
-        buttonFile = (Button) root.findViewById(R.id.addFile);
-        buttonFile.setOnClickListener(new View.OnClickListener() {
+        spinner_files = (Spinner) root.findViewById(R.id.spinner_files);
+        fileList = listFiles();
+        List<String> list = new ArrayList<>();
+        for (File file : fileList) {
+            list.add(file.getName());
+        }
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item,list){
             @Override
-            public void onClick(View v) {
-                if (Build.VERSION.SDK_INT >= 19) {
-                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                    intent.setType("*/*");
-                    intent.addCategory(Intent.CATEGORY_OPENABLE);
-                    startActivityForResult(intent, REQUEST_FILE);
-                }
-                else {
-                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                    intent.setType("*/*");
-                    intent.addCategory(Intent.CATEGORY_OPENABLE);
-                    startActivityForResult(intent, REQUEST_FILE);
+            public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                CheckedTextView view = (CheckedTextView) super.getDropDownView(position, convertView, parent);
+                view.setTextColor(Color.WHITE);
+                return view;
+            }
+        };
+        spinner_files.setAdapter(adapter);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        fileList = listFiles();
+        List<String> list = new ArrayList<>();
+        for (File file : fileList) {
+            list.add(file.getName());
+        }
+        adapter.clear();
+        adapter.addAll(list);
+        adapter.notifyDataSetChanged();
+    }
+
+    private List<File> listFiles() {
+        File backupDir = app.getBackupDir();
+        if (backupDir.isDirectory()){
+            File[] fileArray = backupDir.listFiles();
+            if (fileArray!=null){
+                for (File file : fileArray) {
+                    if (PROFILE_FILE_FILTER.accept(file)) {
+                        fileList.add(file);
+                    }
                 }
             }
+        }
+        for (final String filename : fileList())
+            if (filename.startsWith("backup_iop_connect"))
+                fileList.add(new File(getFilesDir(), filename));
+
+        // sort
+        Collections.sort(fileList, new Comparator<File>() {
+            @Override
+            public int compare(final File lhs, final File rhs)
+            {
+                return lhs.getName().compareToIgnoreCase(rhs.getName());
+            }
         });
+        return fileList;
     }
 
     @Override
@@ -120,4 +196,14 @@ public class RestoreActivity extends BaseActivity {
             // permissions this app might request
         }
     }
+
+    public static final FileFilter PROFILE_FILE_FILTER = new FileFilter() {
+        @Override
+        public boolean accept(File pathname) {
+            if (pathname.getAbsolutePath().contains("backup_iop_connect")){
+                return true;
+            }
+            return false;
+        }
+    };
 }

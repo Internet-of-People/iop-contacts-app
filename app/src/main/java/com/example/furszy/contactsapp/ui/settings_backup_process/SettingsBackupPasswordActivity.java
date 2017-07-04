@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.InputType;
@@ -50,7 +51,9 @@ public class SettingsBackupPasswordActivity extends BaseActivity {
                 //startActivityForResult(myIntent, 0);
                 try {
                     checkPermissions();
-                    anRedtooth.backupProfile(null);
+                    anRedtooth.backupProfile(
+                            app.getBackupDir(),
+                            null);
                     Toast.makeText(v.getContext(),"Backup completed, check your download's folder",Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
                     e.printStackTrace();

@@ -1,5 +1,6 @@
 package iop.org.iop_sdk_android.core.crypto;
 
+import org.fermat.redtooth.core.pure.KeyEd25519Java;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.utils.ArraysUtils;
 import org.libsodium.jni.NaCl;
@@ -87,6 +88,35 @@ public class KeyEd25519 implements Serializable, org.fermat.redtooth.profile_ser
                 CryptoBytes.toHexString(expandedPrivateKey)
         );
 
+        return key;
+    }
+
+
+    /**
+     *
+     * @param seed -> priv key
+     * @param pubKey
+     * @return
+     */
+    public static KeyEd25519 wrap(byte[] seed, byte[] pubKey) {
+        Sodium sodium = NaCl.sodium();
+        // Generate the key pair
+        byte[] publicKey = new byte[32];
+        byte[] expandedPrivateKey = new byte[64];
+        sodium.crypto_sign_ed25519_seed_keypair(publicKey,expandedPrivateKey,seed);
+
+        if (!Arrays.equals(publicKey,pubKey)){
+            throw new IllegalArgumentException("pub key not valid, is not the same as the generated with the seed");
+        }
+
+        KeyEd25519 key = new KeyEd25519(
+                publicKey,
+                seed,
+                expandedPrivateKey,
+                CryptoBytes.toHexString(publicKey),
+                CryptoBytes.toHexString(seed),
+                CryptoBytes.toHexString(expandedPrivateKey)
+        );
         return key;
     }
 

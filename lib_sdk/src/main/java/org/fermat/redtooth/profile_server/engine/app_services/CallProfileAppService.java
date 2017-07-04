@@ -9,6 +9,7 @@ import org.fermat.redtooth.profile_server.engine.ProfSerEngine;
 import org.fermat.redtooth.profile_server.engine.crypto.CryptoAlgo;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
+import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.slf4j.Logger;
@@ -156,7 +157,7 @@ public class CallProfileAppService {
      * @throws CantSendMessageException
      */
 
-    public void sendMsgStr(String msg, final MsgListenerFuture<Boolean> sendListener) throws CantConnectException, CantSendMessageException {
+    public void sendMsgStr(String msg, final ProfSerMsgListener<Boolean> sendListener) throws CantConnectException, CantSendMessageException {
         if (this.status!=CALL_AS_ESTABLISH) throw new IllegalStateException("Call is not ready to send messages");
         byte[] msgBytes = ByteString.copyFromUtf8(msg).toByteArray();
         MsgListenerFuture<IopProfileServer.ApplicationServiceSendMessageResponse> msgListenerFuture = new MsgListenerFuture();
@@ -176,21 +177,21 @@ public class CallProfileAppService {
         profSerEngine.sendAppServiceMsg(callToken,msgBytes,msgListenerFuture);
     }
 
-    public void sendMsg(BaseMsg msg,final MsgListenerFuture<Boolean> sendListener) throws Exception {
+    public void sendMsg(BaseMsg msg,final ProfSerMsgListener<Boolean> sendListener) throws Exception {
         MsgWrapper msgWrapper = new MsgWrapper(msg,msg.getType());
         wrapAndSend(msgWrapper,sendListener);
     }
 
-    public void sendMsg(String type,final MsgListenerFuture<Boolean> sendListener) throws Exception {
+    public void sendMsg(String type,final ProfSerMsgListener<Boolean> sendListener) throws Exception {
         MsgWrapper msgWrapper = new MsgWrapper(null,type);
         wrapAndSend(msgWrapper,sendListener);
     }
 
-    private void wrapAndSend(MsgWrapper msgWrapper,final MsgListenerFuture<Boolean> sendListener) throws Exception {
+    private void wrapAndSend(MsgWrapper msgWrapper,final ProfSerMsgListener<Boolean> sendListener) throws Exception {
         sendMsg(msgWrapper.encode(),sendListener);
     }
 
-    public void sendMsg(byte[] msg, final MsgListenerFuture<Boolean> sendListener) throws CantConnectException, CantSendMessageException {
+    public void sendMsg(byte[] msg, final ProfSerMsgListener<Boolean> sendListener) throws CantConnectException, CantSendMessageException {
         if (this.status!=CALL_AS_ESTABLISH) throw new IllegalStateException("Call is not ready to send messages");
         MsgListenerFuture<IopProfileServer.ApplicationServiceSendMessageResponse> msgListenerFuture = new MsgListenerFuture();
         msgListenerFuture.setListener(new BaseMsgFuture.Listener<IopProfileServer.ApplicationServiceSendMessageResponse>() {

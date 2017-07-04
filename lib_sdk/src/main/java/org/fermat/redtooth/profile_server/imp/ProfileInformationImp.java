@@ -1,19 +1,9 @@
 package org.fermat.redtooth.profile_server.imp;
 
 import org.fermat.redtooth.crypto.CryptoBytes;
-import org.fermat.redtooth.global.IoPSerializable;
-import org.fermat.redtooth.global.PlatformSerializer;
-import org.fermat.redtooth.global.utils.Preconditions;
-import org.fermat.redtooth.governance.utils.StreamsUtils;
 import org.fermat.redtooth.profile_server.ProfileInformation;
-import org.fermat.redtooth.profile_server.model.Profile;
 
 import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -104,6 +94,11 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
 
     public String getName() {
         return name;
+    }
+
+    @Override
+    public boolean hasService(String serviceName) {
+        return services.contains(serviceName);
     }
 
     public String getType() {

@@ -2,7 +2,9 @@ package org.fermat.redtooth.core;
 
 import com.google.protobuf.ByteString;
 
-import org.fermat.redtooth.core.services.DefaultServices;
+import org.fermat.redtooth.core.services.AppServiceListener;
+import org.fermat.redtooth.profile_server.engine.app_services.AppServiceMsg;
+import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.core.services.pairing.PairingAppService;
 import org.fermat.redtooth.core.services.pairing.PairingMsg;
 import org.fermat.redtooth.core.services.pairing.PairingMsgTypes;
@@ -17,6 +19,7 @@ import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.SslContextFactory;
+import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
 import org.fermat.redtooth.profile_server.engine.app_services.PairingListener;
 import org.fermat.redtooth.profile_server.engine.futures.ConnectionFuture;
@@ -37,19 +40,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.FutureTask;
-
-import sun.misc.IOUtils;
 
 /**
  * Created by mati on 17/05/17.
@@ -155,6 +157,15 @@ public class IoPConnect implements ConnectionListener {
         profileServerConfigurations.saveProfile(profile);
         // todo: return profile connection pk
         return profile;
+    }
+
+    /**
+     * todo: improve this..
+     * @param profile
+     * @param appService
+     */
+    public void addService(Profile profile, AppService appService) {
+        profile.addApplicationService(appService);
     }
 
     public void connectProfile(String profilePublicKey, PairingListener pairingListener, byte[] ownerChallenge,ConnectionFuture future) throws Exception {
@@ -321,6 +332,53 @@ public class IoPConnect implements ConnectionListener {
     }
 
     /**
+     * Call app profile service
+     * @param serviceName
+     * @param localProfile
+     * @param remoteProfile
+     * @param readyListener
+     * @param args
+     */
+    public void callService(String serviceName, final Profile localProfile, final ProfileInformation remoteProfile, final ProfSerMsgListener<Boolean> readyListener , Object... args) {
+        logger.info("RunService, remote: " + remoteProfile.getHexPublicKey());
+        try {
+            final AppService appService = localProfile.getAppService(serviceName);
+            appService.onPreCall();
+            // now i stablish the call if it's not exists
+            final IoPProfileConnection connection = getOrStablishConnection(localProfile.getHomeHost(), localProfile.getHexPublicKey(), remoteProfile.getHomeHost());
+            // first the call
+            MsgListenerFuture<CallProfileAppService> callListener = new MsgListenerFuture();
+            callListener.setListener(new BaseMsgFuture.Listener<CallProfileAppService>() {
+                @Override
+                public void onAction(int messageId, final CallProfileAppService call) {
+                    try {
+                        if (call.isStablished()) {
+                            logger.info("call establish, remote: " + call.getRemotePubKey());
+                            appService.onCallConnected(localProfile,remoteProfile);
+                        } else {
+                            logger.info("call fail with status: " + call.getStatus() + ", error: " + call.getErrorStatus());
+                            readyListener.onMsgFail(messageId, 0, call.getStatus().toString() + " " + call.getErrorStatus());
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        readyListener.onMsgFail(messageId, 400, e.getMessage());
+                    }
+                }
+
+                @Override
+                public void onFail(int messageId, int status, String statusDetail) {
+                    logger.info("call fail, remote: " + statusDetail);
+                    readyListener.onMsgFail(messageId, status, statusDetail);
+                }
+            });
+            connection.callProfileAppService(remoteProfile.getHexPublicKey(), serviceName, false, true, callListener);
+        } catch (Exception e) {
+            e.printStackTrace();
+            readyListener.onMsgFail(0,400,e.getMessage());
+        }
+    }
+
+    /**
      * Send a request pair notification to a remote profile
      *
      * @param pairingRequest
@@ -380,7 +438,7 @@ public class IoPConnect implements ConnectionListener {
                 listener.onMsgFail(messageId, status, statusDetail);
             }
         });
-        connection.callProfileAppService(pairingRequest.getRemotePubKey(), DefaultServices.PROFILE_PAIRING.getName(), false, false, callListener);
+        connection.callProfileAppService(pairingRequest.getRemotePubKey(), EnabledServices.PROFILE_PAIRING.getName(), false, false, callListener);
     }
 
     /**
@@ -463,7 +521,7 @@ public class IoPConnect implements ConnectionListener {
                     future.onMsgFail(messageId,status,statusDetail);
                 }
             });
-            connection.callProfileAppService(remotePubKeyHex,DefaultServices.PROFILE_PAIRING.getName(),true,false,callFuture);
+            connection.callProfileAppService(remotePubKeyHex, EnabledServices.PROFILE_PAIRING.getName(),true,false,callFuture);
         }
     }
 
@@ -601,6 +659,7 @@ public class IoPConnect implements ConnectionListener {
 
     /**
      * Todo: decrypt with the password this..
+     * todo: remove the old profile and add the new one if this methos is called from the settings.
      * @param backupFile
      * @param password
      * @param platformSerializer
@@ -608,8 +667,9 @@ public class IoPConnect implements ConnectionListener {
      */
     public ProfileRestored restoreFromBackup(File backupFile, String password, PlatformSerializer platformSerializer){
         try {
-            byte[] bytes = Files.readAllBytes(backupFile.toPath());
-            ProfileOuterClass.Wrapper wrapper = ProfileOuterClass.Wrapper.parseFrom(bytes);
+            FileInputStream inputStream = new FileInputStream(backupFile);
+            ProfileOuterClass.Wrapper wrapper = ProfileOuterClass.Wrapper.parseFrom(inputStream);
+            inputStream.close();
             ProfileOuterClass.Profile mainProfile = wrapper.getProfile();
             Profile profile = new Profile(
                     mainProfile.getProfileInfo().getVersion().toByteArray(),
@@ -638,7 +698,10 @@ public class IoPConnect implements ConnectionListener {
                     )
                 );
             }
-            return new ProfileRestored(profile,list);
+
+            ProfileRestored profileRestored = new ProfileRestored(profile,list);
+            logger.info("Profile restored: "+profileRestored.toString());
+            return profileRestored;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -662,6 +725,14 @@ public class IoPConnect implements ConnectionListener {
         public List<ProfileInformation> getProfileInformationList() {
             return profileInformationList;
         }
+
+        @Override
+        public String toString() {
+            return "ProfileRestored{" +
+                    "profile=" + profile +
+                    ", profileInformationList=" + Arrays.toString(profileInformationList.toArray()) +
+                    '}';
+        }
     }
 
     public void stop() {
@@ -673,5 +744,6 @@ public class IoPConnect implements ConnectionListener {
             }
         }
     }
+
 
 }

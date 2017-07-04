@@ -1,7 +1,6 @@
 package org.fermat.redtooth.core;
 
 
-import org.fermat.redtooth.core.services.DefaultServices;
 import org.fermat.redtooth.core.services.pairing.PairingAppService;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.crypto.CryptoWrapper;
@@ -60,7 +59,7 @@ public class IoPProfileConnection implements CallsListener {
     private SslContextFactory sslContextFactory;
     /** Location helper dependent on the platform */
     private DeviceLocation deviceLocation;
-    /** Open profile app service calls -> remote profile pk -> call in progress */
+    /** Open profile app service calls -> call token -> call in progress */
     private ConcurrentMap<String,CallProfileAppService> openCall = new ConcurrentHashMap<>();
 
     public IoPProfileConnection(IoPConnectContext contextWrapper, Profile profile,ProfServerData psConnData, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, DeviceLocation deviceLocation){
@@ -228,7 +227,7 @@ public class IoPProfileConnection implements CallsListener {
                 (encryptMsg)?new BoxAlgo():null
         );
         // wrap call in a Pairing call.
-        profileCache.getAppService(DefaultServices.PROFILE_PAIRING.getName(),PairingAppService.class).wrapCall(callProfileAppService);
+        profileCache.getAppService(appService,PairingAppService.class).wrapCall(callProfileAppService);
         try {
             if (!tryWithoutGetInfo) {
                 callProfileAppService.setStatus(CallProfileAppService.Status.PENDING_AS_INFO);

@@ -8,10 +8,12 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-
 import org.fermat.redtooth.core.IoPConnect;
 import org.fermat.redtooth.core.IoPConnectContext;
-import org.fermat.redtooth.core.services.DefaultServices;
+import org.fermat.redtooth.core.services.AppServiceListener;
+import org.fermat.redtooth.global.PlatformSerializer;
+import org.fermat.redtooth.profile_server.engine.app_services.AppService;
+import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.global.DeviceLocation;
 import org.fermat.redtooth.global.GpsLocation;
@@ -35,10 +37,12 @@ import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
+import org.fermat.redtooth.services.EnabledServicesFactory;
+import org.fermat.redtooth.services.chat.ChatAppService;
+import org.fermat.redtooth.services.chat.ChatMsg;
 import org.fermat.redtooth.wallet.utils.Iso8601Format;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,7 +51,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import iop.org.iop_sdk_android.core.crypto.CryptoWrapperAndroid;
 import iop.org.iop_sdk_android.core.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
@@ -79,6 +82,13 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     /** Databases */
     private SqlitePairingRequestDb pairingRequestDb;
     private SqliteProfilesDb profilesDb;
+
+    private PlatformSerializer platformSerializer = new PlatformSerializer(){
+        @Override
+        public KeyEd25519 toPlatformKey(byte[] privKey, byte[] pubKey) {
+            return iop.org.iop_sdk_android.core.crypto.KeyEd25519.wrap(privKey,pubKey);
+        }
+    };
 
     public class ProfServerBinder extends Binder {
         public IoPConnectService getService() {
@@ -115,9 +125,9 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
-    public File backupProfile(String password) throws IOException {
+    public File backupProfile(File backupDir, String password) throws IOException {
         File backupFile = new File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                backupDir,
                 "backup_iop_connect_"+profile.getName()+Iso8601Format.formatDateTimeT(new Date(System.currentTimeMillis()))+".dat"
         );
         logger.info("Backup file path: "+backupFile.getAbsolutePath());
@@ -128,8 +138,23 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
+    public void restoreFrom(File file, String password) {
+        logger.info("Restoring profile");
+        if (file.exists()){
+            ioPConnect.restoreFromBackup(file,password,platformSerializer);
+        }else
+            throw new IllegalArgumentException("File not exist, "+file.getAbsolutePath());
+    }
+
+    @Override
     public boolean isProfileRegistered() {
         return configurationsPreferences.isRegisteredInServer();
+    }
+
+    @Override
+    public void addService(String serviceName, Object... args) {
+        AppService appService = EnabledServicesFactory.buildService(serviceName,args);
+        ioPConnect.addService(profile,appService);
     }
 
     @Override
@@ -249,6 +274,21 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     public void cancelPairingRequest(PairingRequest pairingRequest) {
         // todo: improve this
         ioPConnect.cancelPairingRequest(pairingRequest);
+    }
+
+    @Override
+    public void requestChat(ProfileInformation remoteProfileInformation, ProfSerMsgListener<Boolean> readyListener){
+        if(!profile.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on local profile");
+        if(!remoteProfileInformation.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on remote profile");
+        ioPConnect.callService(EnabledServices.CHAT.getName(),profile,remoteProfileInformation,readyListener);
+    }
+
+    @Override
+    public void sendMsgToChat(ProfileInformation remoteProfileInformation, ChatMsg msg, ProfSerMsgListener<Boolean> msgListener) throws Exception {
+        if(!profile.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on local profile");
+        if(!remoteProfileInformation.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on remote profile");
+        profile.getAppService(EnabledServices.CHAT.getName()).getOpenCall(remoteProfileInformation.getHexPublicKey())
+                .sendMsg(msg,msgListener);
     }
 
     @Override

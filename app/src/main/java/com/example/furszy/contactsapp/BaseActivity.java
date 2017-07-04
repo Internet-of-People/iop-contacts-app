@@ -50,6 +50,7 @@ public class BaseActivity extends AppCompatActivity{
     public static final String NOTIF_DIALOG_EVENT = "nde";
 
     protected ModuleRedtooth anRedtooth;
+    protected App app;
 
     protected LocalBroadcastManager localBroadcastManager;
     protected NotificationManager notificationManager;
@@ -64,7 +65,8 @@ public class BaseActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_base);
-        anRedtooth = App.getInstance().anRedtooth.getRedtooth();
+        app = App.getInstance();
+        anRedtooth = app.anRedtooth.getRedtooth();
         init();
         // onCreateChildMethod
         onCreateView(savedInstanceState,childContainer);
