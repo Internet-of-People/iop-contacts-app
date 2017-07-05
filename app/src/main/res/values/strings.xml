@@ -2,7 +2,6 @@
     <string name="app_name">IoP Contacts</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-
     <string name="scan_camera_problem_dialog_title">Sorry</string>
     <string name="scan_camera_problem_dialog_message">The camera has a problem. You probably need to restart the device.</string>
     <string name="scan_camera_permission_dialog_title">Camera permission</string>
@@ -47,5 +46,7 @@
     <string name="show_location">Show location</string>
     <string name="copyright">Made by Furszy</string>
     <string name="version">Version</string>
+    <string name="send">Send</string>
+    <string name="incoming_message">Wants to chat \n with you</string>
     <string name="lorem_impsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
 </resources>

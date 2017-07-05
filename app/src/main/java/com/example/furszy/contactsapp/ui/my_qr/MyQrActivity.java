@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.furszy.contactsapp.BaseActivity;
 import com.example.furszy.contactsapp.BaseDrawerActivity;
@@ -79,6 +80,8 @@ public class MyQrActivity extends BaseActivity implements View.OnClickListener {
         int id = v.getId();
         if (id == R.id.btn_copy){
             copyToClipboard(uri);
+            Toast.makeText(this, "Your address has been saved to the clipboard",
+                    Toast.LENGTH_LONG).show();
         }else if(id == R.id.btn_share){
             share(uri);
         }

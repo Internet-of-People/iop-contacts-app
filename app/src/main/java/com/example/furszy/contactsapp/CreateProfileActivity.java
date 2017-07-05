@@ -71,6 +71,7 @@ public class CreateProfileActivity extends BaseActivity {
                         anRedtooth.connect(anRedtooth.registerProfile(name,profImgData));
                         Intent myIntent = new Intent(v.getContext(), HomeActivity.class);
                         startActivityForResult(myIntent, 0);
+                        finish();
                     } else
                         Toast.makeText(v.getContext(), "Please write your profile name", Toast.LENGTH_LONG).show();
                 } catch (Exception e) {

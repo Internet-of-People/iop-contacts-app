@@ -16,12 +16,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity"/>
-        <activity android:name=".StartActivity">
-            <!--<intent-filter>
+        <activity android:name=".StartActivity" android:noHistory="true">
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>-->
+            </intent-filter>
         </activity>
         <activity android:name=".ProfileActivity"></activity>
 
@@ -45,11 +45,7 @@
         <activity android:name=".ui.settings_backup_process.SettingsBackupPasswordActivity"></activity>
         <activity android:name=".ui.settings_backup_folder.SettingsBackupFolderActivity"></activity>
         <activity android:name=".ui.my_qr.MyQrActivity"></activity>
-        <activity android:name=".ui.my_profile.MyProfileActivity">
-
-
-        </activity>
-
+        <activity android:name=".ui.my_profile.MyProfileActivity"/>
         <activity android:name=".contacts.ProfilesInformationActivity"/>
         <activity android:name=".requests.PairingRequestsActivity"/>
 
@@ -66,11 +62,9 @@
         </activity>
 
         <activity android:name=".ui.chat.ChatActivity">
-            <!--<intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>-->
+        </activity>
+        <activity android:name=".ui.chat.IncomingChatActivity">
         </activity>
 
         <activity android:name=".ui.send_request.SendRequestActivity"/>
