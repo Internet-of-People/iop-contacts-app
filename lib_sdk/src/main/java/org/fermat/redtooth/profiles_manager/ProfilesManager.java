@@ -5,6 +5,7 @@ import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.model.Profile;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by mati on 16/05/17.
@@ -31,4 +32,6 @@ public interface ProfilesManager {
     List<ProfileInformation> listAll(String localProfilePubKeyOwnerOfContact);
 
     boolean updatePaired(String localProfilePubKey, String remotePubKey, ProfileInformationImp.PairStatus value);
+
+    boolean updateRemoteServices(String localProfilePubKey, String remotePubKey,Set<String> services);
 }

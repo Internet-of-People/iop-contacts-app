@@ -10,7 +10,6 @@ import static org.abstractj.kalium.NaCl.Sodium.CRYPTO_BOX_SEALBYTES;
 
 public class BoxAlgo implements CryptoAlgo {
 
-
     /**
      * Encrypt a message given a public key
      *
@@ -36,7 +35,7 @@ public class BoxAlgo implements CryptoAlgo {
      */
     @Override
     public byte[] open(byte[] msg,byte[] pubKey,byte[] secretKey){
-        byte[] ret = new byte[CRYPTO_BOX_SEALBYTES-msg.length];
+        byte[] ret = new byte[msg.length-CRYPTO_BOX_SEALBYTES];
         NaCl.sodium().crypto_box_seal_open(msg,ret,ret.length,pubKey,secretKey);
         return ret;
     }

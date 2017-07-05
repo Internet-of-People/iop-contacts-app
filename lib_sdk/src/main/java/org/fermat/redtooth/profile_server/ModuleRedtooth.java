@@ -69,6 +69,8 @@ public interface ModuleRedtooth {
 
     void requestChat(ProfileInformation remoteProfileInformation, ProfSerMsgListener<Boolean> readyListener);
 
+    void acceptChatRequest(String hexPublicKey, ProfSerMsgListener<Boolean> future) throws Exception;
+
     void sendMsgToChat(ProfileInformation remoteProfileInformation, ChatMsg msg, ProfSerMsgListener<Boolean> msgListener) throws Exception;
 
     boolean isIdentityCreated();

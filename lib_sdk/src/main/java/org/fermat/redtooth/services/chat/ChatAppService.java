@@ -42,14 +42,9 @@ public class ChatAppService extends AppService{
         callProfileAppService.setMsgListener(new CallProfileAppService.CallMessagesListener() {
             @Override
             public void onMessage(MsgWrapper msg) {
-                if (msg.getMsgType().equals(ChatMsgTypes.TEXT.name())){
-                    for (ChatMsgListener listener : listeners) {
-                        // todo: Cambiar esto, en vez de enviar el chat message tengo que enviar el chatMsgWrapper con el local y remote profile..
-                        ChatMsg chatMsg = (ChatMsg)(msg.getMsg());
-                        listener.onMsgReceived(callProfileAppService.getRemotePubKey(),chatMsg);
-                    }
-                }else {
-                    logger.warn("### Unknown chat message arrive");
+                for (ChatMsgListener listener : listeners) {
+                    // todo: Cambiar esto, en vez de enviar el chat message tengo que enviar el chatMsgWrapper con el local y remote profile..
+                    listener.onMsgReceived(callProfileAppService.getRemotePubKey(),msg.getMsg());
                 }
 
             }
@@ -57,10 +52,9 @@ public class ChatAppService extends AppService{
     }
 
     @Override
-    public void onCallConnected(Profile localProfile, ProfileInformation remoteProfile) {
-        super.onCallConnected(localProfile, remoteProfile);
+    public void onCallConnected(Profile localProfile, ProfileInformation remoteProfile,boolean isLocalCreator) {
         for (ChatMsgListener listener : listeners) {
-            listener.onChatConnected(localProfile,remoteProfile.getHexPublicKey());
+            listener.onChatConnected(localProfile,remoteProfile.getHexPublicKey(),isLocalCreator);
         }
     }
 }

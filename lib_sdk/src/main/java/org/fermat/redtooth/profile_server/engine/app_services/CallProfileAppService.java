@@ -89,6 +89,7 @@ public class CallProfileAppService {
         this(appService,localProfile,remoteProfile,profSerEngine);
         this.cryptoAlgo = cryptoAlgo;
         this.isEncrypted = (cryptoAlgo != null);
+        this.isCallCreator = true;
     }
 
     public CallProfileAppService(String appService, Profile localProfile,ProfileInformation remoteProfile,ProfSerEngine profSerEngine) {
@@ -155,6 +156,10 @@ public class CallProfileAppService {
         return localProfile;
     }
 
+    public boolean isCallCreator() {
+        return isCallCreator;
+    }
+
     /**
      *
      *
@@ -198,7 +203,8 @@ public class CallProfileAppService {
         byte[] msgTemp = msgWrapper.encode();
         if (isEncrypted && !msgWrapper.getMsgType().equals(BasicCallMessages.CRYPTO.getType())){
             if (cryptoAlgo!=null){
-                msgTemp = cryptoAlgo.digest(msgTemp,msgTemp.length,localProfile.getPublicKey());
+                // todo: encrypt
+                msgTemp = msgTemp;//cryptoAlgo.digest(msgTemp,msgTemp.length,localProfile.getPublicKey());
             }else {
                 logger.error("msg encryption, crypto algo not setted");
                 throw new CantSendMessageException("msg encryption, crypto algo not setted");
@@ -234,22 +240,25 @@ public class CallProfileAppService {
     public void onMessageReceived(byte[] msg){
         try {
             byte[] msgTemp = msg;
-            MsgWrapper msgWrapper = MsgWrapper.decode(msg);
+            if (isEncrypted) {
+                if (cryptoAlgo != null) {
+                    if (msg.length>0)
+                        // todo: decrypt
+                        msgTemp = msg;//cryptoAlgo.open(msg, localProfile.getPublicKey(), localProfile.getPrivKey());
+                } else {
+                    logger.error("msg decryption, crypto algo not setted");
+                }
+            }
+            MsgWrapper msgWrapper = MsgWrapper.decode(msgTemp);
             if (msgWrapper.getMsgType().equals(BasicCallMessages.CRYPTO.getType())){
-                isEncrypted = true;
                 // todo: do a class with the supported algos instead of this lazy lazy stuff..
                 if(!((CryptoMsg)(msgWrapper.getMsg())).getAlgo().equals("box")){
-                    cryptoAlgo = new BoxAlgo();
+                    setCryptoAlgo(new BoxAlgo());
+                }else {
+                    logger.info("crypto msg arrived with an unknown type.. "+msgWrapper.getMsg());
                 }
             }else
                 if (msgListener != null) {
-                    if (isEncrypted) {
-                        if (cryptoAlgo != null) {
-                            msgTemp = cryptoAlgo.open(msg, localProfile.getPublicKey(), localProfile.getPrivKey());
-                        } else {
-                            logger.error("msg decryption, crypto algo not setted");
-                        }
-                    }
                     msgListener.onMessage(msgWrapper);
                 } else {
                     logger.warn("CallAppService msg received, not msgListener attached..");
@@ -257,6 +266,8 @@ public class CallProfileAppService {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e){
             e.printStackTrace();
         }
     }

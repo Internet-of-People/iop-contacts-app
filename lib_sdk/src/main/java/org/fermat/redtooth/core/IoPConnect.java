@@ -358,9 +358,14 @@ public class IoPConnect implements ConnectionListener {
                             logger.info("call establish, remote: " + call.getRemotePubKey());
                             if (tryUpdateRemoteServices){
                                 // update remote profile
-                                profilesManager.updateProfile(localProfile.getHexPublicKey(),call.getRemoteProfile());
+                                // todo: update more than just the services..
+                                profilesManager.updateRemoteServices(
+                                        call.getLocalProfile().getHexPublicKey(),
+                                        call.getRemotePubKey(),
+                                        call.getRemoteProfile().getServices());
+                                //profilesManager.updateProfile(localProfile.getHexPublicKey(),call.getRemoteProfile());
                             }
-                            appService.onCallConnected(localProfile,remoteProfile);
+                            appService.onCallConnected(localProfile,remoteProfile,call.isCallCreator());
                         } else {
                             logger.info("call fail with status: " + call.getStatus() + ", error: " + call.getErrorStatus());
                             readyListener.onMsgFail(messageId, 0, call.getStatus().toString() + " " + call.getErrorStatus());

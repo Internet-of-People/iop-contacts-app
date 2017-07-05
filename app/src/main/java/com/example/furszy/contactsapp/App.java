@@ -9,11 +9,12 @@ import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.example.furszy.contactsapp.ui.chat.IncomingChatActivity;
+import com.example.furszy.contactsapp.ui.chat.WaitingChatActivity;
 import com.example.furszy.contactsapp.ui.home.HomeActivity;
 
 import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.profile_server.ProfileInformation;
+import org.fermat.redtooth.profile_server.engine.app_services.BaseMsg;
 import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
@@ -22,6 +23,7 @@ import org.fermat.redtooth.profile_server.engine.listeners.ProfileListener;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.services.chat.ChatMsg;
 import org.fermat.redtooth.services.chat.ChatMsgListener;
+import org.fermat.redtooth.services.chat.ChatMsgTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +53,11 @@ public class App extends Application implements IoPConnectContext, PairingListen
     public static final String INTENT_ACTION_PROFILE_CONNECTED = "profile_connected";
     public static final String INTENT_ACTION_PROFILE_CHECK_IN_FAIL= "profile_check_in_fail";
     public static final String INTENT_ACTION_PROFILE_DISCONNECTED = "profile_disconnected";
+
+    public static final String INTENT_CHAT_ACCEPTED_BROADCAST = "chat_accepted";
+    public static final String INTENT_CHAT_REFUSED_BROADCAST = "chat_refused";
+    public static final String INTENT_CHAT_TEXT_BROADCAST = "chat_text";
+    public static final String INTENT_CHAT_TEXT_RECEIVED = "text";
 
     private static Logger log;
     private static App instance;
@@ -210,12 +217,15 @@ public class App extends Application implements IoPConnectContext, PairingListen
             // add available services here
             anRedtooth.getRedtooth().addService(EnabledServices.CHAT.getName(), new ChatMsgListener() {
                 @Override
-                public void onChatConnected(Profile localProfile, String remoteProfilePubKey) {
+                public void onChatConnected(Profile localProfile, String remoteProfilePubKey, boolean isLocalCreator) {
                     log.info("on chat connected: "+remoteProfilePubKey);
                     ProfileInformation remoteProflie = anRedtooth.getRedtooth().getKnownProfile(remoteProfilePubKey);
                     // todo: negro acá abrí la vista de incoming para aceptar el request..
-                    Intent intent = new Intent(App.this, IncomingChatActivity.class);
-                    intent.putExtra(IncomingChatActivity.REMOTE_PROFILE_PUB_KEY,remoteProfilePubKey);
+                    Intent intent = new Intent(App.this, WaitingChatActivity.class);
+                    intent.putExtra(WaitingChatActivity.REMOTE_PROFILE_PUB_KEY,remoteProfilePubKey);
+                    if (isLocalCreator){
+                        intent.putExtra(WaitingChatActivity.IS_CALLING,false);
+                    }
                     intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     /*PendingIntent pendingIntent = PendingIntent.getActivity(this,0,new Intent(this, HomeActivity.class),0);
@@ -235,8 +245,23 @@ public class App extends Application implements IoPConnectContext, PairingListen
                 }
 
                 @Override
-                public void onMsgReceived(String remotePubKey, ChatMsg msg) {
+                public void onMsgReceived(String remotePubKey, BaseMsg msg) {
                     log.info("on chat msg received: "+remotePubKey);
+                    Intent intent = new Intent();
+                    intent.putExtra(WaitingChatActivity.REMOTE_PROFILE_PUB_KEY,remotePubKey);
+                    switch (ChatMsgTypes.valueOf(msg.getType())){
+                        case CHAT_ACCEPTED:
+                            intent.setAction(INTENT_CHAT_ACCEPTED_BROADCAST);
+                            break;
+                        case CHAT_REFUSED:
+                            intent.setAction(INTENT_CHAT_REFUSED_BROADCAST);
+                            break;
+                        case TEXT:
+                            intent.putExtra(INTENT_CHAT_TEXT_RECEIVED,((ChatMsg)msg).getText());
+                            intent.setAction(INTENT_CHAT_TEXT_BROADCAST);
+                            break;
+                    }
+                    broadcastManager.sendBroadcast(intent);
                 }
             });
             // notify

@@ -6,6 +6,6 @@ package org.fermat.redtooth.services.chat;
 
 public enum ChatMsgTypes {
 
-    TEXT
+    CHAT_REFUSED,CHAT_ACCEPTED, TEXT
 
 }

@@ -81,8 +81,9 @@ public abstract class AppService implements ProfSerMsgListener{
      *
      * @param localProfile
      * @param remoteProfile
+     * @param isLocalCreator -> if the local profile create the call
      */
-    public void onCallConnected(Profile localProfile, ProfileInformation remoteProfile){
+    public void onCallConnected(Profile localProfile, ProfileInformation remoteProfile,boolean isLocalCreator){
 
     }
 

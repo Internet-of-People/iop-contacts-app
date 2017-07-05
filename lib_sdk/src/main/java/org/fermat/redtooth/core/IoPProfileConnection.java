@@ -391,7 +391,7 @@ public class IoPProfileConnection implements CallsListener {
                     // once everything is correct, launch notification
                     AppService appService = profileCache.getAppService(message.getAppService());
                     appService.wrapCall(callProfileAppService);
-                    appService.onCallConnected(profileCache,message.getRemoteProfile());
+                    appService.onCallConnected(profileCache,message.getRemoteProfile(),message.isCallCreator());
                 }
 
                 @Override

@@ -21,7 +21,7 @@
 
 
         <EditText
-            android:id="@+id/text_message"
+            android:id="@+id/edit_msg"
             android:layout_width="252dp"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"

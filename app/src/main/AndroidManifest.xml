@@ -60,7 +60,7 @@
         <activity android:name=".ui.chat.ChatActivity">
 
         </activity>
-        <activity android:name=".ui.chat.IncomingChatActivity">
+        <activity android:name=".ui.chat.WaitingChatActivity">
         </activity>
 
         <activity android:name=".ui.send_request.SendRequestActivity"/>

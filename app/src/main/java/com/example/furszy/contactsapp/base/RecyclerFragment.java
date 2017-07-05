@@ -2,6 +2,7 @@ package com.example.furszy.contactsapp.base;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -44,6 +45,8 @@ public abstract class RecyclerFragment<T> extends BaseAppFragment {
     private List<T> list;
     protected ExecutorService executor;
 
+    protected LocalBroadcastManager localBroadcastManager;
+
     private String emptyText;
 
     public RecyclerFragment() {
@@ -54,6 +57,7 @@ public abstract class RecyclerFragment<T> extends BaseAppFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         super.onCreateView(inflater,container,savedInstanceState);
+        localBroadcastManager = LocalBroadcastManager.getInstance(getActivity());
         root = inflater.inflate(R.layout.contacts_fragment, container, false);
         recycler = (RecyclerView) root.findViewById(R.id.recycler_contacts);
         swipeRefreshLayout = (SwipeRefreshLayout) root.findViewById(R.id.swipeRefresh);
