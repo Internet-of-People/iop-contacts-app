@@ -17,11 +17,7 @@
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity"/>
         <activity android:name=".StartActivity" android:noHistory="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity android:name=".ProfileActivity"></activity>
 
@@ -52,10 +48,10 @@
         <activity android:name=".ui.home.HomeActivity"
             android:theme="@style/AppTheme">
             <intent-filter>
-                            <action android:name="android.intent.action.MAIN" />
+            <action android:name="android.intent.action.MAIN" />
 
-                            <category android:name="android.intent.category.LAUNCHER" />
-                        </intent-filter>
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
         </activity>
         <activity android:name=".ui.chat.contact_list.ChatContactActivity">
 

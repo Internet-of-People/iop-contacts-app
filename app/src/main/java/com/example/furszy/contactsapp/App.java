@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.example.furszy.contactsapp.ui.chat.IncomingChatActivity;
 import com.example.furszy.contactsapp.ui.home.HomeActivity;
 
 import org.fermat.redtooth.core.IoPConnectContext;
@@ -38,6 +39,8 @@ import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import iop.org.iop_sdk_android.core.AnRedtooth;
 import iop.org.iop_sdk_android.core.InitListener;
 import iop.org.iop_sdk_android.core.profile_server.ProfileServerConfigurationsImp;
+
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 /**
  * Created by furszy on 5/25/17.
@@ -211,7 +214,11 @@ public class App extends Application implements IoPConnectContext, PairingListen
                     log.info("on chat connected: "+remoteProfilePubKey);
                     ProfileInformation remoteProflie = anRedtooth.getRedtooth().getKnownProfile(remoteProfilePubKey);
                     // todo: negro acá abrí la vista de incoming para aceptar el request..
-                    //PendingIntent pendingIntent = PendingIntent.getActivity(this,0,new Intent(this, HomeActivity.class),0);
+                    Intent intent = new Intent(App.this, IncomingChatActivity.class);
+                    intent.putExtra(IncomingChatActivity.REMOTE_PROFILE_PUB_KEY,remoteProfilePubKey);
+                    intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    /*PendingIntent pendingIntent = PendingIntent.getActivity(this,0,new Intent(this, HomeActivity.class),0);
                     Notification not = new Notification.Builder(App.this)
                             .setContentTitle("Hey, chat notification received")
                             .setContentText(remoteProflie.getName()+" want to chat with you!")
@@ -219,7 +226,7 @@ public class App extends Application implements IoPConnectContext, PairingListen
                       //      .setContentIntent(pendingIntent)
                             .setAutoCancel(true)
                             .build();
-                    notificationManager.notify(43,not);
+                    notificationManager.notify(43,not);*/
                 }
 
                 @Override
