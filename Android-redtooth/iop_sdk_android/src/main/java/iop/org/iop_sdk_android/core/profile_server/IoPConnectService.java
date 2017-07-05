@@ -13,6 +13,7 @@ import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.core.services.AppServiceListener;
 import org.fermat.redtooth.global.PlatformSerializer;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
+import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
 import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.global.DeviceLocation;
@@ -38,6 +39,7 @@ import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
 import org.fermat.redtooth.services.EnabledServicesFactory;
+import org.fermat.redtooth.services.chat.ChatAcceptMsg;
 import org.fermat.redtooth.services.chat.ChatAppService;
 import org.fermat.redtooth.services.chat.ChatMsg;
 import org.fermat.redtooth.wallet.utils.Iso8601Format;
@@ -291,6 +293,12 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         if(!profile.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on local profile");
         boolean tryUpdateRemoteServices = !remoteProfileInformation.hasService(EnabledServices.CHAT.getName());
         ioPConnect.callService(EnabledServices.CHAT.getName(),profile,remoteProfileInformation,tryUpdateRemoteServices,readyListener);
+    }
+
+    @Override
+    public void acceptChatRequest(String hexPublicKey, ProfSerMsgListener<Boolean> future) throws Exception {
+        CallProfileAppService callProfileAppService = profile.getAppService(EnabledServices.CHAT.getName()).getOpenCall(hexPublicKey);
+        callProfileAppService.sendMsg(new ChatAcceptMsg(System.currentTimeMillis()),future);
     }
 
     @Override

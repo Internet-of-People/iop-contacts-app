@@ -245,6 +245,18 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
                 new String[]{remotePubKey,localProfilePubKeyOwnerOfContact})==1;
     }
 
+    @Override
+    public boolean updateRemoteServices(String localProfilePubKey, String remotePubKey, Set<String> services) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(CONTACTS_COLUMN_APP_SERVICES, convertToString(services));
+        return db.update(
+                CONTACTS_TABLE_NAME,
+                contentValues,
+                CONTACTS_COLUMN_PUB_KEY+"=? and "+CONTACTS_COLUMN_DEVICE_PROFILE_PUB_KEY+" =?",
+                new String[]{remotePubKey,localProfilePubKey})==1;
+    }
+
 
     @Override
     public long saveProfile(String localProfilePubKeyOwnerOfContact, ProfileInformation profile) {
