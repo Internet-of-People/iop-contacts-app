@@ -12,6 +12,7 @@ import org.fermat.redtooth.core.IoPConnect;
 import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.core.services.AppServiceListener;
 import org.fermat.redtooth.global.PlatformSerializer;
+import org.fermat.redtooth.profile_server.client.AppServiceCallNotAvailableException;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
 import org.fermat.redtooth.services.EnabledServices;
@@ -301,14 +302,31 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         callProfileAppService.sendMsg(new ChatAcceptMsg(System.currentTimeMillis()),future);
     }
 
+    /**
+     *
+     * @param remoteProfileInformation
+     * @param msg
+     * @param msgListener
+     * @throws Exception
+     */
     @Override
     public void sendMsgToChat(ProfileInformation remoteProfileInformation, String msg, ProfSerMsgListener<Boolean> msgListener) throws Exception {
         if(!profile.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on local profile");
         //if(!remoteProfileInformation.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on remote profile");
-        ChatMsg chatMsg = new ChatMsg(msg);
-        profile.getAppService(EnabledServices.CHAT.getName())
-                .getOpenCall(remoteProfileInformation.getHexPublicKey())
-                    .sendMsg(chatMsg,msgListener);
+        CallProfileAppService callProfileAppService = null;
+        try {
+            ChatMsg chatMsg = new ChatMsg(msg);
+            callProfileAppService = profile.getAppService(EnabledServices.CHAT.getName())
+                    .getOpenCall(remoteProfileInformation.getHexPublicKey());
+            callProfileAppService.sendMsg(chatMsg, msgListener);
+        }catch (AppServiceCallNotAvailableException e){
+            e.printStackTrace();
+            //close the call now.
+            if (callProfileAppService!=null){
+                callProfileAppService.dispose();
+            }
+            throw new ChatCallClosed("Chat call not longer available",remoteProfileInformation);
+        }
     }
 
     @Override

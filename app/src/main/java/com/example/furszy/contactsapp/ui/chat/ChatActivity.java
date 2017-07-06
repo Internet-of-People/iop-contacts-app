@@ -30,6 +30,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import iop.org.iop_sdk_android.core.profile_server.ChatCallClosed;
+
 import static com.example.furszy.contactsapp.App.INTENT_CHAT_REFUSED_BROADCAST;
 import static com.example.furszy.contactsapp.App.INTENT_CHAT_TEXT_BROADCAST;
 import static com.example.furszy.contactsapp.App.INTENT_CHAT_TEXT_RECEIVED;
@@ -86,7 +88,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(final View v) {
         int id = v.getId();
         if (id == R.id.btn_send){
             final String text = edit_msg.getText().toString();
@@ -99,14 +101,14 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                             anRedtooth.sendMsgToChat(remoteProfile, text, new ProfSerMsgListener<Boolean>() {
                                 @Override
                                 public void onMessageReceive(int messageId, Boolean message) {
-                                    Log.i("Chat","msg sent!");
+                                    Log.i("Chat", "msg sent!");
                                     // msg sent
                                     messagesFragment.onMsgSent(text);
                                 }
 
                                 @Override
                                 public void onMsgFail(int messageId, int statusValue, String details) {
-                                    Log.w("Chat","msg fail!");
+                                    Log.w("Chat", "msg fail!");
                                 }
 
                                 @Override
@@ -115,7 +117,16 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                                 }
 
                             });
-                        }catch (Exception e){
+                        } catch (ChatCallClosed e){
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    btn_send.setBackgroundColor(Color.GRAY);
+                                    btn_send.setEnabled(false);
+                                    Snackbar.make(v,"Connection closed, chat finished",Snackbar.LENGTH_LONG).show();
+                                }
+                            });
+                        } catch (Exception e){
                             e.printStackTrace();
                         }
                     }
