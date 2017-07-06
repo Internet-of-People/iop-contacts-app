@@ -321,10 +321,6 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
             callProfileAppService.sendMsg(chatMsg, msgListener);
         }catch (AppServiceCallNotAvailableException e){
             e.printStackTrace();
-            //close the call now.
-            if (callProfileAppService!=null){
-                callProfileAppService.dispose();
-            }
             throw new ChatCallClosed("Chat call not longer available",remoteProfileInformation);
         }
     }
