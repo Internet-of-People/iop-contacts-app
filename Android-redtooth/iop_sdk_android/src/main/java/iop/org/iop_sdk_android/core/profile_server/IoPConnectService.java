@@ -3,14 +3,12 @@ package iop.org.iop_sdk_android.core.profile_server;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
-import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import org.fermat.redtooth.core.IoPConnect;
 import org.fermat.redtooth.core.IoPConnectContext;
-import org.fermat.redtooth.core.services.AppServiceListener;
 import org.fermat.redtooth.global.PlatformSerializer;
 import org.fermat.redtooth.profile_server.client.AppServiceCallNotAvailableException;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
@@ -41,8 +39,8 @@ import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
 import org.fermat.redtooth.services.EnabledServicesFactory;
 import org.fermat.redtooth.services.chat.ChatAcceptMsg;
-import org.fermat.redtooth.services.chat.ChatAppService;
 import org.fermat.redtooth.services.chat.ChatMsg;
+import org.fermat.redtooth.services.chat.RequestChatException;
 import org.fermat.redtooth.wallet.utils.Iso8601Format;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +50,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import iop.org.iop_sdk_android.core.crypto.CryptoWrapperAndroid;
 import iop.org.iop_sdk_android.core.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
@@ -289,11 +293,42 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         ioPConnect.cancelPairingRequest(pairingRequest);
     }
 
+    /**
+     * Request chat
+     * todo: add timeout..
+     * @param remoteProfileInformation
+     * @param readyListener
+     */
     @Override
-    public void requestChat(ProfileInformation remoteProfileInformation, ProfSerMsgListener<Boolean> readyListener){
+    public void requestChat(final ProfileInformation remoteProfileInformation, final ProfSerMsgListener<Boolean> readyListener, TimeUnit timeUnit, long time) throws RequestChatException {
         if(!profile.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on local profile");
-        boolean tryUpdateRemoteServices = !remoteProfileInformation.hasService(EnabledServices.CHAT.getName());
-        ioPConnect.callService(EnabledServices.CHAT.getName(),profile,remoteProfileInformation,tryUpdateRemoteServices,readyListener);
+        try {
+            final boolean tryUpdateRemoteServices = !remoteProfileInformation.hasService(EnabledServices.CHAT.getName());
+            Future future = executor.submit(new Callable() {
+                public Object call() {
+                    try {
+                        ioPConnect.callService(EnabledServices.CHAT.getName(), profile, remoteProfileInformation, tryUpdateRemoteServices, readyListener);
+                    }catch (Exception e){
+                        throw e;
+                    }
+                    return null;
+                }
+            });
+            future.get(time, timeUnit);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (TimeoutException | InterruptedException e) {
+            // destroy call
+            CallProfileAppService callProfileAppService = profile.getAppService(EnabledServices.CHAT.getName()).getOpenCall(remoteProfileInformation.getHexPublicKey());
+            callProfileAppService.dispose();
+            throw new RequestChatException(e);
+        }
+    }
+
+    @Override
+    public void refuseChatRequest(String hexPublicKey) {
+        CallProfileAppService callProfileAppService = profile.getAppService(EnabledServices.CHAT.getName()).getOpenCall(hexPublicKey);
+        callProfileAppService.dispose();
     }
 
     @Override
@@ -435,8 +470,8 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     @Override
     public void onDestroy() {
         Log.d(TAG,"onDestroy");
-        ioPConnect.stop();
         executor.shutdown();
+        ioPConnect.stop();
         super.onDestroy();
     }
 
