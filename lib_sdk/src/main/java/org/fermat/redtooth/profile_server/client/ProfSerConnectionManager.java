@@ -103,7 +103,7 @@ public class ProfSerConnectionManager {
                 // remove references and notify upper layer about it
                 appServicesSockets.remove(tokenHex);
                 // todo: Improve this.
-                throw new IllegalStateException("Connection not longer available with appService with token: "+tokenHex);
+                throw new AppServiceCallNotAvailableException("Connection not longer available with appService with token: "+tokenHex);
             }
         }
         return isActive;
