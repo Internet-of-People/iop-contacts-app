@@ -487,30 +487,22 @@ public class IoPConnect implements ConnectionListener {
         future.setListener(new BaseMsgFuture.Listener<Boolean>() {
             @Override
             public void onAction(int messageId, Boolean object) {
-                try {
-                    logger.info("PairAccept sent");
-                    if (call!=null)
-                        call.dispose();
-                    else
-                        logger.warn("call null trying to dispose pairing app service. Check this");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                logger.info("PairAccept sent");
+                if (call!=null)
+                    call.dispose();
+                else
+                    logger.warn("call null trying to dispose pairing app service. Check this");
+
             }
 
             @Override
             public void onFail(int messageId, int status, String statusDetail) {
                 logger.info("PairAccept fail, "+status+", detail: "+statusDetail);
                 //todo: schedule and re try
-                try {
-                    if (call!=null)
-                        call.dispose();
-                    else
-                        logger.warn("call null trying to dispose pairing app service. Check this");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
+                if (call!=null)
+                    call.dispose();
+                else
+                    logger.warn("call null trying to dispose pairing app service. Check this");
             }
         });
         if (call != null) {

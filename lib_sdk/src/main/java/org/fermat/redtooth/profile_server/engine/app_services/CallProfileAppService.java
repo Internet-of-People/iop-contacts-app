@@ -282,14 +282,23 @@ public class CallProfileAppService {
     /**
      * Dispose the call channel
      */
-    public void dispose() throws IOException {
-        profSerEngine.closeChannel(
-                (callTokenHex!=null)?
-                        callTokenHex
-                        :
-                        CryptoBytes.toHexString(callToken)
-        );
-        // todo: notify upper layers that the call was closed.
+    public void dispose() {
+        try {
+            profSerEngine.closeChannel(
+                    (callTokenHex != null) ?
+                            callTokenHex
+                            :
+                            CryptoBytes.toHexString(callToken)
+            );
+        }catch (Exception e){
+            // swallow..
+        }
+        try {
+            // Notify upper layer about the disconnection.
+            localProfile.getAppService(appService).removeCall(this, "local profile close connection");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override

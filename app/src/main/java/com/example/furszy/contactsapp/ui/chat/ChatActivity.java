@@ -88,6 +88,17 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
     }
 
     @Override
+    public void onBackPressed() {
+        try {
+            // close chat
+            anRedtooth.refuseChatRequest(remoteProfile.getHexPublicKey());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        super.onBackPressed();
+    }
+
+    @Override
     public void onClick(final View v) {
         int id = v.getId();
         if (id == R.id.btn_send){
@@ -126,8 +137,14 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                                     Snackbar.make(v,"Connection closed, chat finished",Snackbar.LENGTH_LONG).show();
                                 }
                             });
-                        } catch (Exception e){
+                        } catch (final Exception e){
                             e.printStackTrace();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Snackbar.make(v,"Sending message fail\n"+e.getMessage(),Snackbar.LENGTH_LONG).show();
+                                }
+                            });
                         }
                     }
                 });

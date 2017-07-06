@@ -32,6 +32,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -65,6 +67,8 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     private boolean searchForProfile = false;
     private byte[] keyToSearch;
     private String nameToSearch;
+
+    private AtomicBoolean lock = new AtomicBoolean();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -262,39 +266,48 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(final View v) {
         int id = v.getId();
         if (id==R.id.txt_chat){
-            //Intent intent = new Intent()
-            //
             Toast.makeText(v.getContext(),"Sending chat request..",Toast.LENGTH_LONG).show();
             executor.submit(new Runnable() {
                 @Override
                 public void run() {
-                    MsgListenerFuture<Boolean> readyListener = new MsgListenerFuture<>();
-                    readyListener.setListener(new BaseMsgFuture.Listener<Boolean>() {
-                        @Override
-                        public void onAction(int messageId, Boolean object) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(ProfileInformationActivity.this,"Chat request sent",Toast.LENGTH_LONG).show();
-                                }
-                            });
-                        }
+                    try {
+                        MsgListenerFuture<Boolean> readyListener = new MsgListenerFuture<>();
+                        readyListener.setListener(new BaseMsgFuture.Listener<Boolean>() {
+                            @Override
+                            public void onAction(int messageId, Boolean object) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(ProfileInformationActivity.this, "Chat request sent", Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
 
-                        @Override
-                        public void onFail(int messageId, int status, String statusDetail) {
-                            Log.e(TAG,"fail chat request: "+statusDetail);
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(ProfileInformationActivity.this,"Chat request fail",Toast.LENGTH_LONG).show();
-                                }
-                            });
-                        }
-                    });
-                    anRedtooth.requestChat(profileInformation,readyListener);
+                            @Override
+                            public void onFail(int messageId, int status, String statusDetail) {
+                                Log.e(TAG, "fail chat request: " + statusDetail);
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(ProfileInformationActivity.this, "Chat request fail", Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
+                        });
+                        anRedtooth.requestChat(profileInformation, readyListener, TimeUnit.SECONDS, 45);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(v.getContext(),"Chat call fail",Toast.LENGTH_LONG).show();
+                                onBackPressed();
+                            }
+                        });
+                    }
                 }
             });
 

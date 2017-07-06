@@ -22,6 +22,7 @@ import com.example.furszy.contactsapp.R;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
+import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -122,8 +123,13 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
             acceptChatRequest();
         }else if (id == R.id.btn_cancel_chat || id == R.id.btn_cancel_chat_alone){
             // here i have to close the connection refusing the call..
-            Toast.makeText(this,"not ready yet..",Toast.LENGTH_LONG).show();
+            refuseChat();
+            onBackPressed();
         }
+    }
+
+    private void refuseChat(){
+       anRedtooth.refuseChatRequest(profileInformation.getHexPublicKey());
     }
 
     private void acceptChatRequest() {

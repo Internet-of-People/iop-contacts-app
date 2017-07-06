@@ -3,6 +3,7 @@ package org.fermat.redtooth.profile_server;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.fermat.redtooth.core.services.AppServiceListener;
 import org.fermat.redtooth.profile_server.engine.SearchProfilesQuery;
@@ -15,6 +16,7 @@ import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
 import org.fermat.redtooth.services.chat.ChatMsg;
+import org.fermat.redtooth.services.chat.RequestChatException;
 
 /**
  * Created by mati on 22/11/16.
@@ -67,7 +69,9 @@ public interface ModuleRedtooth {
 
     void cancelPairingRequest(PairingRequest pairingRequest);
 
-    void requestChat(ProfileInformation remoteProfileInformation, ProfSerMsgListener<Boolean> readyListener);
+    void requestChat(ProfileInformation remoteProfileInformation, ProfSerMsgListener<Boolean> readyListener, TimeUnit timeUnit, long time) throws RequestChatException;
+
+    void refuseChatRequest(String hexPublicKey);
 
     void acceptChatRequest(String hexPublicKey, ProfSerMsgListener<Boolean> future) throws Exception;
 
@@ -110,5 +114,6 @@ public interface ModuleRedtooth {
     void deteleContacts();
 
     void deletePairingRequests();
+
 
 }
