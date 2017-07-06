@@ -6,7 +6,7 @@
 
     <TextView android:id="@+id/txt_message"
         android:layout_height="wrap_content"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:textColor="@color/mainText"
         android:text="@string/lorem_impsum"
         android:textSize="16sp"
@@ -16,19 +16,17 @@
         android:paddingLeft="20dp"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
-        android:layout_marginRight="60dp"
-        android:layout_marginLeft="20dp"
-        android:layout_alignParentLeft="true" />
+        />
     <TextView
         android:id="@+id/txt_time"
         android:layout_below="@id/txt_message"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/time"
-        android:layout_marginTop="6dip"
         android:textSize="12sp"
         android:textStyle="italic"
         android:text="25/03/2012"
-        android:layout_marginLeft="40dp"/>
+        android:paddingLeft="20dp"
+        />
 
 </RelativeLayout>

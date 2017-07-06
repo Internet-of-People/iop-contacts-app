@@ -9,6 +9,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -25,9 +26,14 @@ import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.services.chat.ChatMsg;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import static com.example.furszy.contactsapp.App.INTENT_CHAT_REFUSED_BROADCAST;
 import static com.example.furszy.contactsapp.App.INTENT_CHAT_TEXT_BROADCAST;
 import static com.example.furszy.contactsapp.App.INTENT_CHAT_TEXT_RECEIVED;
+import static com.example.furszy.contactsapp.ui.chat.WaitingChatActivity.REMOTE_PROFILE_PUB_KEY;
 
 /**
  * Created by furszy on 7/3/17.
@@ -39,7 +45,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
     private Button btn_send;
     private EditText edit_msg;
 
-    private ProfileInformation profileInformation;
+    private ProfileInformation remoteProfile;
+    private MessagesFragment messagesFragment;
+    private ExecutorService executor;
 
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
@@ -54,36 +62,64 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.setStatusBarColor(Color.parseColor("#21619C"));
         }
+        String remotePk = getIntent().getStringExtra(REMOTE_PROFILE_PUB_KEY);
+        remoteProfile = anRedtooth.getKnownProfile(remotePk);
+        messagesFragment = (MessagesFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_messages);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (executor==null){
+            executor = Executors.newSingleThreadExecutor();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (executor!=null){
+            if (!executor.isShutdown())
+                executor.shutdownNow();
+            executor = null;
+        }
     }
 
     @Override
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.btn_send){
-            try {
-                String text = edit_msg.getText().toString();
-                if (text.length() > 0) {
-                    edit_msg.setText("");
-                    ChatMsg chatMsg = new ChatMsg(text);
-                    anRedtooth.sendMsgToChat(profileInformation, chatMsg, new ProfSerMsgListener<Boolean>() {
-                        @Override
-                        public void onMessageReceive(int messageId, Boolean message) {
+            final String text = edit_msg.getText().toString();
+            if (text.length() > 0) {
+                edit_msg.setText("");
+                executor.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            anRedtooth.sendMsgToChat(remoteProfile, text, new ProfSerMsgListener<Boolean>() {
+                                @Override
+                                public void onMessageReceive(int messageId, Boolean message) {
+                                    Log.i("Chat","msg sent!");
+                                    // msg sent
+                                    messagesFragment.onMsgSent(text);
+                                }
 
+                                @Override
+                                public void onMsgFail(int messageId, int statusValue, String details) {
+                                    Log.w("Chat","msg fail!");
+                                }
+
+                                @Override
+                                public String getMessageName() {
+                                    return "chatMsg";
+                                }
+
+                            });
+                        }catch (Exception e){
+                            e.printStackTrace();
                         }
-
-                        @Override
-                        public void onMsgFail(int messageId, int statusValue, String details) {
-
-                        }
-
-                        @Override
-                        public String getMessageName() {
-                            return null;
-                        }
-                    });
-                }
-            }catch (Exception e){
-                e.printStackTrace();
+                    }
+                });
             }
         }
     }

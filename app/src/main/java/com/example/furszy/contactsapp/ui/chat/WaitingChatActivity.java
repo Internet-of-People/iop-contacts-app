@@ -144,6 +144,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
                                         @Override
                                         public void run() {
                                             Intent intent = new Intent(WaitingChatActivity.this,ChatActivity.class);
+                                            intent.putExtra(REMOTE_PROFILE_PUB_KEY,profileInformation.getHexPublicKey());
                                             startActivity(intent);
                                         }
                                     });

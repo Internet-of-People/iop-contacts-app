@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Toast;
 
@@ -27,11 +28,10 @@ import static com.example.furszy.contactsapp.App.INTENT_CHAT_TEXT_RECEIVED;
  * Created by furszy on 7/3/17.
  */
 
-public class MessagesFragment extends RecyclerFragment<ChatMsgWrapper> {
+public class MessagesFragment extends RecyclerFragment<ChatMsgUi> {
 
     private String localPubkey;
     private String remotePubKey;
-    private List<ChatMsgWrapper> list = new ArrayList<>();
 
 
     private BroadcastReceiver chatReceiver = new BroadcastReceiver() {
@@ -40,7 +40,7 @@ public class MessagesFragment extends RecyclerFragment<ChatMsgWrapper> {
             String action = intent.getAction();
             if (action.equals(INTENT_CHAT_TEXT_BROADCAST)){
                 String text = intent.getStringExtra(INTENT_CHAT_TEXT_RECEIVED);
-                Toast.makeText(getActivity(),"new message"+text,Toast.LENGTH_LONG).show();
+                adapter.addItem(new ChatMsgUi(false,text,System.currentTimeMillis()),adapter.getItemCount());
             }
         }
     };
@@ -58,14 +58,14 @@ public class MessagesFragment extends RecyclerFragment<ChatMsgWrapper> {
     }
 
     @Override
-    protected List<ChatMsgWrapper> onLoading() {
+    protected List<ChatMsgUi> onLoading() {
         // todo: cargá acá data si queres negro..
-        return list;
+        return (list!=null)?list:new ArrayList<ChatMsgUi>();
     }
 
     @Override
-    protected BaseAdapter<ChatMsgWrapper, ? extends ChatMsgHolder> initAdapter() {
-        return new BaseAdapter<ChatMsgWrapper, ChatMsgHolder>(getActivity()) {
+    protected BaseAdapter<ChatMsgUi, ? extends ChatMsgHolder> initAdapter() {
+        return new BaseAdapter<ChatMsgUi, ChatMsgHolder>(getActivity()) {
             @Override
             protected ChatMsgHolder createHolder(View itemView, int type) {
                 return new ChatMsgHolder(itemView,type);
@@ -77,13 +77,27 @@ public class MessagesFragment extends RecyclerFragment<ChatMsgWrapper> {
             }
 
             @Override
-            protected void bindHolder(ChatMsgHolder holder, ChatMsgWrapper data, int position) {
-                holder.txt_message.setText(data.getChatMsg().getText());
-                if (data.getChatMsg().getTimestamp()!=0) {
-                    holder.txt_time.setText(new SimpleDateFormat("dd/MM/yyyy mm:HH").format(data.getChatMsg().getTimestamp()));
+            protected void bindHolder(ChatMsgHolder holder, ChatMsgUi data, int position) {
+                holder.txt_message.setText(data.getText());
+                if (data.isMine()){
+                    holder.txt_message.setBackgroundResource(R.drawable.bubble_right);
+                    holder.txt_message.setGravity(Gravity.END);
+                    holder.txt_time.setPadding(0,10,20,10);
+                    holder.txt_time.setGravity(Gravity.END);
+                }else {
+                    holder.txt_message.setBackgroundResource(R.drawable.bubble_left);
+                    holder.txt_message.setGravity(Gravity.START);
+                    holder.txt_time.setGravity(Gravity.START);
+                }
+                if (data.getTimestamp()!=0) {
+                    holder.txt_time.setText(new SimpleDateFormat("dd/MM/yyyy mm:HH").format(data.getTimestamp()));
                 }else
                     holder.txt_time.setVisibility(View.GONE);
             }
         };
+    }
+
+    public void onMsgSent(String text) {
+        adapter.addItem(new ChatMsgUi(true,text,System.currentTimeMillis()),adapter.getItemCount());
     }
 }

@@ -471,7 +471,9 @@ public class IoPConnect implements ConnectionListener {
         pairingRequestsManager.updateStatus(
                 remotePubKeyHex,
                 localPubKeyHex,
-                PairingMsgTypes.PAIR_ACCEPT, ProfileInformationImp.PairStatus.PAIRED);
+                PairingMsgTypes.PAIR_ACCEPT,
+                ProfileInformationImp.PairStatus.PAIRED
+        );
         // requestsDbManager.removeRequest(remotePubKeyHex);
 
         // Notify the other side if it's connected.

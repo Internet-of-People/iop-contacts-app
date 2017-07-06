@@ -41,8 +41,8 @@ public abstract class RecyclerFragment<T> extends BaseAppFragment {
     private TextView txt_empty;
     private ImageView img_empty_view;
 
-    private BaseAdapter adapter;
-    private List<T> list;
+    protected BaseAdapter adapter;
+    protected List<T> list;
     protected ExecutorService executor;
 
     protected LocalBroadcastManager localBroadcastManager;
