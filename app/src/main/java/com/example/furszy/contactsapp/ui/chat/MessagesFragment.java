@@ -80,12 +80,14 @@ public class MessagesFragment extends RecyclerFragment<ChatMsgUi> {
             protected void bindHolder(ChatMsgHolder holder, ChatMsgUi data, int position) {
                 holder.txt_message.setText(data.getText());
                 if (data.isMine()){
+                    holder.container_msg.setGravity(Gravity.END);
                     holder.txt_message.setBackgroundResource(R.drawable.bubble_right);
                     holder.txt_message.setGravity(Gravity.END);
                     holder.txt_time.setPadding(0,10,20,10);
                     holder.txt_time.setGravity(Gravity.END);
                 }else {
                     holder.txt_message.setBackgroundResource(R.drawable.bubble_left);
+                    holder.container_msg.setGravity(Gravity.START);
                     holder.txt_message.setGravity(Gravity.START);
                     holder.txt_time.setGravity(Gravity.START);
                 }

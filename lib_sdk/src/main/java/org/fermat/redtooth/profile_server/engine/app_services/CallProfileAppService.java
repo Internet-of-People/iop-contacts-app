@@ -6,6 +6,7 @@ import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ProfileInformation;
+import org.fermat.redtooth.profile_server.client.AppServiceCallNotAvailableException;
 import org.fermat.redtooth.profile_server.engine.ProfSerEngine;
 import org.fermat.redtooth.profile_server.engine.crypto.BoxAlgo;
 import org.fermat.redtooth.profile_server.engine.crypto.CryptoAlgo;
@@ -215,21 +216,27 @@ public class CallProfileAppService {
 
     private void sendMsg(byte[] msg, final ProfSerMsgListener<Boolean> sendListener) throws CantConnectException, CantSendMessageException {
         if (this.status!=CALL_AS_ESTABLISH) throw new IllegalStateException("Call is not ready to send messages");
-        MsgListenerFuture<IopProfileServer.ApplicationServiceSendMessageResponse> msgListenerFuture = new MsgListenerFuture();
-        msgListenerFuture.setListener(new BaseMsgFuture.Listener<IopProfileServer.ApplicationServiceSendMessageResponse>() {
-            @Override
-            public void onAction(int messageId, IopProfileServer.ApplicationServiceSendMessageResponse object) {
-                logger.info("App service message sent!");
-                sendListener.onMessageReceive(messageId,true);
-            }
+        try {
+            MsgListenerFuture<IopProfileServer.ApplicationServiceSendMessageResponse> msgListenerFuture = new MsgListenerFuture();
+            msgListenerFuture.setListener(new BaseMsgFuture.Listener<IopProfileServer.ApplicationServiceSendMessageResponse>() {
+                @Override
+                public void onAction(int messageId, IopProfileServer.ApplicationServiceSendMessageResponse object) {
+                    logger.info("App service message sent!");
+                    sendListener.onMessageReceive(messageId, true);
+                }
 
-            @Override
-            public void onFail(int messageId, int status, String statusDetail) {
-                logger.info("App service message fail");
-                sendListener.onMsgFail(messageId,status,statusDetail);
-            }
-        });
-        profSerEngine.sendAppServiceMsg(callToken,msg,msgListenerFuture);
+                @Override
+                public void onFail(int messageId, int status, String statusDetail) {
+                    logger.info("App service message fail");
+                    sendListener.onMsgFail(messageId, status, statusDetail);
+                }
+            });
+            profSerEngine.sendAppServiceMsg(callToken, msg, msgListenerFuture);
+        }catch (AppServiceCallNotAvailableException e){
+            // intercept exception to destroy this call.
+            localProfile.getAppService(appService).removeCall(this,"Connection is not longer available");
+            throw e;
+        }
     }
 
     /**

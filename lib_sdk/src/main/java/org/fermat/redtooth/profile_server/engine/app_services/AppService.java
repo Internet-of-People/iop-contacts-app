@@ -40,6 +40,11 @@ public abstract class AppService implements ProfSerMsgListener{
         onWrapCall(callProfileAppService);
     }
 
+    public final void removeCall(CallProfileAppService callProfileAppService,String reason){
+        openCalls.remove(callProfileAppService.getRemotePubKey());
+        onCallDisconnected(callProfileAppService.getLocalProfile(),callProfileAppService.getRemoteProfile(),reason);
+    }
+
     /**
      * Return an open call.
      * todo: Instead of this with a String i should change it for an id..

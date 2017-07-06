@@ -58,6 +58,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
                 Intent intent1 = new Intent(WaitingChatActivity.this,ChatActivity.class);
                 intent1.putExtra(REMOTE_PROFILE_PUB_KEY,intent.getStringExtra(REMOTE_PROFILE_PUB_KEY));
                 startActivity(intent1);
+                finish();
             }else if(action.equals(INTENT_CHAT_REFUSED_BROADCAST)){
                 Toast.makeText(WaitingChatActivity.this,"Call not connected",Toast.LENGTH_LONG).show();
                 onBackPressed();
@@ -146,6 +147,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
                                             Intent intent = new Intent(WaitingChatActivity.this,ChatActivity.class);
                                             intent.putExtra(REMOTE_PROFILE_PUB_KEY,profileInformation.getHexPublicKey());
                                             startActivity(intent);
+                                            finish();
                                         }
                                     });
                                 }
