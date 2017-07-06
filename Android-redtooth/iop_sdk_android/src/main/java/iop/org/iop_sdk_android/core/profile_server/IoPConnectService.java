@@ -302,11 +302,13 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
-    public void sendMsgToChat(ProfileInformation remoteProfileInformation, ChatMsg msg, ProfSerMsgListener<Boolean> msgListener) throws Exception {
+    public void sendMsgToChat(ProfileInformation remoteProfileInformation, String msg, ProfSerMsgListener<Boolean> msgListener) throws Exception {
         if(!profile.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on local profile");
-        if(!remoteProfileInformation.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on remote profile");
-        profile.getAppService(EnabledServices.CHAT.getName()).getOpenCall(remoteProfileInformation.getHexPublicKey())
-                .sendMsg(msg,msgListener);
+        //if(!remoteProfileInformation.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on remote profile");
+        ChatMsg chatMsg = new ChatMsg(msg);
+        profile.getAppService(EnabledServices.CHAT.getName())
+                .getOpenCall(remoteProfileInformation.getHexPublicKey())
+                    .sendMsg(chatMsg,msgListener);
     }
 
     @Override
