@@ -237,7 +237,7 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
     public boolean updatePaired(String localProfilePubKeyOwnerOfContact,String remotePubKey, ProfileInformationImp.PairStatus value) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        contentValues.put(CONTACTS_COLUMN_PAIR, ProfileInformationImp.PairStatus.PAIRED.name());
+        contentValues.put(CONTACTS_COLUMN_PAIR, value.name());
         return db.update(
                 CONTACTS_TABLE_NAME,
                 contentValues,
@@ -294,10 +294,11 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
     @Override
     public List<ProfileInformation> listConnectedProfiles(String localProfileOwnerOfContacts) {
         ArrayList<ProfileInformation> list = new ArrayList<>();
-
         //hp = new HashMap();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res =  db.rawQuery( "select * from "+CONTACTS_TABLE_NAME+" where "+CONTACTS_COLUMN_DEVICE_PROFILE_PUB_KEY+" = '"+localProfileOwnerOfContacts+"'", null );
+        Cursor res =  db.rawQuery( "select * from "+CONTACTS_TABLE_NAME
+                +" where "+CONTACTS_COLUMN_DEVICE_PROFILE_PUB_KEY+" = '" +localProfileOwnerOfContacts+"' " +
+                "AND "+CONTACTS_COLUMN_PAIR+"='"+ ProfileInformationImp.PairStatus.PAIRED.name()+"'", null );
         if(res.moveToFirst()) {
             do {
                 list.add(buildFrom(res).profileInformation);
