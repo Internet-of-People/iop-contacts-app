@@ -59,7 +59,7 @@ public class PrivateStorage {
 
     public void saveFile(String name,byte[] buf){
         File file = context.getDir("priv",MODE_PRIVATE);
-        File saveFile = new File(file.getAbsolutePath()+name);
+        File saveFile = new File(file,name);
         FileOutputStream fileOutputStream = null;
         try {
             fileOutputStream = new FileOutputStream(saveFile);
@@ -82,7 +82,7 @@ public class PrivateStorage {
 
     public void savePrivObj(String name,Object obj){
         File file = context.getDir(name,MODE_PRIVATE);
-        File privFile = new File(file.getPath()+"/"+name);
+        File privFile = new File(file,name);
         FileOutputStream fileOutputStream = null;
         ObjectOutputStream objectOutputStream = null;
         try {

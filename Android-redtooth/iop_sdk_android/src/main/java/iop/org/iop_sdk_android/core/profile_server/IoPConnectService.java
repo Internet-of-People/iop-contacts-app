@@ -13,6 +13,7 @@ import org.fermat.redtooth.global.PlatformSerializer;
 import org.fermat.redtooth.profile_server.client.AppServiceCallNotAvailableException;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
+import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.global.DeviceLocation;
@@ -60,9 +61,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import iop.org.iop_sdk_android.core.IntentBroadcastConstants;
 import iop.org.iop_sdk_android.core.crypto.CryptoWrapperAndroid;
 import iop.org.iop_sdk_android.core.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
+import iop.org.iop_sdk_android.core.utils.ImageUtils;
 
 
 /**
@@ -199,29 +202,40 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public int updateProfile(String name, ProfSerMsgListener msgListener) throws Exception {
-        return updateProfile(null,profile.getHexPublicKey(),name,null,0,0,null,msgListener);
+        return updateProfile(profile.getHexPublicKey(),name,null,0,0,null,msgListener);
     }
 
     @Override
     public int updateProfile(String name,byte[] img,ProfSerMsgListener msgListener) throws Exception {
-        return updateProfile(null,profile.getHexPublicKey(),name,img,0,0,null,msgListener);
+        return updateProfile(profile.getHexPublicKey(),name,img,0,0,null,msgListener);
     }
 
     @Override
     public int updateProfile(String pubKey,String name, byte[] img, String extraData, ProfSerMsgListener msgListener) throws Exception {
-        return updateProfile(null,pubKey,name,img,0,0,extraData,msgListener);
+        return updateProfile(pubKey,name,img,0,0,extraData,msgListener);
     }
 
     @Override
-    public int updateProfile(byte[] version, String pubKey ,String name, byte[] img, int latitude, int longitude, String extraData, ProfSerMsgListener msgListener) throws Exception {
+    public int updateProfile(String pubKey ,String name, byte[] img, int latitude, int longitude, String extraData, ProfSerMsgListener msgListener) throws Exception {
 //        Log.d(TAG,"updateProfile, state: "+state);
         try{
+            byte[] version = new byte[]{0,0, (byte) (profile.getVersion()[2]+1)};
             Profile profile = new Profile(version,name,img,latitude,longitude,extraData);
             profile.setKey((KeyEd25519) this.profile.getKey());
             if (version==null){
                 profile.setVersion(this.profile.getVersion());
             }
             configurationsPreferences.saveProfile(profile);
+            // broadcast profile update
+            broadcastUpdateProfile();
+
+            if (profile.getImg()!=null){
+                this.profile.setImg(profile.getImg());
+                while (profile.getImg().length>20480) {
+                    // compact the image more
+                    profile.setImg(ImageUtils.compress(profile.getImg(),10));
+                }
+            }
             return ioPConnect.updateProfile(profile,msgListener);
         }catch (Exception e){
             e.printStackTrace();
@@ -378,13 +392,13 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
-    public void getProfileInformation(String profPubKey,final ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException {
-        ioPConnect.searchAndGetProfile(profile.getHexPublicKey(),profPubKey,profileFuture);
+    public void getProfileInformation(String profPubKey, ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException {
+        getProfileInformation(profPubKey,false,profileFuture);
     }
 
     @Override
-    public void getProfileInformation(String profPubKey, boolean withImage, ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException {
-        ioPConnect.searchAndGetProfile(profile.getHexPublicKey(),profPubKey,profileFuture);
+    public void getProfileInformation(String profPubKey, boolean getInfo, final ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException {
+        ioPConnect.searchAndGetProfile(profile.getHexPublicKey(),profPubKey,getInfo,profileFuture);
     }
 
     @Override
@@ -423,7 +437,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                 profile.getPublicKey(),
                 profile.getName(),
                 profile.getType(),
-                null,
+                profile.getImg(),
                 profile.getThumbnailImg(),
                 profile.getLatitude(),
                 profile.getLongitude(),
@@ -524,4 +538,8 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         return null;
     }
 
+    private void broadcastUpdateProfile() {
+        Intent intent = new Intent(IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT);
+        localBroadcastManager.sendBroadcast(intent);
+    }
 }

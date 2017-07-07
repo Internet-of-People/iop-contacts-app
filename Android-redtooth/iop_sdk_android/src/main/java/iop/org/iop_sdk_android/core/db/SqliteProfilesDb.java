@@ -117,6 +117,10 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         contentValues.put(CONTACTS_COLUMN_DEVICE_PROFILE_PUB_KEY,localProfileWhoKnowThis);
         contentValues.put(CONTACTS_COLUMN_APP_SERVICES,convertToString(profile.getServices()));
         contentValues.put(CONTACTS_COLUMN_HOME_HOST,profile.getHomeHost());
+        if (profile.getImg()!=null && profile.getImg().length>0)
+            contentValues.put(CONTACTS_COLUMN_IMG,profile.getImg());
+        contentValues.put(CONTACTS_COLUMN_LAT,profile.getLatitude());
+        contentValues.put(CONTACTS_COLUMN_LON,profile.getLongitude());
         return contentValues;
     }
 
@@ -131,6 +135,9 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
             ProfileInformationImp.PairStatus pairStatus = ProfileInformationImp.PairStatus.valueOf(cursor.getString(CONTACTS_POS_COLUMN_PAIR));
             Set<String> appServices = convertToSet(cursor.getString(CONTACTS_POS_COLUMN_APP_SERVICES));
             String homeHost = cursor.getString(CONTACTS_POS_COLUMN_HOME_HOST);
+            byte[] img = cursor.getBlob(CONTACTS_POS_COLUMN_IMG);
+            int lat = cursor.getInt(CONTACTS_POS_COLUMN_LAT);
+            int lon = cursor.getInt(CONTACTS_POS_COLUMN_LON);
             ProfileInformationImp profile = new ProfileInformationImp();
             profile.setVersion(new byte[]{0, 0, 1});
             profile.setName(name);
@@ -141,6 +148,9 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
             profile.setExtraData(extraData);
             profile.addAllAppServices(appServices);
             profile.setHomeHost(homeHost);
+            profile.setImg(img);
+            profile.setLongitude(lon);
+            profile.setLatitude(lat);
             return new ProfileInformationWrapper(localProfilePubKey, profile);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -261,6 +271,17 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
     @Override
     public long saveProfile(String localProfilePubKeyOwnerOfContact, ProfileInformation profile) {
         return insertContact(localProfilePubKeyOwnerOfContact,profile);
+    }
+
+    public void saveOrUpdateProfile(String localProfilePubKeyOwnerOfContact, ProfileInformation profile){
+        ProfileInformation dbProf = null;
+        if ((dbProf = getProfile(localProfilePubKeyOwnerOfContact,profile.getHexPublicKey()))==null){
+            saveProfile(localProfilePubKeyOwnerOfContact,profile);
+        }else {
+            profile.setPairStatus(dbProf.getPairStatus());
+            profile.setLastUpdateTime(System.currentTimeMillis());
+            updateProfile(localProfilePubKeyOwnerOfContact,profile);
+        }
     }
 
     @Override

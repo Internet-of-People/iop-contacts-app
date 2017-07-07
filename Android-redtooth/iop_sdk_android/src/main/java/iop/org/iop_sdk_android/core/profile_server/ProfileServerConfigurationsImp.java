@@ -242,7 +242,7 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
             save(PREFS_HOST,profile.getHomeHost());
         }
         if (profile.getImg()!=null){
-            privateStorage.saveFile(PREFS_USER_PRIV_KEY,profile.getImg());
+            privateStorage.saveFile(PREFS_USER_IMAGE,profile.getImg());
         }
     }
 
