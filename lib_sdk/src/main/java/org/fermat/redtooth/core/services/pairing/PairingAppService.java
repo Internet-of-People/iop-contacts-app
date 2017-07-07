@@ -61,7 +61,8 @@ public class PairingAppService extends AppService {
                                 boolean res = profilesManager.updatePaired(
                                         callProfileAppService.getLocalProfile().getHexPublicKey(),
                                         callProfileAppService.getRemotePubKey(),
-                                        ProfileInformationImp.PairStatus.PAIRED);
+                                        ProfileInformationImp.PairStatus.PAIRED
+                                );
                                 logger.info("Pairing accepted, profiles updated "+res);
                                 if (pairingListener!=null){
                                     pairingListener.onPairResponseReceived(callProfileAppService.getRemotePubKey(),"Accepted");
@@ -83,7 +84,9 @@ public class PairingAppService extends AppService {
                                 pairingRequestsManager.updateStatus(
                                         profileServiceOwner.getHexPublicKey(),
                                         callProfileAppService.getRemotePubKey(),
-                                        PairingMsgTypes.PAIR_REFUSE, ProfileInformationImp.PairStatus.PAIRED);
+                                        PairingMsgTypes.PAIR_REFUSE,
+                                        ProfileInformationImp.PairStatus.PAIRED
+                                );
                                 if (pairingListener!=null){
                                     pairingListener.onPairResponseReceived(callProfileAppService.getRemotePubKey(),"Refused");
                                 }else {
