@@ -30,9 +30,6 @@ import static com.example.furszy.contactsapp.App.INTENT_CHAT_TEXT_RECEIVED;
 
 public class MessagesFragment extends RecyclerFragment<ChatMsgUi> {
 
-    private String localPubkey;
-    private String remotePubKey;
-
 
     private BroadcastReceiver chatReceiver = new BroadcastReceiver() {
         @Override
@@ -41,6 +38,7 @@ public class MessagesFragment extends RecyclerFragment<ChatMsgUi> {
             if (action.equals(INTENT_CHAT_TEXT_BROADCAST)){
                 String text = intent.getStringExtra(INTENT_CHAT_TEXT_RECEIVED);
                 adapter.addItem(new ChatMsgUi(false,text,System.currentTimeMillis()),adapter.getItemCount());
+                layoutManager.scrollToPosition(adapter.getItemCount());
             }
         }
     };
@@ -101,5 +99,6 @@ public class MessagesFragment extends RecyclerFragment<ChatMsgUi> {
 
     public void onMsgSent(String text) {
         adapter.addItem(new ChatMsgUi(true,text,System.currentTimeMillis()),adapter.getItemCount());
+        layoutManager.scrollToPosition(adapter.getItemCount());
     }
 }

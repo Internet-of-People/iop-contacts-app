@@ -34,8 +34,8 @@ public abstract class RecyclerFragment<T> extends BaseAppFragment {
     private static final Logger log = LoggerFactory.getLogger(ContactsFragment.class);
 
     private View root;
-    private RecyclerView.LayoutManager layoutManager;
-    private RecyclerView recycler;
+    protected RecyclerView.LayoutManager layoutManager;
+    protected RecyclerView recycler;
     private SwipeRefreshLayout swipeRefreshLayout;
     private View container_empty_screen;
     private TextView txt_empty;
