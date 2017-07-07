@@ -97,8 +97,13 @@ public class MessagesFragment extends RecyclerFragment<ChatMsgUi> {
         };
     }
 
-    public void onMsgSent(String text) {
-        adapter.addItem(new ChatMsgUi(true,text,System.currentTimeMillis()),adapter.getItemCount());
-        layoutManager.scrollToPosition(adapter.getItemCount());
+    public void onMsgSent(final String text) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.addItem(new ChatMsgUi(true,text,System.currentTimeMillis()),adapter.getItemCount());
+                layoutManager.scrollToPosition(adapter.getItemCount());
+            }
+        });
     }
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
@@ -8,44 +9,49 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:name="com.example.furszy.contactsapp.ui.chat.MessagesFragment"
-        android:id="@+id/fragment_messages"/>
+        android:id="@+id/fragment_messages"
+        android:layout_weight="1"
+        tools:layout="@layout/chat_msg_row" />
 
     <LinearLayout
         android:id="@+id/form"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
+        android:layout_gravity="bottom"
+        android:gravity="bottom"
+        android:layout_weight="0.2"
         android:background="#E8E8E8"
         android:orientation="horizontal">
 
-
         <EditText
             android:id="@+id/edit_msg"
-            android:layout_width="252dp"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignTop="@+id/button1"
-            android:layout_toLeftOf="@+id/sendMessageButton"
-            android:layout_weight="0.72"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
             android:ems="10"
-            android:textSize="15dp"
+            android:layout_weight="10"
+            android:textSize="15sp"
             android:textColor="@color/mainText"
             android:maxHeight="80dp" />
 
         <Button
             android:id="@+id/btn_send"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:minHeight="50dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
+            android:layout_gravity="end"
+            android:paddingStart="3dp"
+            android:paddingEnd="3dp"
+            android:layout_weight="0.2"
             android:gravity="center"
             android:text="@string/send"
             android:textColor="@color/white"
-            android:textSize="14dp"
+            android:textSize="14sp"
             android:background="@color/blue_base"/>
+
+
+
+
     </LinearLayout>
 
 
