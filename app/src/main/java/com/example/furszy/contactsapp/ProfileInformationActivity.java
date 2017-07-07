@@ -7,7 +7,10 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -46,15 +49,17 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 
     private static final String TAG = "ProfInfoActivity";
 
+    public static final String IS_MY_PROFILE = "extra_is_my_profile";
+
     public static final String INTENT_EXTRA_PROF_KEY = "prof_key";
     public static final String INTENT_EXTRA_PROF_NAME = "prof_name";
-    public static final String INTENT_EXTRA_PROF_SERVER_ID = "prof_name";
+    public static final String INTENT_EXTRA_PROF_SERVER_ID = "prof_ser_id";
     public static final String INTENT_EXTRA_SEARCH = "prof_search";
-
 
     ModuleRedtooth module;
     ProfileInformation profileInformation;
 
+    private View root;
     private CircleImageView imgProfile;
     private TextView txt_name;
     private Button btn_connect;
@@ -68,11 +73,28 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     private byte[] keyToSearch;
     private String nameToSearch;
 
-    private AtomicBoolean lock = new AtomicBoolean();
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (getIntent()!=null && getIntent().hasExtra(IS_MY_PROFILE)) {
+            getMenuInflater().inflate(R.menu.my_profile_menu, menu);
+        }
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.editProfile:
+                Intent myIntent = new Intent(this,ProfileActivity.class);
+                startActivity(myIntent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onCreateView(Bundle savedInstanceState,ViewGroup container) {
 
         module = ((App)getApplication()).getAnRedtooth().getRedtooth();
 
@@ -85,94 +107,38 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 //
 //        Log.i("APP",data.toString());
 
-        Bundle extras = getIntent().getExtras();
-        if (extras!=null && extras.containsKey(INTENT_EXTRA_PROF_KEY)){
-            byte[] pubKey = extras.getByteArray(INTENT_EXTRA_PROF_KEY);
-            if (!extras.containsKey(INTENT_EXTRA_SEARCH)){
-                profileInformation = module.getKnownProfile(CryptoBytes.toHexString(pubKey));
-            }else{
-                keyToSearch = pubKey;
-                nameToSearch = extras.getString(INTENT_EXTRA_PROF_NAME);
-                searchForProfile = true;
-            }
-
-        }
-
-        setContentView(R.layout.profile_information_main);
-        imgProfile = (CircleImageView) findViewById(R.id.profile_image);
-        txt_name = (TextView) findViewById(R.id.txt_name);
-        btn_connect = (Button) findViewById(R.id.btn_connect);
-        progress_bar = (ProgressBar) findViewById(R.id.progress_bar);
-        txt_chat = (TextView) findViewById(R.id.txt_chat);
+        //setContentView(R.layout.profile_information_main);
+        root = getLayoutInflater().inflate(R.layout.profile_information_main,container);
+        imgProfile = (CircleImageView) root.findViewById(R.id.profile_image);
+        txt_name = (TextView) root.findViewById(R.id.txt_name);
+        btn_connect = (Button) root.findViewById(R.id.btn_connect);
+        progress_bar = (ProgressBar) root.findViewById(R.id.progress_bar);
+        txt_chat = (TextView) root.findViewById(R.id.txt_chat);
         txt_chat.setOnClickListener(this);
 
         btn_connect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showLoading();
-                executor.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            if (profileInformation.getPairStatus()==NOT_PAIRED) {
-                                MsgListenerFuture listener = new MsgListenerFuture();
-                                listener.setListener(new BaseMsgFuture.Listener<Integer>() {
-                                    @Override
-                                    public void onAction(int messageId, Integer object) {
-                                        runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                Toast.makeText(ProfileInformationActivity.this, "Pairing sent!", Toast.LENGTH_LONG).show();
-                                                hideLoading();
-                                            }
-                                        });
-                                    }
 
-                                    @Override
-                                    public void onFail(int messageId, int status, final String statusDetail) {
-                                        runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                Toast.makeText(ProfileInformationActivity.this, "Pairing fail, detail: " + statusDetail, Toast.LENGTH_LONG).show();
-                                                hideLoading();
-                                            }
-                                        });
-                                    }
-                                });
-                                module.requestPairingProfile(profileInformation.getPublicKey(), profileInformation.getProfileServerId(), listener);
-                            } else if (profileInformation.getPairStatus() == ProfileInformationImp.PairStatus.WAITING_FOR_MY_RESPONSE){
-                                // if is not paired and the search is true i can accept the pairing invitation
-                                if (searchForProfile) {
-                                    /*module.acceptPairingProfile(profileInformation.getProfileServerId(), profileInformation.getPublicKey());
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(ProfileInformationActivity.this, "Sending acceptance", Toast.LENGTH_LONG).show();
-                                        }
-                                    });*/
-                                }else {
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            hideLoading();
-                                        }
-                                    });
-                                }
-                            }else {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(ProfileInformationActivity.this,"Status not implemented yet.. "+profileInformation.getPairStatus().name(),Toast.LENGTH_LONG).show();
-                                    }
-                                });
-                            }
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }
-                    }
-                });
             }
         });
+
+        Bundle extras = getIntent().getExtras();
+        if (extras!=null){
+            if (extras.containsKey(INTENT_EXTRA_PROF_KEY)) {
+                byte[] pubKey = extras.getByteArray(INTENT_EXTRA_PROF_KEY);
+                if (!extras.containsKey(INTENT_EXTRA_SEARCH)) {
+                    profileInformation = module.getKnownProfile(CryptoBytes.toHexString(pubKey));
+                } else {
+                    keyToSearch = pubKey;
+                    nameToSearch = extras.getString(INTENT_EXTRA_PROF_NAME);
+                    searchForProfile = true;
+                }
+            }else if (extras.containsKey(IS_MY_PROFILE)){
+                profileInformation = module.getMyProfile();
+                btn_connect.setVisibility(View.GONE);
+            }
+        }
 
         if (profileInformation==null && !searchForProfile){
             onBackPressed();

@@ -16,7 +16,6 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.example.furszy.contactsapp.ui.home.HomeActivity;
-import com.example.furszy.contactsapp.ui.my_profile.MyProfileActivity;
 import com.example.furszy.contactsapp.ui.my_qr.MyQrActivity;
 import com.example.furszy.contactsapp.ui.settings.SettingsActivity;
 import org.fermat.redtooth.profile_server.model.Profile;
@@ -37,6 +36,7 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
     private View navHeader;
     private CircleImageView imgProfile;
     private TextView txtName;
+    private Profile myProfile;
 
     private byte[] cachedProfImage;
 
@@ -85,11 +85,11 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
 
     private void refreshProfile() {
         if (anRedtooth!=null) {
-            Profile profile = anRedtooth.getProfile();
-            txtName.setText(profile.getName());
-            if (profile.getImg()!=null) {
-                if (cachedProfImage == null || !Arrays.equals(profile.getImg(), cachedProfImage)) {
-                    cachedProfImage = profile.getImg();
+            myProfile = anRedtooth.getProfile();
+            txtName.setText(myProfile.getName());
+            if (myProfile.getImg()!=null) {
+                if (cachedProfImage == null || !Arrays.equals(myProfile.getImg(), cachedProfImage)) {
+                    cachedProfImage = myProfile.getImg();
                     Bitmap bitmap = BitmapFactory.decodeByteArray(cachedProfImage, 0, cachedProfImage.length);
                     imgProfile.setImageBitmap(bitmap);
                 }
@@ -166,7 +166,9 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
     public void onClick(View v) {
         int id = v.getId();
         if (id==R.id.container_profile){
-            startActivity(new Intent(v.getContext(), MyProfileActivity.class));
+            Intent intent = new Intent(v.getContext(), ProfileInformationActivity.class);
+            intent.putExtra(ProfileInformationActivity.IS_MY_PROFILE,true);
+            startActivity(intent);
         }
     }
 }

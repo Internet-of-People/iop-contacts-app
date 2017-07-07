@@ -99,6 +99,8 @@ public interface ModuleRedtooth {
 
     Profile getProfile();
 
+    ProfileInformation getMyProfile();
+
     List<ProfileInformation> getKnownProfiles();
 
     ProfileInformation getKnownProfile(String pubKey);

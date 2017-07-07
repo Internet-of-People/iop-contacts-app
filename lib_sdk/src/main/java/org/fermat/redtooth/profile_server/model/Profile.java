@@ -21,14 +21,12 @@ public class Profile implements Signer,ProfileBase {
     // specific fields
     /** 3 bytes version */
     private byte[] version;
-    /** 32 char name */
     private String name;
-    /*** 32 char type  */
     private String type;
     private byte[] img;
+    private byte[] thumbnailImg;
     private int latitude;
     private int longitude;
-    /** 128 char extra data */
     private String extraData;
 
     private String homeHost;
@@ -38,6 +36,7 @@ public class Profile implements Signer,ProfileBase {
 
     /** Key del profile */
     private KeyEd25519 keyEd25519;
+
 
     public Profile(){};
 
@@ -208,6 +207,10 @@ public class Profile implements Signer,ProfileBase {
         return CryptoBytes.toHexString(Sha256Hash.hash(getPublicKey()));
     }
 
+    public byte[] getThumbnailImg() {
+        return thumbnailImg;
+    }
+
     @Override
     public String toString() {
         return "Profile{" +
@@ -225,4 +228,6 @@ public class Profile implements Signer,ProfileBase {
                 ", keyEd25519=" + keyEd25519 +
                 '}';
     }
+
+
 }
