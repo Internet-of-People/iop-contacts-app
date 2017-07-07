@@ -1,6 +1,9 @@
 package com.example.furszy.contactsapp;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -21,6 +24,9 @@ import com.example.furszy.contactsapp.ui.settings.SettingsActivity;
 import org.fermat.redtooth.profile_server.model.Profile;
 import java.util.Arrays;
 import de.hdodenhof.circleimageview.CircleImageView;
+import iop.org.iop_sdk_android.core.IntentBroadcastConstants;
+
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT;
 
 /**
  * Created by Neoperol on 6/20/17.
@@ -39,6 +45,16 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
     private Profile myProfile;
 
     private byte[] cachedProfImage;
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(ACTION_PROFILE_UPDATED_CONSTANT)){
+                refreshProfile();
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +96,19 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
     @Override
     protected void onResume() {
         super.onResume();
+        registerReceiver(receiver,new IntentFilter(IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT));
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
         refreshProfile();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(receiver);
     }
 
     private void refreshProfile() {

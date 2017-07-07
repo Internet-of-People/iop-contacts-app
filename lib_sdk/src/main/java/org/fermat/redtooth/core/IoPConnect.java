@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by mati on 17/05/17.
@@ -280,14 +281,15 @@ public class IoPConnect implements ConnectionListener {
      *
      * @param requeteerPubKey
      * @param profPubKey
+     * @param getInfo -> if you are sure that you want to get the info of the profile
      * @param future
      * @throws CantConnectException
      * @throws CantSendMessageException
      */
-    public void searchAndGetProfile(final String requeteerPubKey, String profPubKey, final ProfSerMsgListener<ProfileInformation> future) throws CantConnectException, CantSendMessageException {
+    public void searchAndGetProfile(final String requeteerPubKey, String profPubKey, boolean getInfo ,final ProfSerMsgListener<ProfileInformation> future) throws CantConnectException, CantSendMessageException {
         if (!managers.containsKey(requeteerPubKey)) throw new IllegalStateException("Profile connection not established");
-        ProfileInformation info = profilesManager.getProfile(requeteerPubKey,profPubKey);
-        if (info!=null){
+        final ProfileInformation info = profilesManager.getProfile(requeteerPubKey,profPubKey);
+        if (info!=null && !getInfo){
             //todo: add TTL and expiration -> info.getLastUpdateTime().
             // if it's not valid go to CAN.
             future.onMessageReceive(0,info);
@@ -313,12 +315,19 @@ public class IoPConnect implements ConnectionListener {
                     profileInformation.setExtraData(signedProfile.getExtraData());
                     profileInformation.setIsOnline(message.getIsOnline());
                     profileInformation.setUpdateTimestamp(System.currentTimeMillis());
+                    //todo: improve with input flags and not just hardcoded
+                    profileInformation.setImg(message.getProfileImage().toByteArray());
+                    profileInformation.setThumbnailImg(message.getThumbnailImage().toByteArray());
+                    if (info!=null) {
+                        profileInformation.setHomeHost(info.getHomeHost());
+                        profileInformation.setProfileServerId(info.getProfileServerId());
+                    }
 
                     for (int i = 0; i < message.getApplicationServicesCount(); i++) {
                         profileInformation.addAppService(message.getApplicationServices(i));
                     }
-                    // save unknown profile
-                    profilesManager.saveProfile(requeteerPubKey,profileInformation);
+                    // save or update profile
+                    profilesManager.saveOrUpdateProfile(requeteerPubKey,profileInformation);
 
                     future.onMessageReceive(messageId, profileInformation);
                 }

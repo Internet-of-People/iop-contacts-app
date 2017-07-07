@@ -1,6 +1,8 @@
 package com.example.furszy.contactsapp;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -40,6 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT;
 import static org.fermat.redtooth.profile_server.imp.ProfileInformationImp.PairStatus.NOT_PAIRED;
 
 /**
@@ -69,10 +72,21 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 
     private ExecutorService executor;
 
+    private boolean isMyProfile;
     private boolean searchForProfile = false;
-    private byte[] keyToSearch;
-    private String nameToSearch;
 
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(ACTION_PROFILE_UPDATED_CONSTANT)){
+                if (isMyProfile){
+                    profileInformation = anRedtooth.getMyProfile();
+                    loadProfileData();
+                }
+            }
+        }
+    };
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -95,6 +109,9 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 
     @Override
     protected void onCreateView(Bundle savedInstanceState,ViewGroup container) {
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         module = ((App)getApplication()).getAnRedtooth().getRedtooth();
 
@@ -127,14 +144,11 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         if (extras!=null){
             if (extras.containsKey(INTENT_EXTRA_PROF_KEY)) {
                 byte[] pubKey = extras.getByteArray(INTENT_EXTRA_PROF_KEY);
-                if (!extras.containsKey(INTENT_EXTRA_SEARCH)) {
-                    profileInformation = module.getKnownProfile(CryptoBytes.toHexString(pubKey));
-                } else {
-                    keyToSearch = pubKey;
-                    nameToSearch = extras.getString(INTENT_EXTRA_PROF_NAME);
-                    searchForProfile = true;
-                }
+                profileInformation = module.getKnownProfile(CryptoBytes.toHexString(pubKey));
+                // and schedule to try to update this profile information..
+                searchForProfile = true;
             }else if (extras.containsKey(IS_MY_PROFILE)){
+                isMyProfile = true;
                 profileInformation = module.getMyProfile();
                 btn_connect.setVisibility(View.GONE);
             }
@@ -144,6 +158,14 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
             onBackPressed();
             return;
         }
+
+        /*if (searchForProfile){
+            showLoading();
+        }else
+            hideLoading();*/
+    }
+
+    private void loadProfileData() {
         if (profileInformation!=null) {
             txt_name.setText(profileInformation.getName());
             if (profileInformation.getImg() != null && profileInformation.getImg().length > 1) {
@@ -151,16 +173,15 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                 imgProfile.setImageBitmap(bitmap);
             }
         }
-
-        if (searchForProfile){
-            showLoading();
-        }else
-            hideLoading();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        if (isMyProfile){
+            profileInformation = anRedtooth.getMyProfile();
+        }
+        loadProfileData();
         if (executor==null){
             executor = Executors.newSingleThreadExecutor();
         }
@@ -173,18 +194,11 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                         msgListenerFuture.setListener(new BaseMsgFuture.Listener<ProfileInformation>() {
                             @Override
                             public void onAction(int messageId, final ProfileInformation object) {
+                                profileInformation = object;
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        profileInformation = object;
-                                        // now check if i have a request for this profile
-                                        PairingRequest pairingRequest = anRedtooth.getProfilePairingRequest(profileInformation.getHexPublicKey());
-                                        if (pairingRequest!=null){
-                                            ProfileInformationImp.PairStatus pairStatus = ProfileUtils.PairingRequestToPairStatus(anRedtooth.getProfile(),pairingRequest);
-                                            profileInformation.setPairStatus(pairStatus);
-                                        }
-                                        txt_name.setText(profileInformation.getName());
-                                        hideLoading();
+                                        loadProfileData();
                                     }
                                 });
                             }
@@ -201,8 +215,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                                 });
                             }
                         });
-                        anRedtooth.getProfileInformation(CryptoBytes.toHexString(keyToSearch),msgListenerFuture);
-
+                        anRedtooth.getProfileInformation(profileInformation.getHexPublicKey(),true,msgListenerFuture);
                     } catch (CantSendMessageException e) {
                         e.printStackTrace();
                     } catch (CantConnectException e) {

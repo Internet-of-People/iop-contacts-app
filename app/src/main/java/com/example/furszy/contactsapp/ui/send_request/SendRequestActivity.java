@@ -100,6 +100,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                             }
                         });
                         anRedtooth.requestPairingProfile(CryptoBytes.fromHexToBytes(profile.getPubKey()), profile.getName() ,profile.getProfSerHost(), future);
+
                     }catch (Exception e){
                         e.printStackTrace();
                     }

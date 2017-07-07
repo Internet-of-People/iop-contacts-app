@@ -174,6 +174,7 @@ public class MessageFactory {
         }
 
         if (img!=null && img.length>0){
+            if (img.length>20480) throw new IllegalArgumentException("image is greater than the max size permitted 20480 bytes");
             updateProfileRequest.setProfileImage(ByteString.copyFrom(img));
         }
 
@@ -208,6 +209,7 @@ public class MessageFactory {
         if (extraData!=null && !extraData.equals("")){
             profileInformation.setExtraData(extraData);
         }
+
         updateProfileRequest.setProfile(profileInformation);
         byte[] signature = signer.sign(profileInformation.build().toByteArray());
         IopProfileServer.UpdateProfileRequest request = updateProfileRequest.build();

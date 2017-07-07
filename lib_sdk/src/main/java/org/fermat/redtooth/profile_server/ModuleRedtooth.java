@@ -43,7 +43,7 @@ public interface ModuleRedtooth {
 
     int updateProfile(String pubKey,String name, byte[] img, String extraData, ProfSerMsgListener msgListener) throws Exception;
 
-    int updateProfile(byte[] version, String pubKey ,String name, byte[] img, int latitude, int longitude, String extraData, ProfSerMsgListener msgListener) throws Exception;
+    int updateProfile(String pubKey ,String name, byte[] img, int latitude, int longitude, String extraData, ProfSerMsgListener msgListener) throws Exception;
 
     int updateProfileExtraData(String pubKey,Signer signer, String extraData) throws Exception;
 
@@ -86,7 +86,16 @@ public interface ModuleRedtooth {
     /* Search queries **/
 
     void getProfileInformation(String profPubKey, ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException;
-    void getProfileInformation(String profPubKey,boolean withImage ,ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException;
+
+    /**
+     *
+     * @param profPubKey
+     * @param getInfo  -> If you want to update your searched profile from the home node.
+     * @param profileFuture
+     * @throws CantConnectException
+     * @throws CantSendMessageException
+     */
+    void getProfileInformation(String profPubKey, boolean getInfo, ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException;
 
     void searchProfileByName(String name, ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener);
 

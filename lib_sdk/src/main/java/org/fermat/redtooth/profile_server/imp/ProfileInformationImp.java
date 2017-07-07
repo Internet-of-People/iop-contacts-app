@@ -59,13 +59,27 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
         this.pairStatus = pairStatus;
     }
 
-    public ProfileInformationImp(byte[] version, byte[] pubKey, String name, String type, byte[] imgHash, byte[] thumbnailImg, int latitude, int longitude, String extraData, Set<String> services, byte[] profileServerId, String homeHost) {
+    public ProfileInformationImp(byte[] version, byte[] pubKey, String name, String type, byte[] thumbnailImg, int latitude, int longitude, String extraData, Set<String> services, byte[] profileServerId, String homeHost) {
         this.version = version;
         this.pubKey = pubKey;
         this.name = name;
         this.type = type;
         this.thumbnailImg = thumbnailImg;
-        this.imgHash = imgHash;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.extraData = extraData;
+        this.services = services;
+        this.profileServerId = profileServerId;
+        this.homeHost = homeHost;
+    }
+
+    public ProfileInformationImp(byte[] version, byte[] pubKey, String name, String type, byte[] img, byte[] thumbnailImg, int latitude, int longitude, String extraData, Set<String> services, byte[] profileServerId, String homeHost) {
+        this.version = version;
+        this.pubKey = pubKey;
+        this.name = name;
+        this.type = type;
+        this.thumbnailImg = thumbnailImg;
+        this.img = img;
         this.latitude = latitude;
         this.longitude = longitude;
         this.extraData = extraData;
@@ -151,6 +165,11 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
     @Override
     public void setHomeHost(String homeHost) {
         this.homeHost = homeHost;
+    }
+
+    @Override
+    public void setLastUpdateTime(long time) {
+        this.updateTimestamp = time;
     }
 
     @Override

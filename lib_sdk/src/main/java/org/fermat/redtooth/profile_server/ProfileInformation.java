@@ -31,6 +31,8 @@ public interface ProfileInformation extends ProfileBase {
 
     byte[] getProfileServerId();
 
+    void setProfileServerId(byte[] serverId);
+
     void addAppService(String service);
 
     boolean isOnline();
@@ -60,4 +62,6 @@ public interface ProfileInformation extends ProfileBase {
     void setName(String name);
 
     void setHomeHost(String senderHost);
+
+    void setLastUpdateTime(long time);
 }

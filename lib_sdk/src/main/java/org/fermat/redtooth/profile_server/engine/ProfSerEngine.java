@@ -280,6 +280,8 @@ public class ProfSerEngine {
 
     /**
      * Update the existing profile in the server
+     *
+     * @param img -> Profile image in PNG or JPEG format, non-empty binary data, max 20,480 bytes long, or zero length binary data if the profile image is about to be erased.
      */
     public int updateProfile(byte[] version, String name, byte[] img, int lat, int lon, String extraData, ProfSerMsgListener listener){
         LOG.info("updateProfile, state: "+profSerConnectionState);

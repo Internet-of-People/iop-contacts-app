@@ -382,17 +382,12 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
                     boolean res = false;
                     String detail = null;
                     try {
-                        if (!isIdentityCreated) {
-                            String pk = module.registerProfile(name, "contactApp", profImgData, 0, 0, null);
-                            module.connect(pk);
-                        } else {
-                            MsgListenerFuture listenerFuture = new MsgListenerFuture();
-                            module.updateProfile(
-                                    name,
-                                    profImgData,
-                                    listenerFuture);
-                            listenerFuture.get();
-                        }
+                        MsgListenerFuture listenerFuture = new MsgListenerFuture();
+                        module.updateProfile(
+                                name,
+                                profImgData,
+                                listenerFuture);
+                        listenerFuture.get();
                         res = true;
                     } catch (Exception e) {
                         Log.e(TAG, e.getMessage());
