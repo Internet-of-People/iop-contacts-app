@@ -49,7 +49,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -407,6 +409,30 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     @Override
     public Profile getProfile() {
         return profile;
+    }
+    //    public ProfileInformationImp(byte[] version, byte[] pubKey, String name, String type, byte[] imgHash, byte[] thumbnailImg, int latitude, int longitude, String extraData, Set<String> services, byte[] profileServerId, String homeHost) {
+
+    @Override
+    public ProfileInformation getMyProfile() {
+        Set<String> services = new HashSet<>();
+        for (AppService appService : profile.getApplicationServices().values()) {
+            services.add(appService.getName());
+        }
+        return new ProfileInformationImp(
+                profile.getVersion(),
+                profile.getPublicKey(),
+                profile.getName(),
+                profile.getType(),
+                null,
+                profile.getThumbnailImg(),
+                profile.getLatitude(),
+                profile.getLongitude(),
+                profile.getExtraData(),
+                services,
+                profile.getNetworkId(),
+                profile.getHomeHost()
+
+        );
     }
 
     /**
