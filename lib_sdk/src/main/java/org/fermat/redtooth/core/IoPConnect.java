@@ -64,7 +64,7 @@ public class IoPConnect implements ConnectionListener {
 
     private final Logger logger = LoggerFactory.getLogger(IoPConnect.class);
 
-    /** Map of device profiles pubKey connected to the home PS, profile public key -> host PS manager*/
+    /** Map of local device profiles pubKey connected to the home PS, profile public key -> host PS manager*/
     private ConcurrentMap<String,IoPProfileConnection> managers;
     /** Map of device profiles connected to remote PS */
     private ConcurrentMap<PsKey,IoPProfileConnection> remoteManagers = new ConcurrentHashMap<>();
@@ -134,6 +134,50 @@ public class IoPConnect implements ConnectionListener {
 
     }
 
+    @Override
+    public void onConnectionLoose(String localProfilePubKey, String psHost, IopProfileServer.ServerRoleType portType, String tokenId) {
+        if (managers.containsKey(localProfilePubKey)){
+            // The connection is one of the connections to the Home server
+            // Let's check now if this is the main connection
+            if (portType == IopProfileServer.ServerRoleType.CL_CUSTOMER){
+                    // if the main connection is out we try to reconnect on a fixed period for now. (Later should increase the reconnection time exponentially..)
+                    ConnectionFuture connectionFuture = new ConnectionFuture();
+                    connectionFuture.setListener(new BaseMsgFuture.Listener<Boolean>() {
+                        @Override
+                        public void onAction(int messageId, Boolean object) {
+                            logger.info("Main home host connected again!");
+                            //todo: launch notification to the users
+                        }
+
+                        @Override
+                        public void onFail(int messageId, int status, String statusDetail) {
+                            logger.info("Main home host reconnected fail");
+                            //todo: try to connect again.
+                        }
+                    });
+                    Profile localProfile = createEmptyProfileServerConf().getProfile();
+                try {
+                    connectProfile(
+                            localProfilePubKey,
+                            localProfile.getAppService(EnabledServices.PROFILE_PAIRING.getName(), PairingAppService.class).getPairingListener(),
+                            null,
+                            connectionFuture
+                    );
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    logger.info("Problems trying to reconnect to the main PS after 5 seconds..",e);
+                    // retryng after certain time.
+                    try {
+                        wait(TimeUnit.SECONDS.toMillis(5));
+                        onConnectionLoose(localProfilePubKey,psHost,portType,tokenId);
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
 
     /**
      * Create a profile inside the redtooth
@@ -180,37 +224,49 @@ public class IoPConnect implements ConnectionListener {
     }
 
     public void connectProfile(String profilePublicKey, PairingListener pairingListener, byte[] ownerChallenge,ConnectionFuture future) throws Exception {
-        if (managers.containsKey(profilePublicKey))throw new IllegalArgumentException("Profile connection already initialized");
-        ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
-        ProfServerData profServerData = null;
-        if(profileServerConfigurations.getMainProfileServerContract()==null){
-            // search in LOC for a profile server or use a trusted one from the user.
-            // todo: here i have to do the LOC Network flow.
-            // Sync explore profile servers around Argentina
-            if (false){
-                Explorer explorer = new Explorer( NodeInfo.ServiceType.Profile, deviceLocation.getDeviceLocation(), 10000, 10 );
-                FutureTask< List<NodeInfo> > task = new FutureTask<>(explorer);
-                task.run();
-                List<NodeInfo> resultNodes = task.get();
-                // chose the first one - closest
-                if (!resultNodes.isEmpty()) {
-                    NodeInfo selectedNode = resultNodes.get(0);
-                    profServerData = new ProfServerData(
-                            selectedNode.getNodeId(),
-                            selectedNode.getContact().getAddress().getHostAddress(),
-                            selectedNode.getContact().getPort(),
-                            selectedNode.getLocation().getLatitude(),
-                            selectedNode.getLocation().getLongitude()
-                    );
-                }
+        if (managers.containsKey(profilePublicKey)){
+            IoPProfileConnection connection = getProfileConnection(profilePublicKey);
+            if (connection.hasFail()){
+                future.setProfServerData(createEmptyProfileServerConf().getMainProfileServer());
+                connection.init(future,this);
+            }else if (connection.isReady()){
+                throw new IllegalStateException("Connection already initilized and running, profKey: "+profilePublicKey);
             }else {
-                profServerData = profileServerConfigurations.getMainProfileServer();
+                throw new IllegalStateException("Connection already initilized and trying to check-in the profile, profKey: "+profilePublicKey);
             }
+        }else {
+            ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
+            ProfServerData profServerData = null;
+            if (profileServerConfigurations.getMainProfileServerContract() == null) {
+                // search in LOC for a profile server or use a trusted one from the user.
+                // todo: here i have to do the LOC Network flow.
+                // Sync explore profile servers around Argentina
+                if (false) {
+                    Explorer explorer = new Explorer(NodeInfo.ServiceType.Profile, deviceLocation.getDeviceLocation(), 10000, 10);
+                    FutureTask<List<NodeInfo>> task = new FutureTask<>(explorer);
+                    task.run();
+                    List<NodeInfo> resultNodes = task.get();
+                    // chose the first one - closest
+                    if (!resultNodes.isEmpty()) {
+                        NodeInfo selectedNode = resultNodes.get(0);
+                        profServerData = new ProfServerData(
+                                selectedNode.getNodeId(),
+                                selectedNode.getContact().getAddress().getHostAddress(),
+                                selectedNode.getContact().getPort(),
+                                selectedNode.getLocation().getLatitude(),
+                                selectedNode.getLocation().getLongitude()
+                        );
+                    }
+                } else {
+                    profServerData = profileServerConfigurations.getMainProfileServer();
+                }
+            }
+            KeyEd25519 keyEd25519 = (KeyEd25519) profileServerConfigurations.getUserKeys();
+            profileServerConfigurations.saveMainProfileServer(profServerData);
+            if (keyEd25519 == null) throw new IllegalStateException("no pubkey saved");
+            future.setProfServerData(profServerData);
+            addConnection(profileServerConfigurations, profServerData, keyEd25519, pairingListener).init(future, this);
         }
-        KeyEd25519 keyEd25519 = (KeyEd25519) profileServerConfigurations.getUserKeys();
-        if (keyEd25519==null) throw new IllegalStateException("no pubkey saved");
-        future.setProfServerData(profServerData);
-        addConnection(profileServerConfigurations,profServerData,keyEd25519,pairingListener).init(future,this);
     }
 
     public int updateProfile(Profile profile, ProfSerMsgListener msgListener) throws Exception {

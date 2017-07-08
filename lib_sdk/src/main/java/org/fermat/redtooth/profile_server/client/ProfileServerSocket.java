@@ -172,7 +172,15 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
             readThread.interrupt();
         if (!socket.isClosed())
             socket.close();
-
+        // notify upper layers
+        if (handler!=null){
+            try {
+                handler.sessionClosed(this);
+            } catch (Exception e) {
+                // swallow
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override

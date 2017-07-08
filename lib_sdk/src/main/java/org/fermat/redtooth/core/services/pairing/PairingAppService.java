@@ -135,4 +135,8 @@ public class PairingAppService extends AppService {
             });
         }
     }
+
+    public PairingListener getPairingListener() {
+        return pairingListener;
+    }
 }

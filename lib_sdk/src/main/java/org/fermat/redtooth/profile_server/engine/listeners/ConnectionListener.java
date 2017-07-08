@@ -13,4 +13,6 @@ public interface ConnectionListener {
     void onHostingPlanReceived(String host, IopProfileServer.HostingPlanContract contract);
 
     void onNonClConnectionStablished(String host);
+
+    void onConnectionLoose(String localProfilePubKey, String psHost, IopProfileServer.ServerRoleType portType, String tokenId);
 }

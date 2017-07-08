@@ -86,4 +86,6 @@ public interface ProfileServerConfigurations extends ProfSerDb{
     Profile getProfile();
 
     byte[] getUserImage();
+
+    void saveMainProfileServer(ProfServerData profServerData);
 }

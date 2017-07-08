@@ -10,7 +10,6 @@ import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 import org.fermat.redtooth.profile_server.engine.app_services.CallsListener;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.*;
-import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
 import org.fermat.redtooth.profile_server.protocol.CanStoreMap;
 import org.fermat.redtooth.profile_server.protocol.IopShared;
 import org.slf4j.Logger;
@@ -47,6 +46,7 @@ import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.CHECK_IN;
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.HOME_NODE_REQUEST;
+import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.CONNECTION_FAIL;
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.NO_SERVER;
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.START_CONVERSATION_CL;
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.WAITING_START_CL;
@@ -646,6 +646,10 @@ public class ProfSerEngine {
         return connectionListener;
     }
 
+    public boolean hasConnectionFail() {
+        return profSerConnectionState == CONNECTION_FAIL;
+    }
+
 
     /** Messages processors  */
 
@@ -714,7 +718,16 @@ public class ProfSerEngine {
 
         @Override
         public void sessionClosed(IoSession session) throws Exception {
-
+            LOG.info("sessionClosed: "+session.toString());
+            // notify upper layers
+            for (ConnectionListener listener : connectionListener) {
+                listener.onConnectionLoose(
+                        profNodeConnection.getProfile().getHexPublicKey(),
+                        profServerData.getHost(),
+                        session.getPortType(),
+                        session.getSessionTokenId()
+                );
+            }
         }
 
         @Override

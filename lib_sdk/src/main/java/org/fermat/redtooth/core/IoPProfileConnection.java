@@ -192,6 +192,14 @@ public class IoPProfileConnection implements CallsListener {
     }
 
     /**
+     * Method to check if the library fail on the connection
+     * @return
+     */
+    public boolean hasFail() {
+        return profSerEngine.hasConnectionFail();
+    }
+
+    /**
      * Add more application services to an active profile
      * @param appService
      * @param appService
@@ -509,5 +517,6 @@ public class IoPProfileConnection implements CallsListener {
         }
         return null;
     }
+
 
 }

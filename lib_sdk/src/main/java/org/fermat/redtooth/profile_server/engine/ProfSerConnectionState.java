@@ -16,7 +16,9 @@ public enum ProfSerConnectionState {
     WAITING_START_CL,
     START_CONVERSATION_CL,
     WAITING_CHECK_IN,
-    CHECK_IN
+    CHECK_IN,
+    // If the connection fail
+    CONNECTION_FAIL
 
 
 }

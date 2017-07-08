@@ -266,20 +266,20 @@ public class App extends Application implements IoPConnectContext, PairingListen
             });
             // notify
             Intent intent = new Intent(INTENT_ACTION_PROFILE_CONNECTED);
-            app.broadcastManager.sendBroadcast(intent);
+            broadcastManager.sendBroadcast(intent);
         }
 
         @Override
         public void onDisconnect(Profile profile) {
             Intent intent = new Intent(INTENT_ACTION_PROFILE_DISCONNECTED);
-            app.broadcastManager.sendBroadcast(intent);
+            broadcastManager.sendBroadcast(intent);
         }
 
         @Override
         public void onCheckInFail(Profile profile, int status, String statusDetail) {
             log.info("onCheckInFail",profile,status,statusDetail);
             Intent intent = new Intent(INTENT_ACTION_PROFILE_CHECK_IN_FAIL);
-            app.broadcastManager.sendBroadcast(intent);
+            broadcastManager.sendBroadcast(intent);
         }
     }
 

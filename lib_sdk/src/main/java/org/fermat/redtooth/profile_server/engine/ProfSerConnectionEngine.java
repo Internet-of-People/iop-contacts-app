@@ -1,10 +1,7 @@
 package org.fermat.redtooth.profile_server.engine;
 
-import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.ConnectionListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
-import org.fermat.redtooth.profile_server.model.Profile;
-import org.fermat.redtooth.profile_server.processors.MessageProcessor;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.CHECK_IN;
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.HAS_ROLE_LIST;
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.HOME_NODE_REQUEST;
+import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.CONNECTION_FAIL;
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.NO_SERVER;
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.START_CONVERSATION_CL;
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.START_CONVERSATION_NON_CL;
@@ -147,6 +145,7 @@ public class ProfSerConnectionEngine {
                 profSerEngine.startConversationCl(new StartConversationClListener());
             }
         }catch (Exception e){
+            profSerEngine.setProfSerConnectionState(CONNECTION_FAIL);
             initFuture.onMsgFail(0,400,"Cant start conversation on customer port, "+e.getMessage());
             throw e;
         }
