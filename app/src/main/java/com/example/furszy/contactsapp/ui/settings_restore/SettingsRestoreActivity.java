@@ -81,7 +81,7 @@ public class SettingsRestoreActivity extends BaseActivity {
             @Override
             public View getDropDownView(int position, View convertView, ViewGroup parent) {
                 CheckedTextView view = (CheckedTextView) super.getDropDownView(position, convertView, parent);
-                view.setTextColor(Color.WHITE);
+                view.setTextColor(Color.BLACK);
                 return view;
             }
         };

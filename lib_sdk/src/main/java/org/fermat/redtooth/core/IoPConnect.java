@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -157,6 +158,14 @@ public class IoPConnect implements ConnectionListener {
         // save profile
         profileServerConfigurations.saveProfile(profile);
         // todo: return profile connection pk
+        return profile;
+    }
+
+    public Profile createProfile(Profile profile){
+        ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
+        profileServerConfigurations.saveProfile(profile);
+        profileServerConfigurations.saveUserKeys(profile.getKey());
+        profileServerConfigurations.setIsCreated(true);
         return profile;
     }
 
@@ -618,6 +627,7 @@ public class IoPConnect implements ConnectionListener {
                 .setType(profile.getType())
                 .setHomeHost(profile.getHomeHost())
                 .setPubKey(ByteString.copyFrom(profile.getPublicKey()));
+
         if (profile.getExtraData()!=null){
             mainInfo.setExtraData(profile.getExtraData());
         }
@@ -716,6 +726,7 @@ public class IoPConnect implements ConnectionListener {
 
             ProfileRestored profileRestored = new ProfileRestored(profile,list);
             logger.info("Profile restored: "+profileRestored.toString());
+
             return profileRestored;
         } catch (IOException e) {
             e.printStackTrace();
@@ -750,6 +761,9 @@ public class IoPConnect implements ConnectionListener {
         }
     }
 
+    /**
+     * Stop every single profile connection.
+     */
     public void stop() {
         for (Map.Entry<String, IoPProfileConnection> stringRedtoothProfileConnectionEntry : managers.entrySet()) {
             try {
@@ -758,6 +772,15 @@ public class IoPConnect implements ConnectionListener {
                 e.printStackTrace();
             }
         }
+        managers.clear();
+        for (Map.Entry<PsKey, IoPProfileConnection> psKeyIoPProfileConnectionEntry : remoteManagers.entrySet()) {
+            try {
+                psKeyIoPProfileConnectionEntry.getValue().stop();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        remoteManagers.clear();
     }
 
 

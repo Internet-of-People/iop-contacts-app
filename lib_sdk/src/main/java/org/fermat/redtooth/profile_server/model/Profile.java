@@ -145,6 +145,9 @@ public class Profile implements Signer,ProfileBase {
     }
 
     public void addApplicationService(AppService service){
+        if (applicationServices==null){
+            applicationServices = new HashMap<>();
+        }
         applicationServices.put(service.getName(),service);
     }
 

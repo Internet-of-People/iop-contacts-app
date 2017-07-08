@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -122,6 +123,14 @@ public class IoPProfileConnection implements CallsListener {
     }
 
     public void stop() {
+        for (Map.Entry<String, CallProfileAppService> stringCallProfileAppServiceEntry : openCall.entrySet()) {
+            try{
+                stringCallProfileAppServiceEntry.getValue().dispose();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        openCall.clear();
         profSerEngine.stop();
     }
 

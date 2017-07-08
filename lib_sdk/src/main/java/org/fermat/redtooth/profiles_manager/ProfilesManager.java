@@ -36,4 +36,6 @@ public interface ProfilesManager {
     boolean updatePaired(String localProfilePubKey, String remotePubKey, ProfileInformationImp.PairStatus value);
 
     boolean updateRemoteServices(String localProfilePubKey, String remotePubKey,Set<String> services);
+
+    void saveAllProfiles(String localProfilePubKey, List<ProfileInformation> profileInformationList);
 }

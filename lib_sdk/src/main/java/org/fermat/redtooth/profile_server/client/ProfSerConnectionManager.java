@@ -240,7 +240,18 @@ public class ProfSerConnectionManager {
 
     public void shutdown() throws IOException {
         for (ProfileServerSocket profileServerSocket : this.serverSockets.values()) {
-            profileServerSocket.closeNow();
+            try {
+                profileServerSocket.closeNow();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        for (Map.Entry<String, ProfileServerSocket> stringProfileServerSocketEntry : appServicesSockets.entrySet()) {
+            try {
+                stringProfileServerSocketEntry.getValue().closeNow();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
