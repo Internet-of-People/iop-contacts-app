@@ -130,7 +130,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
             executor = Executors.newFixedThreadPool(3);
             pairingRequestDb = new SqlitePairingRequestDb(this);
             profilesDb = new SqliteProfilesDb(this);
-            ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),profilesDb,pairingRequestDb,this);//configurationsPreferences,new CryptoWrapperAndroid(),new SslContextFactory(this));
+            ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),profilesDb,pairingRequestDb,this);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -153,7 +153,23 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     public void restoreFrom(File file, String password) {
         logger.info("Restoring profile");
         if (file.exists()){
-            ioPConnect.restoreFromBackup(file,password,platformSerializer);
+            try {
+                IoPConnect.ProfileRestored profileRestored = ioPConnect.restoreFromBackup(file, password, platformSerializer);
+                this.profile = profileRestored.getProfile();
+                // clean everything
+                ioPConnect.stop();
+                this.profile = profileRestored.getProfile();
+                pairingRequestDb.truncate();
+                profilesDb.truncate();
+
+                // re start
+                profilesDb.saveAllProfiles(profile.getHexPublicKey(),profileRestored.getProfileInformationList());
+                registerProfile(profile);
+                connect(profile.getHexPublicKey());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }else
             throw new IllegalArgumentException("File not exist, "+file.getAbsolutePath());
     }
@@ -186,6 +202,12 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
             }
         });
         ioPConnect.connectProfile(pubKey,pairingListener,null,msgListenerFuture);
+    }
+
+    public String registerProfile(Profile profile){
+        this.profile = ioPConnect.createProfile(profile);
+        configurationsPreferences.setIsCreated(true);
+        return profile.getHexPublicKey();
     }
 
     @Override
@@ -424,13 +446,14 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     public Profile getProfile() {
         return profile;
     }
-    //    public ProfileInformationImp(byte[] version, byte[] pubKey, String name, String type, byte[] imgHash, byte[] thumbnailImg, int latitude, int longitude, String extraData, Set<String> services, byte[] profileServerId, String homeHost) {
 
     @Override
     public ProfileInformation getMyProfile() {
         Set<String> services = new HashSet<>();
-        for (AppService appService : profile.getApplicationServices().values()) {
-            services.add(appService.getName());
+        if (profile.getApplicationServices()!=null) {
+            for (AppService appService : profile.getApplicationServices().values()) {
+                services.add(appService.getName());
+            }
         }
         return new ProfileInformationImp(
                 profile.getVersion(),

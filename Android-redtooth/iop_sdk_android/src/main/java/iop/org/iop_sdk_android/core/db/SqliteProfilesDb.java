@@ -267,6 +267,14 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
                 new String[]{remotePubKey,localProfilePubKey})==1;
     }
 
+    @Override
+    public void saveAllProfiles(String localProfilePubKey, List<ProfileInformation> profileInformationList) {
+        //todo: improve this shit.. lazy lazy save.
+        for (ProfileInformation profileInformation : profileInformationList) {
+            saveProfile(localProfilePubKey,profileInformation);
+        }
+    }
+
 
     @Override
     public long saveProfile(String localProfilePubKeyOwnerOfContact, ProfileInformation profile) {
