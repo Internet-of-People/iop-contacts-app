@@ -3,6 +3,7 @@ package iop.org.iop_sdk_android.core.profile_server;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -80,6 +81,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     private LocalBroadcastManager localBroadcastManager;
 
+    private Handler handler = new Handler();
     private ExecutorService executor;
     /** Context */
     private IoPConnectContext application;
@@ -186,7 +188,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
-    public void connect(String pubKey) throws Exception {
+    public void connect(final String pubKey) throws Exception {
         final ConnectionFuture msgListenerFuture = new ConnectionFuture();
         msgListenerFuture.setListener(new BaseMsgFuture.Listener<Boolean>() {
             @Override
@@ -199,7 +201,23 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
             @Override
             public void onFail(int messageId, int status, String statusDetail) {
                 onCheckInFail(profile,status,statusDetail);
+                if (status==400){
+                    logger.info("Checking fail, detail "+statusDetail+", trying to reconnect after 5 seconds");
+                    handler.postDelayed(reconnectRunnable,TimeUnit.SECONDS.toMillis(5));
+                }
+
             }
+            Runnable reconnectRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        connect(pubKey);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+
         });
         ioPConnect.connectProfile(pubKey,pairingListener,null,msgListenerFuture);
     }

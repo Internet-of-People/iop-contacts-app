@@ -218,6 +218,15 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
         return new KeyEd25519().generateKeys();
     }
 
+    @Override
+    public void saveMainProfileServer(ProfServerData profServerData) {
+        setHost(profServerData.getHost());
+        setMainPfClPort(profServerData.getpPort());
+        setMainPsNonClPort(profServerData.getNonCustPort());
+        setMainPfClPort(profServerData.getCustPort());
+        setMainAppServicePort(profServerData.getAppServicePort());
+    }
+
     /**
      *
      * @return
@@ -333,5 +342,7 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
         }
         return null;
     }
+
+
 }
 
