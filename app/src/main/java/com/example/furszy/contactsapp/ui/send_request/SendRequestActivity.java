@@ -69,43 +69,48 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
             String uri = edit_uri.getText().toString();
             if (uri.length()<1)return;
             final ProfileUtils.UriProfile profile = ProfileUtils.fromUri(uri);
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        MsgListenerFuture<ProfileInformation> future = new MsgListenerFuture<>();
-                        future.setListener(new BaseMsgFuture.Listener<ProfileInformation>() {
-                            @Override
-                            public void onAction(int messageId, ProfileInformation object) {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Log.i(TAG, "pairing request sent");
-                                        Snackbar.make(root,"Pairing request sent!",Snackbar.LENGTH_LONG).show();
-                                        enableSendBtn();
-                                    }
-                                });
-                            }
+            if (profile.getPubKey().equals(anRedtooth.getMyProfile().getHexPublicKey())){
+                Snackbar.make(v,"You cannot add yourself as contact",Snackbar.LENGTH_LONG).show();
+            }else {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            MsgListenerFuture<ProfileInformation> future = new MsgListenerFuture<>();
+                            future.setListener(new BaseMsgFuture.Listener<ProfileInformation>() {
+                                @Override
+                                public void onAction(int messageId, ProfileInformation object) {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Log.i(TAG, "pairing request sent");
+                                            Toast.makeText(getApplicationContext(), "Pairing request sent!", Toast.LENGTH_LONG).show();
+                                            enableSendBtn();
+                                        }
+                                    });
+                                }
 
-                            @Override
-                            public void onFail(int messageId, int status, final String statusDetail) {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Log.i(TAG, "pairing request fail");
-                                        Snackbar.make(root,"Pairing request fail\n"+statusDetail,Snackbar.LENGTH_LONG).show();
-                                        enableSendBtn();
-                                    }
-                                });
-                            }
-                        });
-                        anRedtooth.requestPairingProfile(CryptoBytes.fromHexToBytes(profile.getPubKey()), profile.getName() ,profile.getProfSerHost(), future);
+                                @Override
+                                public void onFail(int messageId, int status, final String statusDetail) {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Log.i(TAG, "pairing request fail");
+                                            Toast.makeText(getApplicationContext(), "Pairing request fail\n" + statusDetail, Toast.LENGTH_LONG).show();
+                                            enableSendBtn();
+                                        }
+                                    });
+                                }
+                            });
+                            anRedtooth.requestPairingProfile(CryptoBytes.fromHexToBytes(profile.getPubKey()), profile.getName(), profile.getProfSerHost(), future);
 
-                    }catch (Exception e){
-                        e.printStackTrace();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Toast.makeText(getApplicationContext(), "Pairing request fail\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
                     }
-                }
-            }).start();
+                }).start();
+            }
         }
     }
 
