@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -41,8 +42,8 @@ public class ContactsFragment extends RecyclerFragment<ProfileInformation> {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
-        setEmptyText("No available contacts");
-        setEmptyTextColor(Color.GRAY);
+        setEmptyText(getResources().getString(R.string.empty_contact));
+        setEmptyTextColor(Color.parseColor("#4d4d4d"));
         setEmptyView(R.drawable.img_contact_empty);
         return view;
     }

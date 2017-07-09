@@ -47,6 +47,8 @@
     <string name="copyright">Made by Furszy</string>
     <string name="version">Version</string>
     <string name="send">Send</string>
+    <string name="empty_contact">You do not have any contacts yet.</string>
+    <string name="empty_request">You have no pending contact requests.</string>
     <string name="incoming_message">Wants to chat \n with you</string>
     <string name="lorem_impsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
 </resources>
