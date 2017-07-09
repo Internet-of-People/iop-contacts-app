@@ -289,19 +289,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
-    public void requestPairingProfile(byte[] remotePubKey, byte[] profileServerId, ProfSerMsgListener<ProfileInformation> listener) throws Exception {
-        PairingRequest pairingRequest = PairingRequest.buildPairingRequest(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey),null,profile.getName(),profile.getHomeHost(), ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE);
-        ioPConnect.requestPairingProfile(pairingRequest,listener);
-    }
-
-    @Override
-    public void requestPairingProfile(byte[] remotePubKey, String psHost, ProfSerMsgListener<ProfileInformation> listener) throws Exception {
-        PairingRequest pairingRequest = PairingRequest.buildPairingRequestFromHost(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey),psHost,profile.getName(),profile.getHomeHost(), ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE);
-        ioPConnect.requestPairingProfile(pairingRequest,listener);
-    }
-
-    @Override
-    public void requestPairingProfile(byte[] remotePubKey, final String name, final String psHost, final ProfSerMsgListener<ProfileInformation> listener) throws Exception {
+    public void requestPairingProfile(byte[] remotePubKey, final String remoteName, final String psHost, final ProfSerMsgListener<ProfileInformation> listener) throws Exception {
         // check if the profile already exist
         ProfileInformation profileInformationDb = null;
         if((profileInformationDb = profilesDb.getProfile(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey)))!=null){
@@ -314,6 +302,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                 CryptoBytes.toHexString(remotePubKey),
                 psHost,profile.getName(),
                 profile.getHomeHost(),
+                remoteName,
                 ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE
         );
         ioPConnect.requestPairingProfile(pairingRequest, new ProfSerMsgListener<ProfileInformation>() {

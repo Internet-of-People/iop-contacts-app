@@ -23,7 +23,7 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
 
     private static final Logger log = LoggerFactory.getLogger(SqlitePairingRequestDb.class);
 
-    public static final int DATABASE_VERSION = 3;
+    public static final int DATABASE_VERSION = 4;
 
     public static final String DATABASE_NAME = "requests";
     public static final String PAIRING_TABLE_NAME = "pairing_request";
@@ -37,6 +37,7 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
     public static final String PAIRING_COLUMN_STATUS = "status";
     public static final String PAIRING_COLUMN_SENDER_PS_HOST = "sender_ps_host";
     public static final String PAIRING_COLUMN_PAIR_STATUS = "request_pair_status";
+    public static final String PAIRING_COLUMN_REMOTE_NAME = "remoteName";
 
 
     public static final int PAIRING_COLUMN_POS_ID = 0;
@@ -49,6 +50,7 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
     public static final int PAIRING_COLUMN_POS_STATUS = 7;
     public static final int PAIRING_COLUMN_POS_SENDER_PS_HOST = 8;
     public static final int PAIRING_COLUMN_POS_PAIR_STATUS = 9;
+    public static final int PAIRING_COLUMN_POS_REMOTE_NAME = 10;
 
     public SqlitePairingRequestDb(Context context) {
         super(context, DATABASE_NAME , null, DATABASE_VERSION);
@@ -69,7 +71,8 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
                         PAIRING_COLUMN_TIMESTAMP + " LONG , "+
                         PAIRING_COLUMN_STATUS + " TEXT ,"+
                         PAIRING_COLUMN_SENDER_PS_HOST + " TEXT ,"+
-                        PAIRING_COLUMN_PAIR_STATUS + " TEXT "
+                        PAIRING_COLUMN_PAIR_STATUS + " TEXT ,"+
+                        PAIRING_COLUMN_REMOTE_NAME + " TEXT "
                         +")"
         );
     }
@@ -100,6 +103,7 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
             contentValues.put(PAIRING_COLUMN_REMOTE_SERVER_HOST_ID,obj.getRemoteHost());
         contentValues.put(PAIRING_COLUMN_SENDER_PS_HOST,obj.getSenderPsHost());
         contentValues.put(PAIRING_COLUMN_PAIR_STATUS,obj.getPairStatus().name());
+        contentValues.put(PAIRING_COLUMN_REMOTE_NAME,obj.getRemoteName());
         return contentValues;
     }
 
@@ -114,8 +118,9 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
         PairingMsgTypes status = PairingMsgTypes.getByName(cursor.getString(PAIRING_COLUMN_POS_STATUS));
         String remotePsHost = cursor.getString(PAIRING_COLUMN_POS_REMOTE_SERVER_HOST_ID);
         String senderPsHost = cursor.getString(PAIRING_COLUMN_POS_SENDER_PS_HOST);
+        String remoteName = cursor.getString(PAIRING_COLUMN_POS_REMOTE_NAME);
         ProfileInformationImp.PairStatus pairStatus = ProfileInformationImp.PairStatus.valueOf(cursor.getString(PAIRING_COLUMN_POS_PAIR_STATUS));
-        return new PairingRequest(id,senderKey,remoteKey,remoteServerId,remotePsHost,senderName,timestamp,status,senderPsHost,pairStatus);
+        return new PairingRequest(id,senderKey,remoteKey,remoteServerId,remotePsHost,senderName,timestamp,status,senderPsHost,remoteName,pairStatus);
     }
 
     @Override
