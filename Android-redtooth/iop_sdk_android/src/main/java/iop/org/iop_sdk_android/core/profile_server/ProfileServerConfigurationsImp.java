@@ -51,6 +51,7 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
 
     public static final String PREFS_USER_IS_REGISTERED_IN_SERVER = "isRegistered";
     public static final String PREFS_USER_IS_CREATED = "isCreated";
+    public static final String PREFS_SCHEDULE_TIME = "schedule_service_time";
 
     public static final String PREFS_HOST_PLAN_END_TIME = "endPlanTime";
 
@@ -225,6 +226,16 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
         setMainPsNonClPort(profServerData.getNonCustPort());
         setMainPfClPort(profServerData.getCustPort());
         setMainAppServicePort(profServerData.getAppServicePort());
+    }
+
+    @Override
+    public long getScheduleServiceTime() {
+        return getLong(PREFS_SCHEDULE_TIME,0);
+    }
+
+    @Override
+    public void saveScheduleServiceTime(long scheduleTime) {
+        save(PREFS_SCHEDULE_TIME,scheduleTime);
     }
 
     /**
