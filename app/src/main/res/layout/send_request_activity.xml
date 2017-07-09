@@ -3,14 +3,14 @@
     android:orientation="vertical"
     android:gravity="center_horizontal"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:paddingTop="40dp">
 
     <TextView
         android:id="@+id/sendMessage"
         android:text="@string/request_message"
         android:textColor="@color/mainText"
         android:textSize="18sp"
-        android:paddingTop="40dp"
         style="@style/MessageText"/>
 
 
@@ -36,7 +36,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/img_qr"
-        android:src="@drawable/ic_qr_code_gray" />
+        android:src="@drawable/ic_qr_code_blue" />
 
 
     <LinearLayout
