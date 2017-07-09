@@ -46,8 +46,8 @@ public class RequestsFragment extends RecyclerFragment<PairingRequest> {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View root = super.onCreateView(inflater,container,savedInstanceState);
-        setEmptyText("No connection request");
-        setEmptyTextColor(Color.GRAY);
+        setEmptyText(getResources().getString(R.string.empty_request));
+        setEmptyTextColor(Color.parseColor("#4d4d4d"));
         setEmptyView(R.drawable.img_request_empty);
         return root;
     }
