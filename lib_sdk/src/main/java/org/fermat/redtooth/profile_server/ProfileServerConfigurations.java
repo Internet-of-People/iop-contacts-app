@@ -88,4 +88,11 @@ public interface ProfileServerConfigurations extends ProfSerDb{
     byte[] getUserImage();
 
     void saveMainProfileServer(ProfServerData profServerData);
+
+
+    // service stuff
+
+    long getScheduleServiceTime();
+
+    void saveScheduleServiceTime(long scheduleTime);
 }

@@ -647,22 +647,24 @@ public class IoPConnect implements ConnectionListener {
         return connection;
     }
 
-    /**
-     * Load a profile server configuration from one profile
-     * @param profPk
-     * @return
-     */
-    private ProfileServerConfigurations loadProfileServerConf(String profPk){
-        return null;
-    }
-
-
     public List<ProfileInformation> getKnownProfiles(String pubKey){
         return profilesManager.listConnectedProfiles(pubKey);
     }
 
     public ProfileInformation getKnownProfile(String contactOwnerPubKey,String pubKey) {
         return profilesManager.getProfile(contactOwnerPubKey,pubKey);
+    }
+
+    /**
+     * If the profile is connected to his home node
+     * @return
+     */
+    public boolean isProfileConnectedOrConnecting(String hexProfileKey){
+        IoPProfileConnection connection = managers.get(hexProfileKey);
+        if (connection!=null){
+            return connection.isReady() || !connection.hasFail() || connection.isConnecting();
+        }else
+            return false;
     }
 
     /**
