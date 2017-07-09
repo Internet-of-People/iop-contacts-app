@@ -69,6 +69,11 @@ public abstract class AbstractSqliteDb<T> extends SQLiteOpenHelper {
         return null;
     }
 
+    public boolean contains(String whereColumn,Object whereObjValue) {
+        Cursor cursor = getData(whereColumn,whereObjValue);
+        return cursor.moveToFirst();
+    }
+
     public void updateFieldByKey(String whereColumn,String whereValue, String updateColumn, boolean updateValue) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();

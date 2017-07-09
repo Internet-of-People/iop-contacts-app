@@ -292,10 +292,16 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     public void requestPairingProfile(byte[] remotePubKey, final String remoteName, final String psHost, final ProfSerMsgListener<ProfileInformation> listener) throws Exception {
         // check if the profile already exist
         ProfileInformation profileInformationDb = null;
-        if((profileInformationDb = profilesDb.getProfile(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey)))!=null){
+        String remotePubKeyStr = CryptoBytes.toHexString(remotePubKey);
+        if((profileInformationDb = profilesDb.getProfile(profile.getHexPublicKey(),remotePubKeyStr))!=null){
             if(profileInformationDb.getPairStatus() != null)
                 throw new IllegalArgumentException("Profile already known");
         }
+        // check if the pairing request exist
+        if (pairingRequestDb.containsPairingRequest(profile.getHexPublicKey(),remotePubKeyStr)){
+            throw new IllegalStateException("Pairing request already exist");
+        }
+
         // now send the request
         PairingRequest pairingRequest = PairingRequest.buildPairingRequestFromHost(
                 profile.getHexPublicKey(),
@@ -534,7 +540,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG,"onStartCommand");
-        return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
     }
 
     @Override
