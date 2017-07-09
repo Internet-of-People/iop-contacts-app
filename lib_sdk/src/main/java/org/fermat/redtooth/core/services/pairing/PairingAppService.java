@@ -102,6 +102,7 @@ public class PairingAppService extends AppService {
                                         profileServiceOwner.getNetworkIdHex(),
                                         pairingMsg.getName(),
                                         pairingMsg.getSenderHost(),
+                                        profileServiceOwner.getName(),
                                         ProfileInformationImp.PairStatus.WAITING_FOR_MY_RESPONSE
                                 );
                                 pairingRequest.setRemotePsHome(profileServiceOwner.getHomeHost());

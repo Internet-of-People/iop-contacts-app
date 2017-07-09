@@ -47,10 +47,11 @@ public class RequestAdapter extends BaseAdapter<PairingRequest, RequestHolder> {
 
     @Override
     protected void bindHolder(final RequestHolder holder, final PairingRequest data, int position) {
-        holder.txt_name.setText(data.getSenderName());
         if (data.getPairStatus() == ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE){
             holder.btn_confirm.setVisibility(View.GONE);
+            holder.txt_name.setText(data.getRemoteName());
         }else {
+            holder.txt_name.setText(data.getSenderName());
             holder.btn_confirm.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

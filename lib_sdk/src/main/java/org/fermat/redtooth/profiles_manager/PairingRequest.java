@@ -16,20 +16,21 @@ public class PairingRequest {
     private String remotePubKey;
     private String remoteServerId;
     private String remotePsHost;
+    private String remoteName;
     private long timestamp;
     private PairingMsgTypes status;
     // Extra info
     private ProfileInformationImp.PairStatus pairStatus;
 
-    public static PairingRequest buildPairingRequest(String senderPubKey, String remotePubKey, String remoteServerId, String senderName, String senderPsHost, ProfileInformationImp.PairStatus pairStatus){
-        return new PairingRequest(senderPubKey,remotePubKey,remoteServerId,null,senderName,System.currentTimeMillis(),PairingMsgTypes.PAIR_REQUEST,senderPsHost,pairStatus);
+    public static PairingRequest buildPairingRequest(String senderPubKey, String remotePubKey, String remoteServerId, String senderName, String senderPsHost, String remoteName ,ProfileInformationImp.PairStatus pairStatus){
+        return new PairingRequest(senderPubKey,remotePubKey,remoteServerId,null,senderName,System.currentTimeMillis(),PairingMsgTypes.PAIR_REQUEST,senderPsHost, remoteName ,pairStatus);
     }
 
-    public static PairingRequest buildPairingRequestFromHost(String senderPubKey, String remotePubKey, String remotePsHost, String senderName, String senderPsHost,ProfileInformationImp.PairStatus pairStatus){
-        return new PairingRequest(senderPubKey,remotePubKey,null,remotePsHost,senderName,System.currentTimeMillis(),PairingMsgTypes.PAIR_REQUEST,senderPsHost,pairStatus);
+    public static PairingRequest buildPairingRequestFromHost(String senderPubKey, String remotePubKey, String remotePsHost, String senderName, String senderPsHost,String remoteName,ProfileInformationImp.PairStatus pairStatus){
+        return new PairingRequest(senderPubKey,remotePubKey,null,remotePsHost,senderName,System.currentTimeMillis(),PairingMsgTypes.PAIR_REQUEST,senderPsHost,remoteName,pairStatus);
     }
 
-    public PairingRequest(int id, String senderPubKey, String remotePubKey, String remoteServerId, String remotePsHost, String senderName, long timestamp, PairingMsgTypes status, String senderPsHost, ProfileInformationImp.PairStatus pairStatus) {
+    public PairingRequest(int id, String senderPubKey, String remotePubKey, String remoteServerId, String remotePsHost, String senderName, long timestamp, PairingMsgTypes status, String senderPsHost,String remoteName, ProfileInformationImp.PairStatus pairStatus) {
         this.id = id;
         this.senderPubKey = senderPubKey;
         this.remotePubKey = remotePubKey;
@@ -40,9 +41,10 @@ public class PairingRequest {
         this.remotePsHost = remotePsHost;
         this.senderPsHost = senderPsHost;
         this.pairStatus = pairStatus;
+        this.remoteName = remoteName;
     }
 
-    private PairingRequest(String senderPubKey, String remotePubKey, String remoteServerId, String remotePsHost, String senderName, long timestamp, PairingMsgTypes status, String senderPsHost, ProfileInformationImp.PairStatus pairStatus) {
+    private PairingRequest(String senderPubKey, String remotePubKey, String remoteServerId, String remotePsHost, String senderName, long timestamp, PairingMsgTypes status, String senderPsHost,String remoteName ,ProfileInformationImp.PairStatus pairStatus) {
         this.senderPubKey = senderPubKey;
         this.remotePubKey = remotePubKey;
         this.remoteServerId = remoteServerId;
@@ -52,6 +54,7 @@ public class PairingRequest {
         this.remotePsHost = remotePsHost;
         this.senderPsHost = senderPsHost;
         this.pairStatus = pairStatus;
+        this.remoteName = remoteName;
     }
 
     public String getSenderPubKey() {
@@ -96,6 +99,10 @@ public class PairingRequest {
 
     public String getRemotePsHost() {
         return remotePsHost;
+    }
+
+    public String getRemoteName() {
+        return remoteName;
     }
 
     public void setRemotePsHome(String remotePsHome) {
