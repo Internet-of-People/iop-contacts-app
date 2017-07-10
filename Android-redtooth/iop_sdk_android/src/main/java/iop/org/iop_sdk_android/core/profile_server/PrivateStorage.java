@@ -25,8 +25,8 @@ public class PrivateStorage {
     }
 
     public void getFile(String name,byte[] buff) {
-        File file = context.getDir(name,MODE_PRIVATE);
-        File fileTemp = new File(file.getAbsolutePath()+name);
+        File file = context.getDir("priv",MODE_PRIVATE);
+        File fileTemp = new File(file,name);
         FileInputStream fileInputStream = null;
         try {
             fileInputStream = new FileInputStream(fileTemp);
@@ -52,14 +52,18 @@ public class PrivateStorage {
      * @return
      */
     public File getFile(String name) {
-        File file = new File(context.getDir("priv",MODE_PRIVATE).getAbsolutePath()+name);
-        return file;
+        return new File(context.getDir("priv",MODE_PRIVATE),name);
     }
 
 
-    public void saveFile(String name,byte[] buf){
+    public void saveFile(String name,byte[] buf) throws IOException {
         File file = context.getDir("priv",MODE_PRIVATE);
         File saveFile = new File(file,name);
+        saveFile.mkdirs();
+        if (saveFile.exists()){
+            saveFile.delete();
+        }
+        saveFile.createNewFile();
         FileOutputStream fileOutputStream = null;
         try {
             fileOutputStream = new FileOutputStream(saveFile);

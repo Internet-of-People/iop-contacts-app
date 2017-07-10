@@ -17,6 +17,7 @@ import android.util.Log;
 import org.fermat.redtooth.core.IoPConnect;
 import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.global.PlatformSerializer;
+import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.client.AppServiceCallNotAvailableException;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
@@ -173,7 +174,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
             configurationsPreferences = new ProfileServerConfigurationsImp(this,getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));
             KeyEd25519 keyEd25519 = (KeyEd25519) configurationsPreferences.getUserKeys();
             if (keyEd25519!=null)
-                profile = new Profile(configurationsPreferences.getProfileVersion(),configurationsPreferences.getUsername(),configurationsPreferences.getProfileType(),(KeyEd25519) configurationsPreferences.getUserKeys());
+                profile = configurationsPreferences.getProfile();
             pairingRequestDb = new SqlitePairingRequestDb(this);
             profilesDb = new SqliteProfilesDb(this);
             ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),profilesDb,pairingRequestDb,this);
@@ -328,31 +329,23 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         return registerProfile(name,"IoP-contacts",img,0,0,null);
     }
 
-    @Override
-    public int updateProfile(String name, ProfSerMsgListener msgListener) throws Exception {
-        return updateProfile(profile.getHexPublicKey(),name,null,0,0,null,msgListener);
-    }
 
     @Override
-    public int updateProfile(String name,byte[] img,ProfSerMsgListener msgListener) throws Exception {
+    public int updateProfile(String name,byte[] img,ProfSerMsgListener<Boolean> msgListener) throws Exception {
         return updateProfile(profile.getHexPublicKey(),name,img,0,0,null,msgListener);
     }
 
     @Override
-    public int updateProfile(String pubKey,String name, byte[] img, String extraData, ProfSerMsgListener msgListener) throws Exception {
+    public int updateProfile(String pubKey,String name, byte[] img, String extraData, ProfSerMsgListener<Boolean> msgListener) throws Exception {
         return updateProfile(pubKey,name,img,0,0,extraData,msgListener);
     }
 
-    @Override
-    public int updateProfile(String pubKey ,String name, byte[] img, int latitude, int longitude, String extraData, ProfSerMsgListener msgListener) throws Exception {
-//        Log.d(TAG,"updateProfile, state: "+state);
+    public int updateProfile(String pubKey , String name, byte[] img, int latitude, int longitude, String extraData, final ProfSerMsgListener<Boolean> msgListener) throws Exception {
         try{
-            byte[] version = new byte[]{0,0, (byte) (profile.getVersion()[2]+1)};
+            Version version = profile.getVersion();
+            //version.addMinor();
             Profile profile = new Profile(version,name,img,latitude,longitude,extraData);
             profile.setKey((KeyEd25519) this.profile.getKey());
-            if (version==null){
-                profile.setVersion(this.profile.getVersion());
-            }
             configurationsPreferences.saveProfile(profile);
             // broadcast profile update
             broadcastUpdateProfile();
@@ -364,7 +357,27 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                     profile.setImg(ImageUtils.compress(profile.getImg(),10));
                 }
             }
-            return ioPConnect.updateProfile(profile,msgListener);
+            return ioPConnect.updateProfile(profile, new ProfSerMsgListener<Boolean>() {
+                @Override
+                public void onMessageReceive(int messageId, Boolean message) {
+                    msgListener.onMessageReceive(messageId,message);
+                }
+
+                @Override
+                public void onMsgFail(int messageId, int statusValue, String details) {
+                    if (details.equals("profile.version")){
+                        // add version correction
+                        msgListener.onMsgFail(messageId,statusValue,details);
+                    }else {
+                        msgListener.onMsgFail(messageId, statusValue, details);
+                    }
+                }
+
+                @Override
+                public String getMessageName() {
+                    return "updateProfile";
+                }
+            });
         }catch (Exception e){
             e.printStackTrace();
             throw e;

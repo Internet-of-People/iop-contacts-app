@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import org.apache.commons.io.IOUtils;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.global.HardCodedConstans;
+import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.model.ProfServerData;
 import org.fermat.redtooth.profile_server.model.Profile;
@@ -55,8 +56,6 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
     public static final String PREFS_HOST_PLAN_END_TIME = "endPlanTime";
 
     public static final String PREF_PROTOCOL_VERSION = "version";
-    // static version for now
-    public static final byte[] version = HardCodedConstans.PROTOCOL_VERSION;
     
     private PrivateStorage privateStorage;
 
@@ -103,14 +102,11 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
         return CryptoBytes.fromHexToBytes(prefs.getString(PREFS_USER_PK,null));
     }
 
-
-    public byte[] getProfileVersion() {
-        try {
-            byte[] bytes = CryptoBytes.fromHexToBytes(prefs.getString(PREFS_USER_VERSION, null));
-            return bytes;
-        }catch (Exception e){
-            return version;
-        }
+    public Version getProfileVersion() {
+        String versionStrHex = prefs.getString(PREFS_USER_VERSION, null);
+        if (versionStrHex==null)return new Version((byte) 1,(byte)0,(byte)0);
+        byte[] bytes = CryptoBytes.fromHexToBytes(versionStrHex);
+        return Version.fromByteArray(bytes);
     }
 
     public boolean isRegisteredInServer() {
@@ -121,9 +117,6 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
         return prefs.getBoolean(PREFS_USER_IS_CREATED,false);
     }
 
-    public byte[] getProtocolVersion(){
-        return version;
-    }
 
     public void setHost(String host) {
         final SharedPreferences.Editor edit = prefs.edit();
@@ -183,9 +176,9 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
         edit.apply();
     }
 
-    public void setProfileVersion(byte[] version){
+    public void setProfileVersion(Version version){
         final SharedPreferences.Editor edit = prefs.edit();
-        edit.putString(PREFS_USER_VERSION, CryptoBytes.toHexString(version));
+        edit.putString(PREFS_USER_VERSION, CryptoBytes.toHexString(version.toByteArray()));
         edit.apply();
     }
 
@@ -202,11 +195,6 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
         edit.apply();
     }
 
-
-    @Override
-    public File getUserImageFile() {
-        return privateStorage.getFile(PREFS_USER_IMAGE);
-    }
 
     @Override
     public org.fermat.redtooth.profile_server.model.KeyEd25519 createUserKeys() {
@@ -268,6 +256,9 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
 
     @Override
     public void saveProfile(Profile profile) {
+        if (profile.getVersion()!=null){
+            setProfileVersion(profile.getVersion());
+        }
         if (profile.getType()!=null)
             setProfileType(profile.getType());
         if (profile.getExtraData()!=null)
@@ -281,7 +272,13 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
             save(PREFS_HOST,profile.getHomeHost());
         }
         if (profile.getImg()!=null){
-            privateStorage.saveFile(PREFS_USER_IMAGE,profile.getImg());
+            try {
+                privateStorage.saveFile(PREFS_USER_IMAGE,profile.getImg());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
@@ -299,7 +296,7 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
     @Override
     public Profile getProfile() {
         Profile profile = new Profile(
-                getProtocolVersion(),
+                getProfileVersion(),
                 getUsername(),
                 getProfileType(),
                 getUserKeys()
@@ -373,6 +370,10 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
         return null;
     }
 
+    @Override
+    public File getUserImageFile() {
+        return privateStorage.getFile(PREFS_USER_IMAGE);
+    }
 
     /**
      *
