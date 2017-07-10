@@ -223,20 +223,21 @@ public class App extends Application implements IoPConnectContext, PairingListen
                     // todo: negro acá abrí la vista de incoming para aceptar el request..
                     Intent intent = new Intent(App.this, WaitingChatActivity.class);
                     intent.putExtra(WaitingChatActivity.REMOTE_PROFILE_PUB_KEY,remoteProfilePubKey);
+                    intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
                     if (isLocalCreator){
                         intent.putExtra(WaitingChatActivity.IS_CALLING,false);
+                        startActivity(intent);
+                    }else {
+                        PendingIntent pendingIntent = PendingIntent.getActivity(App.this, 0, intent, 0);
+                        Notification not = new Notification.Builder(App.this)
+                                .setContentTitle("Hey, chat notification received")
+                                .setContentText(remoteProflie.getName() + " want to chat with you!")
+                                .setSmallIcon(R.drawable.ic_chat_disable)
+                                .setContentIntent(pendingIntent)
+                                .setAutoCancel(true)
+                                .build();
+                        notificationManager.notify(43, not);
                     }
-                    intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                    /*PendingIntent pendingIntent = PendingIntent.getActivity(this,0,new Intent(this, HomeActivity.class),0);
-                    Notification not = new Notification.Builder(App.this)
-                            .setContentTitle("Hey, chat notification received")
-                            .setContentText(remoteProflie.getName()+" want to chat with you!")
-                            .setSmallIcon(R.drawable.ic_chat_disable)
-                      //      .setContentIntent(pendingIntent)
-                            .setAutoCancel(true)
-                            .build();
-                    notificationManager.notify(43,not);*/
                 }
 
                 @Override
