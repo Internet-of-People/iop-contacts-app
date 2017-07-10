@@ -642,11 +642,16 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG,"onStartCommand");
-        String action = intent.getAction();
-        if (action.equals(ACTION_SCHEDULE_SERVICE)){
-            check();
-        }else if(action.equals(ACTION_BOOT_SERVICE)){
-            // only check for now..
+        if (intent!=null) {
+            String action = intent.getAction();
+            if (action.equals(ACTION_SCHEDULE_SERVICE)) {
+                check();
+            } else if (action.equals(ACTION_BOOT_SERVICE)) {
+                // only check for now..
+                check();
+            }
+        }else {
+            //
             check();
         }
         return START_STICKY;
