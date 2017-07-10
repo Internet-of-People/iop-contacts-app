@@ -4,6 +4,7 @@ import org.bitcoinj.core.Sha256Hash;
 import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.crypto.CryptoWrapper;
+import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.client.PsSocketHandler;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
@@ -283,7 +284,7 @@ public class ProfSerEngine {
      *
      * @param img -> Profile image in PNG or JPEG format, non-empty binary data, max 20,480 bytes long, or zero length binary data if the profile image is about to be erased.
      */
-    public int updateProfile(byte[] version, String name, byte[] img, int lat, int lon, String extraData, ProfSerMsgListener listener){
+    public int updateProfile(Version version, String name, byte[] img, int lat, int lon, String extraData, ProfSerMsgListener listener){
         LOG.info("updateProfile, state: "+profSerConnectionState);
         int msgId = 0;
         if (profSerConnectionState == CHECK_IN){
@@ -292,7 +293,7 @@ public class ProfSerEngine {
                         profNodeConnection.getProfile(),
                         profNodeConnection.getProfile().getPublicKey(),
                         profNodeConnection.getProfile().getType(),
-                        version,
+                        version.toByteArray(),
                         name,
                         img,
                         lat,
@@ -884,6 +885,10 @@ public class ProfSerEngine {
                             LOG.error("response: to msg id: "+messageId+" ERROR_NOT_FOUND");
                             msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),"remote profile not found");
                             break;
+                        case ERROR_INVALID_VALUE:
+                            LOG.error("response: to msg id: "+messageId+" ERROR_INVALID_VALUE, "+response.getDetails());
+                            msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),response.getDetails());
+                            break;
                         default:
                             LOG.error("response: to msg id: "+messageId+" "+response.toString());
                             msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),response.getDetails());
@@ -1062,7 +1067,7 @@ public class ProfSerEngine {
         public void execute(IoSession session, int messageId, IopProfileServer.UpdateProfileResponse message) {
             LOG.info("UpdateProfileProcessor execute..");
             LOG.info("UpdateProfileProcessor update works..");
-            onMsgReceived(messageId,message);
+            onMsgReceived(messageId,true);
         }
     }
 

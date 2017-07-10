@@ -173,4 +173,5 @@ public class BaseActivity extends AppCompatActivity{
         btnReload.setVisibility(View.VISIBLE);
     }
 
+
 }

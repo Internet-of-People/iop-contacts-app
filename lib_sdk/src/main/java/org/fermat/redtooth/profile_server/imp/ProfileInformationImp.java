@@ -1,6 +1,7 @@
 package org.fermat.redtooth.profile_server.imp;
 
 import org.fermat.redtooth.crypto.CryptoBytes;
+import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 
 import java.io.Serializable;
@@ -24,7 +25,7 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
         WAITING_FOR_MY_RESPONSE;
     }
 
-    private byte[] version;
+    private Version version;
     private byte[] pubKey;
     private String name;
     private String type;
@@ -59,7 +60,7 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
         this.pairStatus = pairStatus;
     }
 
-    public ProfileInformationImp(byte[] version, byte[] pubKey, String name, String type, byte[] thumbnailImg, int latitude, int longitude, String extraData, Set<String> services, byte[] profileServerId, String homeHost) {
+    public ProfileInformationImp(Version version, byte[] pubKey, String name, String type, byte[] thumbnailImg, int latitude, int longitude, String extraData, Set<String> services, byte[] profileServerId, String homeHost) {
         this.version = version;
         this.pubKey = pubKey;
         this.name = name;
@@ -73,7 +74,7 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
         this.homeHost = homeHost;
     }
 
-    public ProfileInformationImp(byte[] version, byte[] pubKey, String name, String type, byte[] img, byte[] thumbnailImg, int latitude, int longitude, String extraData, Set<String> services, byte[] profileServerId, String homeHost) {
+    public ProfileInformationImp(Version version, byte[] pubKey, String name, String type, byte[] img, byte[] thumbnailImg, int latitude, int longitude, String extraData, Set<String> services, byte[] profileServerId, String homeHost) {
         this.version = version;
         this.pubKey = pubKey;
         this.name = name;
@@ -88,7 +89,7 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
         this.homeHost = homeHost;
     }
 
-    public ProfileInformationImp(byte[] version, byte[] pubKey, String name, String type, String extraData, byte[] img, String homeHost) {
+    public ProfileInformationImp(Version version, byte[] pubKey, String name, String type, String extraData, byte[] img, String homeHost) {
         this.version = version;
         this.pubKey = pubKey;
         this.name = name;
@@ -98,7 +99,7 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
         this.img = img;
     }
 
-    public byte[] getVersion() {
+    public Version getVersion() {
         return version;
     }
 
@@ -188,7 +189,7 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
         return isOnline;
     }
 
-    public void setVersion(byte[] version) {
+    public void setVersion(Version version) {
         this.version = version;
     }
 

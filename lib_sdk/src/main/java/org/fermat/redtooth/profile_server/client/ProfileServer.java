@@ -47,7 +47,7 @@ public interface ProfileServer {
 
     ProfSerRequest updateProfileRequest(Signer signer,byte[] profilePublicKey,String profType, byte[] version, String name, byte[] img, int latitude, int longitude, String extraData) throws Exception;
 
-    ProfSerRequest updateExtraData(Signer signer,byte[] profilePublicKey,String profType, String extraData) throws Exception;
+   /* ProfSerRequest updateExtraData(Signer signer,byte[] profilePublicKey,String profType, String extraData) throws Exception;*/
 
     ProfSerRequest storeCanDataRequest(CanStoreMap canStoreMap);
 

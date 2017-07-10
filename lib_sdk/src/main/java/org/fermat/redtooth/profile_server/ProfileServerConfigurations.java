@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.engine.ProfSerDb;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.ProfServerData;
@@ -47,13 +48,11 @@ public interface ProfileServerConfigurations extends ProfSerDb{
 
     byte[] getUserPubKey();
 
-    byte[] getProfileVersion() ;
+    Version getProfileVersion() ;
 
     boolean isRegisteredInServer();
 
     boolean isIdentityCreated();
-
-    byte[] getProtocolVersion();
 
     void setHost(String host);
 

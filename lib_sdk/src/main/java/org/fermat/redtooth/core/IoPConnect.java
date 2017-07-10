@@ -3,6 +3,7 @@ package org.fermat.redtooth.core;
 import com.google.protobuf.ByteString;
 
 import org.fermat.redtooth.core.services.AppServiceListener;
+import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.engine.app_services.AppServiceMsg;
 import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.core.services.pairing.PairingAppService;
@@ -190,7 +191,7 @@ public class IoPConnect implements ConnectionListener {
      * @return profile pubKey
      */
     public Profile createProfile(byte[] profileOwnerChallenge,String name,String type,byte[] img,String extraData,String secretPassword){
-        byte[] version = new byte[]{0,0,1};
+        Version version = new Version((byte) 1,(byte)0,(byte)0);
         ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
         KeyEd25519 keyEd25519 = profileServerConfigurations.createNewUserKeys();
         Profile profile = new Profile(version, name,type,keyEd25519);
@@ -269,7 +270,7 @@ public class IoPConnect implements ConnectionListener {
         }
     }
 
-    public int updateProfile(Profile profile, ProfSerMsgListener msgListener) throws Exception {
+    public int updateProfile(Profile profile, ProfSerMsgListener<Boolean> msgListener) throws Exception {
         return getProfileConnection(profile.getHexPublicKey()).updateProfile(profile.getVersion(),profile.getName(),profile.getImg(),profile.getLatitude(),profile.getLongitude(),profile.getExtraData(),msgListener);
     }
 
@@ -381,7 +382,7 @@ public class IoPConnect implements ConnectionListener {
                 public void onAction(int messageId, IopProfileServer.GetProfileInformationResponse message) {
                     IopProfileServer.ProfileInformation signedProfile = message.getSignedProfile().getProfile();
                     ProfileInformationImp profileInformation = new ProfileInformationImp();
-                    profileInformation.setVersion(signedProfile.getVersion().toByteArray());
+                    profileInformation.setVersion(Version.fromByteArray(signedProfile.getVersion().toByteArray()));
                     profileInformation.setPubKey(signedProfile.getPublicKey().toByteArray());
                     profileInformation.setName(signedProfile.getName());
                     profileInformation.setType(signedProfile.getType());
@@ -698,7 +699,7 @@ public class IoPConnect implements ConnectionListener {
         // The file is going to be built in this way:
         // First the main profile
         ProfileOuterClass.ProfileInfo.Builder mainInfo = ProfileOuterClass.ProfileInfo.newBuilder()
-                .setVersion(ByteString.copyFrom(profile.getVersion()))
+                .setVersion(ByteString.copyFrom(profile.getVersion().toByteArray()))
                 .setName(profile.getName())
                 .setType(profile.getType())
                 .setHomeHost(profile.getHomeHost())
@@ -719,7 +720,7 @@ public class IoPConnect implements ConnectionListener {
         List<ProfileInformation> profileInformationList = profilesManager.listAll(profile.getHexPublicKey());
         for (ProfileInformation profileInformation : profileInformationList) {
             ProfileOuterClass.ProfileInfo.Builder profileInfoBuilder = ProfileOuterClass.ProfileInfo.newBuilder()
-                    .setVersion(ByteString.copyFrom(profileInformation.getVersion()))
+                    .setVersion(ByteString.copyFrom(profileInformation.getVersion().toByteArray()))
                     .setName(profileInformation.getName())
                     .setPubKey(ByteString.copyFrom(CryptoBytes.fromHexToBytes(profileInformation.getHexPublicKey())))
                     ;
@@ -773,7 +774,7 @@ public class IoPConnect implements ConnectionListener {
             inputStream.close();
             ProfileOuterClass.Profile mainProfile = wrapper.getProfile();
             Profile profile = new Profile(
-                    mainProfile.getProfileInfo().getVersion().toByteArray(),
+                    Version.fromByteArray(mainProfile.getProfileInfo().getVersion().toByteArray()),
                     mainProfile.getProfileInfo().getName(),
                     mainProfile.getProfileInfo().getType(),
                     mainProfile.getProfileInfo().getExtraData(),
@@ -789,7 +790,7 @@ public class IoPConnect implements ConnectionListener {
                 ProfileOuterClass.ProfileInfo profileInfo = wrapper.getProfilesInfo(i);
                 list.add(
                     new ProfileInformationImp(
-                            profileInfo.getVersion().toByteArray(),
+                            Version.fromByteArray(profileInfo.getVersion().toByteArray()),
                             profileInfo.getPubKey().toByteArray(),
                             profileInfo.getName(),
                             profileInfo.getType(),
