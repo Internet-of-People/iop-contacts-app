@@ -193,7 +193,7 @@ public class App extends Application implements IoPConnectContext, PairingListen
     public void onPairResponseReceived(String requesteePubKey, String responseDetail) {
         PendingIntent pendingIntent = PendingIntent.getActivity(this,0,new Intent(this, HomeActivity.class),0);
         Notification not = new Notification.Builder(this)
-                .setContentTitle("Pair response received")
+                .setContentTitle("Pair acceptance received")
                 .setContentText(responseDetail)
                 .setSmallIcon(R.drawable.profile)
                 .setContentIntent(pendingIntent)

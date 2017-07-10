@@ -142,6 +142,11 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
         return get(PAIRING_COLUMN_REMOTE_KEY,remotePubkey);
     }
 
+    public boolean containsPairingRequest(String senderPubKey,String remotePubkey) {
+        // todo: do this ok with both values for more apps and not just one..
+        return contains(PAIRING_COLUMN_REMOTE_KEY,remotePubkey);
+    }
+
     @Override
     public List<PairingRequest> pairingRequests(String senderPubKey) {
         return list();

@@ -1,7 +1,13 @@
 package iop.org.iop_sdk_android.core.profile_server;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -14,7 +20,6 @@ import org.fermat.redtooth.global.PlatformSerializer;
 import org.fermat.redtooth.profile_server.client.AppServiceCallNotAvailableException;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
-import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.global.DeviceLocation;
@@ -43,6 +48,7 @@ import org.fermat.redtooth.services.EnabledServicesFactory;
 import org.fermat.redtooth.services.chat.ChatAcceptMsg;
 import org.fermat.redtooth.services.chat.ChatMsg;
 import org.fermat.redtooth.services.chat.RequestChatException;
+import org.fermat.redtooth.wallet.utils.BlockchainState;
 import org.fermat.redtooth.wallet.utils.Iso8601Format;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +57,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -79,6 +86,9 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     private static final String TAG = "IoPConnectService";
 
+    private static final String ACTION_SCHEDULE_SERVICE = "schedule_service";
+    public static final String ACTION_BOOT_SERVICE = "boot_service";
+
     private LocalBroadcastManager localBroadcastManager;
 
     private Handler handler = new Handler();
@@ -97,10 +107,39 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     private SqlitePairingRequestDb pairingRequestDb;
     private SqliteProfilesDb profilesDb;
 
+    private final Set<BlockchainState.Impediment> impediments = EnumSet.noneOf(BlockchainState.Impediment.class);
+
     private PlatformSerializer platformSerializer = new PlatformSerializer(){
         @Override
         public KeyEd25519 toPlatformKey(byte[] privKey, byte[] pubKey) {
             return iop.org.iop_sdk_android.core.crypto.KeyEd25519.wrap(privKey,pubKey);
+        }
+    };
+
+    private final BroadcastReceiver connectivityReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action)) {
+                final NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
+                final boolean hasConnectivity = networkInfo.isConnected();
+                logger.info("network is {}, state {}/{}", hasConnectivity ? "up" : "down", networkInfo.getState(), networkInfo.getDetailedState());
+                if (hasConnectivity)
+                    impediments.remove(BlockchainState.Impediment.NETWORK);
+                else
+                    impediments.add(BlockchainState.Impediment.NETWORK);
+                check();
+            } else if (Intent.ACTION_DEVICE_STORAGE_LOW.equals(action)) {
+                logger.info("device storage low");
+                impediments.add(BlockchainState.Impediment.STORAGE);
+                // todo: control this on the future
+                //check();
+            } else if (Intent.ACTION_DEVICE_STORAGE_OK.equals(action)) {
+                logger.info("device storage ok");
+                impediments.remove(BlockchainState.Impediment.STORAGE);
+                // todo: control this on the future
+                //check();
+            }
         }
     };
 
@@ -123,18 +162,47 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         super.onCreate();
         Log.d(TAG,"onCreate");
         localBroadcastManager = LocalBroadcastManager.getInstance(this);
+        application = (IoPConnectContext) getApplication();
+        executor = Executors.newFixedThreadPool(3);
+        init();
+        tryScheduleService();
+    }
+
+    private void init(){
         try {
-            application = (IoPConnectContext) getApplication();
             configurationsPreferences = new ProfileServerConfigurationsImp(this,getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));
             KeyEd25519 keyEd25519 = (KeyEd25519) configurationsPreferences.getUserKeys();
             if (keyEd25519!=null)
                 profile = new Profile(configurationsPreferences.getProfileVersion(),configurationsPreferences.getUsername(),configurationsPreferences.getProfileType(),(KeyEd25519) configurationsPreferences.getUserKeys());
-            executor = Executors.newFixedThreadPool(3);
             pairingRequestDb = new SqlitePairingRequestDb(this);
             profilesDb = new SqliteProfilesDb(this);
             ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),profilesDb,pairingRequestDb,this);
         }catch (Exception e){
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Try to solve some impediment if there is any.
+     */
+    private void check(){
+        try {
+            if (impediments.contains(BlockchainState.Impediment.NETWORK)){
+                // network unnavailable, check if i have to clean something here
+                return;
+            }
+            if (profile != null) {
+                if (!ioPConnect.isProfileConnectedOrConnecting(profile.getHexPublicKey())) {
+                    connect(profile.getHexPublicKey());
+                } else {
+                    logger.info("check, profile connected or connecting. no actions");
+                }
+            } else {
+                logger.warn("### Trying to check with a null profile.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("Exception on check",e);
         }
     }
 
@@ -145,10 +213,30 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                 "backup_iop_connect_"+profile.getName()+Iso8601Format.formatDateTimeT(new Date(System.currentTimeMillis()))+".dat"
         );
         logger.info("Backup file path: "+backupFile.getAbsolutePath());
-        backupFile.getParentFile().mkdirs();
-        backupFile.createNewFile();
+        return backupFile;
+    }
+
+    /**
+     * todo: this is bad.. i need to do it synchronized.
+     * @param backupFile
+     * @param password
+     * @return
+     * @throws IOException
+     */
+    public File backupOverwriteProfile(File backupFile, String password) throws IOException {
+        logger.info("Backup file path: "+backupFile.getAbsolutePath());
         ioPConnect.backupProfile(profile,backupFile,password);
         return backupFile;
+    }
+
+    @Override
+    public void scheduleBackupProfileFile(File backupDir,String password){
+        File backupFile = new File(
+                backupDir,
+                "backup_iop_connect_"+profile.getName()+".dat"
+        );
+        configurationsPreferences.saveBackupPatch(backupFile.getAbsolutePath());
+        configurationsPreferences.saveBackupPassword(password);
     }
 
     @Override
@@ -292,10 +380,16 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     public void requestPairingProfile(byte[] remotePubKey, final String remoteName, final String psHost, final ProfSerMsgListener<ProfileInformation> listener) throws Exception {
         // check if the profile already exist
         ProfileInformation profileInformationDb = null;
-        if((profileInformationDb = profilesDb.getProfile(profile.getHexPublicKey(),CryptoBytes.toHexString(remotePubKey)))!=null){
+        String remotePubKeyStr = CryptoBytes.toHexString(remotePubKey);
+        if((profileInformationDb = profilesDb.getProfile(profile.getHexPublicKey(),remotePubKeyStr))!=null){
             if(profileInformationDb.getPairStatus() != null)
                 throw new IllegalArgumentException("Profile already known");
         }
+        // check if the pairing request exist
+        if (pairingRequestDb.containsPairingRequest(profile.getHexPublicKey(),remotePubKeyStr)){
+            throw new IllegalStateException("Pairing request already exist");
+        }
+
         // now send the request
         PairingRequest pairingRequest = PairingRequest.buildPairingRequestFromHost(
                 profile.getHexPublicKey(),
@@ -312,6 +406,20 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                 remote.setPairStatus(ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE);
                 // Save invisible contact
                 profilesDb.saveProfile(profile.getHexPublicKey(),remote);
+                // update backup profile is there is any
+                String backupProfilePath = null;
+                if((backupProfilePath = configurationsPreferences.getBackupProfilePath())!=null){
+                    try {
+                        backupOverwriteProfile(
+                                new File(backupProfilePath),
+                                configurationsPreferences.getBackupPassword()
+                        );
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        logger.warn("Backup profile fail.");
+                    }
+                }
+                // notify
                 listener.onMessageReceive(messageId,remote);
             }
 
@@ -534,7 +642,19 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG,"onStartCommand");
-        return super.onStartCommand(intent, flags, startId);
+        if (intent!=null) {
+            String action = intent.getAction();
+            if (action.equals(ACTION_SCHEDULE_SERVICE)) {
+                check();
+            } else if (action.equals(ACTION_BOOT_SERVICE)) {
+                // only check for now..
+                check();
+            }
+        }else {
+            //
+            check();
+        }
+        return START_STICKY;
     }
 
     @Override
@@ -543,6 +663,38 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         executor.shutdown();
         ioPConnect.stop();
         super.onDestroy();
+    }
+
+    /**
+     * Schedule service for later
+     */
+    private void tryScheduleService() {
+        boolean isSchedule = System.currentTimeMillis()<configurationsPreferences.getScheduleServiceTime();
+
+        if (!isSchedule){
+            logger.info("scheduling service");
+            AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
+            long scheduleTime = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5); // 10 minutes from now
+
+            Intent intent = new Intent(this, IoPConnectService.class);
+            intent.setAction(ACTION_SCHEDULE_SERVICE);
+            alarm.set(
+                    // This alarm will wake up the device when System.currentTimeMillis()
+                    // equals the second argument value
+                    alarm.RTC_WAKEUP,
+                    scheduleTime,
+                    // PendingIntent.getService creates an Intent that will start a service
+                    // when it is called. The first argument is the Context that will be used
+                    // when delivering this intent. Using this has worked for me. The second
+                    // argument is a request code. You can use this code to cancel the
+                    // pending intent if you need to. Third is the intent you want to
+                    // trigger. In this case I want to create an intent that will start my
+                    // service. Lastly you can optionally pass flags.
+                    PendingIntent.getService(this, 0,intent , 0)
+            );
+            // save
+            configurationsPreferences.saveScheduleServiceTime(scheduleTime);
+        }
     }
 
     @Override

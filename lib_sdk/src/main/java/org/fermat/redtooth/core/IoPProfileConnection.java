@@ -1,7 +1,6 @@
 package org.fermat.redtooth.core;
 
 
-import org.fermat.redtooth.core.services.pairing.PairingAppService;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.crypto.CryptoWrapper;
 import org.fermat.redtooth.global.DeviceLocation;
@@ -192,11 +191,19 @@ public class IoPProfileConnection implements CallsListener {
     }
 
     /**
+     * Method to check if the library is trying to stablish a connection with the node
+     * @return
+     */
+    public boolean isConnecting() {
+        return profSerEngine.isClConnectionConnecting();
+    }
+
+    /**
      * Method to check if the library fail on the connection
      * @return
      */
     public boolean hasFail() {
-        return profSerEngine.hasConnectionFail();
+        return profSerEngine.hasClConnectionFail();
     }
 
     /**
@@ -517,6 +524,7 @@ public class IoPProfileConnection implements CallsListener {
         }
         return null;
     }
+
 
 
 }

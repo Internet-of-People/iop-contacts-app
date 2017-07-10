@@ -598,14 +598,6 @@ public class ProfSerEngine {
         profileServer.closeCallChannel(callToken);
     }
 
-    /**
-     * if the customer connection is ready
-     *
-     * @return
-     */
-    public boolean isClConnectionReady() {
-        return getProfSerConnectionState() == ProfSerConnectionState.CHECK_IN;
-    }
 
     public void startPing(final IopProfileServer.ServerRoleType portType) {
         LOG.info("startPing on port: "+portType);
@@ -646,8 +638,21 @@ public class ProfSerEngine {
         return connectionListener;
     }
 
-    public boolean hasConnectionFail() {
+    public boolean hasClConnectionFail() {
         return profSerConnectionState == CONNECTION_FAIL;
+    }
+
+    public boolean isClConnectionConnecting(){
+        return profSerConnectionState!=CONNECTION_FAIL && profSerConnectionState!=CHECK_IN;
+    }
+
+    /**
+     * if the customer connection is ready
+     *
+     * @return
+     */
+    public boolean isClConnectionReady() {
+        return getProfSerConnectionState() == ProfSerConnectionState.CHECK_IN;
     }
 
 

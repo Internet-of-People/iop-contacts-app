@@ -88,4 +88,19 @@ public interface ProfileServerConfigurations extends ProfSerDb{
     byte[] getUserImage();
 
     void saveMainProfileServer(ProfServerData profServerData);
+
+
+    // service stuff
+
+    long getScheduleServiceTime();
+
+    void saveScheduleServiceTime(long scheduleTime);
+
+    String getBackupProfilePath();
+
+    void saveBackupPatch(String fileName);
+
+    void saveBackupPassword(String password);
+
+    String getBackupPassword();
 }

@@ -3,9 +3,6 @@ package iop.org.iop_sdk_android.core.profile_server;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.google.common.io.Files;
-import com.google.gson.JsonArray;
-
 import org.apache.commons.io.IOUtils;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.global.HardCodedConstans;
@@ -51,6 +48,9 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
 
     public static final String PREFS_USER_IS_REGISTERED_IN_SERVER = "isRegistered";
     public static final String PREFS_USER_IS_CREATED = "isCreated";
+    public static final String PREFS_SCHEDULE_TIME = "schedule_service_time";
+    public static final String PREFS_BACKUP_FILE_PATH = "backup_file_path";
+    public static final String PREFS_BACKUP_FILE_PASSWORD = "backup_file_password";
 
     public static final String PREFS_HOST_PLAN_END_TIME = "endPlanTime";
 
@@ -227,6 +227,36 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
         setMainAppServicePort(profServerData.getAppServicePort());
     }
 
+    @Override
+    public long getScheduleServiceTime() {
+        return getLong(PREFS_SCHEDULE_TIME,0);
+    }
+
+    @Override
+    public void saveScheduleServiceTime(long scheduleTime) {
+        save(PREFS_SCHEDULE_TIME,scheduleTime);
+    }
+
+    @Override
+    public String getBackupProfilePath() {
+        return getString(PREFS_BACKUP_FILE_PATH,null);
+    }
+
+    @Override
+    public void saveBackupPatch(String fileName) {
+        save(PREFS_BACKUP_FILE_PATH,fileName);
+    }
+
+    @Override
+    public void saveBackupPassword(String password) {
+        save(PREFS_BACKUP_FILE_PASSWORD,password);
+    }
+
+    @Override
+    public String getBackupPassword() {
+        return getString(PREFS_BACKUP_FILE_PASSWORD,null);
+    }
+
     /**
      *
      * @return
@@ -344,5 +374,17 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
     }
 
 
+    /**
+     *
+     * @return
+     */
+    public boolean isBackgroundServiceEnabled() {
+        // for now background service all time is not enabled.
+        return false;
+    }
+
+    public void setEnableBackgroundService(boolean enabled){
+        // nothing yet..
+    }
 }
 
