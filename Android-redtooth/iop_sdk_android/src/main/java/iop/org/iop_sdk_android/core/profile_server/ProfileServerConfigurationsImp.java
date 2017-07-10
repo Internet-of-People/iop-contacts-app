@@ -374,5 +374,17 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
     }
 
 
+    /**
+     *
+     * @return
+     */
+    public boolean isBackgroundServiceEnabled() {
+        // for now background service all time is not enabled.
+        return false;
+    }
+
+    public void setEnableBackgroundService(boolean enabled){
+        // nothing yet..
+    }
 }
 

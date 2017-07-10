@@ -67,9 +67,9 @@ public class PairingAppService extends AppService {
                         switch (types){
                             case PAIR_ACCEPT:
                                 // update pair request -> todo: this should be in another place..
-                                pairingRequestsManager.updateStatus(
-                                        callProfileAppService.getRemotePubKey(),
+                                boolean updateStatus = pairingRequestsManager.updateStatus(
                                         profileServiceOwner.getHexPublicKey(),
+                                        callProfileAppService.getRemotePubKey(),
                                         PairingMsgTypes.PAIR_ACCEPT,
                                         ProfileInformationImp.PairStatus.PAIRED);
                                 boolean res = profilesManager.updatePaired(
@@ -77,7 +77,7 @@ public class PairingAppService extends AppService {
                                         callProfileAppService.getRemotePubKey(),
                                         ProfileInformationImp.PairStatus.PAIRED
                                 );
-                                logger.info("Pairing accepted, profiles updated "+res);
+                                logger.info("Pairing accepted, profiles updated "+res+", update status: "+updateStatus);
                                 if (pairingListener!=null){
                                     pairingListener.onPairResponseReceived(callProfileAppService.getRemotePubKey(),"Accepted");
                                 }else {

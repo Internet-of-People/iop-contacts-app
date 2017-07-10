@@ -87,6 +87,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     private static final String TAG = "IoPConnectService";
 
     private static final String ACTION_SCHEDULE_SERVICE = "schedule_service";
+    public static final String ACTION_BOOT_SERVICE = "boot_service";
 
     private LocalBroadcastManager localBroadcastManager;
 
@@ -643,6 +644,9 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         Log.d(TAG,"onStartCommand");
         String action = intent.getAction();
         if (action.equals(ACTION_SCHEDULE_SERVICE)){
+            check();
+        }else if(action.equals(ACTION_BOOT_SERVICE)){
+            // only check for now..
             check();
         }
         return START_STICKY;
