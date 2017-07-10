@@ -212,10 +212,30 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                 "backup_iop_connect_"+profile.getName()+Iso8601Format.formatDateTimeT(new Date(System.currentTimeMillis()))+".dat"
         );
         logger.info("Backup file path: "+backupFile.getAbsolutePath());
-        backupFile.getParentFile().mkdirs();
-        backupFile.createNewFile();
+        return backupFile;
+    }
+
+    /**
+     * todo: this is bad.. i need to do it synchronized.
+     * @param backupFile
+     * @param password
+     * @return
+     * @throws IOException
+     */
+    public File backupOverwriteProfile(File backupFile, String password) throws IOException {
+        logger.info("Backup file path: "+backupFile.getAbsolutePath());
         ioPConnect.backupProfile(profile,backupFile,password);
         return backupFile;
+    }
+
+    @Override
+    public void scheduleBackupProfileFile(File backupDir,String password){
+        File backupFile = new File(
+                backupDir,
+                "backup_iop_connect_"+profile.getName()+".dat"
+        );
+        configurationsPreferences.saveBackupPatch(backupFile.getAbsolutePath());
+        configurationsPreferences.saveBackupPassword(password);
     }
 
     @Override
@@ -385,6 +405,20 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                 remote.setPairStatus(ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE);
                 // Save invisible contact
                 profilesDb.saveProfile(profile.getHexPublicKey(),remote);
+                // update backup profile is there is any
+                String backupProfilePath = null;
+                if((backupProfilePath = configurationsPreferences.getBackupProfilePath())!=null){
+                    try {
+                        backupOverwriteProfile(
+                                new File(backupProfilePath),
+                                configurationsPreferences.getBackupPassword()
+                        );
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        logger.warn("Backup profile fail.");
+                    }
+                }
+                // notify
                 listener.onMessageReceive(messageId,remote);
             }
 
