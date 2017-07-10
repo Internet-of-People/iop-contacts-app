@@ -95,4 +95,12 @@ public interface ProfileServerConfigurations extends ProfSerDb{
     long getScheduleServiceTime();
 
     void saveScheduleServiceTime(long scheduleTime);
+
+    String getBackupProfilePath();
+
+    void saveBackupPatch(String fileName);
+
+    void saveBackupPassword(String password);
+
+    String getBackupPassword();
 }

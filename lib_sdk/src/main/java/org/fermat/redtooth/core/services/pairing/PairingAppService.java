@@ -1,5 +1,6 @@
 package org.fermat.redtooth.core.services.pairing;
 
+import org.fermat.redtooth.core.IoPConnect;
 import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.engine.app_services.MsgWrapper;
@@ -15,6 +16,8 @@ import org.fermat.redtooth.profiles_manager.ProfilesManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+
 /**
  * Created by furszy on 6/8/17.
  */
@@ -27,14 +30,25 @@ public class PairingAppService extends AppService {
     private PairingListener pairingListener;
     private PairingRequestsManager pairingRequestsManager;
     private ProfilesManager profilesManager;
+    private IoPConnect ioPConnect;
 
-    public PairingAppService(Profile profileServiceOwner,PairingRequestsManager pairingRequestsManager, ProfilesManager profilesManager,PairingListener pairingListener) {
+    private File backupProfileFile;
+    private String backupProfilePassword;
+
+    public PairingAppService(Profile profileServiceOwner,PairingRequestsManager pairingRequestsManager, ProfilesManager profilesManager,PairingListener pairingListener,IoPConnect ioPConnect) {
         super(EnabledServices.PROFILE_PAIRING.getName());
         this.profilesManager = profilesManager;
         this.profileServiceOwner = profileServiceOwner;
         this.pairingListener = pairingListener;
         this.pairingRequestsManager = pairingRequestsManager;
+        this.ioPConnect = ioPConnect;
     }
+
+    public void setBackupProfile(String backupProfilePath,String backupProfilePassword){
+        this.backupProfileFile = new File(backupProfilePath);
+        this.backupProfilePassword = backupProfilePassword;
+    }
+
 
     /**
      * Wrap call in a PairingAppService call.
@@ -117,10 +131,12 @@ public class PairingAppService extends AppService {
                                         callProfileAppService.getLocalProfile().getHexPublicKey(),
                                         profileInformation
                                 );
-                                /*boolean res1 = profilesManager.updatePaired(
-                                        pairingRequest.getRemotePubKey(),
-                                        pairingRequest.getSenderPubKey(),
-                                        ProfileInformationImp.PairStatus.WAITING_FOR_MY_RESPONSE);*/
+
+                                // update backup if there is any
+                                if (ioPConnect.isProfileBackupScheduled(profileServiceOwner.getHexPublicKey())){
+                                    ioPConnect.backupProfile(profileServiceOwner,backupProfileFile,backupProfilePassword);
+                                }
+
                                 logger.info("Pairing request saved with id: "+prId+", profiles saved "+profileSaved);
                                 if (pairingListener!=null){
                                     pairingListener.onPairReceived(callProfileAppService.getRemotePubKey(),pairingMsg.getName());

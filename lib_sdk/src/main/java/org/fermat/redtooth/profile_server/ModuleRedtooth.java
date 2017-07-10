@@ -26,6 +26,8 @@ public interface ModuleRedtooth {
 
     File backupProfile(File backupDir, String password) throws IOException;
 
+    void scheduleBackupProfileFile(File backupDir,String password);
+
     void restoreFrom(File file, String password);
 
     boolean isProfileRegistered();

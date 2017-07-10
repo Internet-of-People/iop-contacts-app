@@ -336,7 +336,19 @@ public class IoPConnect implements ConnectionListener {
         // pairing default
         if(profileServerConfigurations.isPairingEnable()){
             if (pairingListener==null) throw new IllegalArgumentException("Pairing listener cannot be null if configurations pairing is enabled");
-            profile.addApplicationService(new PairingAppService(profile,pairingRequestsManager,profilesManager,pairingListener));
+            PairingAppService appService = new PairingAppService(
+                    profile,
+                    pairingRequestsManager,
+                    profilesManager,
+                    pairingListener,
+                    this
+            );
+            String backupProfilePath = null;
+            if ((backupProfilePath = profileServerConfigurations.getBackupProfilePath())!=null)
+                appService.setBackupProfile(backupProfilePath,profileServerConfigurations.getBackupPassword());
+            profile.addApplicationService(
+                    appService
+            );
         }
         return profile;
     }
@@ -676,7 +688,13 @@ public class IoPConnect implements ConnectionListener {
      * @param profile
      * @param externalFile
      */
-    public void backupProfile(Profile profile,File externalFile,String password){
+    public synchronized void backupProfile(Profile profile,File externalFile,String password) throws IOException {
+        if (!externalFile.exists()){
+            externalFile.getParentFile().mkdirs();
+        }else {
+            externalFile.delete();
+        }
+        externalFile.createNewFile();
         // The file is going to be built in this way:
         // First the main profile
         ProfileOuterClass.ProfileInfo.Builder mainInfo = ProfileOuterClass.ProfileInfo.newBuilder()
@@ -790,6 +808,15 @@ public class IoPConnect implements ConnectionListener {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * Improve this for multiple profiles..
+     * @param profPubKey
+     * @return
+     */
+    public boolean isProfileBackupScheduled(String profPubKey) {
+        return createEmptyProfileServerConf().getBackupProfilePath()!=null;
     }
 
     public static class ProfileRestored{
