@@ -42,7 +42,6 @@
         <activity android:name=".ui.settings_backup_process.SettingsBackupPasswordActivity"></activity>
         <activity android:name=".ui.settings_backup_folder.SettingsBackupFolderActivity"></activity>
         <activity android:name=".ui.my_qr.MyQrActivity"></activity>
-        <activity android:name=".ui.my_profile.MyProfileActivity"/>
         <activity android:name=".contacts.ProfilesInformationActivity"/>
         <activity android:name=".requests.PairingRequestsActivity"/>
 
