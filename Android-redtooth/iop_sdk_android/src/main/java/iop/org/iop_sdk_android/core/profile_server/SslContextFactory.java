@@ -38,7 +38,7 @@ public class SslContextFactory implements org.fermat.redtooth.profile_server.Ssl
     public SSLContext buildContext() throws Exception{
         try {
             //InputStream inputStream = ((Context)context).getResources().openRawResource(R.raw.profile_server);
-            String certificate = "-----BEGIN CERTIFICATE-----\n" +
+            /*String certificate = "-----BEGIN CERTIFICATE-----\n" +
                     "MIIFtzCCA5+gAwIBAgIJAJsIU2JVlQIbMA0GCSqGSIb3DQEBBQUAMEUxCzAJBgNV\n" +
                     "BAYTAkFVMRMwEQYDVQQIEwpTb21lLVN0YXRlMSEwHwYDVQQKExhJbnRlcm5ldCBX\n" +
                     "aWRnaXRzIFB0eSBMdGQwIBcNMTcwNTIyMTgwMDU2WhgPMzAxNjA5MjIxODAwNTZa\n" +
@@ -70,9 +70,9 @@ public class SslContextFactory implements org.fermat.redtooth.profile_server.Ssl
                     "zU9cxBSHHHr4Gm0tN7Mt/NQxj+EqyQYhTjnC9wSb3yt8Nab/q9VUCLhHmHpG5QOR\n" +
                     "3sFJF1Ue62ZWGMAzkUJgnenvshTDyfX0RuxqEnBrxi4QnvTm9NDt1PKNe2GFGEOq\n" +
                     "86glI9rVQVfaynA764ZbKiIehlF1JaB064Ak\n" +
-                    "-----END CERTIFICATE-----\n";
+                    "-----END CERTIFICATE-----\n";*/
 
-            /*String certificate = "-----BEGIN CERTIFICATE-----\n" +
+            String certificate = "-----BEGIN CERTIFICATE-----\n" +
                     "MIIFXzCCA0egAwIBAgIJAIZyz3FCVLq5MA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV\n" +
                     "BAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBX\n" +
                     "aWRnaXRzIFB0eSBMdGQwIBcNMTcwNjI4MTY0MTIzWhgPMzAxNjEwMjkxNjQxMjNa\n" +
@@ -102,7 +102,7 @@ public class SslContextFactory implements org.fermat.redtooth.profile_server.Ssl
                     "Z+UnqGFk6+fLqKcvESaabORWA1bveDHOu2y4/9iruI+MS3fESnXzybdJ2NHtdMU7\n" +
                     "j9OJ7i4l+u8Dmmb0d53haJvzGn0AsYBL42uNX4ILafSb/BRrWBd3EF5QpUm2M69Y\n" +
                     "nccmEQOO/tAsvUuvUOEzqd2qlVjc1dwxvaVuIHMkRnSnzMk=\n" +
-                    "-----END CERTIFICATE-----\n";*/
+                    "-----END CERTIFICATE-----\n";
 
             InputStream inputStream = new ByteArrayInputStream(certificate.getBytes(StandardCharsets.UTF_8));
 
