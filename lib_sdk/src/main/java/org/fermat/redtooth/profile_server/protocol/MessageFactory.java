@@ -165,7 +165,7 @@ public class MessageFactory {
         profileInformation.setPublicKey(ByteString.copyFrom(profilePk));
         profileInformation.setType(profType);
 
-        if (version!=null && version.length>0){
+        if (version.length==3){
             profileInformation.setVersion(ByteString.copyFrom(version));
         }
 

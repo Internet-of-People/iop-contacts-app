@@ -1,5 +1,7 @@
 package org.fermat.redtooth.profile_server;
 
+import org.fermat.redtooth.global.Version;
+
 /**
  * Created by mati on 01/06/17.
  */
@@ -14,5 +16,5 @@ public interface ProfileBase {
 
     boolean hasService(String serviceName);
 
-    void setVersion(byte[] bytes);
+    void setVersion(Version bytes);
 }

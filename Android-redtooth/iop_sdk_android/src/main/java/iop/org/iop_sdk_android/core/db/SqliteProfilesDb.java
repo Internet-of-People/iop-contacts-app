@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import org.fermat.redtooth.crypto.CryptoBytes;
+import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.model.Profile;
@@ -110,7 +111,7 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         ContentValues contentValues = new ContentValues();
         contentValues.put(CONTACTS_COLUMN_NAME, profile.getName());
         contentValues.put(CONTACTS_COLUMN_TYPE, profile.getType());
-        contentValues.put(CONTACTS_COLUMN_VERSION, profile.getVersion());
+        contentValues.put(CONTACTS_COLUMN_VERSION, profile.getVersion().toByteArray());
         contentValues.put(CONTACTS_COLUMN_PUB_KEY, CryptoBytes.toHexString(profile.getPublicKey()));
         contentValues.put(CONTACTS_COLUMN_UPDATE_TIMESTAMP,profile.getLastUpdateTime());
         contentValues.put(CONTACTS_COLUMN_PAIR,profile.getPairStatus().name());
@@ -138,8 +139,9 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
             byte[] img = cursor.getBlob(CONTACTS_POS_COLUMN_IMG);
             int lat = cursor.getInt(CONTACTS_POS_COLUMN_LAT);
             int lon = cursor.getInt(CONTACTS_POS_COLUMN_LON);
+            byte[] version = cursor.getBlob(CONTACTS_POS_COLUMN_VERSION);
             ProfileInformationImp profile = new ProfileInformationImp();
-            profile.setVersion(new byte[]{0, 0, 1});
+            profile.setVersion(Version.fromByteArray(version));
             profile.setName(name);
             profile.setType(type);
             profile.setPubKey(pubKey);

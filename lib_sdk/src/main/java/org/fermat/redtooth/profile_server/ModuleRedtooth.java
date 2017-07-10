@@ -40,13 +40,11 @@ public interface ModuleRedtooth {
 
     String registerProfile(String name,byte[] img) throws Exception;
 
-    int updateProfile(String name, ProfSerMsgListener msgListener) throws Exception;
+    int updateProfile(String name,byte[] img,ProfSerMsgListener<Boolean> msgListener) throws Exception;
 
-    int updateProfile(String name,byte[] img,ProfSerMsgListener msgListener) throws Exception;
+    int updateProfile(String pubKey,String name, byte[] img, String extraData, ProfSerMsgListener<Boolean> msgListener) throws Exception;
 
-    int updateProfile(String pubKey,String name, byte[] img, String extraData, ProfSerMsgListener msgListener) throws Exception;
-
-    int updateProfile(String pubKey ,String name, byte[] img, int latitude, int longitude, String extraData, ProfSerMsgListener msgListener) throws Exception;
+    int updateProfile(String pubKey ,String name, byte[] img, int latitude, int longitude, String extraData, ProfSerMsgListener<Boolean> msgListener) throws Exception;
 
     int updateProfileExtraData(String pubKey,Signer signer, String extraData) throws Exception;
 

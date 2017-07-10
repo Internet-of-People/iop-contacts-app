@@ -4,6 +4,7 @@ package org.fermat.redtooth.core;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.crypto.CryptoWrapper;
 import org.fermat.redtooth.global.DeviceLocation;
+import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ProfileInformation;
@@ -161,8 +162,13 @@ public class IoPProfileConnection implements CallsListener {
         return future;
     }
 
-    public int updateProfile(byte[] version, String name, byte[] img, int latitude, int longitude, String extraData, ProfSerMsgListener msgListener) {
-        profileCache.setName(name);
+    public int updateProfile(Version version, String name, byte[] img, int latitude, int longitude, String extraData, ProfSerMsgListener<Boolean> msgListener) {
+        if (name!=null)
+            profileCache.setName(name);
+        if (version!=null)
+            profileCache.setVersion(version);
+        if (img!=null)
+            profileCache.setImg(img);
         return profSerEngine.updateProfile(
                 version,
                 name,
@@ -311,7 +317,7 @@ public class IoPProfileConnection implements CallsListener {
                             remoteProfile.setLatitude(protocProfile.getLatitude());
                             remoteProfile.setLongitude(protocProfile.getLongitude());
                             remoteProfile.setExtraData(protocProfile.getExtraData());
-                            remoteProfile.setVersion(protocProfile.getVersion().toByteArray());
+                            remoteProfile.setVersion(Version.fromByteArray(protocProfile.getVersion().toByteArray()));
                             remoteProfile.setType(protocProfile.getType());
                             remoteProfile.setName(protocProfile.getName());
                             // call profile

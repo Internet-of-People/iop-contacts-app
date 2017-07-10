@@ -3,6 +3,7 @@ package org.fermat.redtooth.profile_server;
 import com.google.protobuf.ByteString;
 
 import org.fermat.redtooth.global.IoPSerializable;
+import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 
 import java.util.Set;
@@ -13,7 +14,7 @@ import java.util.Set;
 
 public interface ProfileInformation extends ProfileBase {
 
-    byte[] getVersion();
+    Version getVersion();
 
     long getLastUpdateTime();
 

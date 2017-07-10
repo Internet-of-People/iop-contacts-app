@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import org.bitcoinj.core.Sha256Hash;
 import org.fermat.redtooth.crypto.CryptoBytes;
+import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.ProfileBase;
 import org.fermat.redtooth.profile_server.Signer;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
@@ -20,7 +21,7 @@ public class Profile implements Signer,ProfileBase {
 
     // specific fields
     /** 3 bytes version */
-    private byte[] version;
+    private Version version;
     private String name;
     private String type;
     private byte[] img;
@@ -40,7 +41,7 @@ public class Profile implements Signer,ProfileBase {
 
     public Profile(){};
 
-    public Profile(byte[] version,String name,String type,KeyEd25519 keyEd25519) {
+    public Profile(Version version,String name,String type,KeyEd25519 keyEd25519) {
         this.version = version;
         this.name = name;
         this.type = type;
@@ -48,7 +49,7 @@ public class Profile implements Signer,ProfileBase {
         applicationServices = new HashMap<>();
     }
 
-    public Profile(byte[] version, String name, byte[] img, int latitude, int longitude, String extraData) {
+    public Profile(Version version, String name, byte[] img, int latitude, int longitude, String extraData) {
         this.version = version;
         this.name = name;
         this.img = img;
@@ -57,7 +58,7 @@ public class Profile implements Signer,ProfileBase {
         this.extraData = extraData;
     }
 
-    public Profile(byte[] version, String name, String type, String extraData, byte[] img, String homeHost, KeyEd25519 keyEd25519) {
+    public Profile(Version version, String name, String type, String extraData, byte[] img, String homeHost, KeyEd25519 keyEd25519) {
         this.version = version;
         this.name = name;
         this.type = type;
@@ -67,7 +68,7 @@ public class Profile implements Signer,ProfileBase {
         this.keyEd25519 = keyEd25519;
     }
 
-    public void setVersion(byte[] version) {
+    public void setVersion(Version version) {
         this.version = version;
     }
 
@@ -107,7 +108,7 @@ public class Profile implements Signer,ProfileBase {
         return keyEd25519.getPrivateKeyHex();
     }
 
-    public byte[] getVersion() {
+    public Version getVersion() {
         return version;
     }
 
@@ -218,7 +219,7 @@ public class Profile implements Signer,ProfileBase {
     public String toString() {
         return "Profile{" +
                 "id=" + id +
-                ", version=" + Arrays.toString(version) +
+                ", version=" + version.toString() +
                 ", name='" + name + '\'' +
                 ", type='" + type + '\'' +
                 ", img=" + Arrays.toString(img) +

@@ -192,7 +192,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
         profile = module.getProfile();
         if (profile!=null) {
             txt_name.setText(profile.getName());
-            if(profile.getImg()!=null && profile.getImg().length>0){
+            if(profile.getImg()!=null && profile.getImg().length>0 && profImgData==null){
                 imgProfile.setImageBitmap(BitmapFactory.decodeByteArray(profile.getImg(),0,profile.getImg().length));
             }
         }
@@ -296,6 +296,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
      * @param runnable
      */
     private void execute(Runnable runnable){
+        if (executor==null)
+            executor = Executors.newSingleThreadExecutor();
         executor.execute(runnable);
     }
 
@@ -314,13 +316,13 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
             Cursor cursor = getActivity().getContentResolver().query(selectedImage,filePathColumn, null, null, null);
             cursor.moveToFirst();
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            String picturePath = cursor.getString(columnIndex);
+            final String picturePath = cursor.getString(columnIndex);
             cursor.close();
-            Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
+            Picasso.with(getActivity()).load(picturePath).into(imgProfile);
+            imgProfile.invalidate();
 
             // scale image
-            imgProfile.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 1024, 1024, false));
-//            imgProfile.setImageBitmap(bitmap);
+            //imgProfile.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 1024, 1024, false));
 
             if( ContextCompat.checkSelfPermission(getActivity(),
                     Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ) {
@@ -342,23 +344,30 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
                 }
             }
 
-            // compress and do it array
-            ByteArrayOutputStream out = null;
-            try {
-                out = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-                profImgData = out.toByteArray();
-            }catch (Exception e){
-                e.printStackTrace();
-            }finally {
-                try {
-                    if (out != null) {
-                        out.close();
+            execute(new Runnable() {
+                @Override
+                public void run() {
+                    Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
+                    // compress and do it array
+                    ByteArrayOutputStream out = null;
+                    try {
+                        out = new ByteArrayOutputStream();
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+                        profImgData = out.toByteArray();
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }finally {
+                        try {
+                            if (out != null) {
+                                out.close();
+                            }
+                        } catch (IOException e) {
+                            // nothing
+                        }
                     }
-                } catch (IOException e) {
-                    // nothing
                 }
-            }
+            });
+
 
             if (isRegistered){
                 btn_create.setText("Save");
@@ -376,21 +385,24 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
                 IntentFilter intentFilter = new IntentFilter(App.INTENT_ACTION_PROFILE_CONNECTED);
                 ((BaseActivity)getActivity()).localBroadcastManager.registerReceiver(connectionReceiver,intentFilter);
             }
-            executor.submit(new Runnable() {
+            execute(new Runnable() {
                 @Override
                 public void run() {
                     boolean res = false;
                     String detail = null;
                     try {
-                        MsgListenerFuture listenerFuture = new MsgListenerFuture();
+                        MsgListenerFuture<Boolean> listenerFuture = new MsgListenerFuture();
                         module.updateProfile(
                                 name,
                                 profImgData,
                                 listenerFuture);
                         listenerFuture.get();
-                        res = true;
+                        res = listenerFuture.getStatusDetail()==null;
+                        if (!res){
+                            detail = "Fail, error: "+listenerFuture.getStatusDetail();
+                        }
                     } catch (Exception e) {
-                        Log.e(TAG, e.getMessage());
+                        Log.e(TAG," exception updating the profile, " +e.getMessage());
                         detail = "Cant update profile, send report please";
                     }
                     final String finalDetail = detail;

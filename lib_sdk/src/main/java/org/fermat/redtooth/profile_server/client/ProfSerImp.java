@@ -131,12 +131,12 @@ public class ProfSerImp implements ProfileServer {
         return buildRequestToCustomerPort(message);
     }
 
-    @Override
+    /*@Override
     public ProfSerRequest updateExtraData(Signer signer,byte[] profilePublicKey,String profType,String extraData) throws CantConnectException,CantSendMessageException{
         logger.info("UpdateExtraData, extra data: "+extraData);
         IopProfileServer.Message message = MessageFactory.buildUpdateProfileRequest(signer,profilePublicKey,profType,null,null,null,0,0,extraData);
         return buildRequestToCustomerPort(message);
-    }
+    }*/
 
     @Override
     public ProfSerRequest storeCanDataRequest(CanStoreMap canStoreMap) {
