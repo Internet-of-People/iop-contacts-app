@@ -16,6 +16,7 @@
         android:id="@+id/profile_image"
         android:layout_width="70dp"
         android:layout_height="70dp"
+        android:paddingTop="10dp"
         android:src="@drawable/img_profile"
         app:civ_border_width="1dp"
         app:civ_border_color="#71b6ff"
@@ -23,11 +24,13 @@
         android:layout_centerHorizontal = "true"/>
 
     <TextView
+        android:padding="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/txt_name"
+        android:id="@+id/myProfile"
         android:gravity="center"
-        android:text="Username"
+        android:textSize="18sp"
+        android:text="My Profile"
         android:textColor="#fff"
         />
 
