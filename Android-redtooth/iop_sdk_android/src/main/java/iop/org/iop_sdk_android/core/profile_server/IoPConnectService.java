@@ -1,6 +1,7 @@
 package iop.org.iop_sdk_android.core.profile_server;
 
 import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -76,6 +77,12 @@ import iop.org.iop_sdk_android.core.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
 import iop.org.iop_sdk_android.core.utils.ImageUtils;
 
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PAIR_RECEIVED;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_RESPONSE_PAIR_RECEIVED;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_NAME;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_RESPONSE_DETAIL;
+
 
 /**
  * Created by mati on 09/11/16.
@@ -103,7 +110,6 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     private Profile profile;
     /** Listeners */
     private ProfileListener profileListener;
-    private PairingListener pairingListener;
     /** Databases */
     private SqlitePairingRequestDb pairingRequestDb;
     private SqliteProfilesDb profilesDb;
@@ -144,6 +150,24 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         }
     };
 
+    private PairingListener pairingListener = new PairingListener() {
+        @Override
+        public void onPairReceived(String requesteePubKey, final String name) {
+            Intent intent = new Intent(ACTION_ON_PAIR_RECEIVED);
+            intent.putExtra(INTENT_EXTRA_PROF_KEY,requesteePubKey);
+            intent.putExtra(INTENT_EXTRA_PROF_NAME,name);
+            localBroadcastManager.sendBroadcast(intent);
+        }
+
+        @Override
+        public void onPairResponseReceived(String requesteePubKey, String responseDetail) {
+            Intent intent = new Intent(ACTION_ON_RESPONSE_PAIR_RECEIVED);
+            intent.putExtra(INTENT_EXTRA_PROF_KEY,requesteePubKey);
+            intent.putExtra(INTENT_RESPONSE_DETAIL,responseDetail);
+            localBroadcastManager.sendBroadcast(intent);
+        }
+    };
+
     public class ProfServerBinder extends Binder {
         public IoPConnectService getService() {
             return IoPConnectService.this;
@@ -165,18 +189,23 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         localBroadcastManager = LocalBroadcastManager.getInstance(this);
         application = (IoPConnectContext) getApplication();
         executor = Executors.newFixedThreadPool(3);
-        init();
+        configurationsPreferences = new ProfileServerConfigurationsImp(this,getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));
+        KeyEd25519 keyEd25519 = (KeyEd25519) configurationsPreferences.getUserKeys();
+        if (keyEd25519!=null)
+            profile = configurationsPreferences.getProfile();
+        pairingRequestDb = new SqlitePairingRequestDb(this);
+        profilesDb = new SqliteProfilesDb(this);
+        executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                init();
+            }
+        });
         tryScheduleService();
     }
 
     private void init(){
         try {
-            configurationsPreferences = new ProfileServerConfigurationsImp(this,getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));
-            KeyEd25519 keyEd25519 = (KeyEd25519) configurationsPreferences.getUserKeys();
-            if (keyEd25519!=null)
-                profile = configurationsPreferences.getProfile();
-            pairingRequestDb = new SqlitePairingRequestDb(this);
-            profilesDb = new SqliteProfilesDb(this);
             ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),profilesDb,pairingRequestDb,this);
         }catch (Exception e){
             e.printStackTrace();
@@ -188,18 +217,22 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
      */
     private void check(){
         try {
-            if (impediments.contains(BlockchainState.Impediment.NETWORK)){
-                // network unnavailable, check if i have to clean something here
-                return;
-            }
-            if (profile != null) {
-                if (!ioPConnect.isProfileConnectedOrConnecting(profile.getHexPublicKey())) {
-                    connect(profile.getHexPublicKey());
-                } else {
-                    logger.info("check, profile connected or connecting. no actions");
+            if (configurationsPreferences.getBackgroundServiceEnable()) {
+                if (impediments.contains(BlockchainState.Impediment.NETWORK)) {
+                    // network unnavailable, check if i have to clean something here
+                    return;
                 }
-            } else {
-                logger.warn("### Trying to check with a null profile.");
+                if (profile != null) {
+                    if (!ioPConnect.isProfileConnectedOrConnecting(profile.getHexPublicKey())) {
+                        connect(profile.getHexPublicKey());
+                    } else {
+                        logger.info("check, profile connected or connecting. no actions");
+                    }
+                } else {
+                    logger.warn("### Trying to check with a null profile.");
+                }
+            }else {
+                logger.warn("### background service disabled");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -346,10 +379,6 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
             //version.addMinor();
             Profile profile = new Profile(version,name,img,latitude,longitude,extraData);
             profile.setKey((KeyEd25519) this.profile.getKey());
-            configurationsPreferences.saveProfile(profile);
-            // broadcast profile update
-            broadcastUpdateProfile();
-
             if (profile.getImg()!=null){
                 this.profile.setImg(profile.getImg());
                 while (profile.getImg().length>20480) {
@@ -357,6 +386,11 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                     profile.setImg(ImageUtils.compress(profile.getImg(),10));
                 }
             }
+            configurationsPreferences.saveProfile(profile);
+            // broadcast profile update
+            broadcastUpdateProfile();
+
+
             return ioPConnect.updateProfile(profile, new ProfSerMsgListener<Boolean>() {
                 @Override
                 public void onMessageReceive(int messageId, Boolean message) {
@@ -396,7 +430,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         String remotePubKeyStr = CryptoBytes.toHexString(remotePubKey);
         if((profileInformationDb = profilesDb.getProfile(profile.getHexPublicKey(),remotePubKeyStr))!=null){
             if(profileInformationDb.getPairStatus() != null)
-                throw new IllegalArgumentException("Profile already known");
+                throw new IllegalArgumentException("Already known profile");
         }
         // check if the pairing request exist
         if (pairingRequestDb.containsPairingRequest(profile.getHexPublicKey(),remotePubKeyStr)){
@@ -532,11 +566,6 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
-    public void setPairListener(PairingListener pairListener) {
-        this.pairingListener = pairListener;
-    }
-
-    @Override
     public void setProfileListener(ProfileListener profileListener) {
         this.profileListener = profileListener;
     }
@@ -634,6 +663,8 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public List<PairingRequest> getPairingOpenRequests(){
+        List<PairingRequest> pairingListeners = pairingRequestDb.list();
+        logger.info("Pairing requests: "+Arrays.toString(pairingListeners.toArray()));
         return pairingRequestDb.openPairingRequests(profile.getHexPublicKey());
     }
 

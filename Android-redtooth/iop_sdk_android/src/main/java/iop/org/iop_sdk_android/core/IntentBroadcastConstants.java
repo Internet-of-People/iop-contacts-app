@@ -9,4 +9,15 @@ public class IntentBroadcastConstants {
     public static final String ACTION_PROFILE_UPDATED_CONSTANT = "prof_update";
 
 
+    public static final String ACTION_ON_PAIR_RECEIVED = "on_pair_received";
+    public static final String ACTION_ON_RESPONSE_PAIR_RECEIVED = "on_response_pair_received";
+
+    public static final String ACTION_IOP_SERVICE_CONNECTED = "iop_service_connected";
+
+
+    public static final String INTENT_EXTRA_PROF_KEY = "prof_key"; // -> string value
+    public static final String INTENT_EXTRA_PROF_NAME = "prof_name"; // -> string valiue
+    public static final String INTENT_RESPONSE_DETAIL = "response_detail";
+
+
 }

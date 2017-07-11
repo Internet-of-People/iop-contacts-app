@@ -53,6 +53,8 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
     public static final String PREFS_BACKUP_FILE_PATH = "backup_file_path";
     public static final String PREFS_BACKUP_FILE_PASSWORD = "backup_file_password";
 
+    public static final String PREFS_IS_BACKGROUND_SERVICE_ENABLED = "background_service_enabled";
+
     public static final String PREFS_HOST_PLAN_END_TIME = "endPlanTime";
 
     public static final String PREF_PROTOCOL_VERSION = "version";
@@ -245,6 +247,16 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
         return getString(PREFS_BACKUP_FILE_PASSWORD,null);
     }
 
+    @Override
+    public boolean getBackgroundServiceEnable() {
+        return getBoolean(PREFS_IS_BACKGROUND_SERVICE_ENABLED,true);
+    }
+
+    @Override
+    public void setBackgroundServiceEnable(boolean enable) {
+        save(PREFS_IS_BACKGROUND_SERVICE_ENABLED,enable);
+    }
+
     /**
      *
      * @return
@@ -373,19 +385,6 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
     @Override
     public File getUserImageFile() {
         return privateStorage.getFile(PREFS_USER_IMAGE);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public boolean isBackgroundServiceEnabled() {
-        // for now background service all time is not enabled.
-        return false;
-    }
-
-    public void setEnableBackgroundService(boolean enabled){
-        // nothing yet..
     }
 }
 
