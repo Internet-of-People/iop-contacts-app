@@ -34,7 +34,7 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
     private int latitude;
     private int longitude;
     private String extraData;
-    private Set<String> services;
+    private Set<String> services = new HashSet<>();
 
     private byte[] tumbnailImgHash;
     private byte[] imgHash;
@@ -175,12 +175,10 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
 
     @Override
     public void addAppService(String service) {
-        if (services==null) services = new HashSet<String>();
         this.services.add(service);
     }
 
     public void addAllAppServices(Set<String> appServices) {
-        if (services==null) services = new HashSet<String>();
         this.services.addAll(appServices);
     }
 
