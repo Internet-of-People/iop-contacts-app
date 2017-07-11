@@ -269,6 +269,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                 backupDir,
                 "backup_iop_connect_"+profile.getName()+".dat"
         );
+        configurationsPreferences.setScheduleBackupEnable(true);
         configurationsPreferences.saveBackupPatch(backupFile.getAbsolutePath());
         configurationsPreferences.saveBackupPassword(password);
     }

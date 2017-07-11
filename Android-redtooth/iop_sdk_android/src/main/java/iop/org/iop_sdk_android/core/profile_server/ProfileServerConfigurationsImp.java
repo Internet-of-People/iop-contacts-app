@@ -52,6 +52,7 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
     public static final String PREFS_SCHEDULE_TIME = "schedule_service_time";
     public static final String PREFS_BACKUP_FILE_PATH = "backup_file_path";
     public static final String PREFS_BACKUP_FILE_PASSWORD = "backup_file_password";
+    public static final String PREFS_BACKUP_FILE_ENABLE = "backup_file_enable";
 
     public static final String PREFS_IS_BACKGROUND_SERVICE_ENABLED = "background_service_enabled";
 
@@ -245,6 +246,15 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
     @Override
     public String getBackupPassword() {
         return getString(PREFS_BACKUP_FILE_PASSWORD,null);
+    }
+
+    @Override
+    public boolean isScheduleBackupEnabled(){
+        return getBoolean(PREFS_BACKUP_FILE_ENABLE,false);
+    }
+    @Override
+    public void setScheduleBackupEnable(boolean enable){
+        save(PREFS_BACKUP_FILE_ENABLE,enable);
     }
 
     @Override
