@@ -174,11 +174,10 @@
     </LinearLayout>
 
     <LinearLayout
+        android:layout_above="@+id/buttonContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="80dp"
         android:layout_marginRight="12dp"
 
         >
@@ -197,6 +196,7 @@
 
 
     <LinearLayout
+        android:id="@+id/buttonContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
