@@ -71,6 +71,7 @@
                 tools:ignore="HardcodedText"
                 android:hint="@string/username"
                 android:maxLines="1"
+                android:maxEms="16"
                 android:inputType="textFilter|textNoSuggestions"
                 android:digits="0123456789 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ñÑ _.@"
                 android:layout_marginBottom="20dp"

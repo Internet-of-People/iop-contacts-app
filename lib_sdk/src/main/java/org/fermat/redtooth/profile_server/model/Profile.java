@@ -22,7 +22,9 @@ public class Profile implements Signer,ProfileBase {
     // specific fields
     /** 3 bytes version */
     private Version version;
+    /** Max 64 bytes long. */
     private String name;
+    /** Max 64 bytes long */
     private String type;
     private byte[] img;
     private byte[] thumbnailImg;

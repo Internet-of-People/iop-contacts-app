@@ -41,6 +41,7 @@
             android:drawableLeft="@drawable/ic_location"
             android:textColor="@color/subtitles"
             android:drawablePadding="2dp"
+            android:visibility="gone"
             android:text="My Location"
             android:textSize="14sp"/>
 

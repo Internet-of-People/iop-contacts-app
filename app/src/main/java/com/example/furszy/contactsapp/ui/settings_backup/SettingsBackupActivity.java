@@ -35,6 +35,11 @@ public class SettingsBackupActivity extends BaseActivity {
 
         btnCreateBackup = (Button) findViewById(R.id.createBackup);
         RadioGroup set_backup = (RadioGroup) findViewById(R.id.toggle);
+        if (app.createProfSerConfig().isScheduleBackupEnabled()){
+            set_backup.check(R.id.active);
+        }else {
+            set_backup.check(R.id.inactive);
+        }
         // Toogle button
         set_backup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
 

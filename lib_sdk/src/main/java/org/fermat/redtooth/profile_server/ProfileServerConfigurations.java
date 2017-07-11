@@ -103,6 +103,10 @@ public interface ProfileServerConfigurations extends ProfSerDb{
 
     String getBackupPassword();
 
+    boolean isScheduleBackupEnabled();
+
+    void setScheduleBackupEnable(boolean enable);
+
     boolean getBackgroundServiceEnable();
 
     void setBackgroundServiceEnable(boolean enable);
