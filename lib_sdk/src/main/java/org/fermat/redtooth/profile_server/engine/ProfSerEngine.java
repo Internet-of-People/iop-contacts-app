@@ -889,6 +889,10 @@ public class ProfSerEngine {
                             LOG.error("response: to msg id: "+messageId+" ERROR_INVALID_VALUE, "+response.getDetails());
                             msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),response.getDetails());
                             break;
+                        case ERROR_UNINITIALIZED:
+                            LOG.error("response: to msg id: "+messageId+" ERROR_UNINITIALIZED, "+response.getDetails());
+                            msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),response.getDetails());
+                            break;
                         default:
                             LOG.error("response: to msg id: "+messageId+" "+response.toString());
                             msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),response.getDetails());

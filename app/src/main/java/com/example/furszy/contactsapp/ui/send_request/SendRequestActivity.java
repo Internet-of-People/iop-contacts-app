@@ -104,15 +104,30 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                             });
                             anRedtooth.requestPairingProfile(CryptoBytes.fromHexToBytes(profile.getPubKey()), profile.getName(), profile.getProfSerHost(), future);
 
-                        } catch (Exception e) {
+                        }catch (final IllegalArgumentException e){
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Log.i(TAG, "pairing request fail");
+                                    Toast.makeText(getApplicationContext(), "Pairing request fail\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+                                    enableSendBtn();
+                                }
+                            });
+                        }catch (final Exception e) {
                             e.printStackTrace();
-                            Toast.makeText(getApplicationContext(), "Pairing request fail\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(), "Pairing request fail\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+                                }
+                            });
                         }
                     }
                 }).start();
             }
         }
     }
+
 
     private void enableSendBtn(){
         btn_add.setEnabled(true);

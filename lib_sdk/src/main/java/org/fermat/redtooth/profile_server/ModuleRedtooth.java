@@ -76,7 +76,6 @@ public interface ModuleRedtooth {
 
     boolean isIdentityCreated();
 
-    void setPairListener(PairingListener pairListener);
 
     void setProfileListener(ProfileListener profileListener);
 

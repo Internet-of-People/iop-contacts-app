@@ -20,6 +20,7 @@ import com.example.furszy.contactsapp.BaseActivity;
 import com.example.furszy.contactsapp.R;
 
 import org.fermat.redtooth.profile_server.ProfileInformation;
+import org.fermat.redtooth.profile_server.client.AppServiceCallNotAvailableException;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
@@ -150,8 +151,8 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            Intent intent = new Intent(WaitingChatActivity.this,ChatActivity.class);
-                                            intent.putExtra(REMOTE_PROFILE_PUB_KEY,profileInformation.getHexPublicKey());
+                                            Intent intent = new Intent(WaitingChatActivity.this, ChatActivity.class);
+                                            intent.putExtra(REMOTE_PROFILE_PUB_KEY, profileInformation.getHexPublicKey());
                                             startActivity(intent);
                                             finish();
                                         }
@@ -165,13 +166,16 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(WaitingChatActivity.this,"Chat connection fail\n"+statusDetail,Toast.LENGTH_LONG).show();
+                                    Toast.makeText(WaitingChatActivity.this, "Chat connection fail\n" + statusDetail, Toast.LENGTH_LONG).show();
                                     progressBar.setVisibility(View.GONE);
                                 }
                             });
                         }
                     });
-                    anRedtooth.acceptChatRequest(profileInformation.getHexPublicKey(),future);
+                    anRedtooth.acceptChatRequest(profileInformation.getHexPublicKey(), future);
+                } catch (AppServiceCallNotAvailableException e){
+                    Toast.makeText(WaitingChatActivity.this,"Connection is not longer available",Toast.LENGTH_LONG).show();
+                    onBackPressed();
                 } catch (Exception e) {
                     e.printStackTrace();
                     Toast.makeText(WaitingChatActivity.this,"Chat connection fail\n"+e.getMessage(),Toast.LENGTH_LONG).show();

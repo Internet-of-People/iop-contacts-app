@@ -8,8 +8,10 @@
         android:id="@+id/settingButtons"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <LinearLayout
-            android:orientation="vertical" android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/white">
 
@@ -45,17 +47,32 @@
                     android:text="@string/backup_profile"/>
                 <Button
                     android:id="@+id/btn_restore"
-                    android:background="@color/transparent"
+                    android:background="@drawable/settings_items"
                     android:stateListAnimator="@null"
                     android:padding="8dp"
                     android:height="40dp"
-                    android:layout_marginTop="6dp"
-                    android:layout_marginBottom="6dp"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
                     android:textColor="#444444"
                     android:text="@string/restore_profile"/>
+
+
+                <Switch
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/switch_background_service"
+                    android:padding="8dp"
+                    android:height="40dp"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp"
+                    android:checked="true"
+                    android:background="@color/transparent"
+                    android:textColor="#444444"
+                    android:text="@string/background_service_enabled"
+                    />
 
 
             </LinearLayout>

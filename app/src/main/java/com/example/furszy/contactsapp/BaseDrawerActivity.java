@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -26,6 +27,7 @@ import java.util.Arrays;
 import de.hdodenhof.circleimageview.CircleImageView;
 import iop.org.iop_sdk_android.core.IntentBroadcastConstants;
 
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_IOP_SERVICE_CONNECTED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT;
 
 /**
@@ -52,6 +54,8 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
             String action = intent.getAction();
             if (action.equals(ACTION_PROFILE_UPDATED_CONSTANT)){
                 refreshProfile();
+            }else if(action.equals(ACTION_IOP_SERVICE_CONNECTED)){
+                refreshProfile();
             }
         }
     };
@@ -63,6 +67,7 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
         setContentView(R.layout.activity_base_drawer);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        toolbar.setTitleTextColor(Color.WHITE);
         frameLayout = (FrameLayout) findViewById(R.id.content_frame);
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -97,6 +102,7 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
     protected void onResume() {
         super.onResume();
         registerReceiver(receiver,new IntentFilter(IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT));
+        registerReceiver(receiver,new IntentFilter(ACTION_IOP_SERVICE_CONNECTED));
     }
 
     @Override

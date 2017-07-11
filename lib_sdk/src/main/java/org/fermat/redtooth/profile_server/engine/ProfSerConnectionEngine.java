@@ -357,9 +357,9 @@ public class ProfSerConnectionEngine {
             LOG.info("#### Check in completed!!  ####");
 
             // if the profile is just registered i have to initialize it
-            if (profSerEngine.getProfNodeConnection().isNeedRegisterProfile()){
+            //if (profSerEngine.getProfNodeConnection().isNeedRegisterProfile()){
                 profSerEngine.initProfile();
-            }
+            //}
             // notify check-in
             if (initFuture!=null)
                 initFuture.onMessageReceive(messageId,true);

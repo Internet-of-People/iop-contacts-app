@@ -32,6 +32,8 @@ import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.utils.ProfileUtils;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.IllegalFormatCodePointException;
 import java.util.List;
@@ -45,6 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
 import static org.fermat.redtooth.profile_server.imp.ProfileInformationImp.PairStatus.NOT_PAIRED;
 
 /**
@@ -52,12 +55,13 @@ import static org.fermat.redtooth.profile_server.imp.ProfileInformationImp.PairS
  */
 public class ProfileInformationActivity extends BaseActivity implements View.OnClickListener {
 
+    private static final Logger logger = LoggerFactory.getLogger(ProfileInformationActivity.class);
+
     private static final String TAG = "ProfInfoActivity";
 
     public static final String IS_MY_PROFILE = "extra_is_my_profile";
 
-    public static final String INTENT_EXTRA_PROF_KEY = "prof_key";
-    public static final String INTENT_EXTRA_PROF_NAME = "prof_name";
+
     public static final String INTENT_EXTRA_PROF_SERVER_ID = "prof_ser_id";
     public static final String INTENT_EXTRA_SEARCH = "prof_search";
 
@@ -208,12 +212,13 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 
                             @Override
                             public void onFail(int messageId, int status, String statusDetail) {
+                                logger.info("Search profile on network fail, detail:"+statusDetail);
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        Toast.makeText(ProfileInformationActivity.this,"Search profile on network fail\nTry again later",Toast.LENGTH_LONG).show();
+                                        logger.info("Search profile on network fail...");
                                         hideLoading();
-                                        onBackPressed();
+                                        //onBackPressed();
                                     }
                                 });
                             }
@@ -251,7 +256,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     public void onClick(final View v) {
         int id = v.getId();
         if (id==R.id.txt_chat){
-            Toast.makeText(v.getContext(),"Sending chat request..",Toast.LENGTH_LONG).show();
+            Toast.makeText(v.getContext(),"Sending chat request..",Toast.LENGTH_SHORT).show();
             executor.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -270,7 +275,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 
                             @Override
                             public void onFail(int messageId, int status, String statusDetail) {
-                                Log.e(TAG, "fail chat request: " + statusDetail);
+                                Log.e(TAG, "fail chat request: " + statusDetail+", id: "+messageId);
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {

@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,6 +43,14 @@ public class SettingsActivity  extends BaseDrawerActivity {
         root.findViewById(R.id.btn_delete_contacts).setOnClickListener(this);
         root.findViewById(R.id.btn_delete_requests).setOnClickListener(this);
 
+        Switch switchView = ((Switch)root.findViewById(R.id.switch_background_service));
+        switchView.setChecked(app.createProfSerConfig().getBackgroundServiceEnable());
+        switchView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                app.createProfSerConfig().setBackgroundServiceEnable(isChecked);
+            }
+        });
         // APP Version
         text_version = (TextView) root.findViewById(R.id.text_version);
         try {

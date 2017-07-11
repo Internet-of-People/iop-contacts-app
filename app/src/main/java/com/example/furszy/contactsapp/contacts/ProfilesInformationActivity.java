@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
+
 /**
  * Created by mati on 03/03/17.
  */
@@ -68,7 +70,7 @@ public class ProfilesInformationActivity extends BaseActivity {
             @Override
             public void onItemClickListener(ProfileInformation data, int position) {
                 Intent intent1 = new Intent(ProfilesInformationActivity.this, ProfileInformationActivity.class);
-                intent1.putExtra(ProfileInformationActivity.INTENT_EXTRA_PROF_KEY, data.getPublicKey());
+                intent1.putExtra(INTENT_EXTRA_PROF_KEY, data.getPublicKey());
                 ProfilesInformationActivity.this.startActivity(intent1);
             }
 

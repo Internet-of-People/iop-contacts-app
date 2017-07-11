@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
@@ -34,12 +35,11 @@ import org.fermat.redtooth.profile_server.ProfileInformation;
 import static com.example.furszy.contactsapp.App.INTENT_ACTION_PROFILE_CHECK_IN_FAIL;
 import static com.example.furszy.contactsapp.App.INTENT_ACTION_PROFILE_CONNECTED;
 import static com.example.furszy.contactsapp.App.INTENT_ACTION_PROFILE_DISCONNECTED;
-import static com.example.furszy.contactsapp.ProfileInformationActivity.INTENT_EXTRA_PROF_KEY;
-import static com.example.furszy.contactsapp.ProfileInformationActivity.INTENT_EXTRA_PROF_NAME;
 import static com.example.furszy.contactsapp.ProfileInformationActivity.INTENT_EXTRA_PROF_SERVER_ID;
 import static com.example.furszy.contactsapp.ProfileInformationActivity.INTENT_EXTRA_SEARCH;
 import static com.example.furszy.contactsapp.R.id.toolbar;
-import static org.abstractj.kalium.NaCl.init;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_NAME;
 
 /**
  * Created by furszy on 6/5/17.
@@ -85,6 +85,7 @@ public class BaseActivity extends AppCompatActivity{
     private void init(){
         childContainer = (FrameLayout) findViewById(R.id.content);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override

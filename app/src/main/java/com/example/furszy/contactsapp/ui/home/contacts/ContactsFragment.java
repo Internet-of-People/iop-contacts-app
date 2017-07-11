@@ -34,6 +34,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
+
 
 public class ContactsFragment extends RecyclerFragment<ProfileInformation> {
 
@@ -54,7 +56,7 @@ public class ContactsFragment extends RecyclerFragment<ProfileInformation> {
             @Override
             public void onItemClickListener(ProfileInformation data, int position) {
                 Intent intent1 = new Intent(getActivity(), ProfileInformationActivity.class);
-                intent1.putExtra(ProfileInformationActivity.INTENT_EXTRA_PROF_KEY, data.getPublicKey());
+                intent1.putExtra(INTENT_EXTRA_PROF_KEY, data.getPublicKey());
                 getActivity().startActivity(intent1);
             }
 

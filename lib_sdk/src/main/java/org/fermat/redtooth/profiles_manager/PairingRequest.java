@@ -112,4 +112,21 @@ public class PairingRequest {
     public ProfileInformationImp.PairStatus getPairStatus() {
         return pairStatus;
     }
+
+    @Override
+    public String toString() {
+        return "PairingRequest{" +
+                "id=" + id +
+                ", senderPubKey='" + senderPubKey + '\'' +
+                ", senderName='" + senderName + '\'' +
+                ", senderPsHost='" + senderPsHost + '\'' +
+                ", remotePubKey='" + remotePubKey + '\'' +
+                ", remoteServerId='" + remoteServerId + '\'' +
+                ", remotePsHost='" + remotePsHost + '\'' +
+                ", remoteName='" + remoteName + '\'' +
+                ", timestamp=" + timestamp +
+                ", status=" + status +
+                ", pairStatus=" + pairStatus +
+                '}';
+    }
 }

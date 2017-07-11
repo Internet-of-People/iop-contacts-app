@@ -4,7 +4,10 @@ import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -43,12 +46,18 @@ import iop.org.iop_sdk_android.core.InitListener;
 import iop.org.iop_sdk_android.core.profile_server.ProfileServerConfigurationsImp;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_IOP_SERVICE_CONNECTED;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PAIR_RECEIVED;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_RESPONSE_PAIR_RECEIVED;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_NAME;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_RESPONSE_DETAIL;
 
 /**
  * Created by furszy on 5/25/17.
  */
 
-public class App extends Application implements IoPConnectContext, PairingListener {
+public class App extends Application implements IoPConnectContext {
 
     public static final String INTENT_ACTION_PROFILE_CONNECTED = "profile_connected";
     public static final String INTENT_ACTION_PROFILE_CHECK_IN_FAIL= "profile_check_in_fail";
@@ -70,6 +79,22 @@ public class App extends Application implements IoPConnectContext, PairingListen
         return instance;
     }
 
+    private BroadcastReceiver serviceReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(ACTION_ON_PAIR_RECEIVED)){
+                String pubKey = intent.getStringExtra(INTENT_EXTRA_PROF_KEY);
+                String name = intent.getStringExtra(INTENT_EXTRA_PROF_NAME);
+                onPairReceived(pubKey,name);
+            }else if (action.equals(ACTION_ON_RESPONSE_PAIR_RECEIVED)){
+                String pubKey = intent.getStringExtra(INTENT_EXTRA_PROF_KEY);
+                String responseDetail = intent.getStringExtra(INTENT_RESPONSE_DETAIL);
+                onPairResponseReceived(pubKey,responseDetail);
+            }
+        }
+    };
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -78,17 +103,24 @@ public class App extends Application implements IoPConnectContext, PairingListen
         log = LoggerFactory.getLogger(App.class);
         broadcastManager = LocalBroadcastManager.getInstance(this);
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        // register broadcast listeners
+        broadcastManager.registerReceiver(serviceReceiver,new IntentFilter(ACTION_ON_PAIR_RECEIVED));
+        broadcastManager.registerReceiver(serviceReceiver,new IntentFilter(ACTION_ON_RESPONSE_PAIR_RECEIVED));
+
         anRedtooth = AnRedtooth.init(this, new InitListener() {
             @Override
             public void onConnected() {
                 try {
+                    // notify connection
+                    Intent intent = new Intent(ACTION_IOP_SERVICE_CONNECTED);
+                    broadcastManager.sendBroadcast(intent);
+
                     ExecutorService executors = Executors.newSingleThreadExecutor();
                     executors.submit(new Runnable() {
                         @Override
                         public void run() {
                             try {
                                 ModuleRedtooth module = anRedtooth.getRedtooth();
-                                module.setPairListener(App.this);
                                 module.setProfileListener(new ProfileListenerImp(App.this));
                                 if (module.isIdentityCreated()) {
                                     log.info("Trying to connect profile");
@@ -123,7 +155,7 @@ public class App extends Application implements IoPConnectContext, PairingListen
         ProfileServerConfigurationsImp conf = new ProfileServerConfigurationsImp(this,getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));
         conf.setHost(HardcodedConstants.TEST_PROFILE_SERVER_HOST);//"192.168.0.10");
         return conf;
-        }
+    }
 
 
     private void initLogging() {
@@ -180,16 +212,14 @@ public class App extends Application implements IoPConnectContext, PairingListen
     }
 
 
-    @Override
     public void onPairReceived(String requesteePubKey, final String name) {
         Intent intent = new Intent(BaseActivity.NOTIF_DIALOG_EVENT);
-        intent.putExtra(ProfileInformationActivity.INTENT_EXTRA_PROF_KEY,requesteePubKey);
-        intent.putExtra(ProfileInformationActivity.INTENT_EXTRA_PROF_NAME,name);
+        intent.putExtra(INTENT_EXTRA_PROF_KEY,requesteePubKey);
+        intent.putExtra(INTENT_EXTRA_PROF_NAME,name);
         broadcastManager.sendBroadcast(intent);
 
     }
 
-    @Override
     public void onPairResponseReceived(String requesteePubKey, String responseDetail) {
         PendingIntent pendingIntent = PendingIntent.getActivity(this,0,new Intent(this, HomeActivity.class),0);
         Notification not = new Notification.Builder(this)
@@ -286,5 +316,11 @@ public class App extends Application implements IoPConnectContext, PairingListen
 
     public File getBackupDir(){
         return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        unregisterReceiver(serviceReceiver);
     }
 }
