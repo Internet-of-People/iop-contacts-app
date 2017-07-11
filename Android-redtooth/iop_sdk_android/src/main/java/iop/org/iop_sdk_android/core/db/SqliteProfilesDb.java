@@ -111,6 +111,7 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         ContentValues contentValues = new ContentValues();
         contentValues.put(CONTACTS_COLUMN_NAME, profile.getName());
         contentValues.put(CONTACTS_COLUMN_TYPE, profile.getType());
+        if (profile.getVersion()!=null)
         contentValues.put(CONTACTS_COLUMN_VERSION, profile.getVersion().toByteArray());
         contentValues.put(CONTACTS_COLUMN_PUB_KEY, CryptoBytes.toHexString(profile.getPublicKey()));
         contentValues.put(CONTACTS_COLUMN_UPDATE_TIMESTAMP,profile.getLastUpdateTime());
@@ -141,6 +142,7 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
             int lon = cursor.getInt(CONTACTS_POS_COLUMN_LON);
             byte[] version = cursor.getBlob(CONTACTS_POS_COLUMN_VERSION);
             ProfileInformationImp profile = new ProfileInformationImp();
+            if (version!=null)
             profile.setVersion(Version.fromByteArray(version));
             profile.setName(name);
             profile.setType(type);
