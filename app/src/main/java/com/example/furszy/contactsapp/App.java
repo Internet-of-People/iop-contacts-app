@@ -1,5 +1,6 @@
 package com.example.furszy.contactsapp;
 
+import android.app.ActivityManager;
 import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -8,6 +9,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -21,7 +24,6 @@ import org.fermat.redtooth.profile_server.engine.app_services.BaseMsg;
 import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
-import org.fermat.redtooth.profile_server.engine.app_services.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfileListener;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.services.chat.ChatMsg;
@@ -71,9 +73,13 @@ public class App extends Application implements IoPConnectContext {
     private static Logger log;
     private static App instance;
 
+    private ActivityManager activityManager;
+    private PackageInfo info;
+
     AnRedtooth anRedtooth;
     private LocalBroadcastManager broadcastManager;
     private NotificationManager notificationManager;
+    private long timeCreateApplication = System.currentTimeMillis();
 
     public static App getInstance() {
         return instance;
@@ -98,54 +104,63 @@ public class App extends Application implements IoPConnectContext {
     @Override
     public void onCreate() {
         super.onCreate();
-        instance = this;
-        initLogging();
-        log = LoggerFactory.getLogger(App.class);
-        broadcastManager = LocalBroadcastManager.getInstance(this);
-        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        // register broadcast listeners
-        broadcastManager.registerReceiver(serviceReceiver,new IntentFilter(ACTION_ON_PAIR_RECEIVED));
-        broadcastManager.registerReceiver(serviceReceiver,new IntentFilter(ACTION_ON_RESPONSE_PAIR_RECEIVED));
+        try {
+            instance = this;
+            initLogging();
+            log = LoggerFactory.getLogger(App.class);
+            PackageManager manager = getPackageManager();
+            info = manager.getPackageInfo(this.getPackageName(), 0);
+            activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+            CrashReporter.init(getCacheDir());
+            broadcastManager = LocalBroadcastManager.getInstance(this);
+            notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            // register broadcast listeners
+            broadcastManager.registerReceiver(serviceReceiver, new IntentFilter(ACTION_ON_PAIR_RECEIVED));
+            broadcastManager.registerReceiver(serviceReceiver, new IntentFilter(ACTION_ON_RESPONSE_PAIR_RECEIVED));
 
-        anRedtooth = AnRedtooth.init(this, new InitListener() {
-            @Override
-            public void onConnected() {
-                try {
-                    // notify connection
-                    Intent intent = new Intent(ACTION_IOP_SERVICE_CONNECTED);
-                    broadcastManager.sendBroadcast(intent);
+            anRedtooth = AnRedtooth.init(this, new InitListener() {
+                @Override
+                public void onConnected() {
+                    try {
+                        // notify connection
+                        Intent intent = new Intent(ACTION_IOP_SERVICE_CONNECTED);
+                        broadcastManager.sendBroadcast(intent);
 
-                    ExecutorService executors = Executors.newSingleThreadExecutor();
-                    executors.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                ModuleRedtooth module = anRedtooth.getRedtooth();
-                                module.setProfileListener(new ProfileListenerImp(App.this));
-                                if (module.isIdentityCreated()) {
-                                    log.info("Trying to connect profile");
-                                    Profile profile = module.getProfile();
-                                    if (profile != null) {
-                                        module.connect(profile.getHexPublicKey());
-                                    }else
-                                        Log.i("App", "Profile not found to connect");
+                        ExecutorService executors = Executors.newSingleThreadExecutor();
+                        executors.submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    ModuleRedtooth module = anRedtooth.getRedtooth();
+                                    module.setProfileListener(new ProfileListenerImp(App.this));
+                                    if (module.isIdentityCreated()) {
+                                        log.info("Trying to connect profile");
+                                        Profile profile = module.getProfile();
+                                        if (profile != null) {
+                                            module.connect(profile.getHexPublicKey());
+                                        } else
+                                            Log.i("App", "Profile not found to connect");
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
-                            } catch (Exception e) {
-                                e.printStackTrace();
                             }
-                        }
-                    });
-                    executors.shutdown();
-                }catch (Exception e){
-                    e.printStackTrace();
+                        });
+                        executors.shutdown();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
 
-            @Override
-            public void onDisconnected() {
+                @Override
+                public void onDisconnected() {
 
-            }
-        });
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+            // check here...
+        }
 
 
     }
@@ -153,7 +168,7 @@ public class App extends Application implements IoPConnectContext {
     @Override
     public ProfileServerConfigurations createProfSerConfig() {
         ProfileServerConfigurationsImp conf = new ProfileServerConfigurationsImp(this,getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));
-        conf.setHost(HardcodedConstants.TEST_PROFILE_SERVER_HOST);//"192.168.0.10");
+        conf.setHost(AppConstants.TEST_PROFILE_SERVER_HOST);//"192.168.0.10");
         return conf;
     }
 
@@ -230,6 +245,14 @@ public class App extends Application implements IoPConnectContext {
                 .setAutoCancel(true)
                 .build();
         notificationManager.notify(100,not);
+    }
+
+    public PackageInfo getPackageInfo() {
+        return info;
+    }
+
+    public long getTimeCreateApplication() {
+        return timeCreateApplication;
     }
 
 

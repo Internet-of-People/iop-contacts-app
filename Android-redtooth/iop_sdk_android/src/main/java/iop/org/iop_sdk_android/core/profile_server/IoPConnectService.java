@@ -446,7 +446,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         }
 
         // now send the request
-        PairingRequest pairingRequest = PairingRequest.buildPairingRequestFromHost(
+        final PairingRequest pairingRequest = PairingRequest.buildPairingRequestFromHost(
                 profile.getHexPublicKey(),
                 CryptoBytes.toHexString(remotePubKey),
                 psHost,profile.getName(),
@@ -480,6 +480,8 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
             @Override
             public void onMsgFail(int messageId, int statusValue, String details) {
+                // rollback pairing request:
+                pairingRequestDb.delete(pairingRequest.getId());
                 listener.onMsgFail(messageId,statusValue,details);
             }
 

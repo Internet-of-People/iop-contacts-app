@@ -129,4 +129,8 @@ public class PairingRequest {
                 ", pairStatus=" + pairStatus +
                 '}';
     }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }
