@@ -486,6 +486,7 @@ public class IoPConnect implements ConnectionListener {
         logger.info("requestPairingProfile, remote: " + pairingRequest.getRemotePubKey());
         // save request
         final int pairingRequestId = pairingRequestsManager.savePairingRequest(pairingRequest);
+        pairingRequest.setId(pairingRequestId);
         // Connection
         final IoPProfileConnection connection = getOrStablishConnection(pairingRequest.getRemotePsHost(),pairingRequest.getSenderPubKey(),pairingRequest.getSenderPsHost());
         // first the call

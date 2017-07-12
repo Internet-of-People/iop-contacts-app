@@ -121,6 +121,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    enableSendBtn();
                                     Toast.makeText(getApplicationContext(), "Pairing request fail\n" + e.getMessage(), Toast.LENGTH_LONG).show();
                                 }
                             });
