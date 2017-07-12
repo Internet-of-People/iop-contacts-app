@@ -39,9 +39,6 @@ import java.util.regex.Pattern;
 import static com.example.furszy.contactsapp.App.INTENT_ACTION_PROFILE_CHECK_IN_FAIL;
 import static com.example.furszy.contactsapp.App.INTENT_ACTION_PROFILE_CONNECTED;
 import static com.example.furszy.contactsapp.App.INTENT_ACTION_PROFILE_DISCONNECTED;
-import static com.example.furszy.contactsapp.ProfileInformationActivity.INTENT_EXTRA_PROF_SERVER_ID;
-import static com.example.furszy.contactsapp.ProfileInformationActivity.INTENT_EXTRA_SEARCH;
-import static com.example.furszy.contactsapp.R.id.toolbar;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_NAME;
 
@@ -66,24 +63,28 @@ public class BaseActivity extends AppCompatActivity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        setContentView(R.layout.activity_base);
-        app = App.getInstance();
-        anRedtooth = app.anRedtooth.getRedtooth();
-        init();
-        // onCreateChildMethod
-        onCreateView(savedInstanceState,childContainer);
+        try {
+            super.onCreate(savedInstanceState);
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            setContentView(R.layout.activity_base);
+            app = App.getInstance();
+            anRedtooth = app.anRedtooth.getRedtooth();
+            init();
+            // onCreateChildMethod
+            onCreateView(savedInstanceState, childContainer);
 
-        //Layout reload
-        btnReload = (LinearLayout )findViewById(R.id.btnReload);
-        btnReload.setVisibility(LinearLayout.GONE);
-        btnReload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // nothing yet
-            }
-        });
+            //Layout reload
+            btnReload = (LinearLayout) findViewById(R.id.btnReload);
+            btnReload.setVisibility(LinearLayout.GONE);
+            btnReload.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // nothing yet
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void init(){
@@ -124,8 +125,12 @@ public class BaseActivity extends AppCompatActivity{
 
     @Override
     protected void onStop() {
-        super.onStop();
-        localBroadcastManager.unregisterReceiver(notifReceiver);
+        try {
+            super.onStop();
+            localBroadcastManager.unregisterReceiver(notifReceiver);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private class NotifReceiver extends BroadcastReceiver{
