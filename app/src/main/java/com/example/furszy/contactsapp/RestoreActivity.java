@@ -54,7 +54,9 @@ public class RestoreActivity extends BaseActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId()==OPTIONS_RESTORE){
             int selected = spinner_files.getSelectedItemPosition();
-            anRedtooth.restoreFrom(fileList.get(selected),null);
+            if (fileList!=null && !fileList.isEmpty()) {
+                anRedtooth.restoreFrom(fileList.get(selected), null);
+            }
             return true;
         }
         return super.onOptionsItemSelected(item);
