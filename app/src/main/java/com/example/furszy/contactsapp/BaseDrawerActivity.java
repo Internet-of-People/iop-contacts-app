@@ -42,7 +42,7 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
     private DrawerLayout drawer;
 
     private View navHeader;
-    private CircleImageView imgProfile;
+    //private CircleImageView imgProfile;
     private Profile myProfile;
 
     private byte[] cachedProfImage;
@@ -80,7 +80,7 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
         navHeader = navigationView.getHeaderView(0);
         navHeader.setOnClickListener(this);
 
-        imgProfile = (CircleImageView) navHeader.findViewById(R.id.profile_image);
+        //imgProfile = (CircleImageView) navHeader.findViewById(R.id.profile_image);
 
         //Layout reload
         btnReload = (LinearLayout)findViewById(R.id.btnReload);
@@ -119,11 +119,7 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
         if (anRedtooth!=null) {
             myProfile = anRedtooth.getProfile();
             if (myProfile.getImg()!=null) {
-                if (cachedProfImage == null || !Arrays.equals(myProfile.getImg(), cachedProfImage)) {
-                    cachedProfImage = myProfile.getImg();
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(cachedProfImage, 0, cachedProfImage.length);
-                    imgProfile.setImageBitmap(bitmap);
-                }
+
             }
         }
     }
