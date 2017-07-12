@@ -1,6 +1,8 @@
 package com.example.furszy.contactsapp.ui.send_request;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -42,6 +44,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
         super.onCreateView(savedInstanceState, container);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#2998ff")));
         setTitle("Send Request");
         root = getLayoutInflater().inflate(R.layout.send_request_activity,container,true);
         edit_uri = (EditText) root.findViewById(R.id.edit_uri);

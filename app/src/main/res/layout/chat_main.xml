@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bg_conversation"
     >
 
     <fragment
@@ -30,6 +31,7 @@
             android:layout_gravity="start"
             android:ems="10"
             android:layout_weight="10"
+            android:background="@drawable/bg_input_line"
             android:textSize="15sp"
             android:textColor="@color/mainText"
             android:maxHeight="80dp" />
