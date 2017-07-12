@@ -41,7 +41,7 @@
         android:paddingLeft="10dip"
         android:paddingRight="10dip"
         android:text="@string/select_file"
-        android:textColor="@color/white"
+        android:textColor="@color/mainText"
         android:textSize="14sp" />
 
 
