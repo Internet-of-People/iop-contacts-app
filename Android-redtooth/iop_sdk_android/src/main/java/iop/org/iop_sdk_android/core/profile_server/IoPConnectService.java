@@ -19,6 +19,7 @@ import org.fermat.redtooth.core.IoPConnect;
 import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.global.PlatformSerializer;
 import org.fermat.redtooth.global.Version;
+import org.fermat.redtooth.profile_server.DatabaseCollector;
 import org.fermat.redtooth.profile_server.client.AppServiceCallNotAvailableException;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
@@ -58,6 +59,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -691,6 +693,16 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     @Override
     public void deletePairingRequests() {
         pairingRequestDb.truncate();
+    }
+
+    @Override
+    public Collection<PairingRequest> listAllPairingRequests() {
+        return pairingRequestDb.list();
+    }
+
+    @Override
+    public Collection<ProfileInformation> listAllProfileInformation() {
+        return profilesDb.listAll(profile.getHexPublicKey());
     }
 
     @Override
