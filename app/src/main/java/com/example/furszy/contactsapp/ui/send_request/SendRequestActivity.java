@@ -54,7 +54,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(final View v) {
         int id = v.getId();
         if (id == R.id.img_qr){
             if (!checkPermission(CAMERA)) {
@@ -73,7 +73,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
             if (uri.length()<1)return;
             final ProfileUtils.UriProfile profile = ProfileUtils.fromUri(uri);
             if (profile.getPubKey().equals(anRedtooth.getMyProfile().getHexPublicKey())){
-                Snackbar.make(v,"You cannot add yourself as contact",Snackbar.LENGTH_LONG).show();
+                Snackbar.make(v, R.string.pairing_yourself, Snackbar.LENGTH_LONG).show();
             }else {
                 new Thread(new Runnable() {
                     @Override
@@ -87,7 +87,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                                         @Override
                                         public void run() {
                                             Log.i(TAG, "pairing request sent");
-                                            Toast.makeText(getApplicationContext(), "Pairing request sent!", Toast.LENGTH_LONG).show();
+                                            Snackbar.make(v, R.string.pairing_success, Snackbar.LENGTH_LONG).show();
                                             enableSendBtn();
                                         }
                                     });
@@ -99,7 +99,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                                         @Override
                                         public void run() {
                                             Log.i(TAG, "pairing request fail");
-                                            Toast.makeText(getApplicationContext(), "Pairing request fail\n" + statusDetail, Toast.LENGTH_LONG).show();
+                                            Snackbar.make(v, R.string.pairing_fail + statusDetail, Snackbar.LENGTH_LONG).show();
                                             enableSendBtn();
                                         }
                                     });
@@ -112,7 +112,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                                 @Override
                                 public void run() {
                                     Log.i(TAG, "pairing request fail");
-                                    Toast.makeText(getApplicationContext(), "Pairing request fail\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+                                    Snackbar.make(v, R.string.pairing_fail + e.getMessage(), Snackbar.LENGTH_LONG).show();
                                     enableSendBtn();
                                 }
                             });
@@ -121,7 +121,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(getApplicationContext(), "Pairing request fail\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+                                    Snackbar.make(v, R.string.pairing_fail + e.getMessage(), Snackbar.LENGTH_LONG).show();
                                 }
                             });
                         }
