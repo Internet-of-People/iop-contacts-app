@@ -55,4 +55,5 @@
     <string name="pairing_success">Pairing request sent!</string>
     <string name="pairing_fail">Pairing request failed</string>
     <string name="pairing_yourself">You cannot add yourself as contact</string>
+    <string name="backup_completed_message">Backup completed, check your download\'s folder</string>
 </resources>

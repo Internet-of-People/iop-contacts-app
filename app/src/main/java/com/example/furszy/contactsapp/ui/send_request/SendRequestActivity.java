@@ -16,6 +16,8 @@ import android.widget.Toast;
 import com.example.furszy.contactsapp.BaseActivity;
 import com.example.furszy.contactsapp.R;
 import com.example.furszy.contactsapp.scanner.ScanActivity;
+import com.example.furszy.contactsapp.ui.home.HomeActivity;
+import com.example.furszy.contactsapp.ui.settings.SettingsActivity;
 
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.profile_server.ProfileInformation;
