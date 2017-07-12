@@ -49,7 +49,8 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
     private ProgressBar progressBar;
     private TextView txt_title;
     private ProfileInformation profileInformation;
-
+    private String remotePk;
+    private boolean isCalling;
     private ExecutorService executors;
 
     private BroadcastReceiver chatReceiver = new BroadcastReceiver() {
@@ -76,6 +77,8 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
         txt_name = (TextView) root.findViewById(R.id.txt_name);
         progressBar = (ProgressBar) root.findViewById(R.id.progressBar);
         txt_title = (TextView) root.findViewById(R.id.txt_title);
+        remotePk = getIntent().getStringExtra(REMOTE_PROFILE_PUB_KEY);
+        isCalling = getIntent().hasExtra(IS_CALLING);
         if (getIntent().hasExtra(IS_CALLING)){
             root.findViewById(R.id.single_cancel_container).setVisibility(View.VISIBLE);
             root.findViewById(R.id.btn_cancel_chat_alone).setOnClickListener(this);
@@ -92,14 +95,13 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
         super.onResume();
         localBroadcastManager.registerReceiver(chatReceiver,new IntentFilter(App.INTENT_CHAT_ACCEPTED_BROADCAST));
         localBroadcastManager.registerReceiver(chatReceiver,new IntentFilter(App.INTENT_CHAT_REFUSED_BROADCAST));
-        String remotePk = getIntent().getStringExtra(REMOTE_PROFILE_PUB_KEY);
         profileInformation = anRedtooth.getKnownProfile(remotePk);
         txt_name.setText(profileInformation.getName());
         if (profileInformation.getImg()!=null){
             Bitmap bitmap = BitmapFactory.decodeByteArray(profileInformation.getImg(),0,profileInformation.getImg().length);
             img_profile.setImageBitmap(bitmap);
         }
-        if(getIntent().hasExtra(IS_CALLING)){
+        if(isCalling){
             txt_title.setText("Waiting for "+profileInformation.getName()+" response...");
         }else {
             txt_title.setText("Call from "+profileInformation.getName());
