@@ -51,6 +51,11 @@
     <string name="empty_request">You have no pending contact requests.</string>
     <string name="incoming_message">Wants to chat \n with you</string>
     <string name="lorem_impsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
+    <string name="background_service_enabled">IoP background service</string>
+    <string name="pairing_success">Pairing request sent!</string>
+    <string name="pairing_fail">Pairing request failed</string>
+    <string name="pairing_yourself">You cannot add yourself as contact</string>
+    <string name="backup_completed_message">Backup completed, check your download\'s folder</string>
     <string name="background_service_enabled">BACKGROUND SERVICE</string>
     <string name="report_issue_dialog_description">Issue description</string>
     <string name="report_issue_dialog_collect_device_info">Append device information</string>
@@ -65,4 +70,5 @@
     <string name="report_issuea_dialog_title">Report issue</string>
     <string name="report_issue_dialog_message_issue">Please describe your issue precisely enough to be reproduced.</string>
     <string name="report_issue">Report issue</string>
+
 </resources>

@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.InputType;
@@ -19,6 +20,8 @@ import android.widget.Toast;
 
 import com.example.furszy.contactsapp.BaseActivity;
 import com.example.furszy.contactsapp.R;
+import com.example.furszy.contactsapp.RestoreActivity;
+import com.example.furszy.contactsapp.ui.settings.SettingsActivity;
 import com.example.furszy.contactsapp.ui.settings_backup_folder.SettingsBackupFolderActivity;
 
 import java.io.IOException;
@@ -54,7 +57,10 @@ public class SettingsBackupPasswordActivity extends BaseActivity {
                     anRedtooth.backupProfile(
                             app.getBackupDir(),
                             null);
-                    Toast.makeText(v.getContext(),"Backup completed, check your download's folder",Toast.LENGTH_LONG).show();
+                    Intent myIntent = new Intent(v.getContext(), SettingsActivity.class);
+                    startActivity(myIntent);
+                    finish();
+                    Snackbar.make(v, R.string.backup_completed_message, Snackbar.LENGTH_LONG).show();
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (Exception e){
