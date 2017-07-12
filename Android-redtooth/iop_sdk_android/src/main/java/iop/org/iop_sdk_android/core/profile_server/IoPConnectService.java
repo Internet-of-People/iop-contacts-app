@@ -353,6 +353,13 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public String registerProfile(String name,String type, byte[] img, int latitude, int longitude, String extraData) throws Exception {
+        if (img!=null){
+            while (img.length>20480) {
+                throw new BigImageException();
+                // compact the image more
+                //img = ImageUtils.compress(img,10);
+            }
+        }
         profile = ioPConnect.createProfile(null,name,type,img,extraData,null);
         configurationsPreferences.setIsCreated(true);
         return profile.getHexPublicKey();

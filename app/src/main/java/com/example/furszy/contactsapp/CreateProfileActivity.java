@@ -25,8 +25,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import iop.org.iop_sdk_android.core.profile_server.BigImageException;
 
 /**
  * Created by Neoperol on 6/20/17.
@@ -43,6 +47,8 @@ public class CreateProfileActivity extends BaseActivity {
     private EditText edit_name;
     private CircleImageView img_profile_image;
     private byte[] profImgData;
+    private ExecutorService executor;
+
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
         root = getLayoutInflater().inflate(R.layout.create_profile_activity, container);
@@ -63,15 +69,47 @@ public class CreateProfileActivity extends BaseActivity {
 
         buttonCreate.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(final View v) {
                 try {
-                    String name = edit_name.getText().toString();
+                    final String name = edit_name.getText().toString();
                     if (name.length() > 0) {
-                        //todo: make this connect non blocking.
-                        anRedtooth.connect(anRedtooth.registerProfile(name,profImgData));
-                        Intent myIntent = new Intent(v.getContext(), HomeActivity.class);
-                        startActivityForResult(myIntent, 0);
-                        finish();
+                        if (executor==null) executor = Executors.newSingleThreadExecutor();
+                        executor.submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    //todo: make this connect non blocking.
+                                    anRedtooth.connect(anRedtooth.registerProfile(name, profImgData));
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Intent myIntent = new Intent(v.getContext(), HomeActivity.class);
+                                            startActivity(myIntent);
+                                            finish();
+                                        }
+                                    });
+                                } catch (final BigImageException e){
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(v.getContext(), "Registration fail, big image.", Toast.LENGTH_LONG).show();
+                                            e.printStackTrace();
+                                            log.error("Profile registration fail",e);
+                                        }
+                                    });
+                                }catch (final Exception e) {
+                                    e.printStackTrace();
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(v.getContext(), "Registration fail,Please try again later", Toast.LENGTH_LONG).show();
+                                            e.printStackTrace();
+                                            log.error("Profile registration fail",e);
+                                        }
+                                    });
+                                }
+                            }
+                        });
                     } else
                         Toast.makeText(v.getContext(), "Please write your profile name", Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
@@ -82,6 +120,15 @@ public class CreateProfileActivity extends BaseActivity {
             }
         });
 
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (executor!=null){
+            executor.shutdown();
+            executor = null;
+        }
     }
 
     @Override

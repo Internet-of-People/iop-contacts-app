@@ -56,6 +56,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         super.onCreateView(savedInstanceState, container);
         root = getLayoutInflater().inflate(R.layout.chat_main,container);
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#21619C")));
+        getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         btn_send = (Button) root.findViewById(R.id.btn_send);
         btn_send.setOnClickListener(this);
         edit_msg = (EditText) root.findViewById(R.id.edit_msg);
