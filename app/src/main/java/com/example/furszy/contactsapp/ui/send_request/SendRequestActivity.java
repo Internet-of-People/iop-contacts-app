@@ -70,10 +70,20 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
             btn_add.setEnabled(false);
             btn_add.setBackground(getResources().getDrawable(R.drawable.bg_button_light_blue,null));
             String uri = edit_uri.getText().toString();
-            if (uri.length()<1)return;
+            if (uri.length()<1) {
+                enableSendBtn();
+                return;
+            }
+            if (!ProfileUtils.isValidUriProfile(uri)) {
+                enableSendBtn();
+                Snackbar.make(v,"Invalid URI Format",Snackbar.LENGTH_LONG).show();
+                return;
+            }
             final ProfileUtils.UriProfile profile = ProfileUtils.fromUri(uri);
             if (profile.getPubKey().equals(anRedtooth.getMyProfile().getHexPublicKey())){
+                enableSendBtn();
                 Snackbar.make(v,"You cannot add yourself as contact",Snackbar.LENGTH_LONG).show();
+                return;
             }else {
                 new Thread(new Runnable() {
                     @Override

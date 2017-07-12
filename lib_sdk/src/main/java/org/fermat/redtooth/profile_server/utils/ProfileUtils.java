@@ -25,13 +25,26 @@ public class ProfileUtils {
      * @param uri
      * @return
      */
-    public static UriProfile fromUri(String uri){
+    public static UriProfile fromUri(String uri) {
         String[] str = uri.split("/");
         int indexOfAnd = str[2].indexOf("&");
-        String name = str[2].substring(str[2].indexOf("=")+1,indexOfAnd);
-        String psHost = str[2].substring(indexOfAnd+4);
-        UriProfile uriProfile = new UriProfile(name,str[1],psHost);
+        String name = str[2].substring(str[2].indexOf("=") + 1, indexOfAnd);
+        String psHost = str[2].substring(indexOfAnd + 4);
+        UriProfile uriProfile = new UriProfile(name, str[1], psHost);
         return uriProfile;
+    }
+
+    public static boolean isValidUriProfile(String uri){
+        String[] str = uri.split("/");
+        if (str.length == 1) {
+            return false;
+        }
+        int indexOfAnd = str[2].indexOf("&");
+        int indexOfEqual = str[2].indexOf("=");
+        if (indexOfAnd == -1 || indexOfEqual == -1) {
+            return false;
+        }
+        return true;
     }
 
     public static ProfileInformationImp.PairStatus PairingRequestToPairStatus(ProfileBase owner,PairingRequest pairingRequest) {
