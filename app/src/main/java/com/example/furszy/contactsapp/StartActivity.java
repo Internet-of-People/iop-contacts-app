@@ -25,6 +25,7 @@ public class StartActivity extends BaseActivity {
             public void onClick(View v) {
                 Intent myIntent = new Intent(v.getContext(), CreateProfileActivity.class);
                 startActivity(myIntent);
+                finish();
             }
         });
 
@@ -35,6 +36,7 @@ public class StartActivity extends BaseActivity {
             public void onClick(View v) {
                 Intent myIntent = new Intent(v.getContext(), RestoreActivity.class);
                 startActivity(myIntent);
+                finish();
             }
         });
     }

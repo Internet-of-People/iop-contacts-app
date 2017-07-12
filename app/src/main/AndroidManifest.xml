@@ -35,7 +35,7 @@
         <activity android:name=".BaseDrawerActivity"></activity>
         <activity android:name=".RestoreActivity"></activity>
         <activity android:name=".ui.other_profile.OtherProfileActivity"/>
-        <activity android:name=".CreateProfileActivity"></activity>
+        <activity android:name=".CreateProfileActivity" android:noHistory="true" />
         <activity android:name=".ui.settings.SettingsActivity"></activity>
         <activity android:name=".ui.settings_restore.SettingsRestoreActivity"></activity>
         <activity android:name=".ui.settings_backup.SettingsBackupActivity"></activity>
@@ -48,10 +48,10 @@
         <activity android:name=".ui.home.HomeActivity"
             android:theme="@style/AppTheme">
             <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN" />
 
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity android:name=".ui.chat.contact_list.ChatContactActivity">
 

@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.text.InputFilter;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -25,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -53,6 +53,7 @@ public class CreateProfileActivity extends BaseActivity {
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
         root = getLayoutInflater().inflate(R.layout.create_profile_activity, container);
         edit_name = (EditText) root.findViewById(R.id.edit_name);
+        edit_name.setFilters(new InputFilter[]{filter,new InputFilter.LengthFilter(14)});
         img_profile_image = (CircleImageView) root.findViewById(R.id.img_profile_image);
         buttonCreate = (Button) root.findViewById(R.id.btnCreate);
         setTitle("Create profile");

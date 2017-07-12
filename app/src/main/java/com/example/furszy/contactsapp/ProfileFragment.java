@@ -20,6 +20,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.text.Editable;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -49,6 +51,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static android.R.attr.filter;
 import static android.app.Activity.RESULT_OK;
 import static org.fermat.redtooth.utils.StringUtils.cleanString;
 
@@ -116,6 +120,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
 
         imgProfile = (CircleImageView) root.findViewById(R.id.profile_image);
         txt_name = (EditText) root.findViewById(R.id.txt_name);
+        txt_name.setFilters(new InputFilter[]{filter,new InputFilter.LengthFilter(14)});
         progressBar = (ProgressBar) root.findViewById(R.id.progressBar);
         progressBar = (ProgressBar) root.findViewById(R.id.progressBar);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.BLUE, PorterDuff.Mode.MULTIPLY);
@@ -504,6 +509,20 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
             // permissions this app might request
         }
     }
+    public InputFilter filter = new InputFilter() {
+        @Override
+        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+            for (int i = start; i < end; ++i)
+            {
+                if (!Pattern.compile("[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890]*").matcher(String.valueOf(source.charAt(i))).matches())
+                {
+                    return "";
+                }
+            }
+
+            return null;
+        }
+    };
 
 
 }

@@ -18,6 +18,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +33,8 @@ import com.example.furszy.contactsapp.ui.home.HomeActivity;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileInformation;
+
+import java.util.regex.Pattern;
 
 import static com.example.furszy.contactsapp.App.INTENT_ACTION_PROFILE_CHECK_IN_FAIL;
 import static com.example.furszy.contactsapp.App.INTENT_ACTION_PROFILE_CONNECTED;
@@ -174,5 +178,18 @@ public class BaseActivity extends AppCompatActivity{
         btnReload.setVisibility(View.VISIBLE);
     }
 
+    public InputFilter filter = new InputFilter() {
+        @Override
+        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+            for (int i = start; i < end; ++i)
+            {
+                if (!Pattern.compile("[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890]*").matcher(String.valueOf(source.charAt(i))).matches())
+                {
+                    return "";
+                }
+            }
 
+            return null;
+        }
+    };
 }
