@@ -108,7 +108,7 @@ public class MessagesFragment extends RecyclerFragment<ChatMsgUi> {
                     holder.txt_time.setGravity(Gravity.START);
                 }
                 if (data.getTimestamp()!=0) {
-                    holder.txt_time.setText(new SimpleDateFormat("dd/MM/yyyy mm:HH").format(data.getTimestamp()));
+                    holder.txt_time.setText(new SimpleDateFormat("dd/MM/yyyy hh:mm").format(data.getTimestamp()));
                 }else
                     holder.txt_time.setVisibility(View.GONE);
             }
