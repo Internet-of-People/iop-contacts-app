@@ -17,6 +17,8 @@
 
         <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/img_profile_image"
+            android:background="@drawable/bg_circle_blue"
+            android:padding="4dp"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_marginBottom="20dp"

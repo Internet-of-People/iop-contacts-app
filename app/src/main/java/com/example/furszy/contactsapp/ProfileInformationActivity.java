@@ -158,6 +158,8 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                 isMyProfile = true;
                 profileInformation = module.getMyProfile();
                 btn_connect.setVisibility(View.GONE);
+                txt_chat.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_chat_disable, 0);
+                txt_chat.setEnabled (false);
             }
         }
 
