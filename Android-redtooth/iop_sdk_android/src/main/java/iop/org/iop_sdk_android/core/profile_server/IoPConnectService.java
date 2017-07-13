@@ -563,6 +563,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     @Override
     public void refuseChatRequest(String hexPublicKey) {
         CallProfileAppService callProfileAppService = profile.getAppService(EnabledServices.CHAT.getName()).getOpenCall(hexPublicKey);
+        if (callProfileAppService == null) return;
         callProfileAppService.dispose();
     }
 
