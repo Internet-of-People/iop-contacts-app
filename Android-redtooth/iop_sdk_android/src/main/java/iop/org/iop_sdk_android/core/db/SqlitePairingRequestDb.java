@@ -129,10 +129,10 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
     }
     @Override
     public int saveIfNotExistPairingRequest(PairingRequest pairingRequest) {
-        if(getPairingRequest(pairingRequest.getSenderPubKey(),pairingRequest.getRemotePubKey())!=null){
+        /*if(getPairingRequest(pairingRequest.getSenderPubKey(),pairingRequest.getRemotePubKey())!=null){
             log.info("Pairing request exist, "+pairingRequest);
             return 0;
-        }
+        }*/
         return (int) insert(pairingRequest);
     }
 

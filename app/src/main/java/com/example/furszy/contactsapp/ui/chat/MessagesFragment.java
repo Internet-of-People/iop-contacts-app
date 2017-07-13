@@ -4,8 +4,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Bundle;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.example.furszy.contactsapp.R;
@@ -38,10 +41,25 @@ public class MessagesFragment extends RecyclerFragment<ChatMsgUi> {
             if (action.equals(INTENT_CHAT_TEXT_BROADCAST)){
                 String text = intent.getStringExtra(INTENT_CHAT_TEXT_RECEIVED);
                 adapter.addItem(new ChatMsgUi(false,text,System.currentTimeMillis()),adapter.getItemCount());
-                layoutManager.scrollToPosition(adapter.getItemCount());
+                recycler.scrollToPosition(list.size()-1);
             }
         }
     };
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View root = super.onCreateView(inflater, container, savedInstanceState);
+        recycler.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+
+            public void onLayoutChange(View v, int left, int top, int right,int bottom, int oldLeft, int oldTop,int oldRight, int oldBottom) {
+
+                recycler.scrollToPosition(list.size()-1);
+
+            }
+        });
+        return root;
+    }
 
     @Override
     public void onResume() {
@@ -102,7 +120,7 @@ public class MessagesFragment extends RecyclerFragment<ChatMsgUi> {
             @Override
             public void run() {
                 adapter.addItem(new ChatMsgUi(true,text,System.currentTimeMillis()),adapter.getItemCount());
-                layoutManager.scrollToPosition(adapter.getItemCount());
+                recycler.scrollToPosition(list.size()-1);
             }
         });
     }
