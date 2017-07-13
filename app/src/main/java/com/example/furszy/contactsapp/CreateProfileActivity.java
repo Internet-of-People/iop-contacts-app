@@ -152,7 +152,7 @@ public class CreateProfileActivity extends BaseActivity {
             if( ContextCompat.checkSelfPermission(this,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ) {
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                        Manifest.permission.READ_CONTACTS)) {
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
                     // Show an expanation to the user *asynchronously* -- don't block
                     // this thread waiting for the user's response! After the user
@@ -204,7 +204,7 @@ public class CreateProfileActivity extends BaseActivity {
 
                 // Should we show an explanation?
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                        Manifest.permission.READ_CONTACTS)) {
+                        Manifest.permission.READ_EXTERNAL_STORAGE)) {
 
                     // Show an expanation to the user *asynchronously* -- don't block
                     // this thread waiting for the user's response! After the user
@@ -230,7 +230,7 @@ public class CreateProfileActivity extends BaseActivity {
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case 1: {
+            case RESULT_LOAD_IMAGE: {
 
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0

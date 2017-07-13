@@ -51,6 +51,9 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.List;
+
+import org.fermat.redtooth.profile_server.DatabaseCollector;
 
 
 public abstract class ReportIssueDialogBuilder extends DialogBuilder implements OnClickListener {
@@ -66,12 +69,14 @@ public abstract class ReportIssueDialogBuilder extends DialogBuilder implements 
     private CheckBox viewCollectApplicationLog;
     private CheckBox viewCollectDb;
 
+    private DatabaseCollector databaseCollector;
+
 
     private static final Logger log = LoggerFactory.getLogger(ReportIssueDialogBuilder.class);
 
-    public ReportIssueDialogBuilder(final Context context, String authorities, final int titleResId, final int messageResId) {
+    public ReportIssueDialogBuilder(final Context context, String authorities, final int titleResId, final int messageResId,DatabaseCollector databaseCollector) {
         super(context);
-
+        this.databaseCollector = databaseCollector;
         this.authorities = authorities;
         this.context = context;
 
@@ -177,23 +182,24 @@ public abstract class ReportIssueDialogBuilder extends DialogBuilder implements 
 
 
         if (viewCollectDb.isChecked()) {
-            //todo: add contacts db and rates db here.
-            /*try{
-				List data = databaseCollector.collectData();
-				if (data!=null && !data.isEmpty()){
-					final File file = File.createTempFile("db-dump", ".txt", cacheDir);
-					final Writer writer = new OutputStreamWriter(new FileOutputStream(file), Charsets.UTF_8);
-					for (Object o : data) {
-						writer.write(o.toString()+"\n");
-					}
-					writer.close();
+            try{
+                if (databaseCollector!=null) {
+                    List data = databaseCollector.collectData();
+                    if (data != null && !data.isEmpty()) {
+                        final File file = File.createTempFile("db-dump", ".txt", cacheDir);
+                        final Writer writer = new OutputStreamWriter(new FileOutputStream(file), Charsets.UTF_8);
+                        for (Object o : data) {
+                            writer.write(o.toString() + "\n");
+                        }
+                        writer.close();
 
-					attachments.add(FileProvider.getUriForFile(getContext(),authorities, file));
-				}
+                        attachments.add(FileProvider.getUriForFile(getContext(), authorities, file));
+                    }
+                }
 
 			}catch (Exception e){
 				log.error("Exception",e);
-			}*/
+			}
 
         }
 

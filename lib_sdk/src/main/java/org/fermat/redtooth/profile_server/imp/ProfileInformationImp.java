@@ -5,6 +5,7 @@ import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -262,6 +263,26 @@ public class ProfileInformationImp implements Serializable,ProfileInformation {
     }
 
 
-
-
+    @Override
+    public String toString() {
+        return "ProfileInformationImp{" +
+                "version=" + version +
+                ", pubKey=" + Arrays.toString(pubKey) +
+                ", name='" + name + '\'' +
+                ", type='" + type + '\'' +
+                ", img=" + Arrays.toString(img) +
+                ", thumbnailImg=" + Arrays.toString(thumbnailImg) +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                ", extraData='" + extraData + '\'' +
+                ", services=" + services +
+                ", tumbnailImgHash=" + Arrays.toString(tumbnailImgHash) +
+                ", imgHash=" + Arrays.toString(imgHash) +
+                ", profileServerId=" + Arrays.toString(profileServerId) +
+                ", homeHost='" + homeHost + '\'' +
+                ", isOnline=" + isOnline +
+                ", updateTimestamp=" + updateTimestamp +
+                ", pairStatus=" + pairStatus +
+                '}';
+    }
 }

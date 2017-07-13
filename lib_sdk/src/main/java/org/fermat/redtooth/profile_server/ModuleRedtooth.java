@@ -2,6 +2,7 @@ package org.fermat.redtooth.profile_server;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -76,9 +77,6 @@ public interface ModuleRedtooth {
 
     boolean isIdentityCreated();
 
-
-    void setProfileListener(ProfileListener profileListener);
-
     /* Search queries **/
 
     void getProfileInformation(String profPubKey, ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException;
@@ -122,5 +120,7 @@ public interface ModuleRedtooth {
 
     void deletePairingRequests();
 
+    Collection<PairingRequest> listAllPairingRequests();
 
+    Collection<ProfileInformation> listAllProfileInformation();
 }

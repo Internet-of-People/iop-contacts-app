@@ -24,13 +24,20 @@ import com.example.furszy.contactsapp.base.ReportIssueDialogBuilder;
 import com.example.furszy.contactsapp.ui.settings_backup.SettingsBackupActivity;
 import com.example.furszy.contactsapp.ui.settings_restore.SettingsRestoreActivity;
 
+import org.fermat.redtooth.profile_server.DatabaseCollector;
+import org.fermat.redtooth.profiles_manager.PairingRequest;
+
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by Neoperol on 6/21/17.
  */
 
-public class SettingsActivity  extends BaseDrawerActivity {
+public class SettingsActivity  extends BaseDrawerActivity implements DatabaseCollector {
     private View root;
     private Button buttonRestore;
     private Button buttonBackup;
@@ -101,7 +108,8 @@ public class SettingsActivity  extends BaseDrawerActivity {
                 this,
                 "com.example.furszy.contactsapp.myfileprovider",
                 R.string.report_issuea_dialog_title,
-                R.string.report_issue_dialog_message_issue)
+                R.string.report_issue_dialog_message_issue,
+                this)
         {
             @Nullable
             @Override
@@ -139,5 +147,16 @@ public class SettingsActivity  extends BaseDrawerActivity {
         super.onResume();
         // to check current activity in the navigation drawer
         setNavigationMenuItemChecked(1);
+    }
+
+    @Override
+    public List collectData() {
+        List<Object> list = new ArrayList<>();
+        Collection<PairingRequest> list1 = anRedtooth.listAllPairingRequests();
+        if (list1 != null) {
+            list.addAll(list1);
+            list.addAll(anRedtooth.listAllProfileInformation());
+        }
+        return list;
     }
 }

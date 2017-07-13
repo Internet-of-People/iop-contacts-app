@@ -12,6 +12,8 @@ public interface EngineListener {
     // todo: ver si este metodo està bien o es al pedo. El engine es para un solo profile, no deberia hacer esto.
     void onCheckInCompleted(Profile profile);
 
+    void onDisconnect(Profile profile);
+
     //void newCallReceived(CallProfileAppService callProfileAppService);
 
 //    void onProfileSearchReceived(List<IopProfileServer.IdentityNetworkProfileInformation> profileInformationList);

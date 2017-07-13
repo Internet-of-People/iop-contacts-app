@@ -19,6 +19,7 @@ import org.fermat.redtooth.core.IoPConnect;
 import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.global.PlatformSerializer;
 import org.fermat.redtooth.global.Version;
+import org.fermat.redtooth.profile_server.DatabaseCollector;
 import org.fermat.redtooth.profile_server.client.AppServiceCallNotAvailableException;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
@@ -58,6 +59,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -70,6 +72,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import iop.org.iop_sdk_android.core.IntentBroadcastConstants;
 import iop.org.iop_sdk_android.core.crypto.CryptoWrapperAndroid;
@@ -77,7 +80,10 @@ import iop.org.iop_sdk_android.core.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
 import iop.org.iop_sdk_android.core.utils.ImageUtils;
 
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_CHECK_IN_FAIL;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PAIR_RECEIVED;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_CONNECTED;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_RESPONSE_PAIR_RECEIVED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_NAME;
@@ -108,11 +114,11 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     /** Configurations impl */
     private ProfileServerConfigurations configurationsPreferences;
     private Profile profile;
-    /** Listeners */
-    private ProfileListener profileListener;
     /** Databases */
     private SqlitePairingRequestDb pairingRequestDb;
     private SqliteProfilesDb profilesDb;
+
+    private AtomicBoolean isInitialized = new AtomicBoolean(false);
 
     private final Set<BlockchainState.Impediment> impediments = EnumSet.noneOf(BlockchainState.Impediment.class);
 
@@ -186,31 +192,43 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     public void onCreate() {
         super.onCreate();
         Log.d(TAG,"onCreate");
-        localBroadcastManager = LocalBroadcastManager.getInstance(this);
-        application = (IoPConnectContext) getApplication();
-        executor = Executors.newFixedThreadPool(3);
-        configurationsPreferences = new ProfileServerConfigurationsImp(this,getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));
-        KeyEd25519 keyEd25519 = (KeyEd25519) configurationsPreferences.getUserKeys();
-        if (keyEd25519!=null)
-            profile = configurationsPreferences.getProfile();
-        pairingRequestDb = new SqlitePairingRequestDb(this);
-        profilesDb = new SqliteProfilesDb(this);
-        executor.submit(new Runnable() {
-            @Override
-            public void run() {
-                init();
-            }
-        });
-        tryScheduleService();
+        initService();
     }
 
-    private void init(){
+    private void initService(){
         try {
-            ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),profilesDb,pairingRequestDb,this);
+            if (isInitialized.compareAndSet(false, true)) {
+                localBroadcastManager = LocalBroadcastManager.getInstance(this);
+                application = (IoPConnectContext) getApplication();
+                executor = Executors.newFixedThreadPool(3);
+                configurationsPreferences = new ProfileServerConfigurationsImp(this, getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME, 0));
+                KeyEd25519 keyEd25519 = (KeyEd25519) configurationsPreferences.getUserKeys();
+                if (keyEd25519 != null)
+                    profile = configurationsPreferences.getProfile();
+                pairingRequestDb = new SqlitePairingRequestDb(this);
+                profilesDb = new SqliteProfilesDb(this);
+                ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),profilesDb,pairingRequestDb,this);
+                /*executor.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        init();
+                    }
+                });*/
+                tryScheduleService();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            isInitialized.set(false);
+        }
+    }
+
+    /*private void init(){
+        try {
+
         }catch (Exception e){
             e.printStackTrace();
         }
-    }
+    }*/
 
     /**
      * Try to solve some impediment if there is any.
@@ -576,11 +594,6 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
-    public void setProfileListener(ProfileListener profileListener) {
-        this.profileListener = profileListener;
-    }
-
-    @Override
     public void getProfileInformation(String profPubKey, ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException {
         getProfileInformation(profPubKey,false,profileFuture);
     }
@@ -694,6 +707,16 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
+    public Collection<PairingRequest> listAllPairingRequests() {
+        return pairingRequestDb.list();
+    }
+
+    @Override
+    public Collection<ProfileInformation> listAllProfileInformation() {
+        return profilesDb.listAll(profile.getHexPublicKey());
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG,"onStartCommand");
         if (intent!=null) {
@@ -753,15 +776,20 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public void onCheckInCompleted(Profile profile) {
-        if (profileListener!=null){
-            profileListener.onConnect(profile);
-        }
+        Intent intent = new Intent(ACTION_ON_PROFILE_CONNECTED);
+        localBroadcastManager.sendBroadcast(intent);
+    }
+
+    @Override
+    public void onDisconnect(Profile profile) {
+        Intent intent = new Intent(ACTION_ON_PROFILE_DISCONNECTED);
+        localBroadcastManager.sendBroadcast(intent);
     }
 
     private void onCheckInFail(Profile profile, int status, String statusDetail) {
-        if (profileListener!=null){
-            profileListener.onCheckInFail(profile,status,statusDetail);
-        }
+        logger.warn("on check in fail: "+statusDetail);
+        Intent intent = new Intent(ACTION_ON_CHECK_IN_FAIL);
+        localBroadcastManager.sendBroadcast(intent);
     }
 
     @Override

@@ -49,7 +49,10 @@ import iop.org.iop_sdk_android.core.profile_server.ProfileServerConfigurationsIm
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_IOP_SERVICE_CONNECTED;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_CHECK_IN_FAIL;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PAIR_RECEIVED;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_CONNECTED;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_RESPONSE_PAIR_RECEIVED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_NAME;
@@ -64,6 +67,8 @@ public class App extends Application implements IoPConnectContext {
     public static final String INTENT_ACTION_PROFILE_CONNECTED = "profile_connected";
     public static final String INTENT_ACTION_PROFILE_CHECK_IN_FAIL= "profile_check_in_fail";
     public static final String INTENT_ACTION_PROFILE_DISCONNECTED = "profile_disconnected";
+
+    public static final String INTENT_EXTRA_ERROR_DETAIL = "error_detail";
 
     public static final String INTENT_CHAT_ACCEPTED_BROADCAST = "chat_accepted";
     public static final String INTENT_CHAT_REFUSED_BROADCAST = "chat_refused";
@@ -97,6 +102,12 @@ public class App extends Application implements IoPConnectContext {
                 String pubKey = intent.getStringExtra(INTENT_EXTRA_PROF_KEY);
                 String responseDetail = intent.getStringExtra(INTENT_RESPONSE_DETAIL);
                 onPairResponseReceived(pubKey,responseDetail);
+            }else if (action.equals(ACTION_ON_PROFILE_CONNECTED)){
+                onConnect();
+            }else if (action.equals(ACTION_ON_PROFILE_DISCONNECTED)){
+                onDisconnect();
+            }else if (action.equals(ACTION_ON_CHECK_IN_FAIL)){
+                onCheckInFail();
             }
         }
     };
@@ -117,6 +128,8 @@ public class App extends Application implements IoPConnectContext {
             // register broadcast listeners
             broadcastManager.registerReceiver(serviceReceiver, new IntentFilter(ACTION_ON_PAIR_RECEIVED));
             broadcastManager.registerReceiver(serviceReceiver, new IntentFilter(ACTION_ON_RESPONSE_PAIR_RECEIVED));
+            broadcastManager.registerReceiver(serviceReceiver,new IntentFilter(ACTION_ON_PROFILE_CONNECTED));
+            broadcastManager.registerReceiver(serviceReceiver,new IntentFilter(ACTION_ON_PROFILE_DISCONNECTED));
 
             anRedtooth = AnRedtooth.init(this, new InitListener() {
                 @Override
@@ -132,7 +145,6 @@ public class App extends Application implements IoPConnectContext {
                             public void run() {
                                 try {
                                     ModuleRedtooth module = anRedtooth.getRedtooth();
-                                    module.setProfileListener(new ProfileListenerImp(App.this));
                                     if (module.isIdentityCreated()) {
                                         log.info("Trying to connect profile");
                                         Profile profile = module.getProfile();
@@ -256,49 +268,38 @@ public class App extends Application implements IoPConnectContext {
     }
 
 
-    private class ProfileListenerImp implements ProfileListener{
-
-        App app;
-
-        public ProfileListenerImp(App app) {
-            this.app = app;
-        }
-
-        @Override
-        public void onConnect(Profile profile) {
-            log.info("Profile connected");
-            // add available services here
-            anRedtooth.getRedtooth().addService(EnabledServices.CHAT.getName(), new ChatMsgListener() {
-                @Override
-                public void onChatConnected(Profile localProfile, String remoteProfilePubKey, boolean isLocalCreator) {
-                    log.info("on chat connected: "+remoteProfilePubKey);
-                    ProfileInformation remoteProflie = anRedtooth.getRedtooth().getKnownProfile(remoteProfilePubKey);
-                    // todo: negro acá abrí la vista de incoming para aceptar el request..
-                    Intent intent = new Intent(App.this, WaitingChatActivity.class);
-                    intent.putExtra(WaitingChatActivity.REMOTE_PROFILE_PUB_KEY,remoteProfilePubKey);
-                    intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
-                    if (isLocalCreator){
-                        intent.putExtra(WaitingChatActivity.IS_CALLING,false);
-                        startActivity(intent);
-                    }else {
-                        PendingIntent pendingIntent = PendingIntent.getActivity(App.this, 0, intent, 0);
-                        Notification not = new Notification.Builder(App.this)
-                                .setContentTitle("Hey, chat notification received")
-                                .setContentText(remoteProflie.getName() + " want to chat with you!")
-                                .setSmallIcon(R.drawable.ic_chat_disable)
-                                .setContentIntent(pendingIntent)
-                                .setAutoCancel(true)
-                                .build();
-                        notificationManager.notify(43, not);
-                    }
+    public void onConnect() {
+        log.info("Profile connected");
+        // add available services here
+        anRedtooth.getRedtooth().addService(EnabledServices.CHAT.getName(), new ChatMsgListener() {
+            @Override
+            public void onChatConnected(Profile localProfile, String remoteProfilePubKey, boolean isLocalCreator) {
+                log.info("on chat connected: "+remoteProfilePubKey);
+                ProfileInformation remoteProflie = anRedtooth.getRedtooth().getKnownProfile(remoteProfilePubKey);
+                // todo: negro acá abrí la vista de incoming para aceptar el request..
+                Intent intent = new Intent(App.this, WaitingChatActivity.class);
+                intent.putExtra(WaitingChatActivity.REMOTE_PROFILE_PUB_KEY,remoteProfilePubKey);
+                intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
+                if (isLocalCreator){
+                    intent.putExtra(WaitingChatActivity.IS_CALLING,false);
+                    startActivity(intent);
+                }else {
+                    PendingIntent pendingIntent = PendingIntent.getActivity(App.this, 0, intent, 0);
+                    Notification not = new Notification.Builder(App.this)
+                            .setContentTitle("Hey, chat notification received")
+                            .setContentText(remoteProflie.getName() + " want to chat with you!")
+                            .setSmallIcon(R.drawable.ic_chat_disable)
+                            .setContentIntent(pendingIntent)
+                            .setAutoCancel(true)
+                            .build();
+                    notificationManager.notify(43, not);
                 }
+            }
 
-                @Override
                 public void onChatDisconnected(String remotePubKey) {
                     log.info("on chat disconnected: "+remotePubKey);
                 }
 
-                @Override
                 public void onMsgReceived(String remotePubKey, BaseMsg msg) {
                     log.info("on chat msg received: "+remotePubKey);
                     Intent intent = new Intent();
@@ -318,24 +319,23 @@ public class App extends Application implements IoPConnectContext {
                     broadcastManager.sendBroadcast(intent);
                 }
             });
-            // notify
-            Intent intent = new Intent(INTENT_ACTION_PROFILE_CONNECTED);
-            broadcastManager.sendBroadcast(intent);
-        }
-
-        @Override
-        public void onDisconnect(Profile profile) {
-            Intent intent = new Intent(INTENT_ACTION_PROFILE_DISCONNECTED);
-            broadcastManager.sendBroadcast(intent);
-        }
-
-        @Override
-        public void onCheckInFail(Profile profile, int status, String statusDetail) {
-            log.info("onCheckInFail",profile,status,statusDetail);
-            Intent intent = new Intent(INTENT_ACTION_PROFILE_CHECK_IN_FAIL);
-            broadcastManager.sendBroadcast(intent);
-        }
+        // notify
+        Intent intent = new Intent(INTENT_ACTION_PROFILE_CONNECTED);
+        broadcastManager.sendBroadcast(intent);
     }
+
+    public void onDisconnect() {
+        Intent intent = new Intent(INTENT_ACTION_PROFILE_DISCONNECTED);
+        broadcastManager.sendBroadcast(intent);
+    }
+
+    public void onCheckInFail() {
+        log.info("onCheckInFail");
+        Intent intent = new Intent(INTENT_ACTION_PROFILE_CHECK_IN_FAIL);
+        intent.putExtra(INTENT_EXTRA_ERROR_DETAIL,"nothing to show");
+        broadcastManager.sendBroadcast(intent);
+    }
+
 
     public File getBackupDir(){
         return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);

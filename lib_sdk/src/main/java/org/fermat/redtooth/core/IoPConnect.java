@@ -141,6 +141,8 @@ public class IoPConnect implements ConnectionListener {
             // The connection is one of the connections to the Home server
             // Let's check now if this is the main connection
             if (portType == IopProfileServer.ServerRoleType.CL_CUSTOMER){
+                // todo: notify the disconnection from the main PS to the upper layer..
+
                     // if the main connection is out we try to reconnect on a fixed period for now. (Later should increase the reconnection time exponentially..)
                     ConnectionFuture connectionFuture = new ConnectionFuture();
                     connectionFuture.setListener(new BaseMsgFuture.Listener<Boolean>() {
