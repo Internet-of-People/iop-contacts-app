@@ -32,6 +32,9 @@ android {
         exclude 'META-INF/services/sun.net.spi.nameservice.NameServiceDescriptor'
         exclude 'META-INF/LICENSE'
     }
+    lintOptions {
+        abortOnError false
+    }
 }
 
 dependencies {

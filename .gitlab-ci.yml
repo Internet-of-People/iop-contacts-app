@@ -1,0 +1,29 @@
+image: java:8
+
+variables:
+  # Disable the Gradle daemon for CI
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+before_script:
+  # Download and install Android Platform tools
+  - wget --quiet --output-document=android-sdk-tools.zip https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip
+  - unzip -qq android-sdk-tools.zip
+  - echo y | tools/bin/sdkmanager "platform-tools"
+  - export ANDROID_HOME=$PWD
+  # Make the Gradle wrapper executable
+  - chmod +x ./gradlew
+
+build:
+  stage: build
+  script:
+    # Cache the wrapper and dependencies, clean cached builds only, then build
+    - ./gradlew -g /cache/.gradle clean assemble
+  # do not continue on error
+  allow_failure: false
+
+test:
+  stage: test
+  script:
+    # Use the generated build output to run the tests
+    - ./gradlew -g /cache/.gradle check
+
