@@ -13,6 +13,7 @@ import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.InputFilter;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -145,6 +146,9 @@ public class CreateProfileActivity extends BaseActivity {
             cursor.close();
             Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
 
+            if (bitmap == null) {
+                return;
+            }
             // scale image
             img_profile_image.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 1024, 1024, false));
 //            imgProfile.setImageBitmap(bitmap);
@@ -209,7 +213,7 @@ public class CreateProfileActivity extends BaseActivity {
                     // Show an expanation to the user *asynchronously* -- don't block
                     // this thread waiting for the user's response! After the user
                     // sees the explanation, try again to request the permission.
-
+                    Log.i("CreateProfileActivity", "no hay permiso");
                 } else {
 
                     // No explanation needed, we can request the permission.
