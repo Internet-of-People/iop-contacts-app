@@ -270,55 +270,61 @@ public class App extends Application implements IoPConnectContext {
 
     public void onConnect() {
         log.info("Profile connected");
-        // add available services here
-        anRedtooth.getRedtooth().addService(EnabledServices.CHAT.getName(), new ChatMsgListener() {
+        new Thread(new Runnable() {
             @Override
-            public void onChatConnected(Profile localProfile, String remoteProfilePubKey, boolean isLocalCreator) {
-                log.info("on chat connected: "+remoteProfilePubKey);
-                ProfileInformation remoteProflie = anRedtooth.getRedtooth().getKnownProfile(remoteProfilePubKey);
-                // todo: negro acá abrí la vista de incoming para aceptar el request..
-                Intent intent = new Intent(App.this, WaitingChatActivity.class);
-                intent.putExtra(WaitingChatActivity.REMOTE_PROFILE_PUB_KEY,remoteProfilePubKey);
-                intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
-                if (isLocalCreator){
-                    intent.putExtra(WaitingChatActivity.IS_CALLING,false);
-                    startActivity(intent);
-                }else {
-                    PendingIntent pendingIntent = PendingIntent.getActivity(App.this, 0, intent, 0);
-                    Notification not = new Notification.Builder(App.this)
-                            .setContentTitle("Hey, chat notification received")
-                            .setContentText(remoteProflie.getName() + " want to chat with you!")
-                            .setSmallIcon(R.drawable.ic_chat_disable)
-                            .setContentIntent(pendingIntent)
-                            .setAutoCancel(true)
-                            .build();
-                    notificationManager.notify(43, not);
-                }
-            }
-
-                public void onChatDisconnected(String remotePubKey) {
-                    log.info("on chat disconnected: "+remotePubKey);
-                }
-
-                public void onMsgReceived(String remotePubKey, BaseMsg msg) {
-                    log.info("on chat msg received: "+remotePubKey);
-                    Intent intent = new Intent();
-                    intent.putExtra(WaitingChatActivity.REMOTE_PROFILE_PUB_KEY,remotePubKey);
-                    switch (ChatMsgTypes.valueOf(msg.getType())){
-                        case CHAT_ACCEPTED:
-                            intent.setAction(INTENT_CHAT_ACCEPTED_BROADCAST);
-                            break;
-                        case CHAT_REFUSED:
-                            intent.setAction(INTENT_CHAT_REFUSED_BROADCAST);
-                            break;
-                        case TEXT:
-                            intent.putExtra(INTENT_CHAT_TEXT_RECEIVED,((ChatMsg)msg).getText());
-                            intent.setAction(INTENT_CHAT_TEXT_BROADCAST);
-                            break;
+            public void run() {
+                anRedtooth.getRedtooth().addService(EnabledServices.CHAT.getName(), new ChatMsgListener() {
+                    @Override
+                    public void onChatConnected(Profile localProfile, String remoteProfilePubKey, boolean isLocalCreator) {
+                        log.info("on chat connected: "+remoteProfilePubKey);
+                        ProfileInformation remoteProflie = anRedtooth.getRedtooth().getKnownProfile(remoteProfilePubKey);
+                        // todo: negro acá abrí la vista de incoming para aceptar el request..
+                        Intent intent = new Intent(App.this, WaitingChatActivity.class);
+                        intent.putExtra(WaitingChatActivity.REMOTE_PROFILE_PUB_KEY,remoteProfilePubKey);
+                        intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
+                        if (isLocalCreator){
+                            intent.putExtra(WaitingChatActivity.IS_CALLING,false);
+                            startActivity(intent);
+                        }else {
+                            PendingIntent pendingIntent = PendingIntent.getActivity(App.this, 0, intent, 0);
+                            Notification not = new Notification.Builder(App.this)
+                                    .setContentTitle("Hey, chat notification received")
+                                    .setContentText(remoteProflie.getName() + " want to chat with you!")
+                                    .setSmallIcon(R.drawable.ic_chat_disable)
+                                    .setContentIntent(pendingIntent)
+                                    .setAutoCancel(true)
+                                    .build();
+                            notificationManager.notify(43, not);
+                        }
                     }
-                    broadcastManager.sendBroadcast(intent);
-                }
-            });
+
+                    public void onChatDisconnected(String remotePubKey) {
+                        log.info("on chat disconnected: "+remotePubKey);
+                    }
+
+                    public void onMsgReceived(String remotePubKey, BaseMsg msg) {
+                        log.info("on chat msg received: "+remotePubKey);
+                        Intent intent = new Intent();
+                        intent.putExtra(WaitingChatActivity.REMOTE_PROFILE_PUB_KEY,remotePubKey);
+                        switch (ChatMsgTypes.valueOf(msg.getType())){
+                            case CHAT_ACCEPTED:
+                                intent.setAction(INTENT_CHAT_ACCEPTED_BROADCAST);
+                                break;
+                            case CHAT_REFUSED:
+                                intent.setAction(INTENT_CHAT_REFUSED_BROADCAST);
+                                break;
+                            case TEXT:
+                                intent.putExtra(INTENT_CHAT_TEXT_RECEIVED,((ChatMsg)msg).getText());
+                                intent.setAction(INTENT_CHAT_TEXT_BROADCAST);
+                                break;
+                        }
+                        broadcastManager.sendBroadcast(intent);
+                    }
+                });
+            }
+        }).start();
+        // add available services here
+
         // notify
         Intent intent = new Intent(INTENT_ACTION_PROFILE_CONNECTED);
         broadcastManager.sendBroadcast(intent);
