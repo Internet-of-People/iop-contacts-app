@@ -14,7 +14,7 @@ public class ReceiverBoot extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         ProfileServerConfigurationsImp configurationsPreferences = new ProfileServerConfigurationsImp(context,context.getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));
         if (configurationsPreferences.getBackgroundServiceEnable()) {
-            Intent serviceIntent = new Intent();
+            Intent serviceIntent = new Intent(context,IoPConnectService.class);
             serviceIntent.setAction(IoPConnectService.ACTION_BOOT_SERVICE);
             context.startService(serviceIntent);
         }
