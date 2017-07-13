@@ -106,8 +106,9 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                                         @Override
                                         public void run() {
                                             Log.i(TAG, "pairing request sent");
-                                            Snackbar.make(v, R.string.pairing_success, Snackbar.LENGTH_LONG).show();
-                                            enableSendBtn();
+                                            progressBar.setVisibility(View.VISIBLE);
+                                            Toast.makeText(v.getContext(),R.string.pairing_success,Toast.LENGTH_LONG).show();
+                                            onBackPressed();
                                         }
                                     });
                                 }
