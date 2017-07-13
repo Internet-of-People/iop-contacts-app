@@ -17,9 +17,9 @@
             android:textSize="16sp"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
-            android:paddingRight="20dp"
-            android:paddingLeft="20dp"
-            android:layout_marginTop="10dp"
+            android:paddingEnd="20dp"
+            android:paddingStart="20dp"
+
             />
 
     </LinearLayout>
@@ -34,7 +34,7 @@
         android:textSize="12sp"
         android:textStyle="italic"
         android:text="25/03/2012"
-        android:paddingLeft="20dp"
+        android:paddingStart="20dp"
         />
 
 </RelativeLayout>
