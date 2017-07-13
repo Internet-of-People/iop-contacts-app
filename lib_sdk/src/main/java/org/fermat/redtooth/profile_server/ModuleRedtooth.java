@@ -16,6 +16,7 @@ import org.fermat.redtooth.profile_server.engine.listeners.ProfileListener;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
+import org.fermat.redtooth.services.chat.ChatCallAlreadyOpenException;
 import org.fermat.redtooth.services.chat.ChatMsg;
 import org.fermat.redtooth.services.chat.RequestChatException;
 
@@ -62,12 +63,13 @@ public interface ModuleRedtooth {
      * Accept a pairing request.
      *
      * @param pairingRequest
+     * @param profSerMsgListener
      */
-    void acceptPairingProfile(PairingRequest pairingRequest) throws Exception;
+    void acceptPairingProfile(PairingRequest pairingRequest, ProfSerMsgListener<Boolean> profSerMsgListener) throws Exception;
 
     void cancelPairingRequest(PairingRequest pairingRequest);
 
-    void requestChat(ProfileInformation remoteProfileInformation, ProfSerMsgListener<Boolean> readyListener, TimeUnit timeUnit, long time) throws RequestChatException;
+    void requestChat(ProfileInformation remoteProfileInformation, ProfSerMsgListener<Boolean> readyListener, TimeUnit timeUnit, long time) throws RequestChatException, ChatCallAlreadyOpenException;
 
     void refuseChatRequest(String hexPublicKey);
 

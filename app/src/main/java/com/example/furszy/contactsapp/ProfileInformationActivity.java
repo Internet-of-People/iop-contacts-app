@@ -21,6 +21,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.furszy.contactsapp.ui.chat.ChatActivity;
+import com.example.furszy.contactsapp.ui.chat.WaitingChatActivity;
+
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.governance.utils.TextUtils;
 import org.fermat.redtooth.profile_server.CantConnectException;
@@ -32,6 +35,7 @@ import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.utils.ProfileUtils;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
+import org.fermat.redtooth.services.chat.ChatCallAlreadyOpenException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.example.furszy.contactsapp.ui.chat.WaitingChatActivity.REMOTE_PROFILE_PUB_KEY;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
 import static org.fermat.redtooth.profile_server.imp.ProfileInformationImp.PairStatus.NOT_PAIRED;
@@ -77,10 +82,10 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     private TextView txt_chat;
 
     private ExecutorService executor;
+    private AtomicBoolean flag = new AtomicBoolean(false);
 
     private boolean isMyProfile;
     private boolean searchForProfile = false;
-    private boolean isLoading = false;
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -229,6 +234,8 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                         e.printStackTrace();
                     } catch (CantConnectException e) {
                         e.printStackTrace();
+                    } catch (Exception e){
+                        e.printStackTrace();
                     }
                 }
             });
@@ -257,54 +264,67 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     public void onClick(final View v) {
         int id = v.getId();
         if (id==R.id.txt_chat){
-            if (isLoading) { return; }
-            isLoading = true;
             Toast.makeText(v.getContext(),"Sending chat request..",Toast.LENGTH_SHORT).show();
-            executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        MsgListenerFuture<Boolean> readyListener = new MsgListenerFuture<>();
-                        readyListener.setListener(new BaseMsgFuture.Listener<Boolean>() {
-                            @Override
-                            public void onAction(int messageId, Boolean object) {
-                                Log.i("TAG","ON ACTION");
-                                isLoading = false;
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(ProfileInformationActivity.this, "Chat request sent", Toast.LENGTH_LONG).show();
-                                    }
-                                });
-                            }
+            if (flag.compareAndSet(false,true)) {
+                executor.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            MsgListenerFuture<Boolean> readyListener = new MsgListenerFuture<>();
+                            readyListener.setListener(new BaseMsgFuture.Listener<Boolean>() {
+                                @Override
+                                public void onAction(int messageId, Boolean object) {
+                                    Log.i("TAG", "ON ACTION");
+                                    flag.set(false);
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(ProfileInformationActivity.this, "Chat request sent", Toast.LENGTH_LONG).show();
+                                            Intent intent = new Intent(ProfileInformationActivity.this, WaitingChatActivity.class);
+                                            intent.putExtra(WaitingChatActivity.IS_CALLING, false);
+                                            startActivity(intent);
+                                        }
+                                    });
 
-                            @Override
-                            public void onFail(int messageId, int status, String statusDetail) {
-                                Log.i("TAG","onFail");
-                                isLoading = false;
-                                Log.e(TAG, "fail chat request: " + statusDetail+", id: "+messageId);
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(ProfileInformationActivity.this, "Chat request fail", Toast.LENGTH_LONG).show();
-                                    }
-                                });
-                            }
-                        });
-                        anRedtooth.requestChat(profileInformation, readyListener, TimeUnit.SECONDS, 45);
-                    }catch (Exception e){
-                        isLoading = false;
-                        e.printStackTrace();
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(v.getContext(),"Chat call fail",Toast.LENGTH_LONG).show();
-                                onBackPressed();
-                            }
-                        });
+                                }
+
+                                @Override
+                                public void onFail(int messageId, int status, String statusDetail) {
+                                    Log.i("TAG", "onFail");
+                                    Log.e(TAG, "fail chat request: " + statusDetail + ", id: " + messageId);
+                                    flag.set(false);
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(ProfileInformationActivity.this, "Chat request fail", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                }
+                            });
+                            anRedtooth.requestChat(profileInformation, readyListener, TimeUnit.SECONDS, 45);
+                        } catch (ChatCallAlreadyOpenException e) {
+                            e.printStackTrace();
+                            flag.set(false);
+                            // chat call already open, let's go to the chat again
+                            Intent intent1 = new Intent(ProfileInformationActivity.this, ChatActivity.class);
+                            intent1.putExtra(REMOTE_PROFILE_PUB_KEY, profileInformation.getHexPublicKey());
+                            startActivity(intent1);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(v.getContext(), "Chat call fail", Toast.LENGTH_LONG).show();
+                                    onBackPressed();
+                                }
+                            });
+                            flag.set(false);
+                        }
                     }
-                }
-            });
+                });
+            }else {
+            }
 
         }
     }

@@ -132,7 +132,12 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
     }
 
     private void refuseChat(){
-       anRedtooth.refuseChatRequest(profileInformation.getHexPublicKey());
+        try{
+            anRedtooth.refuseChatRequest(profileInformation.getHexPublicKey());
+        }catch (Exception e){
+            e.printStackTrace();
+            // do nothing..
+        }
     }
 
     private void acceptChatRequest() {
@@ -176,11 +181,23 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
                     });
                     anRedtooth.acceptChatRequest(profileInformation.getHexPublicKey(), future);
                 } catch (AppServiceCallNotAvailableException e){
-                    Toast.makeText(WaitingChatActivity.this,"Connection is not longer available",Toast.LENGTH_LONG).show();
-                    onBackPressed();
-                } catch (Exception e) {
                     e.printStackTrace();
-                    Toast.makeText(WaitingChatActivity.this,"Chat connection fail\n"+e.getMessage(),Toast.LENGTH_LONG).show();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(WaitingChatActivity.this,"Connection is not longer available",Toast.LENGTH_LONG).show();
+                            onBackPressed();
+                        }
+                    });
+
+                } catch (final Exception e) {
+                    e.printStackTrace();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(WaitingChatActivity.this,"Chat connection fail\n"+e.getMessage(),Toast.LENGTH_LONG).show();
+                        }
+                    });
                 }
             }
         });

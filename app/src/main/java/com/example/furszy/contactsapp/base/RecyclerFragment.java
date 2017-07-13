@@ -36,7 +36,7 @@ public abstract class RecyclerFragment<T> extends BaseAppFragment {
     private View root;
     protected RecyclerView.LayoutManager layoutManager;
     protected RecyclerView recycler;
-    private SwipeRefreshLayout swipeRefreshLayout;
+    protected SwipeRefreshLayout swipeRefreshLayout;
     private View container_empty_screen;
     private TextView txt_empty;
     private ImageView img_empty_view;
@@ -98,7 +98,7 @@ public abstract class RecyclerFragment<T> extends BaseAppFragment {
         executor.execute(loadRunnable);
     }
 
-    protected void refresh(){
+    public void refresh(){
         load();
     }
 

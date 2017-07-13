@@ -20,8 +20,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService.Status.CALL_AS_ESTABLISH;
+import static org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService.Status.CALL_FAIL;
+import static org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService.Status.CALL_FINISHED;
 import static org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService.Status.NO_INFORMATION;
 
 /**
@@ -52,12 +55,19 @@ public class CallProfileAppService {
         CALL_AS_ESTABLISH,  // if the profile is the creator of the call -> CallIdentityApplicationServiceResponse received with the remote token.
                             // if the profile is the receiver ->  the call archive this status when the profile response with the IncomingCallNotificationResponse
 
-        CALL_FAIL // when the call fail for somethings -> profile should check the error status.
+        CALL_FAIL, // when the call fail for somethings -> profile should check the error status.
+        CALL_FINISHED
     }
 
     public interface CallMessagesListener{
 
         void onMessage(MsgWrapper msg);
+
+    }
+
+    public interface CallStateListener{
+
+        void onCallFinished(CallProfileAppService callProfileAppService);
 
     }
 
@@ -83,6 +93,8 @@ public class CallProfileAppService {
     private CryptoAlgo cryptoAlgo;
     /** App call message listener */
     private CallMessagesListener msgListener;
+    /** Call state listener */
+    private CopyOnWriteArrayList<CallStateListener> callStateListeners = new CopyOnWriteArrayList<>();
     /** Engine wrapped */
     private ProfSerEngine profSerEngine;
 
@@ -149,6 +161,14 @@ public class CallProfileAppService {
         return status == CALL_AS_ESTABLISH;
     }
 
+    public boolean isDone() {
+        return status==CALL_FINISHED;
+    }
+
+    public boolean isFail() {
+        return status==CALL_FAIL;
+    }
+
     public String getErrorStatus() {
         return errorStatus;
     }
@@ -159,6 +179,14 @@ public class CallProfileAppService {
 
     public boolean isCallCreator() {
         return isCallCreator;
+    }
+
+    public void addCallStateListener(CallStateListener callStateListener){
+        callStateListeners.add(callStateListener);
+    }
+
+    public void removeCallStateListener(CallStateListener callStateListener){
+        callStateListeners.remove(callStateListener);
     }
 
     /**
@@ -298,6 +326,12 @@ public class CallProfileAppService {
             localProfile.getAppService(appService).removeCall(this, "local profile close connection");
         }catch (Exception e){
             e.printStackTrace();
+        }
+        // set to finished in case of some reference to this object
+        status = CALL_FINISHED;
+        // notify
+        for (CallStateListener callStateListener : callStateListeners) {
+            callStateListener.onCallFinished(this);
         }
     }
 

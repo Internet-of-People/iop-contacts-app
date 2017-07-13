@@ -1,7 +1,6 @@
 package iop.org.iop_sdk_android.core.profile_server;
 
 import android.app.AlarmManager;
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -20,7 +19,6 @@ import org.fermat.redtooth.core.IoPConnect;
 import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.global.PlatformSerializer;
 import org.fermat.redtooth.global.Version;
-import org.fermat.redtooth.profile_server.DatabaseCollector;
 import org.fermat.redtooth.profile_server.client.AppServiceCallNotAvailableException;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
@@ -42,7 +40,6 @@ import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SubsequentSearchMsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.app_services.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
-import org.fermat.redtooth.profile_server.engine.listeners.ProfileListener;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.Profile;
@@ -50,6 +47,8 @@ import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
 import org.fermat.redtooth.services.EnabledServicesFactory;
 import org.fermat.redtooth.services.chat.ChatAcceptMsg;
+import org.fermat.redtooth.services.chat.ChatAppService;
+import org.fermat.redtooth.services.chat.ChatCallAlreadyOpenException;
 import org.fermat.redtooth.services.chat.ChatMsg;
 import org.fermat.redtooth.services.chat.RequestChatException;
 import org.fermat.redtooth.wallet.utils.BlockchainState;
@@ -518,8 +517,8 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
-    public void acceptPairingProfile(PairingRequest pairingRequest) throws Exception {
-        ioPConnect.acceptPairingRequest(pairingRequest);
+    public void acceptPairingProfile(PairingRequest pairingRequest, ProfSerMsgListener<Boolean> profSerMsgListener) throws Exception {
+        ioPConnect.acceptPairingRequest(pairingRequest,profSerMsgListener);
     }
 
     @Override
@@ -535,9 +534,31 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
      * @param readyListener
      */
     @Override
-    public void requestChat(final ProfileInformation remoteProfileInformation, final ProfSerMsgListener<Boolean> readyListener, TimeUnit timeUnit, long time) throws RequestChatException {
+    public void requestChat(final ProfileInformation remoteProfileInformation, final ProfSerMsgListener<Boolean> readyListener, TimeUnit timeUnit, long time) throws RequestChatException, ChatCallAlreadyOpenException {
         if(!profile.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on local profile");
         try {
+            // first check if the chat is active or was requested
+            ChatAppService chatAppService = profile.getAppService(EnabledServices.CHAT.getName(), ChatAppService.class);
+            if(chatAppService.hasOpenCall(remoteProfileInformation.getHexPublicKey())){
+                // chat app service call already open, check if it stablish or it's done
+                CallProfileAppService call = chatAppService.getOpenCall(remoteProfileInformation.getHexPublicKey());
+                if (call!=null && !call.isDone() && !call.isFail()){
+                    // call is open, throw exception
+                    throw new ChatCallAlreadyOpenException("Chat call with: "+remoteProfileInformation.getName()+", already open");
+                }else {
+                    // this should not happen but i will check that
+                    // the call is not open but the object still active.. i have to close it
+                    try {
+                        if (call!=null) {
+                            call.dispose();
+                            chatAppService.removeCall(call,"call open and done/fail without reason..");
+                        }
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+
+            }
             final boolean tryUpdateRemoteServices = !remoteProfileInformation.hasService(EnabledServices.CHAT.getName());
             Future future = executor.submit(new Callable() {
                 public Object call() {
@@ -562,9 +583,11 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public void refuseChatRequest(String hexPublicKey) {
-        CallProfileAppService callProfileAppService = profile.getAppService(EnabledServices.CHAT.getName()).getOpenCall(hexPublicKey);
+        ChatAppService chatAppService = profile.getAppService(EnabledServices.CHAT.getName(),ChatAppService.class);
+        CallProfileAppService callProfileAppService = chatAppService.getOpenCall(hexPublicKey);
         if (callProfileAppService == null) return;
         callProfileAppService.dispose();
+        chatAppService.removeCall(callProfileAppService,"local profile refuse chat");
     }
 
     @Override
@@ -589,6 +612,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
             ChatMsg chatMsg = new ChatMsg(msg);
             callProfileAppService = profile.getAppService(EnabledServices.CHAT.getName())
                     .getOpenCall(remoteProfileInformation.getHexPublicKey());
+            if (callProfileAppService==null) throw new ChatCallClosed("Chat connection is not longer available",remoteProfileInformation);
             callProfileAppService.sendMsg(chatMsg, msgListener);
         }catch (AppServiceCallNotAvailableException e){
             e.printStackTrace();

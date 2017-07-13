@@ -564,25 +564,11 @@ public class IoPConnect implements ConnectionListener {
      *
      * @param pairingRequest
      */
-    public void acceptPairingRequest(PairingRequest pairingRequest) throws Exception {
+    public void acceptPairingRequest(PairingRequest pairingRequest, final ProfSerMsgListener<Boolean> callback) throws Exception {
         // Remember that here the local device is the pairingRequest.getSender()
-        String remotePubKeyHex =  pairingRequest.getSenderPubKey();
-        String localPubKeyHex = pairingRequest.getRemotePubKey();
+        final String remotePubKeyHex =  pairingRequest.getSenderPubKey();
+        final String localPubKeyHex = pairingRequest.getRemotePubKey();
         logger.info("acceptPairingRequest, remote: " + remotePubKeyHex);
-        // update in db the acceptance first
-        // todo: here i have to add the pair request db and tick this as done. and save the profile with paired true.
-        profilesManager.updatePaired(
-                localPubKeyHex,
-                remotePubKeyHex,
-                ProfileInformationImp.PairStatus.PAIRED);
-        pairingRequestsManager.updateStatus(
-                remotePubKeyHex,
-                localPubKeyHex,
-                PairingMsgTypes.PAIR_ACCEPT,
-                ProfileInformationImp.PairStatus.PAIRED
-        );
-        // requestsDbManager.removeRequest(remotePubKeyHex);
-
         // Notify the other side if it's connected.
         // first check if i have a connection with the server hosting the pairing sender
         // tengo que ver si el remote profile tiene como home host la conexion principal de el sender profile al PS
@@ -600,6 +586,22 @@ public class IoPConnect implements ConnectionListener {
                 else
                     logger.warn("call null trying to dispose pairing app service. Check this");
 
+                // update in db the acceptance
+                profilesManager.updatePaired(
+                        localPubKeyHex,
+                        remotePubKeyHex,
+                        ProfileInformationImp.PairStatus.PAIRED);
+                pairingRequestsManager.updateStatus(
+                        remotePubKeyHex,
+                        localPubKeyHex,
+                        PairingMsgTypes.PAIR_ACCEPT,
+                        ProfileInformationImp.PairStatus.PAIRED
+                );
+
+                // notify
+                if (callback!=null)
+                    callback.onMessageReceive(messageId,object);
+
             }
 
             @Override
@@ -610,6 +612,10 @@ public class IoPConnect implements ConnectionListener {
                     call.dispose();
                 else
                     logger.warn("call null trying to dispose pairing app service. Check this");
+
+                // notify
+                if (callback!=null)
+                    callback.onMsgFail(messageId,status,statusDetail);
             }
         });
         if (call != null) {

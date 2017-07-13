@@ -279,23 +279,29 @@ public class App extends Application implements IoPConnectContext {
                     public void onChatConnected(Profile localProfile, String remoteProfilePubKey, boolean isLocalCreator) {
                         log.info("on chat connected: "+remoteProfilePubKey);
                         ProfileInformation remoteProflie = anRedtooth.getRedtooth().getKnownProfile(remoteProfilePubKey);
-                        // todo: negro acá abrí la vista de incoming para aceptar el request..
-                        Intent intent = new Intent(App.this, WaitingChatActivity.class);
-                        intent.putExtra(WaitingChatActivity.REMOTE_PROFILE_PUB_KEY,remoteProfilePubKey);
-                        intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
-                        if (isLocalCreator){
-                            intent.putExtra(WaitingChatActivity.IS_CALLING,false);
-                            startActivity(intent);
+                        if (remoteProflie!=null) {
+                            // todo: negro acá abrí la vista de incoming para aceptar el request..
+                            Intent intent = new Intent(App.this, WaitingChatActivity.class);
+                            intent.putExtra(WaitingChatActivity.REMOTE_PROFILE_PUB_KEY, remoteProfilePubKey);
+                            intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
+                            if (isLocalCreator) {
+                                intent.putExtra(WaitingChatActivity.IS_CALLING, false);
+                                startActivity(intent);
+                            } else {
+                                PendingIntent pendingIntent = PendingIntent.getActivity(App.this, 0, intent, 0);
+                                // todo: null pointer found.
+                                String name = remoteProflie.getName();
+                                Notification not = new Notification.Builder(App.this)
+                                        .setContentTitle("Hey, chat notification received")
+                                        .setContentText(name + " want to chat with you!")
+                                        .setSmallIcon(R.drawable.ic_chat_disable)
+                                        .setContentIntent(pendingIntent)
+                                        .setAutoCancel(true)
+                                        .build();
+                                notificationManager.notify(43, not);
+                            }
                         }else {
-                            PendingIntent pendingIntent = PendingIntent.getActivity(App.this, 0, intent, 0);
-                            Notification not = new Notification.Builder(App.this)
-                                    .setContentTitle("Hey, chat notification received")
-                                    .setContentText(remoteProflie.getName() + " want to chat with you!")
-                                    .setSmallIcon(R.drawable.ic_chat_disable)
-                                    .setContentIntent(pendingIntent)
-                                    .setAutoCancel(true)
-                                    .build();
-                            notificationManager.notify(43, not);
+                            log.error("Chat notification arrive without know the profile, remote pub key "+remoteProfilePubKey);
                         }
                     }
 
