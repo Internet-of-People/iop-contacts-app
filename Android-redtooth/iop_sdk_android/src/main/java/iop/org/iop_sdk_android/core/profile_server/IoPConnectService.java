@@ -7,6 +7,7 @@ import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
@@ -192,6 +193,11 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     public void onCreate() {
         super.onCreate();
         Log.d(TAG,"onCreate");
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        intentFilter.addAction(Intent.ACTION_DEVICE_STORAGE_LOW);
+        intentFilter.addAction(Intent.ACTION_DEVICE_STORAGE_OK);
+        registerReceiver(connectivityReceiver, intentFilter); // implicitly init PeerGroup
         initService();
     }
 
@@ -208,6 +214,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                 pairingRequestDb = new SqlitePairingRequestDb(this);
                 profilesDb = new SqliteProfilesDb(this);
                 ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),profilesDb,pairingRequestDb,this);
+                ioPConnect.setEngineListener(this);
                 /*executor.submit(new Runnable() {
                     @Override
                     public void run() {
@@ -336,7 +343,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
             public void onAction(int messageId, Boolean object) {
                 profile.setHomeHost(msgListenerFuture.getProfServerData().getHost());
                 profile.setHomeHostId(msgListenerFuture.getProfServerData().getNetworkId());
-                onCheckInCompleted(profile);
+                onCheckInCompleted(profile.getHexPublicKey());
             }
 
             @Override
@@ -775,13 +782,13 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
-    public void onCheckInCompleted(Profile profile) {
+    public void onCheckInCompleted(String localProfilePubKey) {
         Intent intent = new Intent(ACTION_ON_PROFILE_CONNECTED);
         localBroadcastManager.sendBroadcast(intent);
     }
 
     @Override
-    public void onDisconnect(Profile profile) {
+    public void onDisconnect(String localProfilePubKey) {
         Intent intent = new Intent(ACTION_ON_PROFILE_DISCONNECTED);
         localBroadcastManager.sendBroadcast(intent);
     }
@@ -789,6 +796,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     private void onCheckInFail(Profile profile, int status, String statusDetail) {
         logger.warn("on check in fail: "+statusDetail);
         Intent intent = new Intent(ACTION_ON_CHECK_IN_FAIL);
+        intent.putExtra(INTENT_RESPONSE_DETAIL,statusDetail);
         localBroadcastManager.sendBroadcast(intent);
     }
 
