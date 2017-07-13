@@ -5,6 +5,7 @@ import com.google.protobuf.ByteString;
 import org.fermat.redtooth.core.services.AppServiceListener;
 import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.engine.app_services.AppServiceMsg;
+import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
 import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.core.services.pairing.PairingAppService;
 import org.fermat.redtooth.core.services.pairing.PairingMsg;
@@ -82,6 +83,8 @@ public class IoPConnect implements ConnectionListener {
     /** Socket factory */
     private SslContextFactory sslContextFactory;
 
+    private EngineListener engineListener;
+
     private class PsKey{
 
         private String deviceProfPubKey;
@@ -111,6 +114,9 @@ public class IoPConnect implements ConnectionListener {
         this.deviceLocation = deviceLocation;
     }
 
+    public void setEngineListener(EngineListener engineListener) {
+        this.engineListener = engineListener;
+    }
 
     @Override
     public void onPortsReceived(String psHost, int nonClPort, int clPort, int appSerPort) {
@@ -136,13 +142,20 @@ public class IoPConnect implements ConnectionListener {
     }
 
     @Override
-    public void onConnectionLoose(String localProfilePubKey, String psHost, IopProfileServer.ServerRoleType portType, String tokenId) {
-        if (managers.containsKey(localProfilePubKey)){
+    public void onConnectionLoose(final Profile localProfile, String psHost, IopProfileServer.ServerRoleType portType, String tokenId) {
+        if (managers.containsKey(localProfile.getHexPublicKey())){
             // The connection is one of the connections to the Home server
             // Let's check now if this is the main connection
             if (portType == IopProfileServer.ServerRoleType.CL_CUSTOMER){
+                try {
+                    managers.remove(localProfile.getHexPublicKey()).stop();
+                }catch (Exception e){
+                    // remove connection
+                    e.printStackTrace();
+                }
                 // todo: notify the disconnection from the main PS to the upper layer..
-
+                if (engineListener!=null)
+                    engineListener.onDisconnect(localProfile.getHexPublicKey());
                     // if the main connection is out we try to reconnect on a fixed period for now. (Later should increase the reconnection time exponentially..)
                     ConnectionFuture connectionFuture = new ConnectionFuture();
                     connectionFuture.setListener(new BaseMsgFuture.Listener<Boolean>() {
@@ -150,19 +163,23 @@ public class IoPConnect implements ConnectionListener {
                         public void onAction(int messageId, Boolean object) {
                             logger.info("Main home host connected again!");
                             //todo: launch notification to the users
+                            if (engineListener!=null)
+                                engineListener.onCheckInCompleted(localProfile.getHexPublicKey());
                         }
 
                         @Override
                         public void onFail(int messageId, int status, String statusDetail) {
                             logger.info("Main home host reconnected fail");
                             //todo: try to connect again.
+                            if (engineListener!=null)
+                                engineListener.onDisconnect(localProfile.getHexPublicKey());
                         }
                     });
-                    Profile localProfile = createEmptyProfileServerConf().getProfile();
                 try {
+                    PairingAppService pairingAppService = localProfile.getAppService(EnabledServices.PROFILE_PAIRING.getName(), PairingAppService.class);
                     connectProfile(
-                            localProfilePubKey,
-                            localProfile.getAppService(EnabledServices.PROFILE_PAIRING.getName(), PairingAppService.class).getPairingListener(),
+                            localProfile.getHexPublicKey(),
+                            pairingAppService.getPairingListener(),
                             null,
                             connectionFuture
                     );
@@ -171,8 +188,8 @@ public class IoPConnect implements ConnectionListener {
                     logger.info("Problems trying to reconnect to the main PS after 5 seconds..",e);
                     // retryng after certain time.
                     try {
-                        wait(TimeUnit.SECONDS.toMillis(5));
-                        onConnectionLoose(localProfilePubKey,psHost,portType,tokenId);
+                        TimeUnit.SECONDS.sleep(5);
+                        onConnectionLoose(localProfile,psHost,portType,tokenId);
                     } catch (InterruptedException e1) {
                         e1.printStackTrace();
                     }

@@ -1,5 +1,6 @@
 package org.fermat.redtooth.profile_server.engine.listeners;
 
+import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 
 /**
@@ -14,5 +15,5 @@ public interface ConnectionListener {
 
     void onNonClConnectionStablished(String host);
 
-    void onConnectionLoose(String localProfilePubKey, String psHost, IopProfileServer.ServerRoleType portType, String tokenId);
+    void onConnectionLoose(Profile localProfile, String psHost, IopProfileServer.ServerRoleType portType, String tokenId);
 }

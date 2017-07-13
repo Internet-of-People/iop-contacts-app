@@ -107,7 +107,8 @@ public class App extends Application implements IoPConnectContext {
             }else if (action.equals(ACTION_ON_PROFILE_DISCONNECTED)){
                 onDisconnect();
             }else if (action.equals(ACTION_ON_CHECK_IN_FAIL)){
-                onCheckInFail();
+                String detail = intent.getStringExtra(INTENT_RESPONSE_DETAIL);
+                onCheckInFail(detail);
             }
         }
     };
@@ -335,10 +336,10 @@ public class App extends Application implements IoPConnectContext {
         broadcastManager.sendBroadcast(intent);
     }
 
-    public void onCheckInFail() {
+    public void onCheckInFail(String detail) {
         log.info("onCheckInFail");
         Intent intent = new Intent(INTENT_ACTION_PROFILE_CHECK_IN_FAIL);
-        intent.putExtra(INTENT_EXTRA_ERROR_DETAIL,"nothing to show");
+        intent.putExtra(INTENT_EXTRA_ERROR_DETAIL,detail);
         broadcastManager.sendBroadcast(intent);
     }
 

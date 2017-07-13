@@ -728,7 +728,7 @@ public class ProfSerEngine {
             // notify upper layers
             for (ConnectionListener listener : connectionListener) {
                 listener.onConnectionLoose(
-                        profNodeConnection.getProfile().getHexPublicKey(),
+                        profNodeConnection.getProfile(),
                         profServerData.getHost(),
                         session.getPortType(),
                         session.getSessionTokenId()

@@ -148,6 +148,7 @@ public class BaseActivity extends AppCompatActivity{
                 // todo: here i should add some error handling and use the "detail" field...
                 String detail = intent.getStringExtra(INTENT_EXTRA_ERROR_DETAIL);
                 Log.e("BaseActivity","check in fail: "+detail);
+                Toast.makeText(BaseActivity.this,"Check in fail, "+detail,Toast.LENGTH_LONG).show();
                 showConnectionLoose();
             }else {
                 final String name = intent.getStringExtra(INTENT_EXTRA_PROF_NAME);
