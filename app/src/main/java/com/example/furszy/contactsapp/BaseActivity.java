@@ -39,6 +39,7 @@ import java.util.regex.Pattern;
 import static com.example.furszy.contactsapp.App.INTENT_ACTION_PROFILE_CHECK_IN_FAIL;
 import static com.example.furszy.contactsapp.App.INTENT_ACTION_PROFILE_CONNECTED;
 import static com.example.furszy.contactsapp.App.INTENT_ACTION_PROFILE_DISCONNECTED;
+import static com.example.furszy.contactsapp.App.INTENT_EXTRA_ERROR_DETAIL;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_NAME;
 
@@ -144,7 +145,9 @@ public class BaseActivity extends AppCompatActivity{
             }else if (action.equals(INTENT_ACTION_PROFILE_DISCONNECTED)){
                 showConnectionLoose();
             }else if(action.equals(INTENT_ACTION_PROFILE_CHECK_IN_FAIL)){
-                // todo: here i should add some error handling..
+                // todo: here i should add some error handling and use the "detail" field...
+                String detail = intent.getStringExtra(INTENT_EXTRA_ERROR_DETAIL);
+                Log.e("BaseActivity","check in fail: "+detail);
                 showConnectionLoose();
             }else {
                 final String name = intent.getStringExtra(INTENT_EXTRA_PROF_NAME);

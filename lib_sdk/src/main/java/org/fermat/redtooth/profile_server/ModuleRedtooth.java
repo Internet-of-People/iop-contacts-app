@@ -77,9 +77,6 @@ public interface ModuleRedtooth {
 
     boolean isIdentityCreated();
 
-
-    void setProfileListener(ProfileListener profileListener);
-
     /* Search queries **/
 
     void getProfileInformation(String profPubKey, ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException;

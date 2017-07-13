@@ -228,6 +228,7 @@ public class ProfSerConnectionEngine {
         @Override
         public void onMsgFail(int messageId, int statusValue, String details) {
             LOG.info("ListRolesProcessor fail",messageId,statusValue,details);
+            initFuture.onMsgFail(messageId,statusValue,details);
         }
 
         @Override
@@ -266,6 +267,7 @@ public class ProfSerConnectionEngine {
         @Override
         public void onMsgFail(int messageId, int statusValue, String details) {
             LOG.info("StartConversationNonClProcessor fail",messageId,statusValue,details);
+            initFuture.onMsgFail(messageId,statusValue,details);
         }
 
         @Override
@@ -306,6 +308,7 @@ public class ProfSerConnectionEngine {
         @Override
         public void onMsgFail(int messageId, int statusValue, String details) {
             LOG.info("HomeNodeRequestListener fail",messageId,statusValue,details);
+            initFuture.onMsgFail(messageId,statusValue,details);
         }
 
         @Override
@@ -337,6 +340,7 @@ public class ProfSerConnectionEngine {
         @Override
         public void onMsgFail(int messageId, int statusValue, String details) {
             LOG.info("StartConversationClListener fail",messageId,statusValue,details);
+            initFuture.onMsgFail(messageId,statusValue,details);
         }
 
         @Override
@@ -376,6 +380,7 @@ public class ProfSerConnectionEngine {
         @Override
         public void onMsgFail(int messageId, int statusValue, String details) {
             LOG.info("CheckinConversationListener fail",messageId,statusValue,details);
+            initFuture.onMsgFail(messageId,statusValue,details);
         }
 
         @Override
