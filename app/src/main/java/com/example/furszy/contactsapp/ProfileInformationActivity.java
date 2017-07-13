@@ -80,6 +80,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 
     private boolean isMyProfile;
     private boolean searchForProfile = false;
+    private boolean isLoading = false;
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -256,6 +257,8 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     public void onClick(final View v) {
         int id = v.getId();
         if (id==R.id.txt_chat){
+            if (isLoading) { return; }
+            isLoading = true;
             Toast.makeText(v.getContext(),"Sending chat request..",Toast.LENGTH_SHORT).show();
             executor.submit(new Runnable() {
                 @Override
@@ -265,6 +268,8 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                         readyListener.setListener(new BaseMsgFuture.Listener<Boolean>() {
                             @Override
                             public void onAction(int messageId, Boolean object) {
+                                Log.i("TAG","ON ACTION");
+                                isLoading = false;
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
@@ -275,6 +280,8 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 
                             @Override
                             public void onFail(int messageId, int status, String statusDetail) {
+                                Log.i("TAG","onFail");
+                                isLoading = false;
                                 Log.e(TAG, "fail chat request: " + statusDetail+", id: "+messageId);
                                 runOnUiThread(new Runnable() {
                                     @Override
@@ -286,6 +293,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                         });
                         anRedtooth.requestChat(profileInformation, readyListener, TimeUnit.SECONDS, 45);
                     }catch (Exception e){
+                        isLoading = false;
                         e.printStackTrace();
                         runOnUiThread(new Runnable() {
                             @Override
