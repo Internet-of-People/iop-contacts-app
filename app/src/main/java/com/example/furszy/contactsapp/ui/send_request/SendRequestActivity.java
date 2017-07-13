@@ -2,6 +2,7 @@ package com.example.furszy.contactsapp.ui.send_request;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.furszy.contactsapp.BaseActivity;
@@ -40,7 +42,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
     private View root;
     private EditText edit_uri;
     private Button btn_add;
-
+    private ProgressBar progressBar;
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
         super.onCreateView(savedInstanceState, container);
@@ -53,6 +55,10 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
         root.findViewById(R.id.img_qr).setOnClickListener(this);
         btn_add = (Button) root.findViewById(R.id.btn_add);
         btn_add.setOnClickListener(this);
+
+        progressBar = (ProgressBar) root.findViewById(R.id.progress_bar);
+        progressBar.getIndeterminateDrawable().setColorFilter(Color.BLUE, PorterDuff.Mode.MULTIPLY);
+        progressBar.setVisibility(View.GONE);
     }
 
     @Override
