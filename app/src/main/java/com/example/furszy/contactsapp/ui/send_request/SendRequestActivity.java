@@ -58,7 +58,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
 
         progressBar = (ProgressBar) root.findViewById(R.id.progress_bar);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.BLUE, PorterDuff.Mode.MULTIPLY);
-        progressBar.setVisibility(View.GONE);
+        progressBar.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -94,6 +94,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                 return;
 
             }else {
+                progressBar.setVisibility(View.VISIBLE);
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -107,6 +108,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                                         public void run() {
                                             Log.i(TAG, "pairing request sent");
                                             Snackbar.make(v, R.string.pairing_success, Snackbar.LENGTH_LONG).show();
+                                            progressBar.setVisibility(View.INVISIBLE);
                                             enableSendBtn();
                                         }
                                     });
@@ -119,6 +121,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                                         public void run() {
                                             Log.i(TAG, "pairing request fail");
                                             Snackbar.make(v, R.string.pairing_fail + statusDetail, Snackbar.LENGTH_LONG).show();
+                                            progressBar.setVisibility(View.INVISIBLE);
                                             enableSendBtn();
                                         }
                                     });
@@ -133,6 +136,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                                     Log.i(TAG, "pairing request fail");
                                     Snackbar.make(v, R.string.pairing_fail + e.getMessage(), Snackbar.LENGTH_LONG).show();
                                     enableSendBtn();
+                                    progressBar.setVisibility(View.INVISIBLE);
                                 }
                             });
                         }catch (final Exception e) {
@@ -142,6 +146,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                                 public void run() {
                                     enableSendBtn();
                                     Snackbar.make(v, R.string.pairing_fail + e.getMessage(), Snackbar.LENGTH_LONG).show();
+                                    progressBar.setVisibility(View.INVISIBLE);
 
                                 }
                             });

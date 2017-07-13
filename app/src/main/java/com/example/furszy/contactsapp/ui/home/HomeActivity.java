@@ -116,9 +116,15 @@ public class HomeActivity extends BaseDrawerActivity {
     }
 
     public void refreshContacts(){
-        Fragment fragment = adapter.getItem(0);
+        final Fragment fragment = adapter.getItem(0);
         if (fragment!=null){
-            ((ContactsFragment)fragment).refresh();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ((ContactsFragment)fragment).refresh();
+                }
+            });
+
         }
     }
 }
