@@ -6,6 +6,8 @@ import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
 
+import java.net.URL;
+
 /**
  * Created by mati on 01/06/17.
  */

@@ -164,8 +164,6 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                 isMyProfile = true;
                 profileInformation = module.getMyProfile();
                 btn_connect.setVisibility(View.GONE);
-                txt_chat.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_chat_disable, 0);
-                txt_chat.setEnabled (false);
             }
         }
 
@@ -242,7 +240,12 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                 }
             });
         }
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        flag.set(false);
     }
 
     @Override
@@ -266,8 +269,8 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     public void onClick(final View v) {
         int id = v.getId();
         if (id==R.id.txt_chat){
-            Toast.makeText(v.getContext(),"Sending chat request..",Toast.LENGTH_SHORT).show();
             if (flag.compareAndSet(false,true)) {
+                Toast.makeText(v.getContext(),"Sending chat request..",Toast.LENGTH_SHORT).show();
                 executor.submit(new Runnable() {
                     @Override
                     public void run() {

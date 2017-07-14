@@ -53,7 +53,6 @@ public class SettingsBackupPasswordActivity extends BaseActivity {
                 //Intent myIntent = new Intent(v.getContext(), SettingsBackupFolderActivity.class);
                 //startActivityForResult(myIntent, 0);
                 try {
-                    checkPermissions();
                     anRedtooth.backupProfile(
                             app.getBackupDir(),
                             null);
@@ -89,6 +88,7 @@ public class SettingsBackupPasswordActivity extends BaseActivity {
             }
         });
 
+        checkPermissions();
     }
 
     private void checkPermissions() {

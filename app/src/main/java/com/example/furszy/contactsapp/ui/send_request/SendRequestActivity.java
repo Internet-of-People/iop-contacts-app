@@ -58,7 +58,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
 
         progressBar = (ProgressBar) root.findViewById(R.id.progress_bar);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.BLUE, PorterDuff.Mode.MULTIPLY);
-        progressBar.setVisibility(View.GONE);
+        progressBar.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -75,80 +75,88 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
             Intent intent = new Intent(v.getContext(), ScanActivity.class);
             startActivityForResult(intent,SCANNER_RESULT);
         }else if (id == R.id.btn_add){
-            btn_add.setEnabled(false);
-            btn_add.setBackground(getResources().getDrawable(R.drawable.bg_button_light_blue,null));
-            String uri = edit_uri.getText().toString();
-            if (uri.length()<1) {
-                enableSendBtn();
-                return;
-            }
-            if (!ProfileUtils.isValidUriProfile(uri)) {
-                enableSendBtn();
-                Snackbar.make(v,"Invalid URI Format",Snackbar.LENGTH_LONG).show();
-                return;
-            }
-            final ProfileUtils.UriProfile profile = ProfileUtils.fromUri(uri);
-            if (profile.getPubKey().equals(anRedtooth.getMyProfile().getHexPublicKey())){
-                enableSendBtn();
-                Snackbar.make(v, R.string.pairing_yourself,Snackbar.LENGTH_LONG).show();
-                return;
+            try {
+                btn_add.setEnabled(false);
+                btn_add.setBackground(getResources().getDrawable(R.drawable.bg_button_light_blue, null));
+                String uri = edit_uri.getText().toString();
+                if (uri.length() < 1) {
+                    enableSendBtn();
+                    return;
+                }
+                if (!ProfileUtils.isValidUriProfile(uri)) {
+                    enableSendBtn();
+                    Snackbar.make(v, "Invalid URI Format", Snackbar.LENGTH_LONG).show();
+                    return;
+                }
+                final ProfileUtils.UriProfile profile = ProfileUtils.fromUri(uri);
+                if (profile.getPubKey().equals(anRedtooth.getMyProfile().getHexPublicKey())) {
+                    enableSendBtn();
+                    Snackbar.make(v, R.string.pairing_yourself, Snackbar.LENGTH_LONG).show();
+                    return;
 
-            }else {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            MsgListenerFuture<ProfileInformation> future = new MsgListenerFuture<>();
-                            future.setListener(new BaseMsgFuture.Listener<ProfileInformation>() {
-                                @Override
-                                public void onAction(int messageId, ProfileInformation object) {
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Log.i(TAG, "pairing request sent");
-                                            progressBar.setVisibility(View.VISIBLE);
-                                            Toast.makeText(v.getContext(),R.string.pairing_success,Toast.LENGTH_LONG).show();
-                                            onBackPressed();
-                                        }
-                                    });
-                                }
+                } else {
+                    progressBar.setVisibility(View.VISIBLE);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                MsgListenerFuture<ProfileInformation> future = new MsgListenerFuture<>();
+                                future.setListener(new BaseMsgFuture.Listener<ProfileInformation>() {
+                                    @Override
+                                    public void onAction(int messageId, ProfileInformation object) {
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Log.i(TAG, "pairing request sent");
+                                                Snackbar.make(v, R.string.pairing_success, Snackbar.LENGTH_LONG).show();
+                                                progressBar.setVisibility(View.INVISIBLE);
+                                                enableSendBtn();
+                                            }
+                                        });
+                                    }
 
-                                @Override
-                                public void onFail(int messageId, int status, final String statusDetail) {
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Log.i(TAG, "pairing request fail");
-                                            Snackbar.make(v, R.string.pairing_fail + statusDetail, Snackbar.LENGTH_LONG).show();
-                                            enableSendBtn();
-                                        }
-                                    });
-                                }
-                            });
-                            anRedtooth.requestPairingProfile(CryptoBytes.fromHexToBytes(profile.getPubKey()), profile.getName(), profile.getProfSerHost(), future);
+                                    @Override
+                                    public void onFail(int messageId, int status, final String statusDetail) {
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Log.i(TAG, "pairing request fail");
+                                                Snackbar.make(v, R.string.pairing_fail + statusDetail, Snackbar.LENGTH_LONG).show();
+                                                progressBar.setVisibility(View.INVISIBLE);
+                                                enableSendBtn();
+                                            }
+                                        });
+                                    }
+                                });
+                                anRedtooth.requestPairingProfile(CryptoBytes.fromHexToBytes(profile.getPubKey()), profile.getName(), profile.getProfSerHost(), future);
 
-                        }catch (final IllegalArgumentException e){
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Log.i(TAG, "pairing request fail");
-                                    Snackbar.make(v, R.string.pairing_fail + e.getMessage(), Snackbar.LENGTH_LONG).show();
-                                    enableSendBtn();
-                                }
-                            });
-                        }catch (final Exception e) {
-                            e.printStackTrace();
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    enableSendBtn();
-                                    Snackbar.make(v, R.string.pairing_fail + e.getMessage(), Snackbar.LENGTH_LONG).show();
+                            } catch (final IllegalArgumentException e) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Log.i(TAG, "pairing request fail");
+                                        Snackbar.make(v, R.string.pairing_fail + e.getMessage(), Snackbar.LENGTH_LONG).show();
+                                        enableSendBtn();
+                                        progressBar.setVisibility(View.INVISIBLE);
+                                    }
+                                });
+                            } catch (final Exception e) {
+                                e.printStackTrace();
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        enableSendBtn();
+                                        Snackbar.make(v, R.string.pairing_fail + e.getMessage(), Snackbar.LENGTH_LONG).show();
+                                        progressBar.setVisibility(View.INVISIBLE);
 
-                                }
-                            });
+                                    }
+                                });
+                            }
                         }
-                    }
-                }).start();
+                    }).start();
+                }
+            }catch (IllegalArgumentException e){
+                Toast.makeText(this,e.getMessage(),Toast.LENGTH_LONG).show();
             }
         }
     }

@@ -271,6 +271,8 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                 "backup_iop_connect_"+profile.getName()+Iso8601Format.formatDateTimeT(new Date(System.currentTimeMillis()))+".dat"
         );
         logger.info("Backup file path: "+backupFile.getAbsolutePath());
+        backupOverwriteProfile(backupFile,password);
+        scheduleBackupProfileFile(backupDir,password);
         return backupFile;
     }
 
@@ -593,7 +595,11 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     @Override
     public void acceptChatRequest(String hexPublicKey, ProfSerMsgListener<Boolean> future) throws Exception {
         CallProfileAppService callProfileAppService = profile.getAppService(EnabledServices.CHAT.getName()).getOpenCall(hexPublicKey);
-        callProfileAppService.sendMsg(new ChatAcceptMsg(System.currentTimeMillis()),future);
+        if (callProfileAppService!=null) {
+            callProfileAppService.sendMsg(new ChatAcceptMsg(System.currentTimeMillis()), future);
+        }else {
+            throw new AppServiceCallNotAvailableException("Connection not longer available");
+        }
     }
 
     /**
