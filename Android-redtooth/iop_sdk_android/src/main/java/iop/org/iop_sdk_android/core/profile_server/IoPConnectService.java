@@ -271,6 +271,8 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                 "backup_iop_connect_"+profile.getName()+Iso8601Format.formatDateTimeT(new Date(System.currentTimeMillis()))+".dat"
         );
         logger.info("Backup file path: "+backupFile.getAbsolutePath());
+        backupOverwriteProfile(backupFile,password);
+        scheduleBackupProfileFile(backupDir,password);
         return backupFile;
     }
 
