@@ -17,7 +17,7 @@
         android:theme="@style/AppTheme"
         android:persistent="true">
         <activity android:name=".MainActivity"/>
-        <activity android:name=".StartActivity" android:noHistory="true">
+        <activity android:name=".StartActivity">
 
         </activity>
         <activity android:name=".ProfileActivity"></activity>
