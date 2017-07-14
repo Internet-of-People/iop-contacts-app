@@ -44,7 +44,7 @@
     <string name="chat_status">Chat</string>
     <string name="pairing_status">Pairing</string>
     <string name="show_location">Show location</string>
-    <string name="copyright">Made by Furszy\nLibertaria project</string>
+    <string name="copyright">Made by Furszy\n IoP Ventures LLC</string>
     <string name="version">Version</string>
     <string name="send">Send</string>
     <string name="empty_contact">You do not have any contacts yet.</string>
