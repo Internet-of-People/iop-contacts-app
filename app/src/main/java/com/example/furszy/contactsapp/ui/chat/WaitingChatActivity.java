@@ -116,6 +116,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
             executors.shutdownNow();
             executors = null;
         }
+        finish();
     }
 
     @Override

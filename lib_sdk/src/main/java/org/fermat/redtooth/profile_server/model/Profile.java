@@ -50,7 +50,8 @@ public class Profile implements Signer,ProfileBase {
         this.version = version;
         this.name = name;
         this.img = img;
-        this.imgHash = Sha256Hash.hash(img);
+        if (imgHash!=null)
+            this.imgHash = Sha256Hash.hash(img);
         this.latitude = latitude;
         this.longitude = longitude;
         this.extraData = extraData;
@@ -63,7 +64,8 @@ public class Profile implements Signer,ProfileBase {
         this.type = type;
         this.extraData = extraData;
         this.img = img;
-        this.imgHash = Sha256Hash.hash(img);
+        if (imgHash!=null)
+            this.imgHash = Sha256Hash.hash(img);
         this.homeHost = homeHost;
         this.keyEd25519 = keyEd25519;
         this.applicationServices = new HashMap<>();
@@ -79,7 +81,8 @@ public class Profile implements Signer,ProfileBase {
 
     public void setImg(byte[] img) {
         this.img = img;
-        this.imgHash = Sha256Hash.hash(img);
+        if (imgHash!=null)
+            this.imgHash = Sha256Hash.hash(img);
     }
 
     public void setLatitude(int latitude) {
