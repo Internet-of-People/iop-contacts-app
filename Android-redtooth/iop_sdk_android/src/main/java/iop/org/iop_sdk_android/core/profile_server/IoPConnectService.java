@@ -317,10 +317,10 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                 profilesDb.saveAllProfiles(profile.getHexPublicKey(),profileRestored.getProfileInformationList());
                 registerProfile(profile);
                 connect(profile.getHexPublicKey());
+                logger.info("restore profile completed");
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         }else
             throw new IllegalArgumentException("File not exist, "+file.getAbsolutePath());
     }
