@@ -57,7 +57,7 @@ public class SettingsBackupPasswordActivity extends BaseActivity {
                             app.getBackupDir(),
                             null);
                     onBackPressed();
-                    Toast.makeText(v.getContext(), R.string.backup_completed_message,
+                    Toast.makeText(getApplicationContext(), R.string.backup_completed_message,
                             Toast.LENGTH_LONG).show();
 
                 } catch (IOException e) {
