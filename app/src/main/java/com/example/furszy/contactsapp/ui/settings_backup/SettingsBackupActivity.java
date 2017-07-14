@@ -50,7 +50,6 @@ public class SettingsBackupActivity extends BaseActivity {
                 if(checkedId == R.id.active) {
                     btnCreateBackup.setVisibility(View.VISIBLE);
                     try {
-                        checkPermissions();
                         anRedtooth.scheduleBackupProfileFile(
                                 app.getBackupDir(),
                                 null);
@@ -74,6 +73,8 @@ public class SettingsBackupActivity extends BaseActivity {
                 startActivity(myIntent);
             }
         });
+
+        checkPermissions();
     }
 
 

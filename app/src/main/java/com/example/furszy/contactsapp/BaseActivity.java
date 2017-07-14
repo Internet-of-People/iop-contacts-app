@@ -113,6 +113,7 @@ public class BaseActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
+        anRedtooth = app.anRedtooth.getRedtooth();
         if (localBroadcastManager==null){
             this.localBroadcastManager = LocalBroadcastManager.getInstance(this);
             this.notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
