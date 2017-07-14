@@ -56,10 +56,8 @@ public class SettingsBackupPasswordActivity extends BaseActivity {
                     anRedtooth.backupProfile(
                             app.getBackupDir(),
                             null);
-                    Intent myIntent = new Intent(v.getContext(), SettingsActivity.class);
-                    startActivity(myIntent);
-                    finish();
-                    Snackbar.make(v, R.string.backup_completed_message, Snackbar.LENGTH_LONG).show();
+                    Toast.makeText(v.getContext(), R.string.backup_completed_message,
+                            Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (Exception e){
