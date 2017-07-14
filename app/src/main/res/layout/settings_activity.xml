@@ -77,7 +77,7 @@
 
                 <Button
                     android:id="@+id/btn_report"
-                    android:background="@drawable/settings_items"
+                    android:background="@color/transparent"
                     android:stateListAnimator="@null"
                     android:padding="8dp"
                     android:height="40dp"
