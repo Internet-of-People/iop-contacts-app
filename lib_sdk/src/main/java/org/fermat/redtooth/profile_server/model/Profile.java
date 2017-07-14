@@ -27,7 +27,10 @@ public class Profile implements Signer,ProfileBase {
     /** Max 64 bytes long */
     private String type;
     private byte[] img;
+    /** SHA-256 hash of the image */
+    private byte[] imgHash;
     private byte[] thumbnailImg;
+    private byte[] thumbnailImgHash;
     private int latitude;
     private int longitude;
     private String extraData;
@@ -43,21 +46,15 @@ public class Profile implements Signer,ProfileBase {
 
     public Profile(){};
 
-    public Profile(Version version,String name,String type,KeyEd25519 keyEd25519) {
-        this.version = version;
-        this.name = name;
-        this.type = type;
-        this.keyEd25519 = keyEd25519;
-        applicationServices = new HashMap<>();
-    }
-
     public Profile(Version version, String name, byte[] img, int latitude, int longitude, String extraData) {
         this.version = version;
         this.name = name;
         this.img = img;
+        this.imgHash = Sha256Hash.hash(img);
         this.latitude = latitude;
         this.longitude = longitude;
         this.extraData = extraData;
+        this.applicationServices = new HashMap<>();
     }
 
     public Profile(Version version, String name, String type, String extraData, byte[] img, String homeHost, KeyEd25519 keyEd25519) {
@@ -66,8 +63,10 @@ public class Profile implements Signer,ProfileBase {
         this.type = type;
         this.extraData = extraData;
         this.img = img;
+        this.imgHash = Sha256Hash.hash(img);
         this.homeHost = homeHost;
         this.keyEd25519 = keyEd25519;
+        this.applicationServices = new HashMap<>();
     }
 
     public void setVersion(Version version) {

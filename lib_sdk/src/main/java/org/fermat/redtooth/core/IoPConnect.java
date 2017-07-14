@@ -213,9 +213,16 @@ public class IoPConnect implements ConnectionListener {
         Version version = new Version((byte) 1,(byte)0,(byte)0);
         ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
         KeyEd25519 keyEd25519 = profileServerConfigurations.createNewUserKeys();
-        Profile profile = new Profile(version, name,type,keyEd25519);
+        //     public Profile(Version version, String name, String type, String extraData, byte[] img, String homeHost, KeyEd25519 keyEd25519) {
+        Profile profile = new Profile(
+                version,
+                name,
+                type,
+                "none",
+                img,
+                profileServerConfigurations.getMainProfileServer().getHost(),
+                keyEd25519);
         profile.setExtraData(extraData);
-        profile.setImg(img);
         // save
         profileServerConfigurations.saveUserKeys(profile.getKey());
         profileServerConfigurations.setIsCreated(true);
@@ -347,9 +354,11 @@ public class IoPConnect implements ConnectionListener {
             profile = profileServerConfigurations.getProfile();
         } else {
             // create and save
+            //     public Profile(Version version, String name, String type, String extraData, byte[] img, String homeHost, KeyEd25519 keyEd25519) {
+
             KeyEd25519 keyEd25519 = profileServerConfigurations.createUserKeys();
-            profile = new Profile(profileServerConfigurations.getProfileVersion(), profileServerConfigurations.getUsername(), profileServerConfigurations.getProfileType(),keyEd25519);
-            profile.setImg(profileServerConfigurations.getUserImage());
+            profile = profileServerConfigurations.getProfile();
+            profile.setKey(keyEd25519);
             // save
             profileServerConfigurations.saveUserKeys(profile.getKey());
         }

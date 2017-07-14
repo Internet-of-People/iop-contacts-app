@@ -321,10 +321,11 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
                 getProfileVersion(),
                 getUsername(),
                 getProfileType(),
+                "none",
+                getUserImage(),
+                getHost(),
                 getUserKeys()
         );
-        profile.setImg(getUserImage());
-        profile.setHomeHost(getHost());
         return profile;
     }
 

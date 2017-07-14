@@ -89,6 +89,7 @@ public class ProfSerConnectionEngine {
             profSerEngine.setProfSerConnectionState(ProfSerConnectionState.GETTING_ROLE_LIST);
             profSerEngine.requestRoleList(new ListRolesListener());
         }catch (Exception e){
+            profSerEngine.setProfSerConnectionState(ProfSerConnectionState.CONNECTION_FAIL);
             initFuture.onMsgFail(0,400,"Cant request roles list, "+e.getMessage());
             throw e;
         }
@@ -109,6 +110,7 @@ public class ProfSerConnectionEngine {
                 );
             }
         }catch (Exception e){
+            profSerEngine.setProfSerConnectionState(ProfSerConnectionState.CONNECTION_FAIL);
             initFuture.onMsgFail(0,400,"Cant start conversation on non customer port, "+e.getMessage());
             throw e;
         }
@@ -128,6 +130,7 @@ public class ProfSerConnectionEngine {
                 );
                 LOG.info("requestHomeNodeRequest message id: "+msgId);
             } catch (Exception e){
+                profSerEngine.setProfSerConnectionState(ProfSerConnectionState.CONNECTION_FAIL);
                 initFuture.onMsgFail(0,400,"Cant request home node registration on non customer port, "+e.getMessage());
                 throw e;
             }
@@ -165,6 +168,7 @@ public class ProfSerConnectionEngine {
                         new CheckinConversationListener());
             }
         }catch (Exception e){
+            profSerEngine.setProfSerConnectionState(ProfSerConnectionState.CONNECTION_FAIL);
             initFuture.onMsgFail(0,400,"Cant request check in on customer port, "+e.getMessage());
             throw e;
         }
