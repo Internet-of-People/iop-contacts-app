@@ -595,7 +595,11 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     @Override
     public void acceptChatRequest(String hexPublicKey, ProfSerMsgListener<Boolean> future) throws Exception {
         CallProfileAppService callProfileAppService = profile.getAppService(EnabledServices.CHAT.getName()).getOpenCall(hexPublicKey);
-        callProfileAppService.sendMsg(new ChatAcceptMsg(System.currentTimeMillis()),future);
+        if (callProfileAppService!=null) {
+            callProfileAppService.sendMsg(new ChatAcceptMsg(System.currentTimeMillis()), future);
+        }else {
+            throw new AppServiceCallNotAvailableException("Connection not longer available");
+        }
     }
 
     /**
