@@ -32,13 +32,6 @@ public class ProfileUtils {
         int indexOfAnd = str[2].indexOf("&");
         String name = str[2].substring(str[2].indexOf("=") + 1, indexOfAnd);
         String psHost = str[2].substring(indexOfAnd + 4);
-        if (psHost!=null){
-            try {
-                new URL(psHost);
-            } catch (Exception e1) {
-                throw new IllegalArgumentException("Invalid psHost url");
-            }
-        }
         UriProfile uriProfile = new UriProfile(name, str[1], psHost);
         return uriProfile;
     }

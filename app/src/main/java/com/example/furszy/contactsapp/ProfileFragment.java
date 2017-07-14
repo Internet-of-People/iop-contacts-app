@@ -194,11 +194,13 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
         if (executor==null)
             executor = Executors.newSingleThreadExecutor();
         // init profile
-        profile = module.getProfile();
-        if (profile!=null) {
-            txt_name.setText(profile.getName());
-            if(profile.getImg()!=null && profile.getImg().length>0 && profImgData==null){
-                imgProfile.setImageBitmap(BitmapFactory.decodeByteArray(profile.getImg(),0,profile.getImg().length));
+        if (module!=null) {
+            profile = module.getProfile();
+            if (profile != null) {
+                txt_name.setText(profile.getName());
+                if (profile.getImg() != null && profile.getImg().length > 0 && profImgData == null) {
+                    imgProfile.setImageBitmap(BitmapFactory.decodeByteArray(profile.getImg(), 0, profile.getImg().length));
+                }
             }
         }
     }
