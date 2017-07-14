@@ -5,7 +5,10 @@ import com.google.protobuf.ByteString;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.bitcoinj.core.Sha256Hash;
 import org.fermat.redtooth.profile_server.Signer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -14,6 +17,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Created by mati on 20/09/16.
  */
 public class MessageFactory {
+
+    private static final Logger log = LoggerFactory.getLogger(MessageFactory.class);
 
     private static AtomicInteger messageIdGenerator = new AtomicInteger(0);
 
@@ -176,7 +181,10 @@ public class MessageFactory {
         if (img!=null && img.length>0){
             if (img.length>20480) throw new IllegalArgumentException("image is greater than the max size permitted 20480 bytes");
             updateProfileRequest.setProfileImage(ByteString.copyFrom(img));
-            if (imgHash==null) throw new IllegalArgumentException("Null imgHash, field needed to update the profile image");
+            if (imgHash==null) { //throw new IllegalArgumentException("Null imgHash, field needed to update the profile image");
+                log.error("imgHash null.. correct me!");
+                imgHash = Sha256Hash.hash(img);
+            }
             profileInformation.setProfileImageHash(ByteString.copyFrom(imgHash));
         }
 

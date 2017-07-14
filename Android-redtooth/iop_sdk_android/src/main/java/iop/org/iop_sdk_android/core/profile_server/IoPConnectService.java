@@ -756,6 +756,11 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
+    public boolean isProfileConnectedOrConnecting() {
+        return ioPConnect.isProfileConnectedOrConnecting(profile.getHexPublicKey());
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG,"onStartCommand");
         if (intent!=null) {

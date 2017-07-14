@@ -87,6 +87,13 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                 executor.shutdownNow();
             executor = null;
         }
+        try {
+            // close chat
+            anRedtooth.refuseChatRequest(remoteProfile.getHexPublicKey());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        finish();
     }
 
     @Override
