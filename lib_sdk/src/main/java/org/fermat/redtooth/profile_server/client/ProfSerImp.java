@@ -126,8 +126,19 @@ public class ProfSerImp implements ProfileServer {
      * @return
      */
     @Override
-    public ProfSerRequest updateProfileRequest(Signer signer,byte[] profilePublicKey,String profType, byte[] version, String name, byte[] img, int latitude, int longitude, String extraData) {
-        final IopProfileServer.Message message = MessageFactory.buildUpdateProfileRequest(signer,profilePublicKey,profType,version,name,img,latitude,longitude,extraData);
+    public ProfSerRequest updateProfileRequest(Signer signer,byte[] profilePublicKey,String profType, byte[] version, String name, byte[] img, byte[] imgHash, int latitude, int longitude, String extraData) {
+        final IopProfileServer.Message message = MessageFactory.buildUpdateProfileRequest(
+                signer,
+                profilePublicKey,
+                profType,
+                version,
+                name,
+                img,
+                imgHash,
+                latitude,
+                longitude,
+                extraData
+        );
         return buildRequestToCustomerPort(message);
     }
 

@@ -352,7 +352,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                 onCheckInFail(profile,status,statusDetail);
                 if (status==400){
                     logger.info("Checking fail, detail "+statusDetail+", trying to reconnect after 5 seconds");
-                    handler.postDelayed(reconnectRunnable,TimeUnit.SECONDS.toMillis(5));
+                    handler.postDelayed(reconnectRunnable,TimeUnit.SECONDS.toMillis(15));
                 }
 
             }
@@ -363,6 +363,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                         connect(pubKey);
                     } catch (Exception e) {
                         e.printStackTrace();
+                        // connection fail
                     }
                 }
             };
