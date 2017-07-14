@@ -55,6 +55,10 @@ public abstract class AppService implements ProfSerMsgListener{
         return openCalls.get(remotePubKey);
     }
 
+    public boolean hasOpenCall(String remotePubKey){
+        return openCalls.containsKey(remotePubKey);
+    }
+
     /**
      * Method called once the app service is registered on the server
      */

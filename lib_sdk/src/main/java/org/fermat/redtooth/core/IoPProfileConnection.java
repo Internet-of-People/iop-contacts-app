@@ -44,7 +44,7 @@ import java.util.concurrent.ExecutionException;
  *
  */
 
-public class IoPProfileConnection implements CallsListener {
+public class IoPProfileConnection implements CallsListener, CallProfileAppService.CallStateListener {
 
     private static final Logger logger = LoggerFactory.getLogger(IoPProfileConnection.class);
 
@@ -371,6 +371,7 @@ public class IoPProfileConnection implements CallsListener {
                     callProfileAppService.setCallToken(appServiceResponse.getCallerToken().toByteArray());
                     String callToken = CryptoBytes.toHexString(appServiceResponse.getCallerToken().toByteArray());
                     logger.info("Adding call, token: "+callToken);
+                    callProfileAppService.addCallStateListener(IoPProfileConnection.this);
                     openCall.put(callToken,callProfileAppService);
                     // setup call app service
                     setupCallAppServiceInitMessage(callProfileAppService,true,profSerMsgListener);
@@ -411,6 +412,7 @@ public class IoPProfileConnection implements CallsListener {
 
             // accept every single call
             logger.info("Adding call, token: "+callToken);
+            callProfileAppService.addCallStateListener(this);
             openCall.put(callToken, callProfileAppService);
             profSerEngine.acceptCall(messageId);
 
@@ -532,5 +534,12 @@ public class IoPProfileConnection implements CallsListener {
     }
 
 
-
+    @Override
+    public void onCallFinished(CallProfileAppService callProfileAppService) {
+        try {
+            openCall.remove(CryptoBytes.toHexString(callProfileAppService.getCallToken()));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 }

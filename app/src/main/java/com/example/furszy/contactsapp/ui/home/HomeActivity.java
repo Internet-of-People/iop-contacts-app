@@ -33,6 +33,7 @@ public class HomeActivity extends BaseDrawerActivity {
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private FloatingActionButton fab_add;
+    private ViewPagerAdapter adapter;
 
     private boolean initInRequest;
 
@@ -79,7 +80,7 @@ public class HomeActivity extends BaseDrawerActivity {
     }
 
     private void setupViewPager(ViewPager viewPager) {
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFragment(new ContactsFragment(), "Contacts");
         adapter.addFragment(new RequestsFragment(), "Requests");
         viewPager.setAdapter(adapter);
@@ -111,6 +112,13 @@ public class HomeActivity extends BaseDrawerActivity {
         @Override
         public CharSequence getPageTitle(int position) {
             return mFragmentTitleList.get(position);
+        }
+    }
+
+    public void refreshContacts(){
+        Fragment fragment = adapter.getItem(0);
+        if (fragment!=null){
+            ((ContactsFragment)fragment).refresh();
         }
     }
 }
