@@ -409,7 +409,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
                             detail = "Fail, error: "+listenerFuture.getStatusDetail();
                         }
                     } catch (Exception e) {
-                        Log.e(TAG," exception updating the profile, " +e.getMessage());
+                        Log.e(TAG," exception updating the profile\n" +e.getMessage());
                         detail = "Cant update profile, send report please";
                     }
                     final String finalDetail = detail;

@@ -297,7 +297,13 @@ public class IoPConnect implements ConnectionListener {
     }
 
     public int updateProfile(Profile profile, ProfSerMsgListener<Boolean> msgListener) throws Exception {
-        return getProfileConnection(profile.getHexPublicKey()).updateProfile(profile.getVersion(),profile.getName(),profile.getImg(),profile.getLatitude(),profile.getLongitude(),profile.getExtraData(),msgListener);
+        IoPProfileConnection connection = getProfileConnection(profile.getHexPublicKey());
+        if (connection != null && connection.isReady()) {
+            return connection.updateProfile(profile.getVersion(), profile.getName(), profile.getImg(), profile.getLatitude(), profile.getLongitude(), profile.getExtraData(), msgListener);
+        }else {
+            throw new IllegalStateException("Main profile connection is not open");
+        }
+
     }
 
     /**

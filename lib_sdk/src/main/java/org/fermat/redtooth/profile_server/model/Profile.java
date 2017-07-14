@@ -79,6 +79,7 @@ public class Profile implements Signer,ProfileBase {
 
     public void setImg(byte[] img) {
         this.img = img;
+        this.imgHash = Sha256Hash.hash(img);
     }
 
     public void setLatitude(int latitude) {
@@ -235,4 +236,7 @@ public class Profile implements Signer,ProfileBase {
     }
 
 
+    public byte[] getImgHash() {
+        return imgHash;
+    }
 }

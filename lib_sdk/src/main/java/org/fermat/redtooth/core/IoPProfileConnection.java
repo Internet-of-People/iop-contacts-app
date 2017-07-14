@@ -173,6 +173,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
                 version,
                 name,
                 img,
+                profileCache.getImgHash(),
                 latitude,
                 longitude,
                 extraData,

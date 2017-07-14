@@ -284,7 +284,7 @@ public class ProfSerEngine {
      *
      * @param img -> Profile image in PNG or JPEG format, non-empty binary data, max 20,480 bytes long, or zero length binary data if the profile image is about to be erased.
      */
-    public int updateProfile(Version version, String name, byte[] img, int lat, int lon, String extraData, ProfSerMsgListener listener){
+    public int updateProfile(Version version, String name, byte[] img, byte[] imgHash, int lat, int lon, String extraData, ProfSerMsgListener listener){
         LOG.info("updateProfile, state: "+profSerConnectionState);
         int msgId = 0;
         if (profSerConnectionState == CHECK_IN){
@@ -296,6 +296,7 @@ public class ProfSerEngine {
                         version.toByteArray(),
                         name,
                         img,
+                        imgHash,
                         lat,
                         lon,
                         extraData
@@ -541,6 +542,7 @@ public class ProfSerEngine {
                     profile.getVersion(),
                     profile.getName(),
                     profile.getImg(),
+                    profile.getImgHash(),
                     profile.getLatitude(),
                     profile.getLongitude(),
                     profile.getExtraData(),

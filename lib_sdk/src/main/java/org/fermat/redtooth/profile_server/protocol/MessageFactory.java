@@ -151,7 +151,7 @@ public class MessageFactory {
         return buildMessage(checkInRequest,signature);
     }
 
-    public static IopProfileServer.Message buildUpdateProfileRequest(Signer signer,byte[] profilePk,String profType, byte[] version, String name, byte[] img, int latitude, int longitude, String extraData) {
+    public static IopProfileServer.Message buildUpdateProfileRequest(Signer signer,byte[] profilePk,String profType, byte[] version, String name, byte[] img,byte[] imgHash ,int latitude, int longitude, String extraData) {
 
         if (signer==null) throw new IllegalArgumentException("signer cannot be null");
         if (profilePk==null) throw new IllegalArgumentException("profilePk cannot be null");
@@ -176,6 +176,8 @@ public class MessageFactory {
         if (img!=null && img.length>0){
             if (img.length>20480) throw new IllegalArgumentException("image is greater than the max size permitted 20480 bytes");
             updateProfileRequest.setProfileImage(ByteString.copyFrom(img));
+            if (imgHash==null) throw new IllegalArgumentException("Null imgHash, field needed to update the profile image");
+            profileInformation.setProfileImageHash(ByteString.copyFrom(imgHash));
         }
 
 
