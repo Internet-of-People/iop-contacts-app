@@ -125,4 +125,6 @@ public interface ModuleRedtooth {
     Collection<PairingRequest> listAllPairingRequests();
 
     Collection<ProfileInformation> listAllProfileInformation();
+
+    boolean isProfileConnectedOrConnecting();
 }

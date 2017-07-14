@@ -4,8 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -18,13 +16,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.TextView;
+
 import com.example.furszy.contactsapp.ui.home.HomeActivity;
 import com.example.furszy.contactsapp.ui.my_qr.MyQrActivity;
 import com.example.furszy.contactsapp.ui.settings.SettingsActivity;
 import org.fermat.redtooth.profile_server.model.Profile;
-import java.util.Arrays;
-import de.hdodenhof.circleimageview.CircleImageView;
+
 import iop.org.iop_sdk_android.core.IntentBroadcastConstants;
 
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_IOP_SERVICE_CONNECTED;
@@ -101,6 +98,12 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
         super.onResume();
         registerReceiver(receiver,new IntentFilter(IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT));
         registerReceiver(receiver,new IntentFilter(ACTION_IOP_SERVICE_CONNECTED));
+
+        if (anRedtooth!=null){
+            if(!anRedtooth.isProfileConnectedOrConnecting()){
+                btnReload.setVisibility(View.VISIBLE);
+            }
+        }
     }
 
     @Override
@@ -187,6 +190,15 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
     protected void setNavigationMenuItemChecked(int pos){
         navigationView.getMenu().getItem(pos).setChecked(true);
     }
+
+    public void hideConnectionLoose(){
+        btnReload.setVisibility(View.GONE);
+    }
+
+    public void showConnectionLoose(){
+        btnReload.setVisibility(View.VISIBLE);
+    }
+
 
 
     @Override
