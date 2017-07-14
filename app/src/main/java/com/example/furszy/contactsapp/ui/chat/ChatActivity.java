@@ -69,6 +69,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         String remotePk = getIntent().getStringExtra(REMOTE_PROFILE_PUB_KEY);
         remoteProfile = anRedtooth.getKnownProfile(remotePk);
         messagesFragment = (MessagesFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_messages);
+
+        // cancel chat notifications if there is any..
+        app.cancelChatNotifications();
     }
 
     @Override

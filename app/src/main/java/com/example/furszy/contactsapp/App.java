@@ -359,4 +359,8 @@ public class App extends Application implements IoPConnectContext {
         super.onTerminate();
         unregisterReceiver(serviceReceiver);
     }
+
+    public void cancelChatNotifications() {
+        notificationManager.cancel(43);
+    }
 }

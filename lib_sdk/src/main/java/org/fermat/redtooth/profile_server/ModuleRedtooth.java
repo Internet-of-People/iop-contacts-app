@@ -71,9 +71,9 @@ public interface ModuleRedtooth {
 
     void requestChat(ProfileInformation remoteProfileInformation, ProfSerMsgListener<Boolean> readyListener, TimeUnit timeUnit, long time) throws RequestChatException, ChatCallAlreadyOpenException;
 
-    void refuseChatRequest(String hexPublicKey);
+    void refuseChatRequest(String remoteHexPublicKey);
 
-    void acceptChatRequest(String hexPublicKey, ProfSerMsgListener<Boolean> future) throws Exception;
+    void acceptChatRequest(String remoteHexPublicKey, ProfSerMsgListener<Boolean> future) throws Exception;
 
     void sendMsgToChat(ProfileInformation remoteProfileInformation, String msg, ProfSerMsgListener<Boolean> msgListener) throws Exception;
 

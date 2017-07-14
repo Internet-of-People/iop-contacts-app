@@ -30,8 +30,10 @@ import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileInformation;
+import org.fermat.redtooth.profile_server.client.AppServiceCallNotAvailableException;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
+import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.utils.ProfileUtils;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
@@ -310,11 +312,62 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                             anRedtooth.requestChat(profileInformation, readyListener, TimeUnit.SECONDS, 45);
                         } catch (ChatCallAlreadyOpenException e) {
                             e.printStackTrace();
-                            flag.set(false);
-                            // chat call already open, let's go to the chat again
-                            Intent intent1 = new Intent(ProfileInformationActivity.this, ChatActivity.class);
-                            intent1.putExtra(REMOTE_PROFILE_PUB_KEY, profileInformation.getHexPublicKey());
-                            startActivity(intent1);
+                            // chat call already open
+                            // first send the acceptance
+                            try {
+                                anRedtooth.acceptChatRequest(profileInformation.getHexPublicKey(), new ProfSerMsgListener<Boolean>() {
+                                    @Override
+                                    public void onMessageReceive(int messageId, Boolean message) {
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                flag.set(false);
+                                                // let's go to the chat again
+                                                Intent intent1 = new Intent(ProfileInformationActivity.this, ChatActivity.class);
+                                                intent1.putExtra(REMOTE_PROFILE_PUB_KEY, profileInformation.getHexPublicKey());
+                                                startActivity(intent1);
+                                            }
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onMsgFail(int messageId, int statusValue, final String details) {
+                                        logger.info("chat connection fail %s",details);
+                                        flag.set(false);
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(ProfileInformationActivity.this,"Chat connection fail\n"+details,Toast.LENGTH_LONG).show();
+                                            }
+                                        });
+                                    }
+
+                                    @Override
+                                    public String getMessageName() {
+                                        return "accept_chat_request";
+                                    }
+                                });
+
+                            } catch (AppServiceCallNotAvailableException e1){
+                                e1.printStackTrace();
+                                flag.set(false);
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(ProfileInformationActivity.this,"Remote profile calling you.., closing the connection\nPlease try again",Toast.LENGTH_LONG).show();
+                                    }
+                                });
+
+                            } catch (final Exception e1) {
+                                e1.printStackTrace();
+                                flag.set(false);
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(ProfileInformationActivity.this,"Chat connection fail\n"+e1.getMessage(),Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
 
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -322,7 +375,6 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                                 @Override
                                 public void run() {
                                     Toast.makeText(v.getContext(), "Chat call fail", Toast.LENGTH_LONG).show();
-                                    onBackPressed();
                                 }
                             });
                             flag.set(false);

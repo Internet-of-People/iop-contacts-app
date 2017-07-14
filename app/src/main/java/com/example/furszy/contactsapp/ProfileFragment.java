@@ -325,8 +325,9 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
             final String picturePath = cursor.getString(columnIndex);
             cursor.close();
-            Picasso.with(getActivity()).load(picturePath).into(imgProfile);
-            imgProfile.invalidate();
+            Picasso picasso = Picasso.with(getActivity());
+            picasso.load(picturePath).fit().into(imgProfile);
+
 
             // scale image
             //imgProfile.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 1024, 1024, false));
@@ -334,7 +335,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
             if( ContextCompat.checkSelfPermission(getActivity(),
                     Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ) {
                 if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                        Manifest.permission.READ_CONTACTS)) {
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
                     // Show an expanation to the user *asynchronously* -- don't block
                     // this thread waiting for the user's response! After the user
@@ -464,7 +465,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
 
                 // Should we show an explanation?
                 if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                        Manifest.permission.READ_CONTACTS)) {
+                        Manifest.permission.READ_EXTERNAL_STORAGE)) {
 
                     // Show an expanation to the user *asynchronously* -- don't block
                     // this thread waiting for the user's response! After the user
