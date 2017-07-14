@@ -57,12 +57,20 @@ public class SettingsRestoreActivity extends BaseActivity {
             if (selected < 0) {
                 return true;
             }
+
+            anRedtooth.restoreFrom(fileList.get(selected),null);
+            onBackPressed();
             Toast.makeText(getApplicationContext(), R.string.restore_completed_message,
                     Toast.LENGTH_LONG).show();
-            anRedtooth.restoreFrom(fileList.get(selected),null);
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
     }
 
     @Override
