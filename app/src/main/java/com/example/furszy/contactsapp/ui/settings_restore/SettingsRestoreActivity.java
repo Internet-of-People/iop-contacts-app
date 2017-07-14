@@ -57,6 +57,8 @@ public class SettingsRestoreActivity extends BaseActivity {
             if (selected < 0) {
                 return true;
             }
+            Toast.makeText(getApplicationContext(), R.string.restore_completed_message,
+                    Toast.LENGTH_LONG).show();
             anRedtooth.restoreFrom(fileList.get(selected),null);
             return true;
         }

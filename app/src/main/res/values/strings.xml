@@ -55,6 +55,7 @@
     <string name="pairing_fail">Pairing request failed</string>
     <string name="pairing_yourself">You cannot add yourself as contact</string>
     <string name="backup_completed_message">Backup completed, check your download\'s folder</string>
+    <string name="restore_completed_message">You have restored your wallet succesfully</string>
     <string name="background_service_enabled">BACKGROUND SERVICE</string>
     <string name="report_issue_dialog_description">Issue description</string>
     <string name="report_issue_dialog_collect_device_info">Append device information</string>
