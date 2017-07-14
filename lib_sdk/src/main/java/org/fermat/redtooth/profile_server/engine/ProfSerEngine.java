@@ -623,7 +623,7 @@ public class ProfSerEngine {
                     e.printStackTrace();
                 }
             }
-        },5,15, TimeUnit.SECONDS);
+        },10,15, TimeUnit.SECONDS);
         pingExecutors.put(portType,service);
     }
 
