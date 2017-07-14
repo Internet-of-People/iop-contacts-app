@@ -8,14 +8,18 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckedTextView;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -41,6 +45,8 @@ public class RestoreActivity extends BaseActivity {
     private Spinner spinner_files;
     private List<File> fileList = new ArrayList<>();
     private ArrayAdapter<String> adapter;
+    EditText txt_password;
+    ImageButton showPassword;
 
 
     @Override
@@ -75,6 +81,24 @@ public class RestoreActivity extends BaseActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         checkPermissions();
+        //Set Password
+        txt_password = (EditText) root.findViewById(R.id.password);
+
+        showPassword = (ImageButton) findViewById(R.id.showPassword);
+        showPassword.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent event) {
+
+                switch ( event.getAction() ) {
+                    case MotionEvent.ACTION_DOWN:
+                        txt_password.setInputType(InputType.TYPE_CLASS_TEXT);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        txt_password.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                        break;
+                }
+                return true;
+            }
+        });
 
         //Open File Folder
         spinner_files = (Spinner) root.findViewById(R.id.spinner_files);
