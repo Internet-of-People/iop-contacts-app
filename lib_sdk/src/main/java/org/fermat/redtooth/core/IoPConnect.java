@@ -829,16 +829,18 @@ public class IoPConnect implements ConnectionListener {
             List<ProfileInformation> list = new ArrayList<>();
             for (int i=0;i<wrapper.getProfilesInfoCount();i++){
                 ProfileOuterClass.ProfileInfo profileInfo = wrapper.getProfilesInfo(i);
+                ProfileInformation profileInformation = new ProfileInformationImp(
+                        Version.fromByteArray(profileInfo.getVersion().toByteArray()),
+                        profileInfo.getPubKey().toByteArray(),
+                        profileInfo.getName(),
+                        profileInfo.getType(),
+                        profileInfo.getExtraData(),
+                        profileInfo.getImg().toByteArray(),
+                        profileInfo.getHomeHost()
+                );
+                profileInformation.setPairStatus(ProfileInformationImp.PairStatus.PAIRED);
                 list.add(
-                    new ProfileInformationImp(
-                            Version.fromByteArray(profileInfo.getVersion().toByteArray()),
-                            profileInfo.getPubKey().toByteArray(),
-                            profileInfo.getName(),
-                            profileInfo.getType(),
-                            profileInfo.getExtraData(),
-                            profileInfo.getImg().toByteArray(),
-                            profileInfo.getHomeHost()
-                    )
+                        profileInformation
                 );
             }
 

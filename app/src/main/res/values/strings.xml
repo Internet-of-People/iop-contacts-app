@@ -17,7 +17,7 @@
     <string name="backup_profile">Backup Profile</string>
     <string name="select_file">Select File</string>
     <string name="add_name">Write your name</string>
-    <string name="restore_message">Select a backup of  your account \n from a storage unit</string>
+    <string name="restore_message">Select a backup file of your profile\nfrom your storage</string>
     <string name="security">Security</string>
     <string name="send_request">Send Request</string>
     <string name="request_message">Paste the URI here to add a contact</string>
@@ -55,7 +55,7 @@
     <string name="pairing_fail">Pairing request failed</string>
     <string name="pairing_yourself">You cannot add yourself as contact</string>
     <string name="backup_completed_message">Backup completed, check your download\'s folder</string>
-    <string name="restore_completed_message">You have restored your wallet succesfully</string>
+    <string name="restore_completed_message">You have restored your profile succesfully</string>
     <string name="background_service_enabled">BACKGROUND SERVICE</string>
     <string name="report_issue_dialog_description">Issue description</string>
     <string name="report_issue_dialog_collect_device_info">Append device information</string>

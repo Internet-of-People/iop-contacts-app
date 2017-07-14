@@ -19,6 +19,8 @@ import android.widget.CheckedTextView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.example.furszy.contactsapp.ui.home.HomeActivity;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
@@ -56,6 +58,9 @@ public class RestoreActivity extends BaseActivity {
             int selected = spinner_files.getSelectedItemPosition();
             if (fileList!=null && !fileList.isEmpty()) {
                 anRedtooth.restoreFrom(fileList.get(selected), null);
+                Toast.makeText(this,"Restore profile from backup completed",Toast.LENGTH_LONG).show();
+                startActivity(new Intent(this, HomeActivity.class));
+                finish();
             }
             return true;
         }
@@ -82,7 +87,7 @@ public class RestoreActivity extends BaseActivity {
             @Override
             public View getDropDownView(int position, View convertView, ViewGroup parent) {
                 CheckedTextView view = (CheckedTextView) super.getDropDownView(position, convertView, parent);
-                view.setTextColor(Color.WHITE);
+                view.setTextColor(Color.BLACK);
                 return view;
             }
         };
@@ -103,20 +108,25 @@ public class RestoreActivity extends BaseActivity {
     }
 
     private List<File> listFiles() {
+        List<File> fileList = new ArrayList<>();
         File backupDir = app.getBackupDir();
         if (backupDir.isDirectory()){
             File[] fileArray = backupDir.listFiles();
             if (fileArray!=null){
                 for (File file : fileArray) {
                     if (PROFILE_FILE_FILTER.accept(file)) {
-                        fileList.add(file);
+                        if (!fileList.contains(file))
+                            fileList.add(file);
                     }
                 }
             }
         }
-        for (final String filename : fileList())
-            if (filename.startsWith("backup_iop_connect"))
-                fileList.add(new File(getFilesDir(), filename));
+        for (final String filename : fileList()) {
+            File file = new File(getFilesDir(), filename);
+            if (filename.startsWith("backup_iop_connect") && !fileList.contains(file)) {
+                fileList.add(file);
+            }
+        }
 
         // sort
         Collections.sort(fileList, new Comparator<File>() {
