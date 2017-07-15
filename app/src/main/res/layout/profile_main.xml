@@ -26,6 +26,14 @@
             android:layout_centerVertical="true"
             android:layout_centerHorizontal = "true"/>
 
+        <ProgressBar
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal = "true"
+            android:visibility="invisible"
+            android:id="@+id/loading_img"/>
+
         <ImageView
             android:id="@+id/imgAdd"
             android:layout_width="wrap_content"

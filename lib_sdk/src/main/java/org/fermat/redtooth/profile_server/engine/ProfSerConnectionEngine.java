@@ -16,6 +16,7 @@ import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.S
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.WAITING_HOME_NODE_REQUEST;
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.WAITING_START_CL;
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.WAITING_START_NON_CL;
+import static org.fermat.redtooth.profile_server.protocol.IopShared.Status.ERROR_ALREADY_EXISTS;
 
 /**
  * Created by mati on 16/05/17.
@@ -312,7 +313,14 @@ public class ProfSerConnectionEngine {
         @Override
         public void onMsgFail(int messageId, int statusValue, String details) {
             LOG.info("HomeNodeRequestListener fail",messageId,statusValue,details);
-            initFuture.onMsgFail(messageId,statusValue,details);
+            if (statusValue==ERROR_ALREADY_EXISTS.getNumber()){
+                // continue engine
+                profSerEngine.getProfNodeConnection().setIsRegistered(true);
+                profSerEngine.getProfNodeConnection().setNeedRegisterProfile(true);
+                engine();
+            }else {
+                initFuture.onMsgFail(messageId, statusValue, details);
+            }
         }
 
         @Override

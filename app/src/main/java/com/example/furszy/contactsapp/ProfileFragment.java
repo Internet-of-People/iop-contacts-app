@@ -48,13 +48,9 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import de.hdodenhof.circleimageview.CircleImageView;
-
-import static android.R.attr.filter;
 import static android.app.Activity.RESULT_OK;
-import static org.fermat.redtooth.utils.StringUtils.cleanString;
 
 /**
  * Created by mati on 16/04/17.
@@ -84,11 +80,10 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
     private Switch show_location;
     private Button btn_create;
     private ProgressBar progressBar;
+    private ProgressBar loading_img;
 
     private Profile profile;
     byte[] profImgData;
-    private boolean isUsernameCorrect;
-    private AtomicBoolean lock = new AtomicBoolean(false);
     private boolean isRegistered;
     private int screenState;
     private ExecutorService executor;
@@ -122,8 +117,9 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
         txt_name = (EditText) root.findViewById(R.id.txt_name);
         txt_name.setFilters(new InputFilter[]{filter,new InputFilter.LengthFilter(14)});
         progressBar = (ProgressBar) root.findViewById(R.id.progressBar);
-        progressBar = (ProgressBar) root.findViewById(R.id.progressBar);
+        loading_img = (ProgressBar) root.findViewById(R.id.loading_img);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.BLUE, PorterDuff.Mode.MULTIPLY);
+        loading_img.getIndeterminateDrawable().setColorFilter(Color.BLUE, PorterDuff.Mode.MULTIPLY);
         progressBar.setVisibility(View.GONE);
         btn_create = (Button) root.findViewById(R.id.btn_create);
         imgProfile.setOnClickListener(new View.OnClickListener() {
@@ -236,66 +232,13 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
             public void afterTextChanged(Editable s) {
                 String name = s.toString();
                 if (name.length()>3 ){
-                    isUsernameCorrect = true;
                     changeScreenState(UPDATE_SCREEN_STATE);
                 }else {
-                    isUsernameCorrect = false;
                     changeScreenState(DONE_SCREEN_STATE);
                 }
             }
         });
-
     }
-
-    private boolean validateMail(CharSequence email){
-        String regExpn =
-                "^(([\\w-]+\\.)+[\\w-]+|([a-zA-Z]{1}|[\\w-]{2,}))@"
-                        +"((([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\.([0-1]?"
-                        +"[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\."
-                        +"([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\.([0-1]?"
-                        +"[0-9]{1,2}|25[0-5]|2[0-4][0-9])){1}|"
-                        +"([a-zA-Z]+[\\w-]+\\.)+[a-zA-Z]{2,4})$";
-
-        Pattern pattern = Pattern.compile(regExpn, Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(email);
-
-        if(matcher.matches())
-            return true;
-        else
-            return false;
-    }
-
-    private void registerUser(final String username){
-
-        if (!lock.getAndSet(true)) {
-            execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        String pubKey = module.registerProfile(username, "contactApp",null,0,0,null);
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                progressBar.setVisibility(View.GONE);
-//                                    buildDialog();
-                            }
-                        });
-                    } catch (final Exception e){
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                buildFailDialog(cleanString(e.getMessage()));
-                                progressBar.setVisibility(View.GONE);
-                            }
-                        });
-                    }
-
-                    lock.set(false);
-                }
-            });
-        }
-    }
-
 
     /**
      * Execute
@@ -318,6 +261,9 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
+
+            loading_img.setVisibility(View.VISIBLE);
+
             Uri selectedImage = data.getData();
             String[] filePathColumn = { MediaStore.Images.Media.DATA };
             Cursor cursor = getActivity().getContentResolver().query(selectedImage,filePathColumn, null, null, null);
@@ -325,9 +271,6 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
             final String picturePath = cursor.getString(columnIndex);
             cursor.close();
-            Picasso picasso = Picasso.with(getActivity());
-            picasso.load(picturePath).fit().into(imgProfile);
-
 
             // scale image
             //imgProfile.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 1024, 1024, false));
@@ -355,7 +298,9 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
             execute(new Runnable() {
                 @Override
                 public void run() {
-                    Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inSampleSize = 4;
+                    final Bitmap bitmap = BitmapFactory.decodeFile(picturePath,options);
                     // compress and do it array
                     ByteArrayOutputStream out = null;
                     try {
@@ -373,6 +318,14 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
                             // nothing
                         }
                     }
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.i("ProfileFragment","setting bitmap profile");
+                            imgProfile.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 1024, 1024, false));
+                            loading_img.setVisibility(View.INVISIBLE);
+                        }
+                    });
                 }
             });
 
@@ -491,7 +444,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case 1: {
+            case MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE: {
 
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0

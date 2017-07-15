@@ -878,9 +878,12 @@ public class ProfSerEngine {
                         // this happen whe the identity already exist or when the cl and non-cl port are the same in the StartConversation message
                         case ERROR_ALREADY_EXISTS:
                             LOG.info("response: "+response.toString());
+                            // todo: for some reason this is happening... fix me please
                             if (profSerConnectionState == WAITING_START_CL)
                                 profSerConnectionState = START_CONVERSATION_CL;
                             else profSerConnectionState = HOME_NODE_REQUEST;
+                            profNodeConnection.setIsRegistered(true);
+                            msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),"ERROR_ALREADY_EXISTS, profile already exist on the server to request the home node request");
                             break;
                         case ERROR_INVALID_SIGNATURE:
                             LOG.error("response to msg id: "+messageId+" "+response.toString());
