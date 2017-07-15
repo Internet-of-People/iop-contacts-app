@@ -73,6 +73,7 @@
         android:layout_weight="1"
         android:gravity="center|bottom"
         android:orientation="vertical"
+        android:visibility="gone"
         android:layout_alignParentBottom="true">
 
         <Button

@@ -14,6 +14,10 @@ public class Version {
     private byte minor;
     private byte path;
 
+    public static final Version newProtocolAcceptedVersion(){
+        return new Version((byte) 1,(byte)0,(byte)0);
+    }
+
     public Version(byte major, byte minor, byte path) {
         this.major = major;
         this.minor = minor;

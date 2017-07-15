@@ -761,10 +761,13 @@ public class IoPConnect implements ConnectionListener {
         List<ProfileInformation> profileInformationList = profilesManager.listAll(profile.getHexPublicKey());
         for (ProfileInformation profileInformation : profileInformationList) {
             ProfileOuterClass.ProfileInfo.Builder profileInfoBuilder = ProfileOuterClass.ProfileInfo.newBuilder()
-                    .setVersion(ByteString.copyFrom(profileInformation.getVersion().toByteArray()))
                     .setName(profileInformation.getName())
                     .setPubKey(ByteString.copyFrom(CryptoBytes.fromHexToBytes(profileInformation.getHexPublicKey())))
                     ;
+            if (profileInformation.getVersion()!=null){
+                profileInfoBuilder.setVersion(ByteString.copyFrom(profileInformation.getVersion().toByteArray()));
+            }
+
             if (profileInformation.getHomeHost()!=null){
                 profileInfoBuilder.setHomeHost(profileInformation.getHomeHost());
             }
@@ -814,16 +817,18 @@ public class IoPConnect implements ConnectionListener {
             ProfileOuterClass.Wrapper wrapper = ProfileOuterClass.Wrapper.parseFrom(inputStream);
             inputStream.close();
             ProfileOuterClass.Profile mainProfile = wrapper.getProfile();
+            ProfileOuterClass.ProfileInfo mainProfileInfo = mainProfile.getProfileInfo();
+            byte[] versionArray = mainProfileInfo.getVersion().toByteArray();
             Profile profile = new Profile(
-                    Version.fromByteArray(mainProfile.getProfileInfo().getVersion().toByteArray()),
-                    mainProfile.getProfileInfo().getName(),
-                    mainProfile.getProfileInfo().getType(),
-                    mainProfile.getProfileInfo().getExtraData(),
-                    mainProfile.getProfileInfo().getImg().toByteArray(),
-                    mainProfile.getProfileInfo().getHomeHost(),
+                    (versionArray!=null && versionArray.length==3)?Version.fromByteArray(versionArray):Version.newProtocolAcceptedVersion(),
+                    mainProfileInfo.getName(),
+                    mainProfileInfo.getType(),
+                    mainProfileInfo.getExtraData(),
+                    mainProfileInfo.getImg().toByteArray(),
+                    mainProfileInfo.getHomeHost(),
                     platformSerializer.toPlatformKey(
                             mainProfile.getPrivKey().toByteArray(),
-                            mainProfile.getProfileInfo().getPubKey().toByteArray()
+                            mainProfileInfo.getPubKey().toByteArray()
                     )
             );
             List<ProfileInformation> list = new ArrayList<>();
