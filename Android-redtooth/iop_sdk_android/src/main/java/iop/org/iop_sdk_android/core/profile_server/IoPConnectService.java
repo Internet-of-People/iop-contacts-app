@@ -139,8 +139,9 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                 logger.info("network is {}, state {}/{}", hasConnectivity ? "up" : "down", networkInfo.getState(), networkInfo.getDetailedState());
                 if (hasConnectivity)
                     impediments.remove(BlockchainState.Impediment.NETWORK);
-                else
+                else {
                     impediments.add(BlockchainState.Impediment.NETWORK);
+                }
                 check();
             } else if (Intent.ACTION_DEVICE_STORAGE_LOW.equals(action)) {
                 logger.info("device storage low");
@@ -244,12 +245,16 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
             if (configurationsPreferences.getBackgroundServiceEnable()) {
                 if (impediments.contains(BlockchainState.Impediment.NETWORK)) {
                     // network unnavailable, check if i have to clean something here
+                    Intent intent = new Intent(ACTION_ON_PROFILE_DISCONNECTED);
+                    localBroadcastManager.sendBroadcast(intent);
                     return;
                 }
                 if (profile != null) {
                     if (!ioPConnect.isProfileConnectedOrConnecting(profile.getHexPublicKey())) {
                         connect(profile.getHexPublicKey());
                     } else {
+                        Intent intent = new Intent(ACTION_ON_PROFILE_CONNECTED);
+                        localBroadcastManager.sendBroadcast(intent);
                         logger.info("check, profile connected or connecting. no actions");
                     }
                 } else {

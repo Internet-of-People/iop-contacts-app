@@ -335,7 +335,11 @@ public class ProfSerEngine {
     public int addApplicationService(AppService appService){
         LOG.info("addApplicationService, "+appService);
         profNodeConnection.getProfile().addApplicationService(appService);
-        return addApplicationServiceRequest(appService.getName(),appService);
+        // If the connection is stablished sent the message, if not the profile is going to be registered once the register engine finishes.
+        if (profSerConnectionState==CHECK_IN)
+            return addApplicationServiceRequest(appService.getName(),appService);
+        else
+            return 0;
     }
 
     /**
@@ -564,8 +568,12 @@ public class ProfSerEngine {
                         }
                     }
             );
+            if (!profNodeConnection.getProfile().getApplicationServices().isEmpty()){
+                for (AppService appService : profNodeConnection.getProfile().getApplicationServices().values()) {
+                    addApplicationServiceRequest(appService.getName(),appService);
+                }
+            }
             profNodeConnection.setNeedRegisterProfile(false);
-
         }catch (Exception e){
             e.printStackTrace();
         }

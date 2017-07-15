@@ -24,7 +24,12 @@ import org.fermat.redtooth.profile_server.model.Profile;
 
 import iop.org.iop_sdk_android.core.IntentBroadcastConstants;
 
+import static com.example.furszy.contactsapp.App.INTENT_ACTION_PROFILE_CHECK_IN_FAIL;
+import static com.example.furszy.contactsapp.App.INTENT_ACTION_PROFILE_CONNECTED;
+import static com.example.furszy.contactsapp.App.INTENT_ACTION_PROFILE_DISCONNECTED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_IOP_SERVICE_CONNECTED;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_CHECK_IN_FAIL;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT;
 
 /**
@@ -52,6 +57,11 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
                 refreshProfile();
             }else if(action.equals(ACTION_IOP_SERVICE_CONNECTED)){
                 refreshProfile();
+                hideConnectionLoose();
+            }else if (action.equals(ACTION_ON_PROFILE_DISCONNECTED)){
+                showConnectionLoose();
+            }else if (action.equals(ACTION_ON_CHECK_IN_FAIL)){
+                showConnectionLoose();
             }
         }
     };
@@ -98,6 +108,9 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
         super.onResume();
         registerReceiver(receiver,new IntentFilter(IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT));
         registerReceiver(receiver,new IntentFilter(ACTION_IOP_SERVICE_CONNECTED));
+        localBroadcastManager.registerReceiver(receiver, new IntentFilter(INTENT_ACTION_PROFILE_DISCONNECTED));
+        localBroadcastManager.registerReceiver(receiver,new IntentFilter(INTENT_ACTION_PROFILE_CHECK_IN_FAIL));
+        localBroadcastManager.registerReceiver(receiver,new IntentFilter(INTENT_ACTION_PROFILE_CONNECTED));
 
         if (anRedtooth!=null){
             if(!anRedtooth.isProfileConnectedOrConnecting()){

@@ -247,7 +247,13 @@ public class IoPConnect implements ConnectionListener {
      */
     public void addService(Profile profile, AppService appService) {
         profile.addApplicationService(appService);
-        getProfileConnection(profile.getHexPublicKey()).addApplicationService(appService);
+        IoPProfileConnection connection = getProfileConnection(profile.getHexPublicKey());
+        if (connection.isReady() || connection.isConnecting()){
+            connection.addApplicationService(appService);
+        }else {
+            throw new IllegalStateException("Connection is not ready or connecting to register a service");
+        }
+
     }
 
     public void connectProfile(String profilePublicKey, PairingListener pairingListener, byte[] ownerChallenge,ConnectionFuture future) throws Exception {
