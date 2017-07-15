@@ -284,7 +284,6 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                             readyListener.setListener(new BaseMsgFuture.Listener<Boolean>() {
                                 @Override
                                 public void onAction(int messageId, Boolean object) {
-                                    Log.i("TAG", "ON ACTION");
                                     flag.set(false);
                                     runOnUiThread(new Runnable() {
                                         @Override
@@ -376,7 +375,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(v.getContext(), "Chat call fail", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(ProfileInformationActivity.this, "Chat call fail\nplease try again later", Toast.LENGTH_LONG).show();
                                 }
                             });
                             flag.set(false);

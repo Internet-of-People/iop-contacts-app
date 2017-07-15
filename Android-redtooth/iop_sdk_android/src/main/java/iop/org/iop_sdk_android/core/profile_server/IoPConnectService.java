@@ -426,6 +426,9 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                     profile.setImg(ImageUtils.compress(profile.getImg(),10));
                 }
             }
+            if (name!=null && !profile.getName().equals(name)){
+                this.profile.setName(name);
+            }
             configurationsPreferences.saveProfile(profile);
             // broadcast profile update
             broadcastUpdateProfile();
