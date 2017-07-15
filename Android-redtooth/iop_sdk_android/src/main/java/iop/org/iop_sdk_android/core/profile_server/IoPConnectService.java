@@ -415,15 +415,17 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     public int updateProfile(String pubKey , String name, byte[] img, int latitude, int longitude, String extraData, final ProfSerMsgListener<Boolean> msgListener) throws Exception {
         try{
+            logger.info("Trying to update profile..");
             Version version = profile.getVersion();
             //version.addMinor();
             Profile profile = new Profile(version,name,img,latitude,longitude,extraData);
             profile.setKey((KeyEd25519) this.profile.getKey());
             if (profile.getImg()!=null){
                 this.profile.setImg(profile.getImg());
-                while (profile.getImg().length>20480) {
+                if(profile.getImg().length>20480) {
                     // compact the image more
-                    profile.setImg(ImageUtils.compress(profile.getImg(),10));
+                    logger.info("compressing big image, size: "+profile.getImg().length);
+                    profile.setImg(ImageUtils.compress(profile.getImg(),50));
                 }
             }
             if (name!=null && !profile.getName().equals(name)){
