@@ -14,6 +14,7 @@ import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -44,12 +45,16 @@ import org.fermat.redtooth.profile_server.model.Profile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import de.hdodenhof.circleimageview.CircleImageView;
+import id.zelory.compressor.Compressor;
+
 import static android.app.Activity.RESULT_OK;
 
 /**
@@ -300,12 +305,13 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
                 public void run() {
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inSampleSize = 4;
-                    final Bitmap bitmap = BitmapFactory.decodeFile(picturePath,options);
+                    Bitmap bitmap = compressImageFileIntoBitmap(new File(picturePath));
+                    //final Bitmap bitmap = BitmapFactory.decodeFile(picturePath,options);
                     // compress and do it array
                     ByteArrayOutputStream out = null;
                     try {
                         out = new ByteArrayOutputStream();
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 80, out);
                         profImgData = out.toByteArray();
                     }catch (Exception e){
                         e.printStackTrace();
@@ -318,11 +324,14 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
                             // nothing
                         }
                     }
+
+
+                    final Bitmap finalBitmap = bitmap;
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             Log.i("ProfileFragment","setting bitmap profile");
-                            imgProfile.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 1024, 1024, false));
+                            imgProfile.setImageBitmap(Bitmap.createScaledBitmap(finalBitmap, 1024, 1024, false));
                             loading_img.setVisibility(View.INVISIBLE);
                         }
                     });
@@ -335,6 +344,38 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
                 screenState = UPDATE_SCREEN_STATE;
             }
         }
+    }
+
+    private Bitmap compressImageArrayIntoBitmap(byte[] array){
+        try {
+            File file = new File(getActivity().getCacheDir(),"compressed_image");
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            fileOutputStream.write(array);
+            fileOutputStream.close();
+            return compressImageFileIntoBitmap(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private Bitmap compressImageFileIntoBitmap(File pictureFile) {
+        Bitmap bitmap = null;
+        try {
+            bitmap = new Compressor(getActivity())
+                    .setMaxWidth(441)
+                    .setMaxHeight(315)
+                    .setQuality(75)
+                    .setCompressFormat(Bitmap.CompressFormat.PNG)
+                    .setDestinationDirectoryPath(Environment.getExternalStoragePublicDirectory(
+                            Environment.DIRECTORY_PICTURES).getAbsolutePath())
+                    .compressToBitmap(pictureFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bitmap;
     }
 
     private void updateProfile(){
@@ -371,13 +412,15 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (!finalRes) {
-                                progressBar.setVisibility(View.GONE);
-                                Toast.makeText(getActivity(), finalDetail, Toast.LENGTH_LONG).show();
-                            } else {
-                                progressBar.setVisibility(View.VISIBLE);
-                                Toast.makeText(getActivity(), "Saved", Toast.LENGTH_LONG).show();
-                                getActivity().onBackPressed();
+                            if (getActivity()!=null) {
+                                if (!finalRes) {
+                                    progressBar.setVisibility(View.GONE);
+                                    Toast.makeText(getActivity(), finalDetail, Toast.LENGTH_LONG).show();
+                                } else {
+                                    progressBar.setVisibility(View.VISIBLE);
+                                    Toast.makeText(getActivity(), "Saved", Toast.LENGTH_LONG).show();
+                                    getActivity().onBackPressed();
+                                }
                             }
                         }
                     });

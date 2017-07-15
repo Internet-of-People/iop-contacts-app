@@ -179,13 +179,16 @@ public class MessageFactory {
         }
 
         if (img!=null && img.length>0){
-            if (img.length>20480) throw new IllegalArgumentException("image is greater than the max size permitted 20480 bytes");
-            updateProfileRequest.setProfileImage(ByteString.copyFrom(img));
-            if (imgHash==null) { //throw new IllegalArgumentException("Null imgHash, field needed to update the profile image");
-                log.error("imgHash null.. correct me!");
-                imgHash = Sha256Hash.hash(img);
+            if (img.length>20480) { //throw new IllegalArgumentException("image is greater than the max size permitted 20480 bytes, lengh: "+img.length);
+                log.error("profile image greater than 20480, PS is not accepting more than that");
+            }else {
+                updateProfileRequest.setProfileImage(ByteString.copyFrom(img));
+                if (imgHash == null) { //throw new IllegalArgumentException("Null imgHash, field needed to update the profile image");
+                    log.error("imgHash null.. correct me!");
+                    imgHash = Sha256Hash.hash(img);
+                }
+                profileInformation.setProfileImageHash(ByteString.copyFrom(imgHash));
             }
-            profileInformation.setProfileImageHash(ByteString.copyFrom(imgHash));
         }
 
 
