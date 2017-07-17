@@ -10,7 +10,7 @@
     <fragment
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:name="com.example.furszy.contactsapp.ui.chat.MessagesFragment"
+        android:name="org.furszy.contacts.ui.chat.MessagesFragment"
         android:id="@+id/fragment_messages"
         android:layout_weight="1"
         tools:layout="@layout/chat_msg_row" />

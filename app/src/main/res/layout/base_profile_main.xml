@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/profile_fragment"
-        android:name="com.example.furszy.contactsapp.ProfileFragment"
+        android:name="org.furszy.contacts.ProfileFragment"
         tools:layout="@layout/profile_main" />
 
 </LinearLayout>

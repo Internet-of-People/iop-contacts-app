@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.furszy.contactsapp">
+    package="org.furszy.contacts">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
@@ -16,13 +16,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:persistent="true">
-        <activity android:name=".MainActivity"/>
-        <activity android:name=".StartActivity">
+        <activity android:name="org.furszy.contacts.MainActivity"/>
+        <activity android:name="org.furszy.contacts.StartActivity">
 
         </activity>
-        <activity android:name=".ProfileActivity"></activity>
+        <activity android:name="org.furszy.contacts.ProfileActivity"></activity>
 
-        <activity android:name=".ProfileInformationActivity">
+        <activity android:name="org.furszy.contacts.ProfileInformationActivity">
             <intent-filter android:autoVerify="true">
                 <data android:scheme="IoP"/>
                 <action android:name="android.intent.action.VIEW" />
@@ -32,10 +32,10 @@
         </activity>
 
         <activity android:name=".scanner.ScanActivity"/>
-        <activity android:name=".BaseDrawerActivity"></activity>
-        <activity android:name=".RestoreActivity"></activity>
+        <activity android:name="org.furszy.contacts.BaseDrawerActivity"></activity>
+        <activity android:name="org.furszy.contacts.RestoreActivity"></activity>
         <activity android:name=".ui.other_profile.OtherProfileActivity"/>
-        <activity android:name=".CreateProfileActivity"  />
+        <activity android:name="org.furszy.contacts.CreateProfileActivity"  />
         <activity android:name=".ui.settings.SettingsActivity"></activity>
         <activity android:name=".ui.settings_restore.SettingsRestoreActivity"></activity>
         <activity android:name=".ui.settings_backup.SettingsBackupActivity"></activity>
@@ -70,7 +70,7 @@
 
         <provider
             android:name="android.support.v4.content.FileProvider"
-            android:authorities="com.example.furszy.contactsapp.myfileprovider"
+            android:authorities="org.furszy.contacts.myfileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
