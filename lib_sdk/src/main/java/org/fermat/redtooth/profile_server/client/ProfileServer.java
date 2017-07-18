@@ -76,7 +76,7 @@ public interface ProfileServer {
 
     ProfSerRequest searchProfilePartRequest(int recordIndex, int recordCount) throws CantConnectException, CantSendMessageException;
 
-    ProfSerRequest addApplcationService(String applicationService) throws CantConnectException, CantSendMessageException;
+    ProfSerRequest addApplicationService(String applicationService) throws CantConnectException, CantSendMessageException;
 
     ProfSerRequest getProfileInformationRequest(byte[] profileNetworkId, boolean applicationServices, boolean thumbnail, boolean profileImage) throws CantConnectException, CantSendMessageException;
 
@@ -90,7 +90,7 @@ public interface ProfileServer {
 
     ProfSerRequest appServiceReceiveMessageNotificationResponse(String token,int msgId);
 
-    void addHandler(PsSocketHandler hanlder);
+    void addHandler(PsSocketHandler handler);
 
     void closePort(IopProfileServer.ServerRoleType portType) throws IOException;
 
