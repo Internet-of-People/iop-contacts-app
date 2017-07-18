@@ -66,6 +66,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
 
     private static final String TAG = "ProfileActivity";
 
+    private final int destWidth = 400;
 
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1000;
 
@@ -262,6 +263,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
     }
 
 
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -303,16 +305,47 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
             execute(new Runnable() {
                 @Override
                 public void run() {
-                    BitmapFactory.Options options = new BitmapFactory.Options();
-                    options.inSampleSize = 4;
-                    Bitmap bitmap = compressImageFileIntoBitmap(new File(picturePath));
-                    //final Bitmap bitmap = BitmapFactory.decodeFile(picturePath,options);
+                    //BitmapFactory.Options options = new BitmapFactory.Options();
+                    //options.inSampleSize = 4;
+                    //Bitmap bitmap = compressImageFileIntoBitmap(new File(picturePath));
+                    Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
+                    Log.i(TAG, "Original Width " + bitmap.getWidth());
+                    Log.i(TAG, "Original Height " + bitmap.getHeight());
                     // compress and do it array
                     ByteArrayOutputStream out = null;
+                    int origWidth = bitmap.getWidth();
+                    int origHeight = bitmap.getHeight();
+                    int outWidth = 0;
+                    int outHeight = 0;
                     try {
-                        out = new ByteArrayOutputStream();
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 80, out);
+                        if(origWidth > destWidth){
+                            // picture is wider than we want it, we calculate its target height
+                            if(origWidth > origHeight){
+                                outWidth = destWidth;
+                                outHeight = (origHeight * destWidth) / origWidth;
+                            } else {
+                                outHeight = destWidth;
+                                outWidth = (origWidth * destWidth) / origHeight;
+                            }
+                            //int destHeight = origHeight/( origWidth / destWidth ) ;
+                            Log.i(TAG, "outHeight " + outHeight);
+                            Log.i(TAG, "outWidth " + outWidth);
+                            // we create an scaled bitmap so it reduces the image, not just trim it
+                            Bitmap b2 = Bitmap.createScaledBitmap(bitmap, outWidth, outHeight, false);
+                            out = new ByteArrayOutputStream();
+                            bitmap = b2;
+                            b2.compress(Bitmap.CompressFormat.JPEG,70 , out);
+                            Log.i(TAG, "Scale Width " + b2.getWidth());
+                            Log.i(TAG, "Scale Height " + b2.getHeight());
+                        } else {
+                            out = new ByteArrayOutputStream();
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 70, out);
+                        }
+//                      out = new ByteArrayOutputStream();
+//                      bitmap.compress(Bitmap.CompressFormat.PNG, 80, out);
                         profImgData = out.toByteArray();
+
+
                     }catch (Exception e){
                         e.printStackTrace();
                     }finally {
@@ -331,7 +364,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
                         @Override
                         public void run() {
                             Log.i("ProfileFragment","setting bitmap profile");
-                            imgProfile.setImageBitmap(Bitmap.createScaledBitmap(finalBitmap, 1024, 1024, false));
+                            //imgProfile.setImageBitmap(Bitmap.createScaledBitmap(finalBitmap, 1024, 1024, false));
+                            imgProfile.setImageBitmap(finalBitmap);
                             loading_img.setVisibility(View.INVISIBLE);
                         }
                     });
