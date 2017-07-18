@@ -124,6 +124,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                                                 Snackbar.make(v, R.string.pairing_fail + statusDetail, Snackbar.LENGTH_LONG).show();
                                                 progressBar.setVisibility(View.INVISIBLE);
                                                 enableSendBtn();
+                                                onBackPressed();
                                             }
                                         });
                                     }
