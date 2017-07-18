@@ -49,6 +49,7 @@ public class CreateProfileActivity extends BaseActivity {
     private CircleImageView img_profile_image;
     private byte[] profImgData;
     private ExecutorService executor;
+    private final int destWidth = 400;
 
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
@@ -146,12 +147,54 @@ public class CreateProfileActivity extends BaseActivity {
             String picturePath = cursor.getString(columnIndex);
             cursor.close();
             Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
-
             if (bitmap == null) {
                 return;
             }
+
+            ByteArrayOutputStream out = null;
+            int origWidth = bitmap.getWidth();
+            int origHeight = bitmap.getHeight();
+            int outWidth = 0;
+            int outHeight = 0;
+
+            try {
+                out = new ByteArrayOutputStream();
+
+                if(origWidth > destWidth){
+                    // picture is wider than we want it, we calculate its target height
+                    if(origWidth > origHeight){
+                        outWidth = destWidth;
+                        outHeight = (origHeight * destWidth) / origWidth;
+                    } else {
+                        outHeight = destWidth;
+                        outWidth = (origWidth * destWidth) / origHeight;
+                    }
+                    // we create an scaled bitmap so it reduces the image, not just trim it
+                    Bitmap b2 = Bitmap.createScaledBitmap(bitmap, outWidth, outHeight, false);
+                    out = new ByteArrayOutputStream();
+                    bitmap = b2;
+                    b2.compress(Bitmap.CompressFormat.JPEG,70 , out);
+                } else {
+                    out = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 70, out);
+                }
+
+                profImgData = out.toByteArray();
+
+            }catch (Exception e){
+                e.printStackTrace();
+            }finally {
+                try {
+                    if (out != null) {
+                        out.close();
+                    }
+                } catch (IOException e) {
+                    // nothing
+                }
+            }
             // scale image
-            img_profile_image.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 1024, 1024, false));
+            final Bitmap finalBitmap = bitmap;
+            img_profile_image.setImageBitmap(bitmap);
 //            imgProfile.setImageBitmap(bitmap);
 
             if( ContextCompat.checkSelfPermission(this,
@@ -175,22 +218,8 @@ public class CreateProfileActivity extends BaseActivity {
             }
 
             // compress and do it array
-            ByteArrayOutputStream out = null;
-            try {
-                out = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-                profImgData = out.toByteArray();
-            }catch (Exception e){
-                e.printStackTrace();
-            }finally {
-                try {
-                    if (out != null) {
-                        out.close();
-                    }
-                } catch (IOException e) {
-                    // nothing
-                }
-            }
+            //ByteArrayOutputStream out = null;
+
         }
     }
 
