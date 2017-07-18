@@ -134,6 +134,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         imgProfile = (CircleImageView) root.findViewById(R.id.profile_image);
         txt_name = (TextView) root.findViewById(R.id.txt_name);
         btn_connect = (Button) root.findViewById(R.id.btn_connect);
+        btn_connect.setVisibility(View.GONE);
         progress_bar = (ProgressBar) root.findViewById(R.id.progress_bar);
         txt_chat = (TextView) root.findViewById(R.id.txt_chat);
         txt_chat.setOnClickListener(this);
