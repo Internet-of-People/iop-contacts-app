@@ -108,7 +108,7 @@ public class ProfSerEngine {
                 profServerData.isHome(),
                 randomChallenge()
         );
-        handler = new ProfileServerHanlder();
+        handler = new ProfileServerHandler();
         this.profileServer = new ProfSerImp(contextWrapper,profServerData,sslContextFactory,handler);
     }
 
@@ -527,7 +527,7 @@ public class ProfSerEngine {
         if (!isClConnectionReady()) throw new IllegalStateException("connection is not ready to send messages yet");
         int msgId = 0;
         try {
-            ProfSerRequest request = profileServer.addApplcationService(applicationService);
+            ProfSerRequest request = profileServer.addApplicationService(applicationService);
             sendRequest(request,profSerMsgListener);
         } catch (CantSendMessageException e) {
             e.printStackTrace();
@@ -669,9 +669,9 @@ public class ProfSerEngine {
 
     /** Messages processors  */
 
-    public class ProfileServerHanlder implements PsSocketHandler<IopProfileServer.Message> {
+    public class ProfileServerHandler implements PsSocketHandler<IopProfileServer.Message> {
 
-        private static final String TAG = "ProfileServerHanlder";
+        private static final String TAG = "ProfileServerHandler";
 
         // Responses:
 
@@ -698,7 +698,7 @@ public class ProfSerEngine {
 
         private Map<Integer,MessageProcessor> processors;
 
-        public ProfileServerHanlder() {
+        public ProfileServerHandler() {
             processors = new HashMap<>();
             processors.put(PING_PROCESSOR,new PingProcessor());
             processors.put(LIST_ROLES_PROCESSOR,new ListRolesProcessor());

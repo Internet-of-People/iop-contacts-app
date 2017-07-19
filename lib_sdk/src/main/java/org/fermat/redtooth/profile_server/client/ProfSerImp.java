@@ -189,8 +189,8 @@ public class ProfSerImp implements ProfileServer {
     }
 
     @Override
-    public ProfSerRequest addApplcationService(String applicationService) throws CantConnectException, CantSendMessageException {
-        logger.info("addApplcationService");
+    public ProfSerRequest addApplicationService(String applicationService) throws CantConnectException, CantSendMessageException {
+        logger.info("addApplicationService");
         IopProfileServer.Message message = MessageFactory.buildApplicationServiceAddRequest(applicationService);
         return buildRequestToCustomerPort(message);
     }
@@ -262,8 +262,8 @@ public class ProfSerImp implements ProfileServer {
     }
 
     @Override
-    public void addHandler(PsSocketHandler hanlder) {
-        profSerConnectionManager.setHandler(hanlder);
+    public void addHandler(PsSocketHandler handler) {
+        profSerConnectionManager.setHandler(handler);
     }
 
     @Override

@@ -386,11 +386,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     @Override
     public String registerProfile(String name,String type, byte[] img, int latitude, int longitude, String extraData) throws Exception {
         if (img!=null){
-            while (img.length>20480) {
-                throw new BigImageException();
-                // compact the image more
-                //img = ImageUtils.compress(img,10);
-            }
+            img = ImageUtils.compressJpeg(img, 20480);
         }
         profile = ioPConnect.createProfile(null,name,type,img,extraData,null);
         configurationsPreferences.setIsCreated(true);
@@ -421,12 +417,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
             Profile profile = new Profile(version,name,img,latitude,longitude,extraData);
             profile.setKey((KeyEd25519) this.profile.getKey());
             if (profile.getImg()!=null){
-                this.profile.setImg(profile.getImg());
-                if(profile.getImg().length>20480) {
-                    // compact the image more
-                    logger.info("compressing big image, size: "+profile.getImg().length);
-                    profile.setImg(ImageUtils.compress(profile.getImg(),50));
-                }
+                this.profile.setImg(ImageUtils.compressJpeg(profile.getImg(), 20480));
             }
             if (name!=null && !this.profile.getName().equals(name)){
                 profile.setName(name);
