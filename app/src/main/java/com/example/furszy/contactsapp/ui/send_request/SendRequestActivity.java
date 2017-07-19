@@ -135,8 +135,8 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        Log.i(TAG, "pairing request fail");
-                                        Snackbar.make(v, R.string.pairing_fail + e.getMessage(), Snackbar.LENGTH_LONG).show();
+                                        Log.i(TAG, "pairing request fail  "+ e.getMessage());
+                                        Snackbar.make(v, R.string.pairing_fail, Snackbar.LENGTH_LONG).show();
                                         enableSendBtn();
                                         progressBar.setVisibility(View.INVISIBLE);
                                     }
@@ -147,7 +147,8 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                                     @Override
                                     public void run() {
                                         enableSendBtn();
-                                        Snackbar.make(v, R.string.pairing_fail + e.getMessage(), Snackbar.LENGTH_LONG).show();
+                                        Log.i(TAG, "pairing request fail  "+ e.getMessage());
+                                        Snackbar.make(v, R.string.pairing_fail, Snackbar.LENGTH_LONG).show();
                                         progressBar.setVisibility(View.INVISIBLE);
 
                                     }
@@ -157,7 +158,8 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                     }).start();
                 }
             }catch (IllegalArgumentException e){
-                Toast.makeText(this,e.getMessage(),Toast.LENGTH_LONG).show();
+                Log.i(TAG, "pairing request fail  "+ e.getMessage());
+                Snackbar.make(v, R.string.pairing_fail, Snackbar.LENGTH_LONG).show();
             }
         }
     }
