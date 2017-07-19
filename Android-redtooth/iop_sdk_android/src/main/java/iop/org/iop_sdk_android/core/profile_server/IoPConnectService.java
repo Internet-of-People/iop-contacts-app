@@ -413,7 +413,6 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         try{
             logger.info("Trying to update profile..");
             Version version = profile.getVersion();
-            //version.addMinor();
             Profile profile = new Profile(version,name,img,latitude,longitude,extraData);
             profile.setKey((KeyEd25519) this.profile.getKey());
             if (profile.getImg()!=null){
@@ -425,7 +424,6 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
             configurationsPreferences.saveProfile(profile);
             // broadcast profile update
             broadcastUpdateProfile();
-
 
             return ioPConnect.updateProfile(profile, new ProfSerMsgListener<Boolean>() {
                 @Override
