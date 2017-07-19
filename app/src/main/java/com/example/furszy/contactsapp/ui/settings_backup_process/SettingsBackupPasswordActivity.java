@@ -10,6 +10,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.InputType;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +26,8 @@ import com.example.furszy.contactsapp.ui.settings.SettingsActivity;
 import com.example.furszy.contactsapp.ui.settings_backup_folder.SettingsBackupFolderActivity;
 
 import java.io.IOException;
+
+import iop.org.iop_sdk_android.core.profile_server.ProfileServerConfigurationsImp;
 
 /**
  * Created by Neoperol on 6/23/17.
@@ -47,19 +50,35 @@ public class SettingsBackupPasswordActivity extends BaseActivity {
         // Open Restore
         btnSetPassword.setText("Export");
         btnSetPassword = (Button) findViewById(R.id.btnSetPassword);
+        repeat_password = (EditText) findViewById(R.id.repeat_password);
+        password = (EditText) findViewById(R.id.password);
+
         btnSetPassword.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //Intent myIntent = new Intent(v.getContext(), SettingsBackupFolderActivity.class);
                 //startActivityForResult(myIntent, 0);
+                String pass = password.getText().toString();
+                String rePass = repeat_password.getText().toString();
+                if (pass.isEmpty() || rePass.isEmpty()) {
+                    Snackbar.make(v, "Passwords can not be blank!", Snackbar.LENGTH_LONG).show();
+                    return;
+                }
+                if (!pass.equals(rePass)) {
+                    Snackbar.make(v, "Passwords must be the same!", Snackbar.LENGTH_LONG).show();
+                    return;
+                }
+                if (pass.length() < 8 || rePass.length() < 8) {
+                    Snackbar.make(v, "Passwords must be greater than 7 characters!", Snackbar.LENGTH_LONG).show();
+                    return;
+                }
+
                 try {
                     anRedtooth.backupProfile(
                             app.getBackupDir(),
-                            null);
+                            pass);
                     onBackPressed();
-                    Toast.makeText(getApplicationContext(), R.string.backup_completed_message,
-                            Toast.LENGTH_LONG).show();
-
+                    Toast.makeText(getBaseContext(),R.string.backup_completed_message,Toast.LENGTH_LONG);
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (Exception e){
@@ -68,8 +87,7 @@ public class SettingsBackupPasswordActivity extends BaseActivity {
             }
         });
         //Show Password
-        repeat_password = (EditText) findViewById(R.id.repeat_password);
-        password = (EditText) findViewById(R.id.password);
+
         showPassword = (ImageButton) findViewById(R.id.showPassword);
         showPassword.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {

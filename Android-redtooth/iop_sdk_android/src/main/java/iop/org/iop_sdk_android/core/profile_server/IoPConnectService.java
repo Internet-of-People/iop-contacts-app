@@ -275,6 +275,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                 backupDir,
                 "backup_iop_connect_"+profile.getName()+Iso8601Format.formatDateTimeT(new Date(System.currentTimeMillis()))+".dat"
         );
+        configurationsPreferences.saveBackupPassword(password);
         logger.info("Backup file path: "+backupFile.getAbsolutePath());
         backupOverwriteProfile(backupFile,password);
         scheduleBackupProfileFile(backupDir,password);
@@ -419,7 +420,8 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
             if (profile.getImg()!=null){
                 this.profile.setImg(ImageUtils.compressJpeg(profile.getImg(), 20480));
             }
-            if (name!=null && !profile.getName().equals(name)){
+            if (name!=null && !this.profile.getName().equals(name)){
+                profile.setName(name);
                 this.profile.setName(name);
             }
             configurationsPreferences.saveProfile(profile);
