@@ -124,13 +124,11 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
                     handler.messageReceived(this, message1.getBody());
                 } else {
                     // read < 0 -> connection closed
-                    // todo: falta notificar a las capas superiores que se cerró el socket.
                     logger.info("Connection closed, read<0 with portType: " + portType + " , removing socket");
                     closeNow();
                 }
             } else {
                 // input stream closed
-                // todo: falta notificar a las capas superiores que se cerró el socket.
                 logger.info("Connection closed, input stream shutdown with portType: " + portType + " , removing socket");
                 closeNow();
             }
@@ -140,7 +138,6 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
         } catch (javax.net.ssl.SSLException e) {
             e.printStackTrace();
             // something bad happen..
-            // todo: falta notificar a las capas superiores que se cerró el socket.
             logger.info("Connection closed, sslException with portType: " + portType + " , " + tokenId + " removing socket");
             try {
                 closeNow();
@@ -149,7 +146,6 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
             }
         } catch (SocketException e){
             e.printStackTrace();
-            // todo: falta notificar a las capas superiores que se cerró el socket.
             logger.info("Connection closed, sslException with portType: " + portType + " , " + tokenId + " removing socket");
             try {
                 closeNow();
