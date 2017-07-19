@@ -1,4 +1,4 @@
-package iop.org.iop_sdk_android.core.profile_server;
+package iop.org.iop_sdk_android.core.utils;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;

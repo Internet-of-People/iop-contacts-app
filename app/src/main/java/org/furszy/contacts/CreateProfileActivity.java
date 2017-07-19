@@ -20,7 +20,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import org.furszy.contacts.R;
 import org.furszy.contacts.ui.home.HomeActivity;
 
 import org.slf4j.Logger;
@@ -32,7 +31,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import iop.org.iop_sdk_android.core.profile_server.BigImageException;
+import iop.org.iop_sdk_android.core.service.exceptions.BigImageException;
 
 /**
  * Created by Neoperol on 6/20/17.

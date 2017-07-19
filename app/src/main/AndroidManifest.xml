@@ -66,7 +66,7 @@
 
         <activity android:name=".ui.send_request.SendRequestActivity"/>
 
-        <service android:name="iop.org.iop_sdk_android.core.profile_server.IoPConnectService"/>
+        <service android:name="iop.org.iop_sdk_android.core.service.IoPConnectService"/>
 
         <provider
             android:name="android.support.v4.content.FileProvider"

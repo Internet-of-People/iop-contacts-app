@@ -12,15 +12,15 @@ import org.fermat.redtooth.profile_server.ModuleRedtooth;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import iop.org.iop_sdk_android.core.profile_server.IoPConnectService;
+import iop.org.iop_sdk_android.core.service.IoPConnectService;
 
 /**
  * Created by mati on 08/05/17.
  */
 
-public class AnRedtooth {
+public class AnConnect {
 
-    public static final String TAG = "AnRedtooth";
+    public static final String TAG = "AnConnect";
 
     private Application application;
     private IoPConnectService ioPConnectService;
@@ -29,14 +29,14 @@ public class AnRedtooth {
     private InitListener listener;
 
 
-    public static AnRedtooth init(Application application, InitListener initListener) {
-        AnRedtooth anRedtooth = new AnRedtooth(application);
+    public static AnConnect init(Application application, InitListener initListener) {
+        AnConnect anRedtooth = new AnConnect(application);
         anRedtooth.setListener(initListener);
         anRedtooth.startProfileServerService();
         return anRedtooth;
     }
 
-    private AnRedtooth(Application application) {
+    private AnConnect(Application application) {
         this.application = application;
     }
 

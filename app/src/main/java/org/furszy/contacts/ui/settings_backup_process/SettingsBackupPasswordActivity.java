@@ -4,10 +4,10 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.InputType;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,8 +20,6 @@ import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.R;
 
 import java.io.IOException;
-
-import iop.org.iop_sdk_android.core.profile_server.ProfileServerConfigurationsImp;
 
 /**
  * Created by Neoperol on 6/23/17.

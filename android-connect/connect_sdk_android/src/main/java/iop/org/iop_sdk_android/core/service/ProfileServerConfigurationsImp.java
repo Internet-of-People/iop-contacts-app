@@ -1,4 +1,4 @@
-package iop.org.iop_sdk_android.core.profile_server;
+package iop.org.iop_sdk_android.core.service;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -22,6 +22,7 @@ import java.util.List;
 
 import iop.org.iop_sdk_android.core.base.Configurations;
 import iop.org.iop_sdk_android.core.crypto.KeyEd25519;
+import iop.org.iop_sdk_android.core.utils.PrivateStorage;
 
 /**
  * Created by mati on 09/11/16.

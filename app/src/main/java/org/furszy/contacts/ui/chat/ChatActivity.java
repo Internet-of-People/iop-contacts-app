@@ -22,7 +22,7 @@ import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import iop.org.iop_sdk_android.core.profile_server.ChatCallClosed;
+import iop.org.iop_sdk_android.core.service.exceptions.ChatCallClosedException;
 
 import static org.furszy.contacts.ui.chat.WaitingChatActivity.REMOTE_PROFILE_PUB_KEY;
 
@@ -129,7 +129,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                                 }
 
                             });
-                        } catch (ChatCallClosed e){
+                        } catch (ChatCallClosedException e){
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {

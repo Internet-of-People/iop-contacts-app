@@ -1,4 +1,4 @@
-package iop.org.iop_sdk_android.core.profile_server;
+package iop.org.iop_sdk_android.core.service;
 
 import android.content.Context;
 import android.util.Log;
@@ -17,8 +17,6 @@ import java.security.cert.X509Certificate;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
-
-import iop.org.iop_sdk_android.R;
 
 
 /**

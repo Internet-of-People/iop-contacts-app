@@ -44,11 +44,7 @@ public interface ModuleRedtooth {
 
     int updateProfile(String name,byte[] img,ProfSerMsgListener<Boolean> msgListener) throws Exception;
 
-    int updateProfile(String pubKey,String name, byte[] img, String extraData, ProfSerMsgListener<Boolean> msgListener) throws Exception;
-
     int updateProfile(String pubKey ,String name, byte[] img, int latitude, int longitude, String extraData, ProfSerMsgListener<Boolean> msgListener) throws Exception;
-
-    int updateProfileExtraData(String pubKey,Signer signer, String extraData) throws Exception;
 
     /**
      * Request pair profile, This will notify to the other user that you want to connect with him.

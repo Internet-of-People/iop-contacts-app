@@ -6,7 +6,7 @@
     <application android:label="@string/app_name"
         android:supportsRtl="true">
 
-        <receiver android:name="iop.org.iop_sdk_android.core.ReceiverBoot">
+        <receiver android:name="iop.org.iop_sdk_android.core.receivers.ReceiverBoot">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED">
                     <category android:name="android.intent.category.HOME">

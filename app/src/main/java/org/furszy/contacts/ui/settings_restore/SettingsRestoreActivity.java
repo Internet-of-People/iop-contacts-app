@@ -31,8 +31,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import iop.org.iop_sdk_android.core.profile_server.ProfileServerConfigurationsImp;
-
 /**
  * Created by Neoperol on 6/22/17.
  */

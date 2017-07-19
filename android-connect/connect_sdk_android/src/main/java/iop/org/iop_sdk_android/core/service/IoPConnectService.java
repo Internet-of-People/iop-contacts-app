@@ -1,4 +1,4 @@
-package iop.org.iop_sdk_android.core.profile_server;
+package iop.org.iop_sdk_android.core.service;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -78,6 +78,10 @@ import iop.org.iop_sdk_android.core.IntentBroadcastConstants;
 import iop.org.iop_sdk_android.core.crypto.CryptoWrapperAndroid;
 import iop.org.iop_sdk_android.core.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
+import iop.org.iop_sdk_android.core.service.exceptions.ChatCallClosedException;
+import iop.org.iop_sdk_android.core.service.modules.Core;
+import iop.org.iop_sdk_android.core.service.modules.ModuleId;
+import iop.org.iop_sdk_android.core.service.modules.interfaces.ProfilesModule;
 import iop.org.iop_sdk_android.core.utils.ImageUtils;
 
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_CHECK_IN_FAIL;
@@ -117,6 +121,8 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     /** Databases */
     private SqlitePairingRequestDb pairingRequestDb;
     private SqliteProfilesDb profilesDb;
+
+    private Core core;
 
     private AtomicBoolean isInitialized = new AtomicBoolean(false);
 
@@ -215,13 +221,10 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                 profilesDb = new SqliteProfilesDb(this);
                 ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),profilesDb,pairingRequestDb,this);
                 ioPConnect.setEngineListener(this);
-                /*executor.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        init();
-                    }
-                });*/
                 tryScheduleService();
+
+                // init core
+                core = new Core(this,ioPConnect);
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -344,38 +347,8 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public void connect(final String pubKey) throws Exception {
-        final ConnectionFuture msgListenerFuture = new ConnectionFuture();
-        msgListenerFuture.setListener(new BaseMsgFuture.Listener<Boolean>() {
-            @Override
-            public void onAction(int messageId, Boolean object) {
-                profile.setHomeHost(msgListenerFuture.getProfServerData().getHost());
-                profile.setHomeHostId(msgListenerFuture.getProfServerData().getNetworkId());
-                onCheckInCompleted(profile.getHexPublicKey());
-            }
-
-            @Override
-            public void onFail(int messageId, int status, String statusDetail) {
-                onCheckInFail(profile,status,statusDetail);
-                if (status==400){
-                    logger.info("Checking fail, detail "+statusDetail+", trying to reconnect after 5 seconds");
-                    handler.postDelayed(reconnectRunnable,TimeUnit.SECONDS.toMillis(15));
-                }
-
-            }
-            Runnable reconnectRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        connect(pubKey);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        // connection fail
-                    }
-                }
-            };
-
-        });
-        ioPConnect.connectProfile(pubKey,pairingListener,null,msgListenerFuture);
+        ProfilesModule module = core.getModule(ModuleId.PROFILES.getId(), ProfilesModule.class);
+        module.connect(pubKey);
     }
 
     public String registerProfile(Profile profile){
@@ -386,12 +359,8 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public String registerProfile(String name,String type, byte[] img, int latitude, int longitude, String extraData) throws Exception {
-        if (img!=null){
-            img = ImageUtils.compressJpeg(img, 20480);
-        }
-        profile = ioPConnect.createProfile(null,name,type,img,extraData,null);
-        configurationsPreferences.setIsCreated(true);
-        return profile.getHexPublicKey();
+        ProfilesModule module = core.getModule(ModuleId.PROFILES.getId(), ProfilesModule.class);
+        return module.registerProfile(name,type,img,latitude,longitude,extraData);
     }
 
     @Override
@@ -403,11 +372,6 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     @Override
     public int updateProfile(String name,byte[] img,ProfSerMsgListener<Boolean> msgListener) throws Exception {
         return updateProfile(profile.getHexPublicKey(),name,img,0,0,null,msgListener);
-    }
-
-    @Override
-    public int updateProfile(String pubKey,String name, byte[] img, String extraData, ProfSerMsgListener<Boolean> msgListener) throws Exception {
-        return updateProfile(pubKey,name,img,0,0,extraData,msgListener);
     }
 
     public int updateProfile(String pubKey , String name, byte[] img, int latitude, int longitude, String extraData, final ProfSerMsgListener<Boolean> msgListener) throws Exception {
@@ -452,11 +416,6 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
             e.printStackTrace();
             throw e;
         }
-    }
-
-    @Override
-    public int updateProfileExtraData(String pubKey,Signer signer, String extraData) throws Exception {
-        return 0;//profile_server.updateProfileExtraData(signer,extraData);
     }
 
     @Override
@@ -620,11 +579,11 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
             ChatMsg chatMsg = new ChatMsg(msg);
             callProfileAppService = profile.getAppService(EnabledServices.CHAT.getName())
                     .getOpenCall(remoteProfileInformation.getHexPublicKey());
-            if (callProfileAppService==null) throw new ChatCallClosed("Chat connection is not longer available",remoteProfileInformation);
+            if (callProfileAppService==null) throw new ChatCallClosedException("Chat connection is not longer available",remoteProfileInformation);
             callProfileAppService.sendMsg(chatMsg, msgListener);
         }catch (AppServiceCallNotAvailableException e){
             e.printStackTrace();
-            throw new ChatCallClosed("Chat call not longer available",remoteProfileInformation);
+            throw new ChatCallClosedException("Chat call not longer available",remoteProfileInformation);
         }
     }
 
@@ -780,6 +739,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     @Override
     public void onDestroy() {
         Log.d(TAG,"onDestroy");
+        core.clean();
         executor.shutdown();
         ioPConnect.stop();
         super.onDestroy();
@@ -849,5 +809,9 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     private void broadcastUpdateProfile() {
         Intent intent = new Intent(IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT);
         localBroadcastManager.sendBroadcast(intent);
+    }
+
+    public void setProfile(Profile profile) {
+        this.profile = profile;
     }
 }

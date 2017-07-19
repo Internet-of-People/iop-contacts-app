@@ -1,11 +1,11 @@
-package iop.org.iop_sdk_android.core;
+package iop.org.iop_sdk_android.core.receivers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import iop.org.iop_sdk_android.core.profile_server.IoPConnectService;
-import iop.org.iop_sdk_android.core.profile_server.ProfileServerConfigurationsImp;
+import iop.org.iop_sdk_android.core.service.IoPConnectService;
+import iop.org.iop_sdk_android.core.service.ProfileServerConfigurationsImp;
 
 
 public class ReceiverBoot extends BroadcastReceiver {

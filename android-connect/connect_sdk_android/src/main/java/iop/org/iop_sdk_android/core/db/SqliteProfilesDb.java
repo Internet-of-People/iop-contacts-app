@@ -11,7 +11,6 @@ import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
-import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profiles_manager.ProfilesManager;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,8 +19,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import iop.org.iop_sdk_android.core.profile_server.PrivateStorage;
 
 /**
  * Created by furszy on 5/25/17.

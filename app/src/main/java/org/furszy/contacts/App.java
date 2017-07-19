@@ -28,9 +28,6 @@ import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.services.chat.ChatMsg;
 import org.fermat.redtooth.services.chat.ChatMsgListener;
 import org.fermat.redtooth.services.chat.ChatMsgTypes;
-import org.furszy.contacts.AppConstants;
-import org.furszy.contacts.BaseActivity;
-import org.furszy.contacts.CrashReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,9 +42,9 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
-import iop.org.iop_sdk_android.core.AnRedtooth;
+import iop.org.iop_sdk_android.core.AnConnect;
 import iop.org.iop_sdk_android.core.InitListener;
-import iop.org.iop_sdk_android.core.profile_server.ProfileServerConfigurationsImp;
+import iop.org.iop_sdk_android.core.service.ProfileServerConfigurationsImp;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_IOP_SERVICE_CONNECTED;
@@ -83,7 +80,7 @@ public class App extends Application implements IoPConnectContext {
     private ActivityManager activityManager;
     private PackageInfo info;
 
-    AnRedtooth anRedtooth;
+    AnConnect anRedtooth;
     private LocalBroadcastManager broadcastManager;
     private NotificationManager notificationManager;
     private long timeCreateApplication = System.currentTimeMillis();
@@ -134,7 +131,7 @@ public class App extends Application implements IoPConnectContext {
             broadcastManager.registerReceiver(serviceReceiver,new IntentFilter(ACTION_ON_PROFILE_CONNECTED));
             broadcastManager.registerReceiver(serviceReceiver,new IntentFilter(ACTION_ON_PROFILE_DISCONNECTED));
 
-            anRedtooth = AnRedtooth.init(this, new InitListener() {
+            anRedtooth = AnConnect.init(this, new InitListener() {
                 @Override
                 public void onConnected() {
                     try {
@@ -237,7 +234,7 @@ public class App extends Application implements IoPConnectContext {
         log.setLevel(Level.INFO);
     }
 
-    public AnRedtooth getAnRedtooth(){
+    public AnConnect getAnRedtooth(){
         return anRedtooth;
     }
 

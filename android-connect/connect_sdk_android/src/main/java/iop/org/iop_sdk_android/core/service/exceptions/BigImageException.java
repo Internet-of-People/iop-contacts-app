@@ -1,4 +1,4 @@
-package iop.org.iop_sdk_android.core.profile_server;
+package iop.org.iop_sdk_android.core.service.exceptions;
 
 /**
  * Created by furszy on 7/12/17.
