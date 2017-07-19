@@ -39,7 +39,6 @@ public class SettingsBackupPasswordActivity extends BaseActivity {
     ImageButton showPassword;
     EditText password;
     EditText repeat_password;
-    private ProfileServerConfigurationsImp configurations;
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
         View root = getLayoutInflater().inflate(R.layout.settings_backup_password, container);
@@ -53,27 +52,22 @@ public class SettingsBackupPasswordActivity extends BaseActivity {
         btnSetPassword = (Button) findViewById(R.id.btnSetPassword);
         repeat_password = (EditText) findViewById(R.id.repeat_password);
         password = (EditText) findViewById(R.id.password);
-        configurations = new ProfileServerConfigurationsImp(this,getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));;
 
         btnSetPassword.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //Intent myIntent = new Intent(v.getContext(), SettingsBackupFolderActivity.class);
                 //startActivityForResult(myIntent, 0);
-                Log.i("CreateIoPConnectService", "click on listener");
                 String pass = password.getText().toString();
                 String rePass = repeat_password.getText().toString();
-                Log.i("CreateIoPConnectService", "Password: "+pass+" Repass: "+rePass);
                 if (pass.isEmpty() || rePass.isEmpty()) {
                     Snackbar.make(v, "Passwords can not be blank!", Snackbar.LENGTH_LONG).show();
                     return;
                 }
-
                 if (!pass.equals(rePass)) {
                     Snackbar.make(v, "Passwords must be the same!", Snackbar.LENGTH_LONG).show();
                     return;
                 }
-
                 if (pass.length() < 8 || rePass.length() < 8) {
                     Snackbar.make(v, "Passwords must be greater than 7 characters!", Snackbar.LENGTH_LONG).show();
                     return;
@@ -83,7 +77,6 @@ public class SettingsBackupPasswordActivity extends BaseActivity {
                     anRedtooth.backupProfile(
                             app.getBackupDir(),
                             pass);
-                    configurations.saveBackupPassword(pass);
                     onBackPressed();
                     Toast.makeText(getBaseContext(),R.string.backup_completed_message,Toast.LENGTH_LONG);
                 } catch (IOException e) {
