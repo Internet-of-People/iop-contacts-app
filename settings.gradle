@@ -2,9 +2,9 @@ include ':app', ':iopj', ':lib_sdk', ':non-blocking-client', ':ui.helper.lib'
 
 
 include ':libsodium-jni-aar-1.0.3'
-project(':libsodium-jni-aar-1.0.3').projectDir = new File('Android-redtooth/libsodium-jni-aar-1.0.3')
+project(':libsodium-jni-aar-1.0.3').projectDir = new File('android-connect/libsodium-jni-aar-1.0.3')
 
-include ':iop_sdk_android'
-project(':iop_sdk_android').projectDir = new File('Android-redtooth/iop_sdk_android')
+include ':connect_sdk_android'
+project(':connect_sdk_android').projectDir = new File('android-connect/connect_sdk_android')
 
 
