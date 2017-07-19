@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.InputType;
@@ -29,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import iop.org.iop_sdk_android.core.profile_server.ProfileServerConfigurationsImp;
 
 /**
  * Created by Neoperol on 6/22/17.
@@ -60,8 +63,19 @@ public class SettingsRestoreActivity extends BaseActivity {
             if (selected < 0) {
                 return true;
             }
+            String pass = txt_password.getText().toString();
+            View v = findViewById(android.R.id.content);
+            if (pass.isEmpty()){
+                Snackbar.make(v, "Passwords can not be blank!",Snackbar.LENGTH_LONG).show();
+                return true;
+            }
 
-            anRedtooth.restoreFrom(fileList.get(selected),null);
+            if (pass.length() < 8) {
+                Snackbar.make(v, "Passwords must be greater than 7 characters!", Snackbar.LENGTH_LONG).show();
+                return true;
+            }
+
+            anRedtooth.restoreFrom(fileList.get(selected),pass);
             onBackPressed();
             Toast.makeText(getApplicationContext(), R.string.restore_completed_message,
                     Toast.LENGTH_LONG).show();
