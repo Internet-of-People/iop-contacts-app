@@ -38,4 +38,6 @@ public interface ProfilesManager {
     boolean updateRemoteServices(String localProfilePubKey, String remotePubKey,Set<String> services);
 
     void saveAllProfiles(String localProfilePubKey, List<ProfileInformation> profileInformationList);
+
+    void truncate();
 }

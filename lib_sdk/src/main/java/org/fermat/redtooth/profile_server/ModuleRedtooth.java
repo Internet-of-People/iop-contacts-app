@@ -36,14 +36,12 @@ public interface ModuleRedtooth {
 
     void addService(String serviceName, Object... args);
 
+    // moved methods..
     void connect(String pubKey) throws Exception;
-
     String registerProfile(String name,String type, byte[] img, int latitude, int longitude, String extraData) throws Exception;
-
     String registerProfile(String name,byte[] img) throws Exception;
 
     int updateProfile(String name,byte[] img,ProfSerMsgListener<Boolean> msgListener) throws Exception;
-
     int updateProfile(String pubKey ,String name, byte[] img, int latitude, int longitude, String extraData, ProfSerMsgListener<Boolean> msgListener) throws Exception;
 
     /**

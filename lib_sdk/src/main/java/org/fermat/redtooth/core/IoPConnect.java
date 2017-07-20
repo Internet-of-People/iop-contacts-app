@@ -858,6 +858,13 @@ public class IoPConnect implements ConnectionListener {
             ProfileRestored profileRestored = new ProfileRestored(profile,list);
             logger.info("Profile restored: "+profileRestored.toString());
 
+            // clean db
+            pairingRequestsManager.truncate();
+            profilesManager.truncate();
+
+            // re start
+            profilesManager.saveAllProfiles(profile.getHexPublicKey(),profileRestored.getProfileInformationList());
+
             return profileRestored;
         } catch (IOException e) {
             e.printStackTrace();

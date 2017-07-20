@@ -81,6 +81,8 @@ import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
 import iop.org.iop_sdk_android.core.service.exceptions.ChatCallClosedException;
 import iop.org.iop_sdk_android.core.service.modules.Core;
 import iop.org.iop_sdk_android.core.service.modules.ModuleId;
+import iop.org.iop_sdk_android.core.service.modules.interfaces.ChatModule;
+import iop.org.iop_sdk_android.core.service.modules.interfaces.PairingModule;
 import iop.org.iop_sdk_android.core.service.modules.interfaces.ProfilesModule;
 import iop.org.iop_sdk_android.core.utils.ImageUtils;
 
@@ -163,23 +165,18 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         }
     };
 
-    private PairingListener pairingListener = new PairingListener() {
-        @Override
-        public void onPairReceived(String requesteePubKey, final String name) {
-            Intent intent = new Intent(ACTION_ON_PAIR_RECEIVED);
-            intent.putExtra(INTENT_EXTRA_PROF_KEY,requesteePubKey);
-            intent.putExtra(INTENT_EXTRA_PROF_NAME,name);
-            localBroadcastManager.sendBroadcast(intent);
-        }
 
-        @Override
-        public void onPairResponseReceived(String requesteePubKey, String responseDetail) {
-            Intent intent = new Intent(ACTION_ON_RESPONSE_PAIR_RECEIVED);
-            intent.putExtra(INTENT_EXTRA_PROF_KEY,requesteePubKey);
-            intent.putExtra(INTENT_RESPONSE_DETAIL,responseDetail);
-            localBroadcastManager.sendBroadcast(intent);
-        }
-    };
+    public ProfileServerConfigurations getConfPref() {
+        return configurationsPreferences;
+    }
+
+    public SqliteProfilesDb getProfilesDb() {
+        return profilesDb;
+    }
+
+    public SqlitePairingRequestDb getPairingRequestsDb() {
+        return pairingRequestDb;
+    }
 
     public class ProfServerBinder extends Binder {
         public IoPConnectService getService() {
@@ -319,11 +316,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                 // clean everything
                 ioPConnect.stop();
                 this.profile = profileRestored.getProfile();
-                pairingRequestDb.truncate();
-                profilesDb.truncate();
-
-                // re start
-                profilesDb.saveAllProfiles(profile.getHexPublicKey(),profileRestored.getProfileInformationList());
+                // connect
                 registerProfile(profile);
                 connect(profile.getHexPublicKey());
                 logger.info("restore profile completed");
@@ -353,7 +346,6 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     public String registerProfile(Profile profile){
         this.profile = ioPConnect.createProfile(profile);
-        configurationsPreferences.setIsCreated(true);
         return profile.getHexPublicKey();
     }
 
@@ -368,126 +360,50 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         return registerProfile(name,"IoP-contacts",img,0,0,null);
     }
 
-
     @Override
     public int updateProfile(String name,byte[] img,ProfSerMsgListener<Boolean> msgListener) throws Exception {
         return updateProfile(profile.getHexPublicKey(),name,img,0,0,null,msgListener);
     }
-
+    @Override
     public int updateProfile(String pubKey , String name, byte[] img, int latitude, int longitude, String extraData, final ProfSerMsgListener<Boolean> msgListener) throws Exception {
-        try{
-            logger.info("Trying to update profile..");
-            Version version = profile.getVersion();
-            Profile profile = new Profile(version,name,img,latitude,longitude,extraData);
-            profile.setKey((KeyEd25519) this.profile.getKey());
-            if (profile.getImg()!=null){
-                this.profile.setImg(ImageUtils.compressJpeg(profile.getImg(), 20480));
-            }
-            if (name!=null && !this.profile.getName().equals(name)){
-                profile.setName(name);
-                this.profile.setName(name);
-            }
-            configurationsPreferences.saveProfile(profile);
-            // broadcast profile update
-            broadcastUpdateProfile();
-
-            return ioPConnect.updateProfile(profile, new ProfSerMsgListener<Boolean>() {
-                @Override
-                public void onMessageReceive(int messageId, Boolean message) {
-                    msgListener.onMessageReceive(messageId,message);
-                }
-
-                @Override
-                public void onMsgFail(int messageId, int statusValue, String details) {
-                    if (details.equals("profile.version")){
-                        // add version correction
-                        msgListener.onMsgFail(messageId,statusValue,details);
-                    }else {
-                        msgListener.onMsgFail(messageId, statusValue, details);
-                    }
-                }
-
-                @Override
-                public String getMessageName() {
-                    return "updateProfile";
-                }
-            });
-        }catch (Exception e){
-            e.printStackTrace();
-            throw e;
-        }
+        return core.getModule(ModuleId.PROFILES.getId(), ProfilesModule.class)
+                .updateProfile(
+                        pubKey,
+                        name,
+                        img,
+                        latitude,
+                        longitude,
+                        extraData,
+                        msgListener
+                );
     }
 
     @Override
     public void requestPairingProfile(byte[] remotePubKey, final String remoteName, final String psHost, final ProfSerMsgListener<ProfileInformation> listener) throws Exception {
-        // check if the profile already exist
-        ProfileInformation profileInformationDb = null;
-        String remotePubKeyStr = CryptoBytes.toHexString(remotePubKey);
-        if((profileInformationDb = profilesDb.getProfile(profile.getHexPublicKey(),remotePubKeyStr))!=null){
-            if(profileInformationDb.getPairStatus() != null)
-                throw new IllegalArgumentException("Already known profile");
-        }
-        // check if the pairing request exist
-        if (pairingRequestDb.containsPairingRequest(profile.getHexPublicKey(),remotePubKeyStr)){
-            throw new IllegalStateException("Pairing request already exist");
-        }
-
-        // now send the request
-        final PairingRequest pairingRequest = PairingRequest.buildPairingRequestFromHost(
-                profile.getHexPublicKey(),
-                CryptoBytes.toHexString(remotePubKey),
-                psHost,profile.getName(),
-                profile.getHomeHost(),
-                remoteName,
-                ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE
-        );
-        ioPConnect.requestPairingProfile(pairingRequest, new ProfSerMsgListener<ProfileInformation>() {
-            @Override
-            public void onMessageReceive(int messageId, ProfileInformation remote) {
-                remote.setHomeHost(psHost);
-                remote.setPairStatus(ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE);
-                // Save invisible contact
-                profilesDb.saveProfile(profile.getHexPublicKey(),remote);
-                // update backup profile is there is any
-                String backupProfilePath = null;
-                if((backupProfilePath = configurationsPreferences.getBackupProfilePath())!=null){
-                    try {
-                        backupOverwriteProfile(
-                                new File(backupProfilePath),
-                                configurationsPreferences.getBackupPassword()
-                        );
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        logger.warn("Backup profile fail.");
-                    }
-                }
-                // notify
-                listener.onMessageReceive(messageId,remote);
-            }
-
-            @Override
-            public void onMsgFail(int messageId, int statusValue, String details) {
-                // rollback pairing request:
-                pairingRequestDb.delete(pairingRequest.getId());
-                listener.onMsgFail(messageId,statusValue,details);
-            }
-
-            @Override
-            public String getMessageName() {
-                return "Request pairing";
-            }
-        });
+        core.getModule(ModuleId.PAIRING.getId(), PairingModule.class)
+                .requestPairingProfile(
+                        profile,
+                        remotePubKey,
+                        remoteName,
+                        psHost,
+                        listener
+                );
     }
 
     @Override
     public void acceptPairingProfile(PairingRequest pairingRequest, ProfSerMsgListener<Boolean> profSerMsgListener) throws Exception {
-        ioPConnect.acceptPairingRequest(pairingRequest,profSerMsgListener);
+        core.getModule(ModuleId.PAIRING.getId(), PairingModule.class)
+                .acceptPairingProfile(
+                        pairingRequest,
+                        profSerMsgListener
+                );
     }
 
     @Override
     public void cancelPairingRequest(PairingRequest pairingRequest) {
-        // todo: improve this
-        ioPConnect.cancelPairingRequest(pairingRequest);
+        core.getModule(ModuleId.PAIRING.getId(), PairingModule.class)
+                .cancelPairingRequest(pairingRequest
+                );
     }
 
     /**
@@ -498,69 +414,33 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
      */
     @Override
     public void requestChat(final ProfileInformation remoteProfileInformation, final ProfSerMsgListener<Boolean> readyListener, TimeUnit timeUnit, long time) throws RequestChatException, ChatCallAlreadyOpenException {
-        if(!profile.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on local profile");
-        try {
-            // first check if the chat is active or was requested
-            ChatAppService chatAppService = profile.getAppService(EnabledServices.CHAT.getName(), ChatAppService.class);
-            if(chatAppService.hasOpenCall(remoteProfileInformation.getHexPublicKey())){
-                // chat app service call already open, check if it stablish or it's done
-                CallProfileAppService call = chatAppService.getOpenCall(remoteProfileInformation.getHexPublicKey());
-                if (call!=null && !call.isDone() && !call.isFail()){
-                    // call is open, throw exception
-                    throw new ChatCallAlreadyOpenException("Chat call with: "+remoteProfileInformation.getName()+", already open");
-                }else {
-                    // this should not happen but i will check that
-                    // the call is not open but the object still active.. i have to close it
-                    try {
-                        if (call!=null) {
-                            call.dispose();
-                            chatAppService.removeCall(call,"call open and done/fail without reason..");
-                        }
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }
-
-            }
-            final boolean tryUpdateRemoteServices = !remoteProfileInformation.hasService(EnabledServices.CHAT.getName());
-            Future future = executor.submit(new Callable() {
-                public Object call() {
-                    try {
-                        ioPConnect.callService(EnabledServices.CHAT.getName(), profile, remoteProfileInformation, tryUpdateRemoteServices, readyListener);
-                    }catch (Exception e){
-                        throw e;
-                    }
-                    return null;
-                }
-            });
-            future.get(time, timeUnit);
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException | InterruptedException e) {
-            // destroy call
-            CallProfileAppService callProfileAppService = profile.getAppService(EnabledServices.CHAT.getName()).getOpenCall(remoteProfileInformation.getHexPublicKey());
-            callProfileAppService.dispose();
-            throw new RequestChatException(e);
-        }
+        core.getModule(ModuleId.CHAT.getId(), ChatModule.class)
+                .requestChat(
+                        profile,
+                        remoteProfileInformation,
+                        readyListener,
+                        timeUnit,
+                        time
+                );
     }
 
     @Override
     public void refuseChatRequest(String hexPublicKey) {
-        ChatAppService chatAppService = profile.getAppService(EnabledServices.CHAT.getName(),ChatAppService.class);
-        CallProfileAppService callProfileAppService = chatAppService.getOpenCall(hexPublicKey);
-        if (callProfileAppService == null) return;
-        callProfileAppService.dispose();
-        chatAppService.removeCall(callProfileAppService,"local profile refuse chat");
+        core.getModule(ModuleId.CHAT.getId(), ChatModule.class)
+                .refuseChatRequest(
+                        profile,
+                        hexPublicKey
+                );
     }
 
     @Override
-    public void acceptChatRequest(String hexPublicKey, ProfSerMsgListener<Boolean> future) throws Exception {
-        CallProfileAppService callProfileAppService = profile.getAppService(EnabledServices.CHAT.getName()).getOpenCall(hexPublicKey);
-        if (callProfileAppService!=null) {
-            callProfileAppService.sendMsg(new ChatAcceptMsg(System.currentTimeMillis()), future);
-        }else {
-            throw new AppServiceCallNotAvailableException("Connection not longer available");
-        }
+    public void acceptChatRequest(String remoteHexPublicKey, ProfSerMsgListener<Boolean> future) throws Exception {
+        core.getModule(ModuleId.CHAT.getId(), ChatModule.class)
+                .acceptChatRequest(
+                        profile,
+                        remoteHexPublicKey,
+                        future
+                );
     }
 
     /**
@@ -572,19 +452,13 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
      */
     @Override
     public void sendMsgToChat(ProfileInformation remoteProfileInformation, String msg, ProfSerMsgListener<Boolean> msgListener) throws Exception {
-        if(!profile.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on local profile");
-        //if(!remoteProfileInformation.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on remote profile");
-        CallProfileAppService callProfileAppService = null;
-        try {
-            ChatMsg chatMsg = new ChatMsg(msg);
-            callProfileAppService = profile.getAppService(EnabledServices.CHAT.getName())
-                    .getOpenCall(remoteProfileInformation.getHexPublicKey());
-            if (callProfileAppService==null) throw new ChatCallClosedException("Chat connection is not longer available",remoteProfileInformation);
-            callProfileAppService.sendMsg(chatMsg, msgListener);
-        }catch (AppServiceCallNotAvailableException e){
-            e.printStackTrace();
-            throw new ChatCallClosedException("Chat call not longer available",remoteProfileInformation);
-        }
+        core.getModule(ModuleId.CHAT.getId(), ChatModule.class)
+                .sendMsgToChat(
+                        profile,
+                        remoteProfileInformation,
+                        msg,
+                        msgListener
+                );
     }
 
     @Override
@@ -804,11 +678,6 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     @Override
     public GpsLocation getDeviceLocation() {
         return null;
-    }
-
-    private void broadcastUpdateProfile() {
-        Intent intent = new Intent(IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT);
-        localBroadcastManager.sendBroadcast(intent);
     }
 
     public void setProfile(Profile profile) {

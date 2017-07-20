@@ -10,10 +10,14 @@ import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.engine.app_services.PairingListener;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.ConnectionFuture;
+import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
+import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
+
+import iop.org.iop_sdk_android.core.IntentBroadcastConstants;
 import iop.org.iop_sdk_android.core.service.IoPConnectService;
 import iop.org.iop_sdk_android.core.service.modules.AbstractModule;
 import iop.org.iop_sdk_android.core.service.modules.ModuleId;
@@ -133,6 +137,55 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule{
         logger.warn("on check in fail: "+statusDetail);
         Intent intent = new Intent(ACTION_ON_CHECK_IN_FAIL);
         intent.putExtra(INTENT_RESPONSE_DETAIL,statusDetail);
+        localBroadcastManager.sendBroadcast(intent);
+    }
+
+    public int updateProfile(String pubKey , String name, byte[] img, int latitude, int longitude, String extraData, final ProfSerMsgListener<Boolean> msgListener) throws Exception {
+        try{
+            logger.info("Trying to update profile..");
+            Version version = connectService.getProfile().getVersion();
+            Profile profile = new Profile(version,name,img,latitude,longitude,extraData);
+            profile.setKey((KeyEd25519) connectService.getProfile().getKey());
+            if (profile.getImg()!=null){
+                connectService.getProfile().setImg(ImageUtils.compressJpeg(profile.getImg(), 20480));
+            }
+            if (name!=null && !connectService.getProfile().getName().equals(name)){
+                profile.setName(name);
+                connectService.getProfile().setName(name);
+            }
+            connectService.getConfPref().saveProfile(profile);
+            // broadcast profile update
+            broadcastUpdateProfile();
+
+            return ioPConnect.updateProfile(profile, new ProfSerMsgListener<Boolean>() {
+                @Override
+                public void onMessageReceive(int messageId, Boolean message) {
+                    msgListener.onMessageReceive(messageId,message);
+                }
+
+                @Override
+                public void onMsgFail(int messageId, int statusValue, String details) {
+                    if (details.equals("profile.version")){
+                        // add version correction
+                        msgListener.onMsgFail(messageId,statusValue,details);
+                    }else {
+                        msgListener.onMsgFail(messageId, statusValue, details);
+                    }
+                }
+
+                @Override
+                public String getMessageName() {
+                    return "updateProfile";
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    private void broadcastUpdateProfile() {
+        Intent intent = new Intent(IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT);
         localBroadcastManager.sendBroadcast(intent);
     }
 

@@ -5,4 +5,7 @@ package iop.org.iop_sdk_android.core.service.modules;
  */
 
 public interface Module {
+
+    void onDestroy();
+
 }

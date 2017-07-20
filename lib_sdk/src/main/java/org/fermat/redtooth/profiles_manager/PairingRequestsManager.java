@@ -26,4 +26,6 @@ public interface PairingRequestsManager {
     int removeRequest(String senderPubKey, String remotePubkey);
 
     void delete(long id);
+
+    void truncate();
 }
