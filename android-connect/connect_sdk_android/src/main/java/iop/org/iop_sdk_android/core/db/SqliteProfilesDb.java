@@ -282,6 +282,20 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         return insertContact(localProfilePubKeyOwnerOfContact,profile);
     }
 
+    /**
+     *
+     * @param localProfilePubKeyOwnerOfContact
+     * @param profile
+     * @return -1 if the profile exists
+     */
+    @Override
+    public long saveProfileIfNotExist(String localProfilePubKeyOwnerOfContact, ProfileInformation profile) {
+        if (!existProfile(localProfilePubKeyOwnerOfContact,profile.getHexPublicKey()))
+            return insertContact(localProfilePubKeyOwnerOfContact,profile);
+        else
+            return -1;
+    }
+
     public void saveOrUpdateProfile(String localProfilePubKeyOwnerOfContact, ProfileInformation profile){
         ProfileInformation dbProf = null;
         if ((dbProf = getProfile(localProfilePubKeyOwnerOfContact,profile.getHexPublicKey()))==null){
@@ -314,6 +328,15 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
             return buildFrom(cursor).profileInformation;
         }
         return null;
+    }
+
+    @Override
+    public boolean existProfile(String localProfileOwnerOfContacts, String pubKey) {
+        Cursor cursor = getData(localProfileOwnerOfContacts,pubKey);
+        if (cursor.moveToFirst()){
+            return true;
+        }
+        return false;
     }
 
     @Override
