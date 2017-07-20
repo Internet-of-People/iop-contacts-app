@@ -41,12 +41,16 @@ public class ProfileUtils {
         if (str.length == 1) {
             return false;
         }
-        int indexOfAnd = str[2].indexOf("&");
-        int indexOfEqual = str[2].indexOf("=");
-        if (indexOfAnd == -1 || indexOfEqual == -1) {
+        try {
+            int indexOfAnd = str[2].indexOf("&");
+            int indexOfEqual = str[2].indexOf("=");
+            if (indexOfAnd == -1 || indexOfEqual == -1) {
+                return false;
+            }
+            return true;
+        } catch (ArrayIndexOutOfBoundsException error){
             return false;
         }
-        return true;
     }
 
     public static ProfileInformationImp.PairStatus PairingRequestToPairStatus(ProfileBase owner,PairingRequest pairingRequest) {
