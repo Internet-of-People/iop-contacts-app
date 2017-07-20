@@ -10,7 +10,6 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -18,12 +17,8 @@ import android.util.Log;
 import org.fermat.redtooth.core.IoPConnect;
 import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.global.PlatformSerializer;
-import org.fermat.redtooth.global.Version;
-import org.fermat.redtooth.profile_server.client.AppServiceCallNotAvailableException;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
-import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
 import org.fermat.redtooth.services.EnabledServices;
-import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.global.DeviceLocation;
 import org.fermat.redtooth.global.GpsLocation;
 import org.fermat.redtooth.profile_server.CantConnectException;
@@ -31,14 +26,10 @@ import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
-import org.fermat.redtooth.profile_server.Signer;
-import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
-import org.fermat.redtooth.profile_server.engine.futures.ConnectionFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
 import org.fermat.redtooth.profile_server.engine.SearchProfilesQuery;
 import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SubsequentSearchMsgListenerFuture;
-import org.fermat.redtooth.profile_server.engine.app_services.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
@@ -46,10 +37,7 @@ import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
 import org.fermat.redtooth.services.EnabledServicesFactory;
-import org.fermat.redtooth.services.chat.ChatAcceptMsg;
-import org.fermat.redtooth.services.chat.ChatAppService;
 import org.fermat.redtooth.services.chat.ChatCallAlreadyOpenException;
-import org.fermat.redtooth.services.chat.ChatMsg;
 import org.fermat.redtooth.services.chat.RequestChatException;
 import org.fermat.redtooth.wallet.utils.BlockchainState;
 import org.fermat.redtooth.wallet.utils.Iso8601Format;
@@ -65,35 +53,22 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import iop.org.iop_sdk_android.core.IntentBroadcastConstants;
 import iop.org.iop_sdk_android.core.crypto.CryptoWrapperAndroid;
 import iop.org.iop_sdk_android.core.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
-import iop.org.iop_sdk_android.core.service.exceptions.ChatCallClosedException;
 import iop.org.iop_sdk_android.core.service.modules.Core;
-import iop.org.iop_sdk_android.core.service.modules.ModuleId;
+import org.fermat.redtooth.global.Module;
 import iop.org.iop_sdk_android.core.service.modules.interfaces.ChatModule;
 import iop.org.iop_sdk_android.core.service.modules.interfaces.PairingModule;
 import iop.org.iop_sdk_android.core.service.modules.interfaces.ProfilesModule;
-import iop.org.iop_sdk_android.core.utils.ImageUtils;
 
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_CHECK_IN_FAIL;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PAIR_RECEIVED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_CONNECTED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_RESPONSE_PAIR_RECEIVED;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_NAME;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_RESPONSE_DETAIL;
 
 
 /**
@@ -326,13 +301,14 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public void addService(String serviceName, Object... args) {
-        AppService appService = EnabledServicesFactory.buildService(serviceName,args);
+        Module module = core.getModule(serviceName);
+        AppService appService = EnabledServicesFactory.buildService(serviceName,module,args);
         ioPConnect.addService(profile,appService);
     }
 
     @Override
     public void connect(final String pubKey) throws Exception {
-        ProfilesModule module = core.getModule(ModuleId.PROFILES.getId(), ProfilesModule.class);
+        ProfilesModule module = core.getModule(EnabledServices.PROFILE_DATA.getName(), ProfilesModule.class);
         module.connect(pubKey);
     }
 
@@ -343,7 +319,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public String registerProfile(String name,String type, byte[] img, int latitude, int longitude, String extraData) throws Exception {
-        ProfilesModule module = core.getModule(ModuleId.PROFILES.getId(), ProfilesModule.class);
+        ProfilesModule module = core.getModule(EnabledServices.PROFILE_DATA.getName(), ProfilesModule.class);
         return module.registerProfile(name,type,img,latitude,longitude,extraData);
     }
 
@@ -358,7 +334,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
     @Override
     public int updateProfile(String pubKey , String name, byte[] img, int latitude, int longitude, String extraData, final ProfSerMsgListener<Boolean> msgListener) throws Exception {
-        return core.getModule(ModuleId.PROFILES.getId(), ProfilesModule.class)
+        return core.getModule(EnabledServices.PROFILE_DATA.getName(), ProfilesModule.class)
                 .updateProfile(
                         pubKey,
                         name,
@@ -372,7 +348,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public void requestPairingProfile(byte[] remotePubKey, final String remoteName, final String psHost, final ProfSerMsgListener<ProfileInformation> listener) throws Exception {
-        core.getModule(ModuleId.PAIRING.getId(), PairingModule.class)
+        core.getModule(EnabledServices.PROFILE_PAIRING.getName(), PairingModule.class)
                 .requestPairingProfile(
                         profile,
                         remotePubKey,
@@ -384,7 +360,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public void acceptPairingProfile(PairingRequest pairingRequest, ProfSerMsgListener<Boolean> profSerMsgListener) throws Exception {
-        core.getModule(ModuleId.PAIRING.getId(), PairingModule.class)
+        core.getModule(EnabledServices.PROFILE_PAIRING.getName(), PairingModule.class)
                 .acceptPairingProfile(
                         pairingRequest,
                         profSerMsgListener
@@ -393,7 +369,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public void cancelPairingRequest(PairingRequest pairingRequest) {
-        core.getModule(ModuleId.PAIRING.getId(), PairingModule.class)
+        core.getModule(EnabledServices.PROFILE_PAIRING.getName(), PairingModule.class)
                 .cancelPairingRequest(pairingRequest
                 );
     }
@@ -406,7 +382,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
      */
     @Override
     public void requestChat(final ProfileInformation remoteProfileInformation, final ProfSerMsgListener<Boolean> readyListener, TimeUnit timeUnit, long time) throws RequestChatException, ChatCallAlreadyOpenException {
-        core.getModule(ModuleId.CHAT.getId(), ChatModule.class)
+        core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
                 .requestChat(
                         profile,
                         remoteProfileInformation,
@@ -418,7 +394,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public void refuseChatRequest(String hexPublicKey) {
-        core.getModule(ModuleId.CHAT.getId(), ChatModule.class)
+        core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
                 .refuseChatRequest(
                         profile,
                         hexPublicKey
@@ -427,7 +403,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public void acceptChatRequest(String remoteHexPublicKey, ProfSerMsgListener<Boolean> future) throws Exception {
-        core.getModule(ModuleId.CHAT.getId(), ChatModule.class)
+        core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
                 .acceptChatRequest(
                         profile,
                         remoteHexPublicKey,
@@ -444,7 +420,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
      */
     @Override
     public void sendMsgToChat(ProfileInformation remoteProfileInformation, String msg, ProfSerMsgListener<Boolean> msgListener) throws Exception {
-        core.getModule(ModuleId.CHAT.getId(), ChatModule.class)
+        core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
                 .sendMsgToChat(
                         profile,
                         remoteProfileInformation,

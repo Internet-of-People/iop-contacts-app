@@ -3,6 +3,8 @@ package iop.org.iop_sdk_android.core.service.modules;
 import android.content.Context;
 
 import org.fermat.redtooth.core.IoPConnect;
+import org.fermat.redtooth.global.Module;
+import org.fermat.redtooth.services.EnabledServices;
 
 import java.util.HashMap;
 
@@ -20,7 +22,7 @@ import iop.org.iop_sdk_android.core.service.modules.imp.ProfilesModuleImp;
 
 public class Core {
 
-    private HashMap<ModuleId,Module> modules = new HashMap<>();
+    private HashMap<EnabledServices,Module> modules = new HashMap<>();
 
     private Context context;
     private IoPConnect ioPConnect;
@@ -32,31 +34,35 @@ public class Core {
         this.ioPConnect = ioPConnect;
     }
 
-    public <T extends Module> T getModule(String id, Class<T> tClass){
+    public Module getModule(String id){
         if (modules.containsKey(id)){
-            return (T) modules.get(id);
+            return modules.get(id);
         }
         Module module = null;
-        ModuleId moduleId = ModuleId.getModuleIdById(id);
+        EnabledServices moduleId = EnabledServices.getServiceByName(id);
         switch (moduleId){
-            case PROFILES:
+            case PROFILE_DATA:
                 module = new ProfilesModuleImp(
                         context,
                         ioPConnect,
                         ioPConnectService
                 );
                 break;
-            case PAIRING:
+            case PROFILE_PAIRING:
                 module = new PairingModuleImp(ioPConnectService,ioPConnect);
                 break;
             case CHAT:
                 module = new ChatModuleImp(context,ioPConnect);
                 break;
             default:
-                throw new IllegalArgumentException("ModuleId not found.");
+                throw new IllegalArgumentException("EnabledService not found.");
         }
         modules.put(moduleId,module);
-        return (T) module;
+        return module;
+    }
+
+    public <T extends Module> T getModule(String id, Class<T> tClass){
+        return (T) getModule(id);
     }
 
     public void clean() {

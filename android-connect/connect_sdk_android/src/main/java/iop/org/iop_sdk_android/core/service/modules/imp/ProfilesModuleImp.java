@@ -29,7 +29,6 @@ import java.util.concurrent.TimeoutException;
 import iop.org.iop_sdk_android.core.IntentBroadcastConstants;
 import iop.org.iop_sdk_android.core.service.IoPConnectService;
 import iop.org.iop_sdk_android.core.service.modules.AbstractModule;
-import iop.org.iop_sdk_android.core.service.modules.ModuleId;
 import iop.org.iop_sdk_android.core.service.modules.interfaces.ProfilesModule;
 import iop.org.iop_sdk_android.core.utils.ImageUtils;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_CHECK_IN_FAIL;
@@ -58,7 +57,7 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule{
         super(
                 context,
                 Version.newProtocolAcceptedVersion(), // version 1 default for now..
-                ModuleId.PROFILES.getId() // module identifier
+                EnabledServices.PROFILE_DATA.getName() // module identifier
         );
         this.ioPConnect = ioPConnect;
         this.connectService = connectService;

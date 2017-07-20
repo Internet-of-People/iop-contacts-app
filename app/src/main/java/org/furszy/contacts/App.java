@@ -45,6 +45,7 @@ import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import iop.org.iop_sdk_android.core.AnConnect;
 import iop.org.iop_sdk_android.core.InitListener;
 import iop.org.iop_sdk_android.core.service.ProfileServerConfigurationsImp;
+import iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_IOP_SERVICE_CONNECTED;
@@ -112,6 +113,8 @@ public class App extends Application implements IoPConnectContext {
         }
     };
 
+    private ChatModuleReceiver chatModuleReceiver = new ChatModuleReceiver();
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -125,6 +128,10 @@ public class App extends Application implements IoPConnectContext {
             CrashReporter.init(getCacheDir());
             broadcastManager = LocalBroadcastManager.getInstance(this);
             notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+            registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_CONNECTED));
+            registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED));
+            registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_MSG_RECEIVED));
             // register broadcast listeners
             broadcastManager.registerReceiver(serviceReceiver, new IntentFilter(ACTION_ON_PAIR_RECEIVED));
             broadcastManager.registerReceiver(serviceReceiver, new IntentFilter(ACTION_ON_RESPONSE_PAIR_RECEIVED));
@@ -274,60 +281,7 @@ public class App extends Application implements IoPConnectContext {
             @Override
             public void run() {
                 try {
-                    anRedtooth.getRedtooth().addService(EnabledServices.CHAT.getName(), new ChatMsgListener() {
-                        @Override
-                        public void onChatConnected(Profile localProfile, String remoteProfilePubKey, boolean isLocalCreator) {
-                            log.info("on chat connected: " + remoteProfilePubKey);
-                            ProfileInformation remoteProflie = anRedtooth.getRedtooth().getKnownProfile(remoteProfilePubKey);
-                            if (remoteProflie != null) {
-                                // todo: negro acá abrí la vista de incoming para aceptar el request..
-                                Intent intent = new Intent(App.this, WaitingChatActivity.class);
-                                intent.putExtra(WaitingChatActivity.REMOTE_PROFILE_PUB_KEY, remoteProfilePubKey);
-                                intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
-                                if (isLocalCreator) {
-                                    intent.putExtra(WaitingChatActivity.IS_CALLING, false);
-                                    startActivity(intent);
-                                } else {
-                                    PendingIntent pendingIntent = PendingIntent.getActivity(App.this, 0, intent, 0);
-                                    // todo: null pointer found.
-                                    String name = remoteProflie.getName();
-                                    Notification not = new Notification.Builder(App.this)
-                                            .setContentTitle("Hey, chat notification received")
-                                            .setContentText(name + " want to chat with you!")
-                                            .setSmallIcon(R.drawable.ic_chat_disable)
-                                            .setContentIntent(pendingIntent)
-                                            .setAutoCancel(true)
-                                            .build();
-                                    notificationManager.notify(43, not);
-                                }
-                            } else {
-                                log.error("Chat notification arrive without know the profile, remote pub key " + remoteProfilePubKey);
-                            }
-                        }
-
-                        public void onChatDisconnected(String remotePubKey) {
-                            log.info("on chat disconnected: " + remotePubKey);
-                        }
-
-                        public void onMsgReceived(String remotePubKey, BaseMsg msg) {
-                            log.info("on chat msg received: " + remotePubKey);
-                            Intent intent = new Intent();
-                            intent.putExtra(WaitingChatActivity.REMOTE_PROFILE_PUB_KEY, remotePubKey);
-                            switch (ChatMsgTypes.valueOf(msg.getType())) {
-                                case CHAT_ACCEPTED:
-                                    intent.setAction(INTENT_CHAT_ACCEPTED_BROADCAST);
-                                    break;
-                                case CHAT_REFUSED:
-                                    intent.setAction(INTENT_CHAT_REFUSED_BROADCAST);
-                                    break;
-                                case TEXT:
-                                    intent.putExtra(INTENT_CHAT_TEXT_RECEIVED, ((ChatMsg) msg).getText());
-                                    intent.setAction(INTENT_CHAT_TEXT_BROADCAST);
-                                    break;
-                            }
-                            broadcastManager.sendBroadcast(intent);
-                        }
-                    });
+                    anRedtooth.getRedtooth().addService(EnabledServices.CHAT.getName());
                 }catch (Exception e){
                     e.printStackTrace();
                     log.error("Error adding chat service",e);
@@ -366,5 +320,13 @@ public class App extends Application implements IoPConnectContext {
 
     public void cancelChatNotifications() {
         notificationManager.cancel(43);
+    }
+
+    public NotificationManager getNotificationManager() {
+        return notificationManager;
+    }
+
+    public LocalBroadcastManager getBroadcastManager() {
+        return broadcastManager;
     }
 }

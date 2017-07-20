@@ -21,7 +21,6 @@ import org.fermat.redtooth.services.chat.RequestChatException;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -30,7 +29,6 @@ import java.util.concurrent.TimeoutException;
 
 import iop.org.iop_sdk_android.core.service.exceptions.ChatCallClosedException;
 import iop.org.iop_sdk_android.core.service.modules.AbstractModule;
-import iop.org.iop_sdk_android.core.service.modules.ModuleId;
 import iop.org.iop_sdk_android.core.service.modules.interfaces.ChatModule;
 
 import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_CHAT_MSG;
@@ -44,11 +42,10 @@ import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsC
 
 public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgListener {
 
-    private Context context;
     private IoPConnect ioPConnect;
 
     public ChatModuleImp(Context context,IoPConnect ioPConnect) {
-        super(context,Version.newProtocolAcceptedVersion(), ModuleId.CHAT.getId());
+        super(context,Version.newProtocolAcceptedVersion(), EnabledServices.CHAT.getName());
         this.ioPConnect = ioPConnect;
     }
 
@@ -162,7 +159,7 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
         intent.putExtra(EXTRA_INTENT_LOCAL_PROFILE,localProfile.getHexPublicKey());
         intent.putExtra(EXTRA_INTENT_REMOTE_PROFILE,remoteProfilePubKey);
         intent.putExtra(EXTRA_INTENT_IS_LOCAL_CREATOR,isLocalCreator);
-        context.sendBroadcast(intent);
+        getContext().sendBroadcast(intent);
     }
 
     @Override
@@ -170,7 +167,7 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
         Intent intent = new Intent();
         intent.setAction(ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED);
         intent.putExtra(EXTRA_INTENT_REMOTE_PROFILE,remotePubKey);
-        context.sendBroadcast(intent);
+        getContext().sendBroadcast(intent);
     }
 
     @Override
@@ -179,6 +176,6 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
         intent.setAction(ChatIntentsConstants.ACTION_ON_CHAT_MSG_RECEIVED);
         intent.putExtra(EXTRA_INTENT_REMOTE_PROFILE,remotePubKey);
         intent.putExtra(EXTRA_INTENT_CHAT_MSG,msg);
-        context.sendBroadcast(intent);
+        getContext().sendBroadcast(intent);
     }
 }

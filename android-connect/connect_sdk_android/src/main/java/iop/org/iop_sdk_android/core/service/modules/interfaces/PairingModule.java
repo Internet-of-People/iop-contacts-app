@@ -5,7 +5,7 @@ import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
 
-import iop.org.iop_sdk_android.core.service.modules.Module;
+import org.fermat.redtooth.global.Module;
 
 /**
  * Created by furszy on 7/20/17.
