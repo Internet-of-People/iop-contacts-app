@@ -111,7 +111,6 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     private LocalBroadcastManager localBroadcastManager;
 
-    private Handler handler = new Handler();
     private ExecutorService executor;
     /** Context */
     private IoPConnectContext application;
@@ -229,13 +228,6 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
         }
     }
 
-    /*private void init(){
-        try {
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }*/
 
     /**
      * Try to solve some impediment if there is any.
@@ -660,13 +652,6 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     @Override
     public void onDisconnect(String localProfilePubKey) {
         Intent intent = new Intent(ACTION_ON_PROFILE_DISCONNECTED);
-        localBroadcastManager.sendBroadcast(intent);
-    }
-
-    private void onCheckInFail(Profile profile, int status, String statusDetail) {
-        logger.warn("on check in fail: "+statusDetail);
-        Intent intent = new Intent(ACTION_ON_CHECK_IN_FAIL);
-        intent.putExtra(INTENT_RESPONSE_DETAIL,statusDetail);
         localBroadcastManager.sendBroadcast(intent);
     }
 
