@@ -6,10 +6,8 @@
       <module fileurl="file://$PROJECT_DIR$/IoP-connect-contacts.iml" filepath="$PROJECT_DIR$/IoP-connect-contacts.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/android-connect/connect_sdk_android/connect_sdk_android.iml" filepath="$PROJECT_DIR$/android-connect/connect_sdk_android/connect_sdk_android.iml" />
-      <module fileurl="file://$PROJECT_DIR$/android-connect/connect_sdk_android/connect_sdk_android.iml" filepath="$PROJECT_DIR$/android-connect/connect_sdk_android/connect_sdk_android.iml" />
       <module fileurl="file://$PROJECT_DIR$/iopj/iopj.iml" filepath="$PROJECT_DIR$/iopj/iopj.iml" />
       <module fileurl="file://$PROJECT_DIR$/lib_sdk/lib_sdk.iml" filepath="$PROJECT_DIR$/lib_sdk/lib_sdk.iml" />
-      <module fileurl="file://$PROJECT_DIR$/android-connect/libsodium-jni-aar-1.0.3/libsodium-jni-aar-1.0.3.iml" filepath="$PROJECT_DIR$/android-connect/libsodium-jni-aar-1.0.3/libsodium-jni-aar-1.0.3.iml" />
       <module fileurl="file://$PROJECT_DIR$/android-connect/libsodium-jni-aar-1.0.3/libsodium-jni-aar-1.0.3.iml" filepath="$PROJECT_DIR$/android-connect/libsodium-jni-aar-1.0.3/libsodium-jni-aar-1.0.3.iml" />
       <module fileurl="file://$PROJECT_DIR$/non-blocking-client/non-blocking-client.iml" filepath="$PROJECT_DIR$/non-blocking-client/non-blocking-client.iml" />
       <module fileurl="file://$PROJECT_DIR$/ui.helper.lib/ui.helper.lib.iml" filepath="$PROJECT_DIR$/ui.helper.lib/ui.helper.lib.iml" />

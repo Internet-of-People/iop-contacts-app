@@ -13,9 +13,18 @@ import org.fermat.redtooth.profile_server.engine.futures.ConnectionFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.Profile;
+import org.fermat.redtooth.services.EnabledServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import iop.org.iop_sdk_android.core.IntentBroadcastConstants;
 import iop.org.iop_sdk_android.core.service.IoPConnectService;
@@ -44,10 +53,10 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule{
     private IoPConnect ioPConnect;
     // This instance is just for now to start dividing things, to get and set the profile
     private IoPConnectService connectService;
-    private Handler handler = new Handler();
 
     public ProfilesModuleImp(Context context, IoPConnect ioPConnect, IoPConnectService connectService) {
         super(
+                context,
                 Version.newProtocolAcceptedVersion(), // version 1 default for now..
                 ModuleId.PROFILES.getId() // module identifier
         );
@@ -108,19 +117,35 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule{
                 onCheckInFail(profile,status,statusDetail);
                 if (status==400){
                     logger.info("Checking fail, detail "+statusDetail+", trying to reconnect after 5 seconds");
-                    handler.postDelayed(reconnectRunnable, TimeUnit.SECONDS.toMillis(15));
+                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                    Future future = executor.submit(reconnectRunnable);
+                    try {
+                        future.get(15,TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (TimeoutException e) {
+                        e.printStackTrace();
+                    }finally {
+                        if (executor!=null){
+                            executor.shutdownNow();
+                            executor = null;
+                        }
+                    }
                 }
 
             }
-            Runnable reconnectRunnable = new Runnable() {
+            Callable reconnectRunnable = new Callable() {
                 @Override
-                public void run() {
+                public Object call() {
                     try {
                         connect(pubKey);
                     } catch (Exception e) {
                         e.printStackTrace();
                         // connection fail
                     }
+                    return null;
                 }
             };
 

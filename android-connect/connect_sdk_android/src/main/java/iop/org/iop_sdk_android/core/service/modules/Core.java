@@ -3,12 +3,11 @@ package iop.org.iop_sdk_android.core.service.modules;
 import android.content.Context;
 
 import org.fermat.redtooth.core.IoPConnect;
-import org.spongycastle.math.raw.Mod;
 
 import java.util.HashMap;
 
 import iop.org.iop_sdk_android.core.service.IoPConnectService;
-import iop.org.iop_sdk_android.core.service.modules.imp.ChatModuleImp;
+import iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatModuleImp;
 import iop.org.iop_sdk_android.core.service.modules.imp.PairingModuleImp;
 import iop.org.iop_sdk_android.core.service.modules.imp.ProfilesModuleImp;
 
@@ -51,7 +50,7 @@ public class Core {
                 module = new PairingModuleImp(ioPConnectService,ioPConnect);
                 break;
             case CHAT:
-                module = new ChatModuleImp(ioPConnect);
+                module = new ChatModuleImp(context,ioPConnect);
                 break;
             default:
                 throw new IllegalArgumentException("ModuleId not found.");

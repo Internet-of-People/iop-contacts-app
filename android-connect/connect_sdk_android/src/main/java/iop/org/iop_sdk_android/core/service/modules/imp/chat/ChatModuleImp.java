@@ -1,9 +1,13 @@
-package iop.org.iop_sdk_android.core.service.modules.imp;
+package iop.org.iop_sdk_android.core.service.modules.imp.chat;
+
+import android.content.Context;
+import android.content.Intent;
 
 import org.fermat.redtooth.core.IoPConnect;
 import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.client.AppServiceCallNotAvailableException;
+import org.fermat.redtooth.profile_server.engine.app_services.BaseMsg;
 import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.model.Profile;
@@ -12,6 +16,7 @@ import org.fermat.redtooth.services.chat.ChatAcceptMsg;
 import org.fermat.redtooth.services.chat.ChatAppService;
 import org.fermat.redtooth.services.chat.ChatCallAlreadyOpenException;
 import org.fermat.redtooth.services.chat.ChatMsg;
+import org.fermat.redtooth.services.chat.ChatMsgListener;
 import org.fermat.redtooth.services.chat.RequestChatException;
 
 import java.util.concurrent.Callable;
@@ -28,17 +33,22 @@ import iop.org.iop_sdk_android.core.service.modules.AbstractModule;
 import iop.org.iop_sdk_android.core.service.modules.ModuleId;
 import iop.org.iop_sdk_android.core.service.modules.interfaces.ChatModule;
 
+import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_CHAT_MSG;
+import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_IS_LOCAL_CREATOR;
+import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_LOCAL_PROFILE;
+import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_REMOTE_PROFILE;
+
 /**
  * Created by furszy on 7/20/17.
  */
 
-public class ChatModuleImp extends AbstractModule implements ChatModule {
+public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgListener {
 
+    private Context context;
     private IoPConnect ioPConnect;
 
-
-    public ChatModuleImp(IoPConnect ioPConnect) {
-        super(Version.newProtocolAcceptedVersion(), ModuleId.CHAT.getId());
+    public ChatModuleImp(Context context,IoPConnect ioPConnect) {
+        super(context,Version.newProtocolAcceptedVersion(), ModuleId.CHAT.getId());
         this.ioPConnect = ioPConnect;
     }
 
@@ -124,7 +134,7 @@ public class ChatModuleImp extends AbstractModule implements ChatModule {
      * @throws Exception
      */
     @Override
-    public void sendMsgToChat(Profile localProfile,ProfileInformation remoteProfileInformation, String msg, ProfSerMsgListener<Boolean> msgListener) throws Exception {
+    public void sendMsgToChat(Profile localProfile, ProfileInformation remoteProfileInformation, String msg, ProfSerMsgListener<Boolean> msgListener) throws Exception {
         if(!localProfile.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on local profile");
         //if(!remoteProfileInformation.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on remote profile");
         CallProfileAppService callProfileAppService = null;
@@ -143,5 +153,32 @@ public class ChatModuleImp extends AbstractModule implements ChatModule {
     @Override
     public void onDestroy() {
 
+    }
+
+    @Override
+    public void onChatConnected(Profile localProfile, String remoteProfilePubKey, boolean isLocalCreator) {
+        Intent intent = new Intent();
+        intent.setAction(ChatIntentsConstants.ACTION_ON_CHAT_CONNECTED);
+        intent.putExtra(EXTRA_INTENT_LOCAL_PROFILE,localProfile.getHexPublicKey());
+        intent.putExtra(EXTRA_INTENT_REMOTE_PROFILE,remoteProfilePubKey);
+        intent.putExtra(EXTRA_INTENT_IS_LOCAL_CREATOR,isLocalCreator);
+        context.sendBroadcast(intent);
+    }
+
+    @Override
+    public void onChatDisconnected(String remotePubKey) {
+        Intent intent = new Intent();
+        intent.setAction(ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED);
+        intent.putExtra(EXTRA_INTENT_REMOTE_PROFILE,remotePubKey);
+        context.sendBroadcast(intent);
+    }
+
+    @Override
+    public void onMsgReceived(String remotePubKey, BaseMsg msg) {
+        Intent intent = new Intent();
+        intent.setAction(ChatIntentsConstants.ACTION_ON_CHAT_MSG_RECEIVED);
+        intent.putExtra(EXTRA_INTENT_REMOTE_PROFILE,remotePubKey);
+        intent.putExtra(EXTRA_INTENT_CHAT_MSG,msg);
+        context.sendBroadcast(intent);
     }
 }

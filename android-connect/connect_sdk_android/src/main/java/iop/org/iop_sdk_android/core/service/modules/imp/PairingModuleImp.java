@@ -31,7 +31,7 @@ public class PairingModuleImp extends AbstractModule implements PairingModule{
     private IoPConnectService ioPConnectService;
 
     public PairingModuleImp(IoPConnectService ioPConnectService,IoPConnect ioPConnect) {
-        super(Version.newProtocolAcceptedVersion(), ModuleId.PAIRING.getId());
+        super(ioPConnectService,Version.newProtocolAcceptedVersion(), ModuleId.PAIRING.getId());
         this.ioPConnect = ioPConnect;
         this.ioPConnectService = ioPConnectService;
 
