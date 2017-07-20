@@ -3,16 +3,44 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/white">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="?android:attr/actionBarSize"
         app:elevation="0dp"
         android:background="#53acff"
         app:theme="@style/ToolBarStyle"
         app:popupTheme="@style/AppStartTheme" />
+
+    <LinearLayout
+        android:id="@+id/btnReload"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#4a4a4a"
+        android:layout_gravity="center"
+        android:padding="7dp"
+        android:paddingStart="15dp"
+        android:gravity="center"
+        android:clickable="true"
+        android:visibility="visible">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/reload_message"
+            android:textColor="@color/white"
+            android:textSize="15sp"/>
+        <ImageView
+            android:layout_margin="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_reload"/>
+
+    </LinearLayout>
 
     <FrameLayout android:id="@+id/content"
         android:layout_width="match_parent"

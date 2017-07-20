@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 import javax.net.SocketFactory;
@@ -80,6 +81,13 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
             socket.getOutputStream().flush();
             handler.messageSent(this,message);
         }catch (Exception e){
+            try {
+                if (socket.isClosed()) {
+                    closeNow();
+                }
+            }catch (Exception e1){
+                e.printStackTrace();
+            }
             throw new CantSendMessageException(e);
         }
     }
@@ -100,12 +108,12 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
         return overhead;
     }
 
-    private synchronized void read(){
+    private synchronized void read() {
         int count;
         byte[] buffer = new byte[8192];
         try {
             // read reply
-            if(!socket.isInputShutdown()) {
+            if (!socket.isInputShutdown()) {
                 count = socket.getInputStream().read(buffer);
                 logger.info("Reciving data..");
                 IopProfileServer.MessageWithHeader message1 = null;
@@ -116,35 +124,33 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
                     handler.messageReceived(this, message1.getBody());
                 } else {
                     // read < 0 -> connection closed
-                    // todo: falta notificar a las capas superiores que se cerró el socket.
                     logger.info("Connection closed, read<0 with portType: " + portType + " , removing socket");
-                    socket.close();
-                    readThread.interrupt();
+                    closeNow();
                 }
-            }else {
+            } else {
                 // input stream closed
-                // todo: falta notificar a las capas superiores que se cerró el socket.
                 logger.info("Connection closed, input stream shutdown with portType: " + portType + " , removing socket");
-                socket.close();
-                readThread.interrupt();
+                closeNow();
             }
         } catch (InvalidProtocolBufferException e) {
 //                throw new InvalidProtocolViolation("Invalid message",e);
             e.printStackTrace();
-        } catch (javax.net.ssl.SSLException e){
+        } catch (javax.net.ssl.SSLException e) {
             e.printStackTrace();
             // something bad happen..
-            // todo: falta notificar a las capas superiores que se cerró el socket.
-            logger.info("Connection closed, sslException with portType: " + portType + " , "+tokenId+" removing socket");
+            logger.info("Connection closed, sslException with portType: " + portType + " , " + tokenId + " removing socket");
             try {
-                socket.close();
+                closeNow();
             } catch (IOException e1) {
-                // nothing
+                // nothing..
             }
+        } catch (SocketException e){
+            e.printStackTrace();
+            logger.info("Connection closed, sslException with portType: " + portType + " , " + tokenId + " removing socket");
             try {
-                readThread.interrupt();
-            }catch (Exception e2){
-                // nothing
+                closeNow();
+            } catch (IOException e1) {
+                // nothing..
             }
         } catch (Exception e){
             e.printStackTrace();
@@ -158,14 +164,24 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
     @Override
     public void closeNow() throws IOException {
         logger.info("Closing socket port: "+portType);
-        readThread.interrupt();
-        socket.close();
-
+        if (!readThread.isInterrupted())
+            readThread.interrupt();
+        if (!socket.isClosed())
+            socket.close();
+        // notify upper layers
+        if (handler!=null){
+            try {
+                handler.sessionClosed(this);
+            } catch (Exception e) {
+                // swallow
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
     public boolean isActive() {
-        return !socket.isOutputShutdown();
+        return !socket.isClosed();
     }
 
     @Override
@@ -216,5 +232,15 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return "ProfileServerSocket{" +
+                "tokenId='" + tokenId + '\'' +
+                ", port=" + port +
+                ", host='" + host + '\'' +
+                ", portType=" + portType +
+                '}';
     }
 }

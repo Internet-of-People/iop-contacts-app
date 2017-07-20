@@ -1,0 +1,75 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:gravity="center_horizontal">
+
+
+    <LinearLayout
+        android:layout_centerHorizontal="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="10dp"
+        android:gravity="center"
+        android:id="@+id/layoutAvatar"
+        android:orientation="vertical">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/img_profile_image"
+            android:layout_marginBottom="20dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/img_profile"
+            app:civ_border_width="1dp"
+            app:civ_border_color="#71b6ff" />
+
+        <Button
+            android:id="@+id/btnConnectStatus"
+            android:text="@string/btn_connected"
+            style="@style/ButtomProfile"/>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="50dp"
+        android:gravity="center"
+        android:layout_below="@+id/layoutAvatar"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:paddingLeft="16dp"
+            android:textAllCaps="true"
+            android:gravity="center_vertical"
+            android:background="#F0F0F0"
+            android:text="@string/profile_system"/>
+
+        <TextView
+            android:id="@+id/chatStatus"
+            android:background="@drawable/settings_items"
+            android:padding="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:height="40dp"
+            android:drawableRight="@drawable/ic_chat_active"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:textColor="#444444"
+            android:text="@string/backup_profile"/>
+
+    </LinearLayout>
+
+
+</RelativeLayout>

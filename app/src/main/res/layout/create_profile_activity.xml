@@ -25,7 +25,7 @@
 
         <de.hdodenhof.circleimageview.CircleImageView
             xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/profile_image"
+            android:id="@+id/img_profile_image"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:src="@drawable/img_profile"
@@ -47,7 +47,7 @@
     </RelativeLayout>
 
     <EditText
-        android:id="@+id/password"
+        android:id="@+id/edit_name"
         android:layout_width="260dp"
         android:layout_height="40dp"
         android:layout_below="@+id/layoutAvatar"
@@ -58,23 +58,24 @@
         android:inputType="text"
         android:paddingLeft="10dip"
         android:paddingRight="10dip"
+        android:maxEms="16"
         android:textColor="@color/white"
         android:textColorHint="@color/white"
         android:textSize="14sp" />
 
+    <LinearLayout
+        android:layout_below="@+id/edit_name"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:gravity="center|bottom"
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true">
 
-    <Button
-        android:id="@+id/btnCreate"
-        android:layout_width="@dimen/btn_width"
-        android:layout_height="@dimen/btn_height"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="40dp"
-        android:background="@drawable/bg_button_white"
-        android:gravity="center_vertical|center_horizontal"
-        android:onClick="tryCreate"
-        android:text="@string/create_profile"
-        android:textColor="@color/mainBlue"
-        android:textSize="14sp" />
+        <Button
+            android:id="@+id/btnCreate"
+            android:text="@string/create_profile"
+            style="@style/ButtonWhiteBorderBlue"/>
+    </LinearLayout>
 
 </RelativeLayout>

@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package org.fermat.redtooth.profiles_manager;
+
+message ProfileInfo{
+    bytes version = 1;
+    string name = 2;
+    string type = 3;
+    string extraData = 4;
+    bytes pubKey = 6;
+    string homeHost = 7;
+    bytes img = 8;
+}
+
+
+message Profile{
+    ProfileInfo profileInfo = 1;
+    bytes privKey = 2;
+}
+
+message Wrapper{
+    Profile profile = 1;
+    repeated ProfileInfo profilesInfo = 2;
+}

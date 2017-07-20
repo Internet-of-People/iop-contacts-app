@@ -9,12 +9,13 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/Android-redtooth/iop_sdk_android" />
-            <option value="$PROJECT_DIR$/Android-redtooth/libsodium-jni-aar-1.0.3" />
+            <option value="$PROJECT_DIR$/android-connect/connect_sdk_android" />
+            <option value="$PROJECT_DIR$/android-connect/libsodium-jni-aar-1.0.3" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/iopj" />
             <option value="$PROJECT_DIR$/lib_sdk" />
             <option value="$PROJECT_DIR$/non-blocking-client" />
+            <option value="$PROJECT_DIR$/ui.helper.lib" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

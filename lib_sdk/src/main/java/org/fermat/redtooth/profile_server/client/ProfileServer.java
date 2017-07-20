@@ -45,9 +45,9 @@ public interface ProfileServer {
 
     ProfSerRequest checkIn(byte[] signedChallenge, Signer signer) throws Exception;
 
-    ProfSerRequest updateProfileRequest(Signer signer,byte[] profilePublicKey,String profType, byte[] version, String name, byte[] img, int latitude, int longitude, String extraData) throws Exception;
+    ProfSerRequest updateProfileRequest(Signer signer,byte[] profilePublicKey,String profType, byte[] version, String name, byte[] img,byte[] imgHash, int latitude, int longitude, String extraData) throws Exception;
 
-    ProfSerRequest updateExtraData(Signer signer,byte[] profilePublicKey,String profType, String extraData) throws Exception;
+   /* ProfSerRequest updateExtraData(Signer signer,byte[] profilePublicKey,String profType, String extraData) throws Exception;*/
 
     ProfSerRequest storeCanDataRequest(CanStoreMap canStoreMap);
 
@@ -76,7 +76,7 @@ public interface ProfileServer {
 
     ProfSerRequest searchProfilePartRequest(int recordIndex, int recordCount) throws CantConnectException, CantSendMessageException;
 
-    ProfSerRequest addApplcationService(String applicationService) throws CantConnectException, CantSendMessageException;
+    ProfSerRequest addApplicationService(String applicationService) throws CantConnectException, CantSendMessageException;
 
     ProfSerRequest getProfileInformationRequest(byte[] profileNetworkId, boolean applicationServices, boolean thumbnail, boolean profileImage) throws CantConnectException, CantSendMessageException;
 
@@ -90,9 +90,11 @@ public interface ProfileServer {
 
     ProfSerRequest appServiceReceiveMessageNotificationResponse(String token,int msgId);
 
-    void addHandler(PsSocketHandler hanlder);
+    void addHandler(PsSocketHandler handler);
 
     void closePort(IopProfileServer.ServerRoleType portType) throws IOException;
+
+    void closeCallChannel(String callToken) throws IOException;
 
     void shutdown() throws IOException;
 

@@ -3,10 +3,11 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="nav_header_vertical_spacing">16dp</dimen>
-    <dimen name="nav_header_height">160dp</dimen>
+    <dimen name="nav_header_height">120dp</dimen>
     <dimen name="scan_laser_width">4dp</dimen>
     <dimen name="scan_dot_size">8dp</dimen>
     <dimen name="btn_width">314dp</dimen>
-    <dimen name="btn_height">40dp</dimen>
+    <dimen name="inputs_width">334dp</dimen>
+    <dimen name="btn_height">50dp</dimen>
 
 </resources>

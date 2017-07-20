@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/left_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/container_msg">
+
+        <TextView android:id="@+id/txt_message"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:textColor="@color/mainText"
+            android:text="@string/lorem_impsum"
+            android:textSize="16sp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:paddingEnd="20dp"
+            android:paddingStart="20dp"
+            />
+
+    </LinearLayout>
+
+
+    <TextView
+        android:id="@+id/txt_time"
+        android:layout_below="@id/container_msg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/time"
+        android:textSize="12sp"
+        android:textStyle="italic"
+        android:text="25/03/2012"
+        android:paddingStart="20dp"
+        />
+
+</RelativeLayout>

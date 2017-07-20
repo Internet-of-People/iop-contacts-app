@@ -7,13 +7,23 @@
     <color name="base_background">#1A1A1A</color>
     <color name="bgBlue">#2998FF</color>
     <color name="mainBlue">#2998FF</color>
+    <color name="mainText">#4d4d4d</color>
     <color name="white">#ffffff</color>
     <color name="bgWhite30">#4Dffffff</color>
+    <color name="bgBlack30">#4D000000</color>
     <!-- scanner -->
     <color name="scan_mask">#60000000</color>
     <color name="scan_laser">#cc0000</color>
     <color name="scan_dot">#ff6600</color>
     <color name="scan_result_view">#b0000000</color>
     <color name="scan_result_dots">#c099cc00</color>
+    <color name="blue_base">#2998FF</color>
+    <color name="tab_active">#444444</color>
+    <color name="tab_inactive">#99444444</color>
+    <color name="hintInput">#604d4d4d</color>
+    <color name="transparent">#00000000</color>
+    <color name="subtitles">#7F7F7F</color>
+    <color name="time">#AFAFAF</color>
+
 
 </resources>

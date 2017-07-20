@@ -1,0 +1,86 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+
+
+    <TextView
+        android:id="@+id/restoreMessage"
+        android:text="@string/restore_message"
+        android:textColor="@color/mainText"
+        style="@style/MessageText" />
+
+    <Spinner
+        android:id="@+id/spinner_files"
+        android:layout_width="260dp"
+        android:layout_height="40dp"
+        android:layout_below="@+id/restoreMessage"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="60dp"
+        android:background="@drawable/bg_inputs"
+        android:layout_marginBottom="5dp"
+        android:drawableRight="@drawable/ic_add_file_dark"
+        android:gravity="center_horizontal|center_vertical"
+        android:paddingLeft="10dip"
+        android:paddingRight="10dip"
+        android:text="@string/select_file"
+        android:textColor="@color/mainText"
+        android:textSize="15sp" />
+
+    <RelativeLayout
+        android:id="@+id/password_layout"
+        android:layout_below="@+id/spinner_files"
+        android:layout_width="260dp"
+        android:layout_height="40dp"
+        android:layout_centerHorizontal="true">
+
+        <EditText
+            android:id="@+id/password"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_inputs"
+            android:gravity="left|center_vertical"
+            android:hint="@string/password"
+            android:inputType="textPassword"
+            android:paddingLeft="10dip"
+            android:paddingRight="10dip"
+            android:textColor="@color/mainText"
+            android:textColorHint="@color/hintInput"
+            android:textSize="14sp" />
+
+        <ImageButton
+            android:id="@+id/showPassword"
+            android:layout_marginTop="14dp"
+            android:layout_marginRight="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/ic_watch"
+            android:background="@color/transparent"
+            />
+
+
+    </RelativeLayout>
+
+
+
+    <LinearLayout
+        android:layout_below="@+id/password_layout"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:gravity="center|bottom"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_alignParentBottom="true">
+
+        <Button
+            android:id="@+id/btnRestore"
+            android:text="@string/restore_profile"
+            style="@style/ButtomBlue"/>
+    </LinearLayout>
+
+
+</RelativeLayout>

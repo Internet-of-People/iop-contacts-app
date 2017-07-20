@@ -1,5 +1,9 @@
 package org.fermat.redtooth.profile_server;
 
+import com.google.protobuf.ByteString;
+
+import org.fermat.redtooth.global.IoPSerializable;
+import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 
 import java.util.Set;
@@ -10,7 +14,7 @@ import java.util.Set;
 
 public interface ProfileInformation extends ProfileBase {
 
-    byte[] getVersion();
+    Version getVersion();
 
     long getLastUpdateTime();
 
@@ -28,6 +32,8 @@ public interface ProfileInformation extends ProfileBase {
 
     byte[] getProfileServerId();
 
+    void setProfileServerId(byte[] serverId);
+
     void addAppService(String service);
 
     boolean isOnline();
@@ -39,4 +45,24 @@ public interface ProfileInformation extends ProfileBase {
     ProfileInformationImp.PairStatus getPairStatus();
 
     void setPairStatus(ProfileInformationImp.PairStatus pairStatus);
+
+    String getHomeHost();
+
+    void setImg(byte[] profileImage);
+
+    void setThumbnailImg(byte[] bytes);
+
+    void setLatitude(int latitude);
+
+    void setLongitude(int longitude);
+
+    void setExtraData(String extraData);
+
+    void setType(String type);
+
+    void setName(String name);
+
+    void setHomeHost(String senderHost);
+
+    void setLastUpdateTime(long time);
 }

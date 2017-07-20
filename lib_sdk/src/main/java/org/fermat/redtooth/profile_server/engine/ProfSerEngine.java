@@ -4,13 +4,13 @@ import org.bitcoinj.core.Sha256Hash;
 import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.crypto.CryptoWrapper;
+import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.client.PsSocketHandler;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 import org.fermat.redtooth.profile_server.engine.app_services.CallsListener;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.*;
-import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
 import org.fermat.redtooth.profile_server.protocol.CanStoreMap;
 import org.fermat.redtooth.profile_server.protocol.IopShared;
 import org.slf4j.Logger;
@@ -47,6 +47,7 @@ import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.CHECK_IN;
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.HOME_NODE_REQUEST;
+import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.CONNECTION_FAIL;
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.NO_SERVER;
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.START_CONVERSATION_CL;
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.WAITING_START_CL;
@@ -75,14 +76,12 @@ public class ProfSerEngine {
     private ProfNodeConnection profNodeConnection;
     /** Crypto wrapper implementation */
     private CryptoWrapper crypto;
-    /** Db */
-    private ProfSerDb profSerDb;
     /** Internal server handler */
     private PsSocketHandler handler;
+    /** Connection listeners */
+    private CopyOnWriteArrayList<ConnectionListener> connectionListener = new CopyOnWriteArrayList<>();
     /** Listener to receive incomingCallNotifications and incomingMessages from calls */
     private org.fermat.redtooth.profile_server.engine.app_services.CallsListener callListener;
-    /** Engine listenerv*/
-    private final CopyOnWriteArrayList<org.fermat.redtooth.profile_server.engine.listeners.EngineListener> engineListeners = new CopyOnWriteArrayList<>();
     /** Messages listeners:  id -> listner */
     private final ConcurrentMap<Integer,ProfSerMsgListener> msgListeners = new ConcurrentHashMap<>();
     private final ConcurrentMap<String,SearchProfilesQuery> profilesQuery = new ConcurrentHashMap<>();
@@ -93,22 +92,23 @@ public class ProfSerEngine {
 
     /**
      *
-     * @param profServerData
-     * @param profile -> use a profile for the restriction of 1 per connection that the server have.
+     * @param contextWrapper
+     * @param profServerData -> server data
+     * @param profile -> profile data
+     * @param crypto
+     * @param sslContextFactory
      */
-    public ProfSerEngine(IoPConnectContext contextWrapper, ProfSerDb profSerDb , ProfServerData profServerData, Profile profile, CryptoWrapper crypto, SslContextFactory sslContextFactory) {
+    public ProfSerEngine(IoPConnectContext contextWrapper, ProfServerData profServerData, Profile profile, CryptoWrapper crypto, SslContextFactory sslContextFactory) {
         this.profServerData = profServerData;
         this.crypto = crypto;
-        this.profSerDb = profSerDb;
         this.profSerConnectionState=NO_SERVER;
         this.profNodeConnection = new ProfNodeConnection(
                 profile,
-                profSerDb.isRegistered(
-                        profServerData.getHost(),
-                        profile.getHexPublicKey()),
+                profServerData.isRegistered(),
+                profServerData.isHome(),
                 randomChallenge()
         );
-        handler = new ProfileServerHanlder();
+        handler = new ProfileServerHandler();
         this.profileServer = new ProfSerImp(contextWrapper,profServerData,sslContextFactory,handler);
     }
 
@@ -131,21 +131,12 @@ public class ProfSerEngine {
         return connChallenge;
     }
 
-
-    /**
-     *
-     * @param listener
-     */
-    public void addEngineListener(org.fermat.redtooth.profile_server.engine.listeners.EngineListener listener){
-        this.engineListeners.add(listener);
-    }
-
-    public void removeEngineListener(org.fermat.redtooth.profile_server.engine.listeners.EngineListener listener){
-        this.engineListeners.remove(listener);
-    }
-
     public void setCallListener(CallsListener callListener) {
         this.callListener = callListener;
+    }
+
+    public void addConnectionListener(ConnectionListener listener){
+        this.connectionListener.add(listener);
     }
 
     /**
@@ -290,8 +281,10 @@ public class ProfSerEngine {
 
     /**
      * Update the existing profile in the server
+     *
+     * @param img -> Profile image in PNG or JPEG format, non-empty binary data, max 20,480 bytes long, or zero length binary data if the profile image is about to be erased.
      */
-    public int updateProfile(byte[] version, String name, byte[] img, int lat, int lon, String extraData, ProfSerMsgListener listener){
+    public int updateProfile(Version version, String name, byte[] img, byte[] imgHash, int lat, int lon, String extraData, ProfSerMsgListener listener){
         LOG.info("updateProfile, state: "+profSerConnectionState);
         int msgId = 0;
         if (profSerConnectionState == CHECK_IN){
@@ -300,9 +293,10 @@ public class ProfSerEngine {
                         profNodeConnection.getProfile(),
                         profNodeConnection.getProfile().getPublicKey(),
                         profNodeConnection.getProfile().getType(),
-                        version,
+                        version.toByteArray(),
                         name,
                         img,
+                        imgHash,
                         lat,
                         lon,
                         extraData
@@ -339,8 +333,13 @@ public class ProfSerEngine {
      * @return
      */
     public int addApplicationService(AppService appService){
+        LOG.info("addApplicationService, "+appService);
         profNodeConnection.getProfile().addApplicationService(appService);
-        return addApplicationServiceRequest(appService.getName(),appService);
+        // If the connection is stablished sent the message, if not the profile is going to be registered once the register engine finishes.
+        if (profSerConnectionState==CHECK_IN)
+            return addApplicationServiceRequest(appService.getName(),appService);
+        else
+            return 0;
     }
 
     /**
@@ -528,7 +527,7 @@ public class ProfSerEngine {
         if (!isClConnectionReady()) throw new IllegalStateException("connection is not ready to send messages yet");
         int msgId = 0;
         try {
-            ProfSerRequest request = profileServer.addApplcationService(applicationService);
+            ProfSerRequest request = profileServer.addApplicationService(applicationService);
             sendRequest(request,profSerMsgListener);
         } catch (CantSendMessageException e) {
             e.printStackTrace();
@@ -547,6 +546,7 @@ public class ProfSerEngine {
                     profile.getVersion(),
                     profile.getName(),
                     profile.getImg(),
+                    profile.getImgHash(),
                     profile.getLatitude(),
                     profile.getLongitude(),
                     profile.getExtraData(),
@@ -568,8 +568,12 @@ public class ProfSerEngine {
                         }
                     }
             );
+            if (!profNodeConnection.getProfile().getApplicationServices().isEmpty()){
+                for (AppService appService : profNodeConnection.getProfile().getApplicationServices().values()) {
+                    addApplicationServiceRequest(appService.getName(),appService);
+                }
+            }
             profNodeConnection.setNeedRegisterProfile(false);
-
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -591,41 +595,27 @@ public class ProfSerEngine {
         return profServerData;
     }
 
-    ProfSerDb getProfSerDb() {
-        return profSerDb;
-    }
-
-    CopyOnWriteArrayList<EngineListener> getEngineListeners() {
-        return engineListeners;
-    }
-
     /**
      * Close a specific port
      * @param port
      * @throws IOException
      */
     public void closePort(IopProfileServer.ServerRoleType port) throws IOException {
+        stopPing(port);
         profileServer.closePort(port);
     }
 
-    public ExecutorService getExecutor() {
-        return executor;
+    public void closeChannel(String callToken) throws IOException {
+        profileServer.closeCallChannel(callToken);
     }
 
-    /**
-     * if the customer connection is ready
-     *
-     * @return
-     */
-    public boolean isClConnectionReady() {
-        return getProfSerConnectionState() == ProfSerConnectionState.CHECK_IN;
-    }
 
     public void startPing(final IopProfileServer.ServerRoleType portType) {
         LOG.info("startPing on port: "+portType);
         if (pingExecutors==null){
             pingExecutors = new HashMap<>();
         }
+        if (pingExecutors.containsKey(portType)) throw new IllegalStateException("Ping agent already initilized for: "+portType);
         final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         service.scheduleAtFixedRate(new Runnable() {
             @Override
@@ -641,16 +631,47 @@ public class ProfSerEngine {
                     e.printStackTrace();
                 }
             }
-        },5,15, TimeUnit.SECONDS);
+        },10,15, TimeUnit.SECONDS);
         pingExecutors.put(portType,service);
+    }
+
+    public void stopPing(final IopProfileServer.ServerRoleType portType){
+        try {
+            LOG.info("stop ping for: "+portType);
+            ScheduledExecutorService executor = pingExecutors.get(portType);
+            executor.shutdownNow();
+        }catch (Exception e){
+            // nothing..
+        }
+    }
+
+    public CopyOnWriteArrayList<ConnectionListener> getConnectionListeners() {
+        return connectionListener;
+    }
+
+    public boolean hasClConnectionFail() {
+        return profSerConnectionState == CONNECTION_FAIL;
+    }
+
+    public boolean isClConnectionConnecting(){
+        return profSerConnectionState!=CONNECTION_FAIL && profSerConnectionState!=CHECK_IN;
+    }
+
+    /**
+     * if the customer connection is ready
+     *
+     * @return
+     */
+    public boolean isClConnectionReady() {
+        return getProfSerConnectionState() == ProfSerConnectionState.CHECK_IN;
     }
 
 
     /** Messages processors  */
 
-    public class ProfileServerHanlder implements PsSocketHandler<IopProfileServer.Message> {
+    public class ProfileServerHandler implements PsSocketHandler<IopProfileServer.Message> {
 
-        private static final String TAG = "ProfileServerHanlder";
+        private static final String TAG = "ProfileServerHandler";
 
         // Responses:
 
@@ -677,7 +698,7 @@ public class ProfSerEngine {
 
         private Map<Integer,MessageProcessor> processors;
 
-        public ProfileServerHanlder() {
+        public ProfileServerHandler() {
             processors = new HashMap<>();
             processors.put(PING_PROCESSOR,new PingProcessor());
             processors.put(LIST_ROLES_PROCESSOR,new ListRolesProcessor());
@@ -713,7 +734,16 @@ public class ProfSerEngine {
 
         @Override
         public void sessionClosed(IoSession session) throws Exception {
-
+            LOG.info("sessionClosed: "+session.toString());
+            // notify upper layers
+            for (ConnectionListener listener : connectionListener) {
+                listener.onConnectionLoose(
+                        profNodeConnection.getProfile(),
+                        profServerData.getHost(),
+                        session.getPortType(),
+                        session.getSessionTokenId()
+                );
+            }
         }
 
         @Override
@@ -848,9 +878,12 @@ public class ProfSerEngine {
                         // this happen whe the identity already exist or when the cl and non-cl port are the same in the StartConversation message
                         case ERROR_ALREADY_EXISTS:
                             LOG.info("response: "+response.toString());
+                            // todo: for some reason this is happening... fix me please
                             if (profSerConnectionState == WAITING_START_CL)
                                 profSerConnectionState = START_CONVERSATION_CL;
                             else profSerConnectionState = HOME_NODE_REQUEST;
+                            profNodeConnection.setIsRegistered(true);
+                            msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),"ERROR_ALREADY_EXISTS, profile already exist on the server to request the home node request");
                             break;
                         case ERROR_INVALID_SIGNATURE:
                             LOG.error("response to msg id: "+messageId+" "+response.toString());
@@ -864,6 +897,14 @@ public class ProfSerEngine {
                         case ERROR_NOT_FOUND:
                             LOG.error("response: to msg id: "+messageId+" ERROR_NOT_FOUND");
                             msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),"remote profile not found");
+                            break;
+                        case ERROR_INVALID_VALUE:
+                            LOG.error("response: to msg id: "+messageId+" ERROR_INVALID_VALUE, "+response.getDetails());
+                            msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),response.getDetails());
+                            break;
+                        case ERROR_UNINITIALIZED:
+                            LOG.error("response: to msg id: "+messageId+" ERROR_UNINITIALIZED, "+response.getDetails());
+                            msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),response.getDetails());
                             break;
                         default:
                             LOG.error("response: to msg id: "+messageId+" "+response.toString());
@@ -1043,7 +1084,7 @@ public class ProfSerEngine {
         public void execute(IoSession session, int messageId, IopProfileServer.UpdateProfileResponse message) {
             LOG.info("UpdateProfileProcessor execute..");
             LOG.info("UpdateProfileProcessor update works..");
-            onMsgReceived(messageId,message);
+            onMsgReceived(messageId,true);
         }
     }
 
@@ -1170,7 +1211,7 @@ public class ProfSerEngine {
 
         @Override
         public void execute(IoSession session, int messageId, IopProfileServer.ApplicationServiceReceiveMessageNotificationRequest message) {
-            LOG.info("ApplicationServiceReceiveMessageNotificationRequestProcessor");
+            LOG.info("ApplicationServiceReceiveMessageNotificationRequestProcessor, "+session.toString());
             if (callListener!=null) {
                 callListener.incomingAppServiceMessage(messageId, org.fermat.redtooth.profile_server.engine.app_services.AppServiceMsg.wrap(session.getSessionTokenId(),message));
             }else

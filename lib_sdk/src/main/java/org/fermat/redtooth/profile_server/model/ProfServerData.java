@@ -19,6 +19,7 @@ public class ProfServerData {
     private float longitude;
     /** If the profile server is the home server */
     private boolean isHome;
+    private boolean hasContract;
 
     private byte[] protocolVersion = HardCodedConstans.PROTOCOL_VERSION;
     private int appServicePort;
@@ -32,7 +33,7 @@ public class ProfServerData {
         this.isHome = isHome;
     }
 
-    public ProfServerData(byte[] networkId,String host, int pPort, int custPort, int nonCustPort,int appServicePort,boolean isHome) {
+    public ProfServerData(byte[] networkId,String host, int pPort, int custPort, int nonCustPort,int appServicePort,boolean isHome,boolean hasContract) {
         this.networkId = networkId;
         this.host = host;
         this.pPort = pPort;
@@ -40,6 +41,16 @@ public class ProfServerData {
         this.nonCustPort = nonCustPort;
         this.appServicePort = appServicePort;
         this.isHome = isHome;
+        this.hasContract = hasContract;
+    }
+
+    public ProfServerData(byte[] networkId,String host, int pPort, int custPort, int nonCustPort,int appServicePort) {
+        this.networkId = networkId;
+        this.host = host;
+        this.pPort = pPort;
+        this.custPort = custPort;
+        this.nonCustPort = nonCustPort;
+        this.appServicePort = appServicePort;
     }
 
     public ProfServerData(byte[] networkId,String host, int pPort) {
@@ -114,5 +125,9 @@ public class ProfServerData {
 
     public float getLongitude() {
         return longitude;
+    }
+
+    public boolean isRegistered() {
+        return hasContract;
     }
 }

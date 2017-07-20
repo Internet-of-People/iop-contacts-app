@@ -30,12 +30,73 @@
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
     </style>
 
+
+    <style name="Base.Widget.Design.TabLayout" parent="android:Widget">
+        <item name="tabBackground">@drawable/bg_tabs</item>
+        <item name="tabIndicatorColor">#444444</item>
+        <item name="tabIndicatorHeight">2dp</item>
+    </style>
+
     <style name="DrawerArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">
         <item name="color">@color/white</item>
+        <item name="spinBars">true</item>
     </style>
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="MessageText">
+        <item name="android:layout_centerHorizontal">true</item>
+        <item name="android:layout_marginTop">20dp</item>
+        <item name="android:layout_marginBottom">20dp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:gravity">center_vertical|center_horizontal</item>
+    </style>
+
+    <style name="ButtomBlue">
+        <item name="android:layout_gravity">center_horizontal</item>
+        <item name="android:layout_width">@dimen/btn_width</item>
+        <item name="android:layout_height">@dimen/btn_height</item>
+        <item name="android:padding">6dp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:background">@drawable/bg_button_blue</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_marginBottom">50dp</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+
+    <style name="ButtonWhiteBorderBlue" parent="ButtomBlue">
+        <item name="android:padding">6dp</item>
+        <item name="android:textColor">@color/mainBlue</item>
+        <item name="android:background">@drawable/bg_button_blue_border</item>
+    </style>
+
+    <style name="ButtonBlueBorderWhite" parent="ButtomBlue">
+        <item name="android:padding">6dp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:background">@drawable/bg_button_blue</item>
+    </style>
+
+    <style name="ButtomProfile" parent="ButtonWhiteBorderBlue">
+        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:layout_width">220dp</item>
+        <item name="android:layout_height">30dp</item>
+        <item name="android:layout_marginBottom">20dp</item>
+    </style>
+
+    <style name="EditInputs">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">30dp</item>
+        <item name="android:textColor">@color/mainText</item>
+        <item name="android:textColorHint">@color/hintInput</item>
+        <item name="android:background">@drawable/bg_inputs_line</item>
+        <item name="android:gravity">center_vertical|left</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+
 
 </resources>

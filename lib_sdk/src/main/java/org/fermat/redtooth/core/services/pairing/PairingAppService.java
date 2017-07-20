@@ -1,6 +1,8 @@
 package org.fermat.redtooth.core.services.pairing;
 
-import org.fermat.redtooth.core.services.DefaultServices;
+import org.fermat.redtooth.core.IoPConnect;
+import org.fermat.redtooth.services.EnabledServices;
+import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.engine.app_services.MsgWrapper;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
@@ -14,6 +16,8 @@ import org.fermat.redtooth.profiles_manager.ProfilesManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+
 /**
  * Created by furszy on 6/8/17.
  */
@@ -26,30 +30,54 @@ public class PairingAppService extends AppService {
     private PairingListener pairingListener;
     private PairingRequestsManager pairingRequestsManager;
     private ProfilesManager profilesManager;
+    private IoPConnect ioPConnect;
 
-    public PairingAppService(Profile profileServiceOwner,PairingRequestsManager pairingRequestsManager, ProfilesManager profilesManager,PairingListener pairingListener) {
-        super(DefaultServices.PROFILE_PAIRING.getName());
+    private File backupProfileFile;
+    private String backupProfilePassword;
+
+    public PairingAppService(Profile profileServiceOwner,PairingRequestsManager pairingRequestsManager, ProfilesManager profilesManager,PairingListener pairingListener,IoPConnect ioPConnect) {
+        super(EnabledServices.PROFILE_PAIRING.getName());
         this.profilesManager = profilesManager;
         this.profileServiceOwner = profileServiceOwner;
         this.pairingListener = pairingListener;
         this.pairingRequestsManager = pairingRequestsManager;
+        this.ioPConnect = ioPConnect;
     }
 
+    public void setBackupProfile(String backupProfilePath,String backupProfilePassword){
+        this.backupProfileFile = new File(backupProfilePath);
+        this.backupProfilePassword = backupProfilePassword;
+    }
+
+
+    /**
+     * Wrap call in a PairingAppService call.
+     * @param callProfileAppService
+     */
     @Override
-    public void onNewCallReceived(final CallProfileAppService callProfileAppService) {
+    public void onWrapCall(final CallProfileAppService callProfileAppService) {
         if (pairingListener!=null){
             callProfileAppService.setMsgListener(new CallProfileAppService.CallMessagesListener() {
                 @Override
-                public void onMessage(byte[] msg) {
+                public void onMessage(MsgWrapper msg) {
                     try {
                         logger.info("pair msg received");
-                        MsgWrapper msgWrapper = MsgWrapper.decode(msg);
-                        PairingMsgTypes types = PairingMsgTypes.getByName(msgWrapper.getMsgType());
+
+                        PairingMsgTypes types = PairingMsgTypes.getByName(msg.getMsgType());
                         switch (types){
                             case PAIR_ACCEPT:
                                 // update pair request -> todo: this should be in another place..
-                                pairingRequestsManager.updateStatus(profileServiceOwner.getHexPublicKey(),callProfileAppService.getRemotePubKey(),PairingMsgTypes.PAIR_ACCEPT);
-                                profilesManager.updatePaired(profileServiceOwner.getPublicKey(), ProfileInformationImp.PairStatus.PAIRED);
+                                boolean updateStatus = pairingRequestsManager.updateStatus(
+                                        profileServiceOwner.getHexPublicKey(),
+                                        callProfileAppService.getRemotePubKey(),
+                                        PairingMsgTypes.PAIR_ACCEPT,
+                                        ProfileInformationImp.PairStatus.PAIRED);
+                                boolean res = profilesManager.updatePaired(
+                                        callProfileAppService.getLocalProfile().getHexPublicKey(),
+                                        callProfileAppService.getRemotePubKey(),
+                                        ProfileInformationImp.PairStatus.PAIRED
+                                );
+                                logger.info("Pairing accepted, profiles updated "+res+", update status: "+updateStatus);
                                 if (pairingListener!=null){
                                     pairingListener.onPairResponseReceived(callProfileAppService.getRemotePubKey(),"Accepted");
                                 }else {
@@ -57,8 +85,22 @@ public class PairingAppService extends AppService {
                                 }
                                 break;
                             case PAIR_REFUSE:
+                                // check if we already have the contact or already have the request
+                                ProfileInformation profileInformationDb = profilesManager.getProfile(profileServiceOwner.getHexPublicKey(),callProfileAppService.getRemotePubKey());
+                                if (profileInformationDb!=null && profileInformationDb.getPairStatus()!=null){
+                                    // Already known profile, shutdown the call now.
+                                    logger.info("Pairing profile receive from a known profile, disposing the appService call..");
+                                    callProfileAppService.dispose();
+                                    return;
+                                }
+
                                 // update pair request -> todo: this should be in another place..
-                                pairingRequestsManager.updateStatus(profileServiceOwner.getHexPublicKey(),callProfileAppService.getRemotePubKey(),PairingMsgTypes.PAIR_REFUSE);
+                                pairingRequestsManager.updateStatus(
+                                        profileServiceOwner.getHexPublicKey(),
+                                        callProfileAppService.getRemotePubKey(),
+                                        PairingMsgTypes.PAIR_REFUSE,
+                                        ProfileInformationImp.PairStatus.PAIRED
+                                );
                                 if (pairingListener!=null){
                                     pairingListener.onPairResponseReceived(callProfileAppService.getRemotePubKey(),"Refused");
                                 }else {
@@ -66,11 +108,36 @@ public class PairingAppService extends AppService {
                                 }
                                 break;
                             case PAIR_REQUEST:
-                                PairingMsg pairingMsg = (PairingMsg) msgWrapper.getMsg();
+                                PairingMsg pairingMsg = (PairingMsg) msg.getMsg();
                                 // save pair request -> todo: this should be in another place..
-                                PairingRequest pairingRequest = PairingRequest.buildPairingRequest(callProfileAppService.getRemotePubKey(),profileServiceOwner.getHexPublicKey(),profileServiceOwner.getNetworkIdHex(),pairingMsg.getName());
-                                pairingRequestsManager.saveIfNotExistPairingRequest(pairingRequest);
-                                profilesManager.updatePaired(CryptoBytes.fromHexToBytes(pairingRequest.getSenderPubKey()), ProfileInformationImp.PairStatus.WAITING_FOR_MY_RESPONSE);
+                                PairingRequest pairingRequest = PairingRequest.buildPairingRequest(
+                                        callProfileAppService.getRemotePubKey(),
+                                        profileServiceOwner.getHexPublicKey(),
+                                        profileServiceOwner.getNetworkIdHex(),
+                                        pairingMsg.getName(),
+                                        pairingMsg.getSenderHost(),
+                                        profileServiceOwner.getName(),
+                                        ProfileInformationImp.PairStatus.WAITING_FOR_MY_RESPONSE
+                                );
+                                pairingRequest.setRemotePsHome(profileServiceOwner.getHomeHost());
+                                int prId = pairingRequestsManager.saveIfNotExistPairingRequest(pairingRequest);
+
+                                ProfileInformation profileInformation = callProfileAppService.getRemoteProfile();
+                                profileInformation.setName(pairingMsg.getName());
+                                profileInformation.setHomeHost(pairingMsg.getSenderHost());
+                                profileInformation.setPairStatus(ProfileInformationImp.PairStatus.WAITING_FOR_MY_RESPONSE);
+
+                                long profileSaved = profilesManager.saveProfile(
+                                        callProfileAppService.getLocalProfile().getHexPublicKey(),
+                                        profileInformation
+                                );
+
+                                // update backup if there is any
+                                if (ioPConnect.isProfileBackupScheduled(profileServiceOwner.getHexPublicKey())){
+                                    ioPConnect.backupProfile(profileServiceOwner,backupProfileFile,backupProfilePassword);
+                                }
+
+                                logger.info("Pairing request saved with id: "+prId+", profiles saved "+profileSaved);
                                 if (pairingListener!=null){
                                     pairingListener.onPairReceived(callProfileAppService.getRemotePubKey(),pairingMsg.getName());
                                 }else {
@@ -84,5 +151,9 @@ public class PairingAppService extends AppService {
                 }
             });
         }
+    }
+
+    public PairingListener getPairingListener() {
+        return pairingListener;
     }
 }

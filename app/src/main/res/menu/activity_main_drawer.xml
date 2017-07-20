@@ -5,15 +5,15 @@
         <item
             android:id="@+id/nav_contact"
             android:icon="@drawable/ic_contact"
-            android:title="My Wallet" />
+            android:title="Connections" />
         <item
             android:id="@+id/nav_settings"
             android:icon="@drawable/ic_settings"
-            android:title="Address book" />
+            android:title="Settings" />
         <item
             android:id="@+id/nav_qr_code"
             android:icon="@drawable/ic_qr_code_white"
-            android:title="Settings" />
+            android:title="My QR Code" />
     </group>
 
 

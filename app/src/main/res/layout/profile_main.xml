@@ -4,31 +4,47 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/base_background"
+    android:background="@color/white"
     >
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="48dp"
-        android:gravity="center"
-        android:id="@+id/user_image"
-        android:layout_marginBottom="24dp">
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="110dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="50dp"
+        android:id="@+id/user_image">
 
         <de.hdodenhof.circleimageview.CircleImageView
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/profile_image"
-            android:layout_width="148dp"
-            android:layout_height="128dp"
-            android:src="@drawable/profile"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/img_profile_grey"
             app:civ_border_width="1dp"
-            android:layout_marginRight="12dp"
+            app:civ_border_color="#71b6ff"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal = "true"/>
 
-            app:civ_border_color="#71b6ff"/>
+        <ProgressBar
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal = "true"
+            android:visibility="invisible"
+            android:id="@+id/loading_img"/>
+
+        <ImageView
+            android:id="@+id/imgAdd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/img_add_blue"
+            android:background="@android:color/transparent"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"/>
 
 
-    </LinearLayout>
+    </RelativeLayout>
 
 
 
@@ -42,43 +58,60 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_gravity="center_horizontal"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:orientation="vertical"
+            android:gravity="left"
+            android:layout_gravity="left"
             android:paddingTop="5dp"
             android:paddingBottom="12dp">
 
-
-            <EditText
-                android:layout_width="180dp"
-                android:layout_height="wrap_content"
-                android:id="@+id/txt_name"
-                android:ems="10"
-                tools:ignore="HardcodedText"
-                android:textColor="#E6E6E6"
-                android:hint="Username"
-                android:lines="1"
-                android:maxLines="1"
-                android:textColorHint="#E6E6E6"
-                android:foregroundTint="#808080"
-                android:backgroundTint="#fff"
-                android:paddingRight="12dp"
-                android:inputType="textFilter|textNoSuggestions"
-                android:gravity="center"
-                android:textSize="16sp"
-                android:digits="0123456789 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ñÑ _.@"/>
-
-            <LinearLayout
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="12dp"
-                >
+                android:text="@string/username"
+                android:textColor="@color/subtitles"
+                android:textSize="13dp"
+                android:layout_marginBottom="5dp"/>
 
+            <EditText
+                android:id="@+id/txt_name"
+                tools:ignore="HardcodedText"
+                android:hint="@string/username"
+                android:maxLines="1"
+                android:maxEms="16"
+                android:inputType="textFilter|textNoSuggestions"
+                android:digits="0123456789 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ñÑ _.@"
+                android:layout_marginBottom="20dp"
+                style="@style/EditInputs"/>
 
-            </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/location"
+                android:textColor="@color/subtitles"
+                android:textSize="13dp"
+                android:visibility="gone"
+                android:layout_marginBottom="5dp"/>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:visibility="gone"
+                android:layout_height="30dp">
 
+                <TextView
+                    android:id="@+id/text_location"
+                    android:layout_alignParentTop="true"
+                    android:text="@string/show_location"
+                    style="@style/EditInputs"/>
 
+                <Switch
+                    android:id="@+id/show_location"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"/>
+
+            </RelativeLayout>
 
 
         </LinearLayout>
@@ -145,7 +178,6 @@
                 android:textSize="16sp"
                 android:digits="0123456789 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ñÑ ,.,_ @"/>
 
-
         </LinearLayout>
 
 
@@ -153,11 +185,10 @@
     </LinearLayout>
 
     <LinearLayout
+        android:layout_above="@+id/buttonContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="80dp"
         android:layout_marginRight="12dp"
 
         >
@@ -176,22 +207,16 @@
 
 
     <LinearLayout
+        android:id="@+id/buttonContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="28dp"
-
         android:gravity="center">
 
         <Button
             android:id="@+id/btn_create"
-            android:layout_width="180dp"
-            android:layout_height="34dp"
-            android:layout_centerHorizontal="true"
-            android:textColor="#00A99D"
             android:text="Create"
-            android:layout_marginRight="25dp"
-            android:background="#fff"/>
+            style="@style/ButtomBlue"/>
 
     </LinearLayout>
 

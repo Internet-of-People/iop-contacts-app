@@ -2,8 +2,10 @@ package org.fermat.redtooth.profile_server;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
+import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.engine.ProfSerDb;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.ProfServerData;
@@ -46,13 +48,11 @@ public interface ProfileServerConfigurations extends ProfSerDb{
 
     byte[] getUserPubKey();
 
-    byte[] getProfileVersion() ;
+    Version getProfileVersion() ;
 
     boolean isRegisteredInServer();
 
     boolean isIdentityCreated();
-
-    byte[] getProtocolVersion();
 
     void setHost(String host);
 
@@ -81,4 +81,33 @@ public interface ProfileServerConfigurations extends ProfSerDb{
     void setProfileType(String type);
 
     boolean isPairingEnable();
+
+    Profile getProfile();
+
+    byte[] getUserImage();
+
+    void saveMainProfileServer(ProfServerData profServerData);
+
+
+    // service stuff
+
+    long getScheduleServiceTime();
+
+    void saveScheduleServiceTime(long scheduleTime);
+
+    String getBackupProfilePath();
+
+    void saveBackupPatch(String fileName);
+
+    void saveBackupPassword(String password);
+
+    String getBackupPassword();
+
+    boolean isScheduleBackupEnabled();
+
+    void setScheduleBackupEnable(boolean enable);
+
+    boolean getBackgroundServiceEnable();
+
+    void setBackgroundServiceEnable(boolean enable);
 }

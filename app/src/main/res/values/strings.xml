@@ -1,8 +1,7 @@
 <resources>
-    <string name="app_name">ContactsApp</string>
+    <string name="app_name">IoP Contacts</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-
     <string name="scan_camera_problem_dialog_title">Sorry</string>
     <string name="scan_camera_problem_dialog_message">The camera has a problem. You probably need to restart the device.</string>
     <string name="scan_camera_permission_dialog_title">Camera permission</string>
@@ -10,10 +9,66 @@
     <string name="scan_result_title">Scanner result</string>
 
     <!-- start screen -->
+    <string name="location">Location</string>
+    <string name="username">Username</string>
+    <string name="save">Save</string>
     <string name="create_profile">Create Profile</string>
     <string name="restore_profile">Restore Profile</string>
+    <string name="backup_profile">Backup Profile</string>
     <string name="select_file">Select File</string>
     <string name="add_name">Write your name</string>
-    <string name="restore_message">Select a backup of  your account \n from a storage unit</string>
+    <string name="restore_message">Select a backup file of your profile\nfrom your storage</string>
+    <string name="security">Security</string>
+    <string name="send_request">Send Request</string>
+    <string name="request_message">Paste the URI here to add a contact</string>
+    <string name="share_qr_text">Share profile URI</string>
+    <string name="backup_profile_message">Add a password \n to secure your backup</string>
+    <string name="repeat_password">Repeat Password</string>
+    <string name="password">Password</string>
+    <string name="create_backup">Create Backup</string>
+    <string name="edit">Edit</string>
+    <string name="set_backup_message">Set automatic Backups</string>
+    <string name="set_password_message">Select  \n your password</string>
+    <string name="set_folder_message">Select  where \n your back up will be save</string>
+    <string name="active">Active</string>
+    <string name="inactive">Inactive</string>
+    <string name="select_folder">Select Folder</string>
+    <string name="set_password">Set Password</string>
+    <string name="set_folder">Set Folder</string>
+    <string name="profile_system">App services</string>
+    <string name="btn_connected">Connected</string>
+    <string name="btn_disconnected">Disconnected</string>
+    <string name="disconnect_message">Do you really want to \n disconnect from</string>
+    <string name="reload_message">Connection lost, trying to reconnect</string>
+    <string name="settings_dev">Development</string>
+    <string name="chat_status">Chat</string>
+    <string name="pairing_status">Pairing</string>
+    <string name="show_location">Show location</string>
+    <string name="copyright">Made by Furszy\n IoP Ventures LLC</string>
+    <string name="version">Version</string>
+    <string name="send">Send</string>
+    <string name="empty_contact">You do not have any contacts yet.</string>
+    <string name="empty_request">You have no pending contact requests.</string>
+    <string name="incoming_message">Wants to chat \n with you</string>
+    <string name="lorem_impsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
+    <string name="pairing_success">Pairing request sent!</string>
+    <string name="pairing_fail">Pairing request failed</string>
+    <string name="pairing_yourself">You cannot add yourself as contact</string>
+    <string name="backup_completed_message">Backup completed, check your download\'s folder</string>
+    <string name="restore_completed_message">You have restored your profile succesfully</string>
+    <string name="background_service_enabled">BACKGROUND SERVICE</string>
+    <string name="report_issue_dialog_description">Issue description</string>
+    <string name="report_issue_dialog_collect_device_info">Append device information</string>
+    <string name="report_issue_dialog_collect_application_log">Append application log</string>
+    <string name="report_issue_dialog_collect_wallet_dump">Append wallet dump</string>
+    <string name="report_issue_dialog_collect_installed_packages">Append list of installed packages</string>
+    <string name="report_issue_dialog_collect_db_data">Append databases data</string>
+    <string name="report_issue_dialog_report">Report</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="report_issue_dialog_mail_intent_chooser">Send report using…</string>
+    <string name="report_issue_dialog_mail_intent_failed">Sending report failed.</string>
+    <string name="report_issuea_dialog_title">Report issue</string>
+    <string name="report_issue_dialog_message_issue">Please describe your issue precisely enough to be reproduced.</string>
+    <string name="report_issue">Report issue</string>
 
 </resources>

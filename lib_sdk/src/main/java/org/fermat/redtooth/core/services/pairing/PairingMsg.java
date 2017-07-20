@@ -12,16 +12,22 @@ import java.io.Serializable;
 public class PairingMsg extends BaseMsg<PairingMsg> {
 
     private String name;
+    private String senderHost;
 
     public PairingMsg() {
     }
 
-    public PairingMsg(String name) {
+    public PairingMsg(String name,String senderHost) {
         this.name = name;
+        this.senderHost = senderHost;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getSenderHost() {
+        return senderHost;
     }
 
     @Override
@@ -39,4 +45,6 @@ public class PairingMsg extends BaseMsg<PairingMsg> {
     public String getType() {
         return PairingMsgTypes.PAIR_REQUEST.getType();
     }
+
+
 }

@@ -31,5 +31,12 @@ public class Preconditions {
         if (obj<lessThanNumber) throw new IllegalArgumentException(exceptionMessage);
     }
 
+    public static void compareArrayLengh(char[] chars,int lenght,String exceptionMessage){
+        if (chars.length!=lenght) throw new IllegalArgumentException(exceptionMessage);
+    }
+
+    public static void compareArrayLengh(byte[] bytes,int lenght,String exceptionMessage){
+        if (bytes.length>lenght) throw new IllegalArgumentException(exceptionMessage);
+    }
 
 }

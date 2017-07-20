@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
  * Esta clase basicamente se encarga de controlar la conexión con un profile server en especifico.
  * Abriendo,cerrando y/o manteniendo los sockets
  *
+ * todo: Add idle channel agent.
  */
 
 public class ProfSerConnectionManager {
@@ -82,6 +83,12 @@ public class ProfSerConnectionManager {
             isActive = syncAddServer(portType,port,null);
         }else {
             isActive = serverSockets.get(portType).isActive();
+            if (!isActive){
+                // remove references and notify upper layer about it
+                serverSockets.remove(portType);
+                // todo: Improve this.
+                throw new IllegalStateException("Connection not available with port: "+portType);
+            }
         }
         return isActive;
     }
@@ -92,6 +99,12 @@ public class ProfSerConnectionManager {
             isActive = syncAddServer(IopProfileServer.ServerRoleType.CL_APP_SERVICE,port,tokenHex);
         }else {
             isActive = appServicesSockets.get(tokenHex).isActive();
+            if (!isActive){
+                // remove references and notify upper layer about it
+                appServicesSockets.remove(tokenHex);
+                // todo: Improve this.
+                throw new AppServiceCallNotAvailableException("Connection not longer available with appService with token: "+tokenHex);
+            }
         }
         return isActive;
     }
@@ -138,6 +151,7 @@ public class ProfSerConnectionManager {
             try {
                 isActive = future.get(connectionTimeout, TimeUnit.SECONDS);
             }catch (TimeoutException exception){
+                logger.info("connection timeout on port: "+port);
                 throw new CantConnectException("Timeout exception, host "+host+":"+port+", type: "+portType,exception);
             }
             executorService.shutdownNow();
@@ -220,9 +234,25 @@ public class ProfSerConnectionManager {
         this.serverSockets.remove(portType).closeNow();
     }
 
+    public void close(String callToken) throws IOException {
+        this.appServicesSockets.remove(callToken).closeNow();
+    }
+
     public void shutdown() throws IOException {
         for (ProfileServerSocket profileServerSocket : this.serverSockets.values()) {
-            profileServerSocket.closeNow();
+            try {
+                profileServerSocket.closeNow();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        for (Map.Entry<String, ProfileServerSocket> stringProfileServerSocketEntry : appServicesSockets.entrySet()) {
+            try {
+                stringProfileServerSocketEntry.getValue().closeNow();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
+
 }

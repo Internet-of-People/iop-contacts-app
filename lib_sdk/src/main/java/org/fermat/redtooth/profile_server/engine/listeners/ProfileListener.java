@@ -11,4 +11,6 @@ public interface ProfileListener {
     void onConnect(Profile profile);
 
     void onDisconnect(Profile profile);
+
+    void onCheckInFail(Profile profile, int status, String statusDetail);
 }

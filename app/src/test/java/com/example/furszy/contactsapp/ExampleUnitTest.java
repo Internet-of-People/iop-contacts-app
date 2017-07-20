@@ -1,4 +1,4 @@
-package com.example.furszy.contactsapp;
+package org.furszy.contacts;
 
 import org.junit.Test;
 

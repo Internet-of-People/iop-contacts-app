@@ -126,17 +126,28 @@ public class ProfSerImp implements ProfileServer {
      * @return
      */
     @Override
-    public ProfSerRequest updateProfileRequest(Signer signer,byte[] profilePublicKey,String profType, byte[] version, String name, byte[] img, int latitude, int longitude, String extraData) {
-        final IopProfileServer.Message message = MessageFactory.buildUpdateProfileRequest(signer,profilePublicKey,profType,version,name,img,latitude,longitude,extraData);
+    public ProfSerRequest updateProfileRequest(Signer signer,byte[] profilePublicKey,String profType, byte[] version, String name, byte[] img, byte[] imgHash, int latitude, int longitude, String extraData) {
+        final IopProfileServer.Message message = MessageFactory.buildUpdateProfileRequest(
+                signer,
+                profilePublicKey,
+                profType,
+                version,
+                name,
+                img,
+                imgHash,
+                latitude,
+                longitude,
+                extraData
+        );
         return buildRequestToCustomerPort(message);
     }
 
-    @Override
+    /*@Override
     public ProfSerRequest updateExtraData(Signer signer,byte[] profilePublicKey,String profType,String extraData) throws CantConnectException,CantSendMessageException{
         logger.info("UpdateExtraData, extra data: "+extraData);
         IopProfileServer.Message message = MessageFactory.buildUpdateProfileRequest(signer,profilePublicKey,profType,null,null,null,0,0,extraData);
         return buildRequestToCustomerPort(message);
-    }
+    }*/
 
     @Override
     public ProfSerRequest storeCanDataRequest(CanStoreMap canStoreMap) {
@@ -178,8 +189,8 @@ public class ProfSerImp implements ProfileServer {
     }
 
     @Override
-    public ProfSerRequest addApplcationService(String applicationService) throws CantConnectException, CantSendMessageException {
-        logger.info("addApplcationService");
+    public ProfSerRequest addApplicationService(String applicationService) throws CantConnectException, CantSendMessageException {
+        logger.info("addApplicationService");
         IopProfileServer.Message message = MessageFactory.buildApplicationServiceAddRequest(applicationService);
         return buildRequestToCustomerPort(message);
     }
@@ -251,13 +262,18 @@ public class ProfSerImp implements ProfileServer {
     }
 
     @Override
-    public void addHandler(PsSocketHandler hanlder) {
-        profSerConnectionManager.setHandler(hanlder);
+    public void addHandler(PsSocketHandler handler) {
+        profSerConnectionManager.setHandler(handler);
     }
 
     @Override
     public void closePort(IopProfileServer.ServerRoleType portType) throws IOException {
         profSerConnectionManager.close(portType);
+    }
+
+    @Override
+    public void closeCallChannel(String callToken) throws IOException {
+        profSerConnectionManager.close(callToken);
     }
 
     @Override

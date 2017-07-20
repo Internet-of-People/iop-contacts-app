@@ -1,0 +1,115 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:gravity="center_horizontal">
+
+
+    <LinearLayout
+        android:id="@+id/layoutAvatar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:layout_marginTop="50dp"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/img_profile_image"
+            android:background="@drawable/bg_circle_blue"
+            android:padding="4dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginBottom="20dp"
+            android:src="@drawable/img_profile"
+            app:civ_border_color="#71b6ff"
+            app:civ_border_width="1dp" />
+
+        <TextView
+            android:id="@+id/myName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="My Name"
+            android:textColor="@color/mainText"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/myLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/ic_location"
+            android:textColor="@color/subtitles"
+            android:drawablePadding="2dp"
+            android:text="My Location"
+            android:textSize="14sp"/>
+
+        <Button
+            android:id="@+id/btnConnectStatus"
+            style="@style/ButtomProfile"
+            android:layout_width="220dp"
+            android:text="@string/btn_connected" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="50dp"
+        android:gravity="center"
+        android:layout_below="@+id/layoutAvatar"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:paddingStart="16dp"
+            android:paddingLeft="16dp"
+            android:textAllCaps="true"
+            android:gravity="center_vertical"
+            android:background="#F0F0F0"
+            android:text="@string/profile_system"/>
+
+        <TextView
+            android:id="@+id/pairingStatus"
+            android:background="@drawable/settings_items"
+            android:padding="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:height="40dp"
+            android:drawableRight="@drawable/ic_link_active"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:textColor="@color/bgBlue"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:text="@string/pairing_status"/>
+
+        <TextView
+            android:id="@+id/chatStatus"
+            android:background="@drawable/settings_items"
+            android:padding="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:height="40dp"
+            android:drawableRight="@drawable/ic_chat_disable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:textColor="#C8C8C8"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:text="@string/chat_status"/>
+
+    </LinearLayout>
+
+</RelativeLayout>

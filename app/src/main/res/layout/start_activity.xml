@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:background="@color/bgBlue">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/logoView"
+        android:src="@drawable/img_login_logo"
+        android:layout_marginTop="120dp"
+        android:layout_alignParentTop = "true"
+        android:layout_centerHorizontal = "true" />
+
+    <LinearLayout
+        android:layout_weight="1"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <Button
+            android:id="@+id/btnCreate"
+            android:text="@string/create_profile"
+            android:onClick="tryCreate"
+            style="@style/ButtonWhiteBorderBlue"
+            android:layout_marginBottom="26dp"/>
+
+        <Button
+            android:text="@string/restore_profile"
+            android:id="@+id/btnRestore"
+            android:onClick="tryRestore"
+            style="@style/ButtonBlueBorderWhite"/>
+    </LinearLayout>
+
+
+</RelativeLayout>

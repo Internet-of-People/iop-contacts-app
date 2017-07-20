@@ -5,7 +5,10 @@ import com.google.protobuf.ByteString;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.bitcoinj.core.Sha256Hash;
 import org.fermat.redtooth.profile_server.Signer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -14,6 +17,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Created by mati on 20/09/16.
  */
 public class MessageFactory {
+
+    private static final Logger log = LoggerFactory.getLogger(MessageFactory.class);
 
     private static AtomicInteger messageIdGenerator = new AtomicInteger(0);
 
@@ -151,7 +156,7 @@ public class MessageFactory {
         return buildMessage(checkInRequest,signature);
     }
 
-    public static IopProfileServer.Message buildUpdateProfileRequest(Signer signer,byte[] profilePk,String profType, byte[] version, String name, byte[] img, int latitude, int longitude, String extraData) {
+    public static IopProfileServer.Message buildUpdateProfileRequest(Signer signer,byte[] profilePk,String profType, byte[] version, String name, byte[] img,byte[] imgHash ,int latitude, int longitude, String extraData) {
 
         if (signer==null) throw new IllegalArgumentException("signer cannot be null");
         if (profilePk==null) throw new IllegalArgumentException("profilePk cannot be null");
@@ -165,7 +170,7 @@ public class MessageFactory {
         profileInformation.setPublicKey(ByteString.copyFrom(profilePk));
         profileInformation.setType(profType);
 
-        if (version!=null && version.length>0){
+        if (version.length==3){
             profileInformation.setVersion(ByteString.copyFrom(version));
         }
 
@@ -174,7 +179,16 @@ public class MessageFactory {
         }
 
         if (img!=null && img.length>0){
-            updateProfileRequest.setProfileImage(ByteString.copyFrom(img));
+            if (img.length>20480) { //throw new IllegalArgumentException("image is greater than the max size permitted 20480 bytes, lengh: "+img.length);
+                log.error("profile image greater than 20480, PS is not accepting more than that");
+            }else {
+                updateProfileRequest.setProfileImage(ByteString.copyFrom(img));
+                if (imgHash == null) { //throw new IllegalArgumentException("Null imgHash, field needed to update the profile image");
+                    log.error("imgHash null.. correct me!");
+                    imgHash = Sha256Hash.hash(img);
+                }
+                profileInformation.setProfileImageHash(ByteString.copyFrom(imgHash));
+            }
         }
 
 
@@ -208,6 +222,7 @@ public class MessageFactory {
         if (extraData!=null && !extraData.equals("")){
             profileInformation.setExtraData(extraData);
         }
+
         updateProfileRequest.setProfile(profileInformation);
         byte[] signature = signer.sign(profileInformation.build().toByteArray());
         IopProfileServer.UpdateProfileRequest request = updateProfileRequest.build();
