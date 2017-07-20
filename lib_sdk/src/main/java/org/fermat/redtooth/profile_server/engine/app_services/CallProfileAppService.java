@@ -250,18 +250,21 @@ public class CallProfileAppService {
                 @Override
                 public void onAction(int messageId, IopProfileServer.ApplicationServiceSendMessageResponse object) {
                     logger.info("App service message sent!");
-                    sendListener.onMessageReceive(messageId, true);
+                    if (sendListener!=null)
+                        sendListener.onMessageReceive(messageId, true);
                 }
 
                 @Override
                 public void onFail(int messageId, int status, String statusDetail) {
                     logger.info("App service message fail");
-                    sendListener.onMsgFail(messageId, status, statusDetail);
+                    if (sendListener!=null)
+                        sendListener.onMsgFail(messageId, status, statusDetail);
                 }
             });
             profSerEngine.sendAppServiceMsg(callToken, msg, msgListenerFuture);
         }catch (AppServiceCallNotAvailableException e){
             // intercept exception to destroy this call.
+            sendListener.onMsgFail(0,400,"Call is not longer available");
             localProfile.getAppService(appService).removeCall(this,"Connection is not longer available");
             throw e;
         }

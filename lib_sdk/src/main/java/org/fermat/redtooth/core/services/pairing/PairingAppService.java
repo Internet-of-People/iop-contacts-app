@@ -127,21 +127,34 @@ public class PairingAppService extends AppService {
                                 profileInformation.setHomeHost(pairingMsg.getSenderHost());
                                 profileInformation.setPairStatus(ProfileInformationImp.PairStatus.WAITING_FOR_MY_RESPONSE);
 
-                                long profileSaved = profilesManager.saveProfile(
+                                ProfileInformation dbProfile = profilesManager.getProfile(
                                         callProfileAppService.getLocalProfile().getHexPublicKey(),
-                                        profileInformation
+                                        profileInformation.getHexPublicKey()
                                 );
-
-                                // update backup if there is any
-                                if (ioPConnect.isProfileBackupScheduled(profileServiceOwner.getHexPublicKey())){
-                                    ioPConnect.backupProfile(profileServiceOwner,backupProfileFile,backupProfilePassword);
-                                }
-
-                                logger.info("Pairing request saved with id: "+prId+", profiles saved "+profileSaved);
-                                if (pairingListener!=null){
-                                    pairingListener.onPairReceived(callProfileAppService.getRemotePubKey(),pairingMsg.getName());
+                                if (dbProfile!=null){
+                                    logger.info("Profile already exist.., checking if the local profile accept this person..");
+                                    // if the profile is already a connection or if i'm waiting for his approvance
+                                    if(dbProfile.getPairStatus() == ProfileInformationImp.PairStatus.PAIRED || dbProfile.getPairStatus() == ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE){
+                                        // answer with an ok paired!
+                                        callProfileAppService.sendMsg(PairingMsgTypes.PAIR_ACCEPT.getType(), null); // no need of a future here..
+                                    }
                                 }else {
-                                    logger.info("pairListener null, please add it if you want to receive pairs");
+                                    long profileSaved = profilesManager.saveProfile(
+                                            callProfileAppService.getLocalProfile().getHexPublicKey(),
+                                            profileInformation
+                                    );
+
+                                    // update backup if there is any
+                                    if (ioPConnect.isProfileBackupScheduled(profileServiceOwner.getHexPublicKey())) {
+                                        ioPConnect.backupProfile(profileServiceOwner, backupProfileFile, backupProfilePassword);
+                                    }
+
+                                    logger.info("Pairing request saved with id: " + prId + ", profiles saved " + profileSaved);
+                                    if (pairingListener != null) {
+                                        pairingListener.onPairReceived(callProfileAppService.getRemotePubKey(), pairingMsg.getName());
+                                    } else {
+                                        logger.info("pairListener null, please add it if you want to receive pairs");
+                                    }
                                 }
                                 break;
                         }
