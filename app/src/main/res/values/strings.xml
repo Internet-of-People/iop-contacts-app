@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">IoP Contacts</string>
+    <string name="app_name">IoP Contacts Beta</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="scan_camera_problem_dialog_title">Sorry</string>
