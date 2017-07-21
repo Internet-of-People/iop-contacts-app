@@ -11,6 +11,7 @@ import org.fermat.redtooth.services.chat.msg.ChatMsgTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -61,6 +62,13 @@ public class ChatAppService extends AppService{
     public void onCallConnected(Profile localProfile, ProfileInformation remoteProfile,boolean isLocalCreator) {
         for (ChatMsgListener listener : listeners) {
             listener.onChatConnected(localProfile,remoteProfile.getHexPublicKey(),isLocalCreator);
+        }
+    }
+
+    @Override
+    public void onCallDisconnected(Profile localProfile, ProfileInformation remoteProfile, String reason) {
+        for (ChatMsgListener listener : listeners) {
+            listener.onChatDisconnected(remoteProfile.getHexPublicKey(),reason);
         }
     }
 }

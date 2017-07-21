@@ -27,6 +27,8 @@ import java.util.concurrent.Executors;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED;
+import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;
 import static org.furszy.contacts.App.INTENT_CHAT_REFUSED_BROADCAST;
 
 /**
@@ -60,6 +62,13 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
             }else if(action.equals(INTENT_CHAT_REFUSED_BROADCAST)){
                 Toast.makeText(WaitingChatActivity.this,"Chat refused.",Toast.LENGTH_LONG).show();
                 onBackPressed();
+            }else if (action.equals(ACTION_ON_CHAT_DISCONNECTED)){
+                String remotePubKey = intent.getStringExtra(REMOTE_PROFILE_PUB_KEY);
+                String reason = intent.getStringExtra(EXTRA_INTENT_DETAIL);
+                if (remotePk.equals(remotePubKey)){
+                    Toast.makeText(WaitingChatActivity.this,"Chat disconnected",Toast.LENGTH_LONG).show();
+                    onBackPressed();
+                }
             }
         }
     };
@@ -90,6 +99,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
         super.onResume();
         localBroadcastManager.registerReceiver(chatReceiver,new IntentFilter(App.INTENT_CHAT_ACCEPTED_BROADCAST));
         localBroadcastManager.registerReceiver(chatReceiver,new IntentFilter(App.INTENT_CHAT_REFUSED_BROADCAST));
+        localBroadcastManager.registerReceiver(chatReceiver,new IntentFilter(ACTION_ON_CHAT_DISCONNECTED));
         if (executors==null)
             executors = Executors.newSingleThreadExecutor();
         executors.submit(new Runnable() {

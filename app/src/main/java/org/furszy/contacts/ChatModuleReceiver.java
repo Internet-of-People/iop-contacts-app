@@ -21,6 +21,7 @@ import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsC
 import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED;
 import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.ACTION_ON_CHAT_MSG_RECEIVED;
 import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_CHAT_MSG;
+import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;
 import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_IS_LOCAL_CREATOR;
 import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_LOCAL_PROFILE;
 import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_REMOTE_PROFILE;
@@ -28,6 +29,7 @@ import static org.furszy.contacts.App.INTENT_CHAT_ACCEPTED_BROADCAST;
 import static org.furszy.contacts.App.INTENT_CHAT_REFUSED_BROADCAST;
 import static org.furszy.contacts.App.INTENT_CHAT_TEXT_BROADCAST;
 import static org.furszy.contacts.App.INTENT_CHAT_TEXT_RECEIVED;
+import static org.furszy.contacts.ui.chat.WaitingChatActivity.REMOTE_PROFILE_PUB_KEY;
 
 /**
  * Created by furszy on 7/20/17.
@@ -51,7 +53,8 @@ public class ChatModuleReceiver extends BroadcastReceiver{
             onChatConnected(localPk,remotePk,isLocalCreator);
         }else if (action.equals(ACTION_ON_CHAT_DISCONNECTED)){
             String remotePk = intent.getStringExtra(EXTRA_INTENT_REMOTE_PROFILE);
-            onChatDisconnected(remotePk);
+            String reason = intent.getStringExtra(EXTRA_INTENT_DETAIL);
+            onChatDisconnected(remotePk,reason);
         }else if (action.equals(ACTION_ON_CHAT_MSG_RECEIVED)){
             String remotePk = intent.getStringExtra(EXTRA_INTENT_REMOTE_PROFILE);
             BaseMsg baseMsg = (BaseMsg) intent.getSerializableExtra(EXTRA_INTENT_CHAT_MSG);
@@ -66,7 +69,7 @@ public class ChatModuleReceiver extends BroadcastReceiver{
         if (remoteProflie != null) {
             // todo: negro acá abrí la vista de incoming para aceptar el request..
             Intent intent = new Intent(app, WaitingChatActivity.class);
-            intent.putExtra(WaitingChatActivity.REMOTE_PROFILE_PUB_KEY, remoteProfilePubKey);
+            intent.putExtra(REMOTE_PROFILE_PUB_KEY, remoteProfilePubKey);
             intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
             if (isLocalCreator) {
                 intent.putExtra(WaitingChatActivity.IS_CALLING, false);
@@ -89,15 +92,20 @@ public class ChatModuleReceiver extends BroadcastReceiver{
         }
     }
 
-    public void onChatDisconnected(String remotePubKey) {
-        log.info("on chat disconnected: " + remotePubKey);
+    public void onChatDisconnected(String remotePk, String reason) {
+        log.info("on chat disconnected: " + remotePk);
+        App app = App.getInstance();
+        Intent intent = new Intent();
+        intent.putExtra(REMOTE_PROFILE_PUB_KEY,remotePk);
+        intent.putExtra(EXTRA_INTENT_DETAIL,reason);
+        app.getBroadcastManager().sendBroadcast(intent);
     }
 
     public void onMsgReceived(String remotePubKey, BaseMsg msg) {
         log.info("on chat msg received: " + remotePubKey);
         App app = App.getInstance();
         Intent intent = new Intent();
-        intent.putExtra(WaitingChatActivity.REMOTE_PROFILE_PUB_KEY, remotePubKey);
+        intent.putExtra(REMOTE_PROFILE_PUB_KEY, remotePubKey);
         switch (ChatMsgTypes.valueOf(msg.getType())) {
             case CHAT_ACCEPTED:
                 intent.setAction(INTENT_CHAT_ACCEPTED_BROADCAST);

@@ -54,7 +54,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -65,6 +67,9 @@ import java.util.concurrent.TimeUnit;
 public class IoPConnect implements ConnectionListener {
 
     private final Logger logger = LoggerFactory.getLogger(IoPConnect.class);
+
+    /** Reconnect time in seconds */
+    private static final long RECONNECT_TIME = 15;
 
     /** Map of local device profiles pubKey connected to the home PS, profile public key -> host PS manager*/
     private ConcurrentMap<String,IoPProfileConnection> managers;
@@ -142,7 +147,7 @@ public class IoPConnect implements ConnectionListener {
     }
 
     @Override
-    public void onConnectionLoose(final Profile localProfile, String psHost, IopProfileServer.ServerRoleType portType, String tokenId) {
+    public void onConnectionLoose(final Profile localProfile, final String psHost, final IopProfileServer.ServerRoleType portType, final String tokenId) {
         if (managers.containsKey(localProfile.getHexPublicKey())){
             // The connection is one of the connections to the Home server
             // Let's check now if this is the main connection
@@ -171,8 +176,20 @@ public class IoPConnect implements ConnectionListener {
                         public void onFail(int messageId, int status, String statusDetail) {
                             logger.info("Main home host reconnected fail");
                             //todo: try to connect again.
-                            if (engineListener!=null)
+                            if (engineListener!=null) {
                                 engineListener.onDisconnect(localProfile.getHexPublicKey());
+                                // try to reconnect
+                                ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+                                executor.schedule(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        onConnectionLoose(localProfile,psHost,portType,tokenId);
+                                    }
+                                },RECONNECT_TIME,TimeUnit.SECONDS);
+                                executor.shutdown();
+                            }else {
+                                logger.warn("reconnection fail and the engine listener is null.. please check this..");
+                            }
                         }
                     });
                 try {

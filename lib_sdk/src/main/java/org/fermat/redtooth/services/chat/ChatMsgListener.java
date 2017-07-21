@@ -13,7 +13,7 @@ public interface ChatMsgListener extends AppServiceListener {
 
     void onChatConnected(Profile localProfile, String remoteProfilePubKey,boolean isLocalCreator);
 
-    void onChatDisconnected(String remotePubKey);
+    void onChatDisconnected(String remotePubKey,String reason);
 
     void onMsgReceived(String remotePubKey,BaseMsg msg);
 

@@ -30,6 +30,8 @@ import java.util.concurrent.Executors;
 
 import iop.org.iop_sdk_android.core.service.exceptions.ChatCallClosedException;
 
+import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED;
+import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;
 import static org.furszy.contacts.App.INTENT_CHAT_REFUSED_BROADCAST;
 import static org.furszy.contacts.ui.chat.WaitingChatActivity.REMOTE_PROFILE_PUB_KEY;
 
@@ -43,6 +45,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
     private Button btn_send;
     private EditText edit_msg;
 
+    private String remotePk;
     private ProfileInformation remoteProfile;
     private MessagesFragment messagesFragment;
     private ExecutorService executor;
@@ -54,6 +57,13 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
             if(action.equals(INTENT_CHAT_REFUSED_BROADCAST)){
                 Toast.makeText(ChatActivity.this,"Chat closed",Toast.LENGTH_LONG).show();
                 onBackPressed();
+            }else if (action.equals(ACTION_ON_CHAT_DISCONNECTED)){
+                String remotePubKey = intent.getStringExtra(REMOTE_PROFILE_PUB_KEY);
+                String reason = intent.getStringExtra(EXTRA_INTENT_DETAIL);
+                if (remotePk.equals(remotePubKey)){
+                    Toast.makeText(ChatActivity.this,"Chat disconnected",Toast.LENGTH_LONG).show();
+                    onBackPressed();
+                }
             }
         }
     };
@@ -73,7 +83,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.setStatusBarColor(Color.parseColor("#21619C"));
         }
-        String remotePk = getIntent().getStringExtra(REMOTE_PROFILE_PUB_KEY);
+        remotePk = getIntent().getStringExtra(REMOTE_PROFILE_PUB_KEY);
         remoteProfile = anRedtooth.getKnownProfile(remotePk);
         messagesFragment = (MessagesFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_messages);
 
@@ -81,6 +91,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         app.cancelChatNotifications();
 
         localBroadcastManager.registerReceiver(chatReceiver,new IntentFilter(INTENT_CHAT_REFUSED_BROADCAST));
+        localBroadcastManager.registerReceiver(chatReceiver,new IntentFilter(ACTION_ON_CHAT_DISCONNECTED));
     }
 
     @Override
