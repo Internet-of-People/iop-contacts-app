@@ -37,6 +37,7 @@ import iop.org.iop_sdk_android.core.service.modules.AbstractModule;
 import iop.org.iop_sdk_android.core.service.modules.interfaces.ChatModule;
 
 import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_CHAT_MSG;
+import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;
 import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_IS_LOCAL_CREATOR;
 import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_LOCAL_PROFILE;
 import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_REMOTE_PROFILE;
@@ -74,9 +75,7 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
                         call.ping();
                         // throw exception
                         throw new ChatCallAlreadyOpenException("Chat call with: "+remoteProfileInformation.getName()+", already open");
-                    } catch (CantConnectException e) {
-                        e.printStackTrace();
-                    } catch (CantSendMessageException e) {
+                    } catch (CantConnectException | CantSendMessageException e) {
                         e.printStackTrace();
                     }
                     call.dispose();
@@ -206,10 +205,11 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
     }
 
     @Override
-    public void onChatDisconnected(String remotePubKey) {
+    public void onChatDisconnected(String remotePubKey,String reason) {
         Intent intent = new Intent();
         intent.setAction(ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED);
         intent.putExtra(EXTRA_INTENT_REMOTE_PROFILE,remotePubKey);
+        intent.putExtra(EXTRA_INTENT_DETAIL,reason);
         getContext().sendBroadcast(intent);
     }
 

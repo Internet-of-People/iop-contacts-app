@@ -14,5 +14,6 @@ public class ChatIntentsConstants {
     public static final String EXTRA_INTENT_REMOTE_PROFILE = "rem_profile";
     public static final String EXTRA_INTENT_IS_LOCAL_CREATOR = "is_loc_creator";
     public static final String EXTRA_INTENT_CHAT_MSG = "chat_msg";
+    public static final String EXTRA_INTENT_DETAIL = "detail";
 
 }
