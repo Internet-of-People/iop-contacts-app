@@ -33,6 +33,8 @@ public interface ProfileServer {
 
     ProfSerRequest ping(IopProfileServer.ServerRoleType portType) throws Exception;
 
+    ProfSerRequest ping(IopProfileServer.ServerRoleType portType, String token) throws CantConnectException,CantSendMessageException;
+
     ProfSerRequest listRolesRequest() throws Exception;
 
     ProfSerRequest registerHostRequest(Signer signer,byte[] identityPk, String identityType) throws Exception;

@@ -58,7 +58,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
                 startActivity(intent1);
                 finish();
             }else if(action.equals(INTENT_CHAT_REFUSED_BROADCAST)){
-                Toast.makeText(WaitingChatActivity.this,"Call not connected",Toast.LENGTH_LONG).show();
+                Toast.makeText(WaitingChatActivity.this,"Chat refused.",Toast.LENGTH_LONG).show();
                 onBackPressed();
             }
         }
@@ -90,6 +90,36 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
         super.onResume();
         localBroadcastManager.registerReceiver(chatReceiver,new IntentFilter(App.INTENT_CHAT_ACCEPTED_BROADCAST));
         localBroadcastManager.registerReceiver(chatReceiver,new IntentFilter(App.INTENT_CHAT_REFUSED_BROADCAST));
+        if (executors==null)
+            executors = Executors.newSingleThreadExecutor();
+        executors.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (!anRedtooth.isChatActive(remotePk)) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(WaitingChatActivity.this, "Chat not active anymore", Toast.LENGTH_LONG).show();
+                                onBackPressed();
+                            }
+                        });
+
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(WaitingChatActivity.this, "Chat not active anymore", Toast.LENGTH_LONG).show();
+                            onBackPressed();
+                        }
+                    });
+
+                }
+            }
+        });
+
         profileInformation = anRedtooth.getKnownProfile(remotePk);
         txt_name.setText(profileInformation.getName());
         if (profileInformation.getImg()!=null){
@@ -137,8 +167,6 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
     }
 
     private void acceptChatRequest() {
-        if (executors==null)
-            executors = Executors.newSingleThreadExecutor();
         executors.submit(new Runnable() {
             @Override
             public void run() {
@@ -151,15 +179,10 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Intent intent = new Intent(WaitingChatActivity.this, ChatActivity.class);
-                                            intent.putExtra(REMOTE_PROFILE_PUB_KEY, profileInformation.getHexPublicKey());
-                                            startActivity(intent);
-                                            finish();
-                                        }
-                                    });
+                                    Intent intent = new Intent(WaitingChatActivity.this, ChatActivity.class);
+                                    intent.putExtra(REMOTE_PROFILE_PUB_KEY, profileInformation.getHexPublicKey());
+                                    startActivity(intent);
+                                    finish();
                                 }
                             });
                         }
@@ -170,7 +193,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
                                 @Override
                                 public void run() {
                                     Toast.makeText(WaitingChatActivity.this, "Chat connection fail\n" + statusDetail, Toast.LENGTH_LONG).show();
-                                    progressBar.setVisibility(View.GONE);
+                                    onBackPressed();
                                 }
                             });
                         }
@@ -192,6 +215,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
                         @Override
                         public void run() {
                             Toast.makeText(WaitingChatActivity.this,"Chat connection fail\n"+e.getMessage(),Toast.LENGTH_LONG).show();
+                            onBackPressed();
                         }
                     });
                 }

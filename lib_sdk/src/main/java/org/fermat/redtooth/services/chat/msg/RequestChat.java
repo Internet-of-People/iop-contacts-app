@@ -1,4 +1,4 @@
-package org.fermat.redtooth.services.chat;
+package org.fermat.redtooth.services.chat.msg;
 
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.model.Profile;

@@ -6,18 +6,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.fermat.redtooth.core.services.AppServiceListener;
 import org.fermat.redtooth.profile_server.engine.SearchProfilesQuery;
 import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
 import org.fermat.redtooth.profile_server.engine.futures.SubsequentSearchMsgListenerFuture;
-import org.fermat.redtooth.profile_server.engine.app_services.PairingListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
-import org.fermat.redtooth.profile_server.engine.listeners.ProfileListener;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
 import org.fermat.redtooth.services.chat.ChatCallAlreadyOpenException;
-import org.fermat.redtooth.services.chat.ChatMsg;
 import org.fermat.redtooth.services.chat.RequestChatException;
 
 /**
@@ -65,11 +61,13 @@ public interface ModuleRedtooth {
 
     void requestChat(ProfileInformation remoteProfileInformation, ProfSerMsgListener<Boolean> readyListener, TimeUnit timeUnit, long time) throws RequestChatException, ChatCallAlreadyOpenException;
 
-    void refuseChatRequest(String remoteHexPublicKey);
+    void refuseChatRequest(String remoteHexPublicKey) throws Exception;
 
     void acceptChatRequest(String remoteHexPublicKey, ProfSerMsgListener<Boolean> future) throws Exception;
 
     void sendMsgToChat(ProfileInformation remoteProfileInformation, String msg, ProfSerMsgListener<Boolean> msgListener) throws Exception;
+
+    boolean isChatActive(String remotePk);
 
     boolean isIdentityCreated();
 
@@ -121,4 +119,5 @@ public interface ModuleRedtooth {
     Collection<ProfileInformation> listAllProfileInformation();
 
     boolean isProfileConnectedOrConnecting();
+
 }

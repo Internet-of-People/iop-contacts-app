@@ -61,7 +61,7 @@ public class ContactsFragment extends RecyclerFragment<ProfileInformation> {
             while (module == null) {
                 module = App.getInstance().getAnRedtooth().getRedtooth();
                 if (!Thread.currentThread().isInterrupted())
-                    TimeUnit.SECONDS.sleep(5);
+                    TimeUnit.SECONDS.sleep(2);
                 else
                     return null;
             }

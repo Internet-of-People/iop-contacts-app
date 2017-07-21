@@ -1,4 +1,4 @@
-package org.fermat.redtooth.services.chat;
+package org.fermat.redtooth.services.chat.msg;
 
 /**
  * Created by furszy on 7/3/17.

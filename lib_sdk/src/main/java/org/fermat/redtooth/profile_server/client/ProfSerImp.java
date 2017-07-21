@@ -46,7 +46,12 @@ public class ProfSerImp implements ProfileServer {
 
 
     @Override
-    public ProfSerRequest ping(IopProfileServer.ServerRoleType portType) throws CantConnectException,CantSendMessageException {
+    public ProfSerRequest ping(IopProfileServer.ServerRoleType portType) throws CantConnectException,CantSendMessageException{
+        return ping(portType,null);
+    }
+
+    @Override
+    public ProfSerRequest ping(IopProfileServer.ServerRoleType portType,String token) throws CantConnectException,CantSendMessageException {
         IopProfileServer.Message message = MessageFactory.buildPingRequestMessage(
                 ByteString.copyFromUtf8("hi").toByteArray(),
                 configurations.getProtocolVersion());
@@ -58,7 +63,8 @@ public class ProfSerImp implements ProfileServer {
             case PRIMARY:
                 return buildRequestToPrimaryPort(message);
             case CL_APP_SERVICE:
-                throw new IllegalArgumentException("app service port not implemented");
+                if (token==null) throw new IllegalArgumentException("token cannot be null on a appServicePortRequest");
+                return buildRequestToAppServicePort(token,message);
             case SR_NEIGHBOR:
                 throw new IllegalArgumentException("app service port not implemented");
             case UNRECOGNIZED:
@@ -67,6 +73,8 @@ public class ProfSerImp implements ProfileServer {
                 throw new IllegalArgumentException("portType not found");
         }
     }
+
+
 
     @Override
     public ProfSerRequest listRolesRequest() throws CantConnectException,CantSendMessageException {

@@ -15,7 +15,6 @@ import org.fermat.redtooth.profile_server.protocol.CanStoreMap;
 import org.fermat.redtooth.profile_server.protocol.IopShared;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -28,10 +27,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-//import iop_sdk.crypto.CryptoBytes;
-//import iop_sdk.crypto.CryptoWrapper;
-//import iop_sdk.global.ContextWrapper;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.IoSession;
@@ -44,7 +39,6 @@ import org.fermat.redtooth.profile_server.model.ProfServerData;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profile_server.processors.MessageProcessor;
 import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
-
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.CHECK_IN;
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.HOME_NODE_REQUEST;
 import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.CONNECTION_FAIL;
@@ -62,7 +56,6 @@ import static org.fermat.redtooth.profile_server.engine.ProfSerConnectionState.W
  * Por ahora el servidor solo acepta un actor por conexión por lo cual deberia tener el profile acá o armar una lista de profiles para un futuro..
  *
  */
-
 public class ProfSerEngine {
 
     private Logger LOG = LoggerFactory.getLogger(ProfSerEngine.class);
@@ -113,15 +106,6 @@ public class ProfSerEngine {
     }
 
     /**
-     *
-     * @param profServerData
-     * @param profile -> use a profile for the restriction of 1 per connection that the server have.
-     */
-//    public ProfSerEngine(ContextWrapper contextWrapper,ProfServerData profServerData, Profile profile, CryptoWrapper crypto,SslContextFactory sslContextFactory) throws Exception {
-//        this(contextWrapper,new ProfServerDbFile(contextWrapper.getDirPrivateMode("/")),profServerData,profile,crypto,sslContextFactory);
-//    }
-
-    /**
      * Creates a random challenge for the connection.
      * @return
      */
@@ -145,7 +129,6 @@ public class ProfSerEngine {
      */
     public void start(final MsgListenerFuture<Boolean> initFuture){
         if (getProfSerConnectionState()!=NO_SERVER) throw new IllegalStateException("Start already called");
-
         executor = Executors.newFixedThreadPool(3);
         executor.submit(new Runnable() {
             @Override
@@ -489,6 +472,11 @@ public class ProfSerEngine {
      */
     public void sendAppServiceMsg(byte[] token, byte[] msg, ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> listener) throws CantConnectException, CantSendMessageException {
         ProfSerRequest request = profileServer.appServiceSendMessageRequest(token,msg);
+        sendRequest(request,listener);
+    }
+
+    public void pingAppService(String token, ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> listener) throws CantConnectException, CantSendMessageException {
+        ProfSerRequest request = profileServer.ping(IopProfileServer.ServerRoleType.CL_APP_SERVICE,token);
         sendRequest(request,listener);
     }
 

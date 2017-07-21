@@ -1,4 +1,4 @@
-package org.fermat.redtooth.services.chat;
+package org.fermat.redtooth.services.chat.msg;
 
 import org.fermat.redtooth.global.utils.SerializationUtils;
 import org.fermat.redtooth.profile_server.engine.app_services.BaseMsg;

@@ -6,6 +6,8 @@ import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppServ
 import org.fermat.redtooth.profile_server.engine.app_services.MsgWrapper;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.services.EnabledServices;
+import org.fermat.redtooth.services.chat.msg.*;
+import org.fermat.redtooth.services.chat.msg.ChatMsgTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +44,10 @@ public class ChatAppService extends AppService{
         callProfileAppService.setMsgListener(new CallProfileAppService.CallMessagesListener() {
             @Override
             public void onMessage(MsgWrapper msg) {
+                if (msg.getMsg().getType().equals(ChatMsgTypes.CHAT_REFUSED.name())){
+                    // clean the connection here
+                    callProfileAppService.dispose();
+                }
                 for (ChatMsgListener listener : listeners) {
                     // todo: Cambiar esto, en vez de enviar el chat message tengo que enviar el chatMsgWrapper con el local y remote profile..
                     listener.onMsgReceived(callProfileAppService.getRemotePubKey(),msg.getMsg());

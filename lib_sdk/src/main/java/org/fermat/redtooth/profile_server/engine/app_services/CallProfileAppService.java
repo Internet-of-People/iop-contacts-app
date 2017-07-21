@@ -2,6 +2,7 @@ package org.fermat.redtooth.profile_server.engine.app_services;
 
 import com.google.protobuf.ByteString;
 
+import org.fermat.redtooth.crypto.Crypto;
 import org.fermat.redtooth.crypto.CryptoBytes;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
@@ -189,6 +190,13 @@ public class CallProfileAppService {
         callStateListeners.remove(callStateListener);
     }
 
+    public String getCallTokenHex() {
+        if (callTokenHex==null){
+            callTokenHex = CryptoBytes.toHexString(callToken);
+        }
+        return callTokenHex;
+    }
+
     /**
      *
      *
@@ -240,6 +248,25 @@ public class CallProfileAppService {
             }
         }
         sendMsg(msgTemp,sendListener);
+    }
+
+    public void ping() throws CantConnectException, CantSendMessageException {
+        if (this.status != CALL_AS_ESTABLISH)
+            throw new IllegalStateException("Call is not ready to send messages");
+        MsgListenerFuture msgListenerFuture = new MsgListenerFuture();
+        msgListenerFuture.setListener(new BaseMsgFuture.Listener() {
+            @Override
+            public void onAction(int messageId, Object object) {
+                logger.info("App service call ping ok");
+            }
+
+            @Override
+            public void onFail(int messageId, int status, String statusDetail) {
+                logger.info("App service call ping fail..");
+                dispose();
+            }
+        });
+        profSerEngine.pingAppService(getCallTokenHex(), msgListenerFuture);
     }
 
     private void sendMsg(byte[] msg, final ProfSerMsgListener<Boolean> sendListener) throws CantConnectException, CantSendMessageException {

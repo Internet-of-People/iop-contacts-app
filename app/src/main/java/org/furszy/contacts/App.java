@@ -25,9 +25,9 @@ import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.model.Profile;
-import org.fermat.redtooth.services.chat.ChatMsg;
+import org.fermat.redtooth.services.chat.msg.ChatMsg;
 import org.fermat.redtooth.services.chat.ChatMsgListener;
-import org.fermat.redtooth.services.chat.ChatMsgTypes;
+import org.fermat.redtooth.services.chat.msg.ChatMsgTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -274,60 +274,7 @@ public class App extends Application implements IoPConnectContext {
             @Override
             public void run() {
                 try {
-                    anRedtooth.getRedtooth().addService(EnabledServices.CHAT.getName(), new ChatMsgListener() {
-                        @Override
-                        public void onChatConnected(Profile localProfile, String remoteProfilePubKey, boolean isLocalCreator) {
-                            log.info("on chat connected: " + remoteProfilePubKey);
-                            ProfileInformation remoteProflie = anRedtooth.getRedtooth().getKnownProfile(remoteProfilePubKey);
-                            if (remoteProflie != null) {
-                                // todo: negro acá abrí la vista de incoming para aceptar el request..
-                                Intent intent = new Intent(App.this, WaitingChatActivity.class);
-                                intent.putExtra(WaitingChatActivity.REMOTE_PROFILE_PUB_KEY, remoteProfilePubKey);
-                                intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
-                                if (isLocalCreator) {
-                                    intent.putExtra(WaitingChatActivity.IS_CALLING, false);
-                                    startActivity(intent);
-                                } else {
-                                    PendingIntent pendingIntent = PendingIntent.getActivity(App.this, 0, intent, 0);
-                                    // todo: null pointer found.
-                                    String name = remoteProflie.getName();
-                                    Notification not = new Notification.Builder(App.this)
-                                            .setContentTitle("Hey, chat notification received")
-                                            .setContentText(name + " want to chat with you!")
-                                            .setSmallIcon(R.drawable.ic_chat_disable)
-                                            .setContentIntent(pendingIntent)
-                                            .setAutoCancel(true)
-                                            .build();
-                                    notificationManager.notify(43, not);
-                                }
-                            } else {
-                                log.error("Chat notification arrive without know the profile, remote pub key " + remoteProfilePubKey);
-                            }
-                        }
-
-                        public void onChatDisconnected(String remotePubKey) {
-                            log.info("on chat disconnected: " + remotePubKey);
-                        }
-
-                        public void onMsgReceived(String remotePubKey, BaseMsg msg) {
-                            log.info("on chat msg received: " + remotePubKey);
-                            Intent intent = new Intent();
-                            intent.putExtra(WaitingChatActivity.REMOTE_PROFILE_PUB_KEY, remotePubKey);
-                            switch (ChatMsgTypes.valueOf(msg.getType())) {
-                                case CHAT_ACCEPTED:
-                                    intent.setAction(INTENT_CHAT_ACCEPTED_BROADCAST);
-                                    break;
-                                case CHAT_REFUSED:
-                                    intent.setAction(INTENT_CHAT_REFUSED_BROADCAST);
-                                    break;
-                                case TEXT:
-                                    intent.putExtra(INTENT_CHAT_TEXT_RECEIVED, ((ChatMsg) msg).getText());
-                                    intent.setAction(INTENT_CHAT_TEXT_BROADCAST);
-                                    break;
-                            }
-                            broadcastManager.sendBroadcast(intent);
-                        }
-                    });
+                    anRedtooth.getRedtooth().addService(EnabledServices.CHAT.getName());
                 }catch (Exception e){
                     e.printStackTrace();
                     log.error("Error adding chat service",e);
