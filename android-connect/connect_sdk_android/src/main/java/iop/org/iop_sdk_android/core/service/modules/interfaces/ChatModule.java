@@ -27,7 +27,9 @@ public interface ChatModule extends Module {
 
     void acceptChatRequest(Profile localProfile, String remoteHexPublicKey, ProfSerMsgListener<Boolean> future) throws Exception;
 
-    void refuseChatRequest(Profile localProfile, String remoteHexPublicKey);
+    void refuseChatRequest(Profile localProfile, String remoteHexPublicKey) throws Exception;
 
     void sendMsgToChat(Profile localProfile, ProfileInformation remoteProfileInformation, String msg, ProfSerMsgListener<Boolean> msgListener) throws Exception;
+
+    boolean isChatActive(Profile localProfile, String remotePk);
 }
