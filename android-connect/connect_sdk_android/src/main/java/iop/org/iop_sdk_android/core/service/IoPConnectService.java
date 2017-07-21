@@ -18,6 +18,7 @@ import org.fermat.redtooth.core.IoPConnect;
 import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.global.PlatformSerializer;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
+import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.global.DeviceLocation;
 import org.fermat.redtooth.global.GpsLocation;
 import org.fermat.redtooth.profile_server.CantConnectException;
@@ -61,7 +62,7 @@ import iop.org.iop_sdk_android.core.crypto.CryptoWrapperAndroid;
 import iop.org.iop_sdk_android.core.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
 import iop.org.iop_sdk_android.core.service.modules.Core;
-import iop.org.iop_sdk_android.core.service.modules.ModuleId;
+import org.fermat.redtooth.global.Module;
 import iop.org.iop_sdk_android.core.service.modules.interfaces.ChatModule;
 import iop.org.iop_sdk_android.core.service.modules.interfaces.PairingModule;
 import iop.org.iop_sdk_android.core.service.modules.interfaces.ProfilesModule;
@@ -300,13 +301,14 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public void addService(String serviceName, Object... args) {
-        AppService appService = EnabledServicesFactory.buildService(serviceName,args);
+        Module module = core.getModule(serviceName);
+        AppService appService = EnabledServicesFactory.buildService(serviceName,module,args);
         ioPConnect.addService(profile,appService);
     }
 
     @Override
     public void connect(final String pubKey) throws Exception {
-        ProfilesModule module = core.getModule(ModuleId.PROFILES.getId(), ProfilesModule.class);
+        ProfilesModule module = core.getModule(EnabledServices.PROFILE_DATA.getName(), ProfilesModule.class);
         module.connect(pubKey);
     }
 
@@ -317,7 +319,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public String registerProfile(String name,String type, byte[] img, int latitude, int longitude, String extraData) throws Exception {
-        ProfilesModule module = core.getModule(ModuleId.PROFILES.getId(), ProfilesModule.class);
+        ProfilesModule module = core.getModule(EnabledServices.PROFILE_DATA.getName(), ProfilesModule.class);
         return module.registerProfile(name,type,img,latitude,longitude,extraData);
     }
 
@@ -332,7 +334,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
     @Override
     public int updateProfile(String pubKey , String name, byte[] img, int latitude, int longitude, String extraData, final ProfSerMsgListener<Boolean> msgListener) throws Exception {
-        return core.getModule(ModuleId.PROFILES.getId(), ProfilesModule.class)
+        return core.getModule(EnabledServices.PROFILE_DATA.getName(), ProfilesModule.class)
                 .updateProfile(
                         pubKey,
                         name,
@@ -346,7 +348,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public void requestPairingProfile(byte[] remotePubKey, final String remoteName, final String psHost, final ProfSerMsgListener<ProfileInformation> listener) throws Exception {
-        core.getModule(ModuleId.PAIRING.getId(), PairingModule.class)
+        core.getModule(EnabledServices.PROFILE_PAIRING.getName(), PairingModule.class)
                 .requestPairingProfile(
                         profile,
                         remotePubKey,
@@ -358,7 +360,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public void acceptPairingProfile(PairingRequest pairingRequest, ProfSerMsgListener<Boolean> profSerMsgListener) throws Exception {
-        core.getModule(ModuleId.PAIRING.getId(), PairingModule.class)
+        core.getModule(EnabledServices.PROFILE_PAIRING.getName(), PairingModule.class)
                 .acceptPairingProfile(
                         pairingRequest,
                         profSerMsgListener
@@ -367,7 +369,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public void cancelPairingRequest(PairingRequest pairingRequest) {
-        core.getModule(ModuleId.PAIRING.getId(), PairingModule.class)
+        core.getModule(EnabledServices.PROFILE_PAIRING.getName(), PairingModule.class)
                 .cancelPairingRequest(pairingRequest
                 );
     }
@@ -380,7 +382,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
      */
     @Override
     public void requestChat(final ProfileInformation remoteProfileInformation, final ProfSerMsgListener<Boolean> readyListener, TimeUnit timeUnit, long time) throws RequestChatException, ChatCallAlreadyOpenException {
-        core.getModule(ModuleId.CHAT.getId(), ChatModule.class)
+        core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
                 .requestChat(
                         profile,
                         remoteProfileInformation,
@@ -391,8 +393,8 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     }
 
     @Override
-    public void refuseChatRequest(String hexPublicKey) throws Exception {
-        core.getModule(ModuleId.CHAT.getId(), ChatModule.class)
+    public void refuseChatRequest(String hexPublicKey) {
+        core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
                 .refuseChatRequest(
                         profile,
                         hexPublicKey
@@ -401,7 +403,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public void acceptChatRequest(String remoteHexPublicKey, ProfSerMsgListener<Boolean> future) throws Exception {
-        core.getModule(ModuleId.CHAT.getId(), ChatModule.class)
+        core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
                 .acceptChatRequest(
                         profile,
                         remoteHexPublicKey,
@@ -418,7 +420,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
      */
     @Override
     public void sendMsgToChat(ProfileInformation remoteProfileInformation, String msg, ProfSerMsgListener<Boolean> msgListener) throws Exception {
-        core.getModule(ModuleId.CHAT.getId(), ChatModule.class)
+        core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
                 .sendMsgToChat(
                         profile,
                         remoteProfileInformation,
@@ -429,7 +431,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
 
     @Override
     public boolean isChatActive(String remotePk){
-        return core.getModule(ModuleId.CHAT.getId(), ChatModule.class)
+        return core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
                 .isChatActive(
                         profile,
                         remotePk

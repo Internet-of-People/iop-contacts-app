@@ -2,7 +2,7 @@ package iop.org.iop_sdk_android.core.service.modules.interfaces;
 
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 
-import iop.org.iop_sdk_android.core.service.modules.Module;
+import org.fermat.redtooth.global.Module;
 
 /**
  * Created by furszy on 7/19/17.

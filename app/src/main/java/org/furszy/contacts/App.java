@@ -45,6 +45,7 @@ import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import iop.org.iop_sdk_android.core.AnConnect;
 import iop.org.iop_sdk_android.core.InitListener;
 import iop.org.iop_sdk_android.core.service.ProfileServerConfigurationsImp;
+import iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_IOP_SERVICE_CONNECTED;
@@ -112,6 +113,8 @@ public class App extends Application implements IoPConnectContext {
         }
     };
 
+    private ChatModuleReceiver chatModuleReceiver = new ChatModuleReceiver();
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -125,6 +128,10 @@ public class App extends Application implements IoPConnectContext {
             CrashReporter.init(getCacheDir());
             broadcastManager = LocalBroadcastManager.getInstance(this);
             notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+            registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_CONNECTED));
+            registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED));
+            registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_MSG_RECEIVED));
             // register broadcast listeners
             broadcastManager.registerReceiver(serviceReceiver, new IntentFilter(ACTION_ON_PAIR_RECEIVED));
             broadcastManager.registerReceiver(serviceReceiver, new IntentFilter(ACTION_ON_RESPONSE_PAIR_RECEIVED));
@@ -313,5 +320,13 @@ public class App extends Application implements IoPConnectContext {
 
     public void cancelChatNotifications() {
         notificationManager.cancel(43);
+    }
+
+    public NotificationManager getNotificationManager() {
+        return notificationManager;
+    }
+
+    public LocalBroadcastManager getBroadcastManager() {
+        return broadcastManager;
     }
 }

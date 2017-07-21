@@ -1,5 +1,9 @@
 package org.furszy.contacts.ui.chat;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -12,7 +16,9 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import org.furszy.contacts.App;
 import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.R;
 
@@ -24,6 +30,7 @@ import java.util.concurrent.Executors;
 
 import iop.org.iop_sdk_android.core.service.exceptions.ChatCallClosedException;
 
+import static org.furszy.contacts.App.INTENT_CHAT_REFUSED_BROADCAST;
 import static org.furszy.contacts.ui.chat.WaitingChatActivity.REMOTE_PROFILE_PUB_KEY;
 
 /**
@@ -39,6 +46,17 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
     private ProfileInformation remoteProfile;
     private MessagesFragment messagesFragment;
     private ExecutorService executor;
+
+    private BroadcastReceiver chatReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if(action.equals(INTENT_CHAT_REFUSED_BROADCAST)){
+                Toast.makeText(ChatActivity.this,"Chat closed",Toast.LENGTH_LONG).show();
+                onBackPressed();
+            }
+        }
+    };
 
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
@@ -61,6 +79,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
 
         // cancel chat notifications if there is any..
         app.cancelChatNotifications();
+
+        localBroadcastManager.registerReceiver(chatReceiver,new IntentFilter(INTENT_CHAT_REFUSED_BROADCAST));
     }
 
     @Override
@@ -74,28 +94,43 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
     @Override
     protected void onStop() {
         super.onStop();
+
+        executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // close chat
+                    anRedtooth.refuseChatRequest(remoteProfile.getHexPublicKey());
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+
         if (executor!=null){
             if (!executor.isShutdown())
-                executor.shutdownNow();
+                executor.shutdown();
             executor = null;
         }
-        try {
-            // close chat
-            anRedtooth.refuseChatRequest(remoteProfile.getHexPublicKey());
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+
+        localBroadcastManager.unregisterReceiver(chatReceiver);
+
         finish();
     }
 
     @Override
     public void onBackPressed() {
-        try {
-            // close chat
-            anRedtooth.refuseChatRequest(remoteProfile.getHexPublicKey());
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+        executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // close chat
+                    anRedtooth.refuseChatRequest(remoteProfile.getHexPublicKey());
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
         super.onBackPressed();
     }
 

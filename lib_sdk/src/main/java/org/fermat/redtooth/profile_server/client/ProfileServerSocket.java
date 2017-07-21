@@ -227,9 +227,19 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
             } catch (InterruptedException e){
                 // this happen when the thread is sleep and someone interrupt it.
                 logger.info("InterruptedException on port: "+port);
+                try {
+                    closeNow();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
             } catch (Exception e){
                 logger.info("Exception on port: "+port);
                 e.printStackTrace();
+                try {
+                    closeNow();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
             }
         }
     }

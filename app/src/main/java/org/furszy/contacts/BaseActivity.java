@@ -63,6 +63,9 @@ public class BaseActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         try {
             super.onCreate(savedInstanceState);
+            this.localBroadcastManager = LocalBroadcastManager.getInstance(this);
+            this.notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            this.notifReceiver = new NotifReceiver();
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             setContentView(R.layout.activity_base);
             app = App.getInstance();
@@ -80,6 +83,7 @@ public class BaseActivity extends AppCompatActivity{
                     // nothing yet
                 }
             });
+
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -111,11 +115,6 @@ public class BaseActivity extends AppCompatActivity{
     protected void onResume() {
         super.onResume();
         anRedtooth = app.anRedtooth.getRedtooth();
-        if (localBroadcastManager==null){
-            this.localBroadcastManager = LocalBroadcastManager.getInstance(this);
-            this.notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            this.notifReceiver = new NotifReceiver();
-        }
         localBroadcastManager.registerReceiver(notifReceiver, new IntentFilter(NOTIF_DIALOG_EVENT));
         localBroadcastManager.registerReceiver(notifReceiver, new IntentFilter(INTENT_ACTION_PROFILE_DISCONNECTED));
         localBroadcastManager.registerReceiver(notifReceiver,new IntentFilter(INTENT_ACTION_PROFILE_CHECK_IN_FAIL));

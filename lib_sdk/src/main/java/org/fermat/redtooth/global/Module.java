@@ -1,8 +1,11 @@
 package org.fermat.redtooth.global;
 
 /**
- * Created by mati on 26/12/16.
+ * Created by furszy on 7/19/17.
  */
 
 public interface Module {
+
+    void onDestroy();
+
 }

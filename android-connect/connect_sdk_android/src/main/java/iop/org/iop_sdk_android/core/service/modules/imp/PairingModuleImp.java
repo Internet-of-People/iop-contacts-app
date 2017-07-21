@@ -8,6 +8,7 @@ import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
+import org.fermat.redtooth.services.EnabledServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +17,6 @@ import java.io.IOException;
 
 import iop.org.iop_sdk_android.core.service.IoPConnectService;
 import iop.org.iop_sdk_android.core.service.modules.AbstractModule;
-import iop.org.iop_sdk_android.core.service.modules.ModuleId;
 import iop.org.iop_sdk_android.core.service.modules.interfaces.PairingModule;
 
 /**
@@ -31,7 +31,7 @@ public class PairingModuleImp extends AbstractModule implements PairingModule{
     private IoPConnectService ioPConnectService;
 
     public PairingModuleImp(IoPConnectService ioPConnectService,IoPConnect ioPConnect) {
-        super(ioPConnectService,Version.newProtocolAcceptedVersion(), ModuleId.PAIRING.getId());
+        super(ioPConnectService,Version.newProtocolAcceptedVersion(), EnabledServices.PROFILE_PAIRING.getName());
         this.ioPConnect = ioPConnect;
         this.ioPConnectService = ioPConnectService;
 

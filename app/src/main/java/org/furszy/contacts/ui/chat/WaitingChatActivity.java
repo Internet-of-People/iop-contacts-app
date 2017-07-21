@@ -152,8 +152,18 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
             acceptChatRequest();
         }else if (id == R.id.btn_cancel_chat || id == R.id.btn_cancel_chat_alone){
             // here i have to close the connection refusing the call..
-            refuseChat();
-            onBackPressed();
+            executors.submit(new Runnable() {
+                @Override
+                public void run() {
+                    refuseChat();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            onBackPressed();
+                        }
+                    });
+                }
+            });
         }
     }
 

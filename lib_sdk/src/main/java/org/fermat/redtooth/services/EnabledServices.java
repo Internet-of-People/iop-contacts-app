@@ -9,6 +9,7 @@ import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 
 public enum EnabledServices {
 
+    PROFILE_DATA("prof_data"),
     PROFILE_PAIRING("prof_pair"),
     CHAT("chat")
     ;
@@ -25,6 +26,8 @@ public enum EnabledServices {
 
     public static EnabledServices getServiceByName(String name){
         switch (name){
+            case "prof_data":
+                return PROFILE_DATA;
             case "prof_pair":
                 return PROFILE_PAIRING;
             case "chat":
