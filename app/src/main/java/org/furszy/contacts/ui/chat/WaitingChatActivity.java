@@ -24,6 +24,8 @@ import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -40,6 +42,9 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
     public static final String REMOTE_PROFILE_PUB_KEY = "remote_prof_pub";
     public static final String IS_CALLING = "is_calling";
 
+    /** Call timeout in minutes */
+    private static final long CALL_TIMEOUT = 1;
+
     private View root;
     private TextView txt_name;
     private CircleImageView img_profile;
@@ -49,6 +54,8 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
     private String remotePk;
     private boolean isCalling;
     private ExecutorService executors;
+
+    private ScheduledExecutorService scheduledCallTimeout;
 
     private BroadcastReceiver chatReceiver = new BroadcastReceiver() {
         @Override
@@ -83,15 +90,39 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
         txt_title = (TextView) root.findViewById(R.id.txt_title);
         remotePk = getIntent().getStringExtra(REMOTE_PROFILE_PUB_KEY);
         isCalling = getIntent().hasExtra(IS_CALLING);
-        if (getIntent().hasExtra(IS_CALLING)){
+        if (isCalling){
             root.findViewById(R.id.single_cancel_container).setVisibility(View.VISIBLE);
             root.findViewById(R.id.btn_cancel_chat_alone).setOnClickListener(this);
             root.findViewById(R.id.container_btns).setVisibility(View.GONE);
+            // prepare timer..
+            scheduleCallTimeout();
         }else {
             root.findViewById(R.id.single_cancel_container).setVisibility(View.GONE);
             root.findViewById(R.id.btn_open_chat).setOnClickListener(this);
             root.findViewById(R.id.btn_cancel_chat).setOnClickListener(this);
         }
+    }
+
+    private void scheduleCallTimeout() {
+        scheduledCallTimeout = Executors.newSingleThreadScheduledExecutor();
+        scheduledCallTimeout.schedule(new Runnable() {
+            @Override
+            public void run() {
+                executors.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        refuseChat();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(WaitingChatActivity.this,profileInformation.getName()+" doesn't answer..",Toast.LENGTH_LONG).show();
+                                onBackPressed();
+                            }
+                        });
+                    }
+                });
+            }
+        },CALL_TIMEOUT, TimeUnit.MINUTES);
     }
 
     @Override
@@ -150,6 +181,9 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
         if (executors!=null){
             executors.shutdownNow();
             executors = null;
+        }
+        if (scheduledCallTimeout!=null){
+            scheduledCallTimeout.shutdownNow();
         }
         finish();
     }
