@@ -1,4 +1,4 @@
-package org.fermat.redtooth.profile_server.utils;
+package org.libertaria.world.profile_server.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,7 +19,7 @@ import javax.net.ssl.TrustManagerFactory;
  * Created by mati on 09/05/17.
  */
 
-public class SslContextFactory implements org.fermat.redtooth.profile_server.SslContextFactory {
+public class SslContextFactory implements org.libertaria.world.profile_server.SslContextFactory {
 
 
     @Override

@@ -1,7 +1,7 @@
-package org.fermat.redtooth.profile_server;
+package org.libertaria.world.profile_server;
 
-import org.fermat.redtooth.core.pure.KeyEd25519Java;
-import org.fermat.redtooth.profile_server.model.KeyEd25519;
+import org.libertaria.world.core.pure.KeyEd25519Java;
+import org.libertaria.world.profile_server.model.KeyEd25519;
 import org.junit.Test;
 
 /**

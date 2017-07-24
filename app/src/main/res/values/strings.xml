@@ -36,7 +36,7 @@
     <string name="set_password">Set Password</string>
     <string name="set_folder">Set Folder</string>
     <string name="profile_system">App services</string>
-    <string name="btn_connected">Connected</string>
+    <string name="btn_connected">Disconnected</string>
     <string name="btn_disconnected">Disconnected</string>
     <string name="disconnect_message">Do you really want to \n disconnect from</string>
     <string name="reload_message">Connection lost, trying to reconnect</string>
@@ -70,5 +70,6 @@
     <string name="report_issuea_dialog_title">Report issue</string>
     <string name="report_issue_dialog_message_issue">Please describe your issue precisely enough to be reproduced.</string>
     <string name="report_issue">Report issue</string>
+    <string name="btn_disconnect">Connected</string>
 
 </resources>

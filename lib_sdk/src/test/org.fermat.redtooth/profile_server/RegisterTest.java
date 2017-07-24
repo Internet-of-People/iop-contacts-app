@@ -1,12 +1,12 @@
 /*
-package org.fermat.redtooth.profile_server;
+package org.libertaria.world.profile_server;
 
-import org.fermat.redtooth.core.RedtoothContext;
-import org.fermat.redtooth.core.RedtoothProfileConnection;
-import org.fermat.redtooth.core.pure.CryptoWrapperJava;
-import org.fermat.redtooth.crypto.CryptoWrapper;
-import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
-import org.fermat.redtooth.profile_server.utils.ProfileConfigurationImp;
+import org.libertaria.world.core.RedtoothContext;
+import org.libertaria.world.core.RedtoothProfileConnection;
+import CryptoWrapperJava;
+import CryptoWrapper;
+import MsgListenerFuture;
+import org.libertaria.world.profile_server.utils.ProfileConfigurationImp;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -25,7 +25,7 @@ public class RegisterTest {
         }
     };
     CryptoWrapper cryptoWrapper = new CryptoWrapperJava();
-    SslContextFactory sslContextFactory = new org.fermat.redtooth.profile_server.utils.SslContextFactory();
+    SslContextFactory sslContextFactory = new org.libertaria.world.profile_server.utils.SslContextFactory();
 
     @Test
     public void goodRegisterProfileTest() throws Exception {

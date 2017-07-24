@@ -2,7 +2,7 @@ package iop.org.iop_sdk_android.core.wrappers;
 
 import android.content.pm.PackageInfo;
 
-import org.fermat.redtooth.global.PackageInfoWrapper;
+import org.libertaria.world.global.PackageInfoWrapper;
 
 /**
  * Created by mati on 26/12/16.

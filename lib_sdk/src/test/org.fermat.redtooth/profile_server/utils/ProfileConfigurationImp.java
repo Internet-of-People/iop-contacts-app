@@ -1,16 +1,15 @@
-package org.fermat.redtooth.profile_server.utils;
+package org.libertaria.world.profile_server.utils;
 
-import org.fermat.redtooth.core.pure.KeyEd25519Java;
-import org.fermat.redtooth.global.HardCodedConstans;
-import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
-import org.fermat.redtooth.profile_server.model.KeyEd25519;
-import org.fermat.redtooth.profile_server.model.ProfServerData;
-import org.fermat.redtooth.profile_server.model.Profile;
-import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
+import org.libertaria.world.core.pure.KeyEd25519Java;
+import org.libertaria.world.global.HardCodedConstans;
+import org.libertaria.world.profile_server.ProfileServerConfigurations;
+import org.libertaria.world.profile_server.model.KeyEd25519;
+import org.libertaria.world.profile_server.model.ProfServerData;
+import org.libertaria.world.profile_server.model.Profile;
+import org.libertaria.world.profile_server.protocol.IopProfileServer;
 
 import java.io.File;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 

@@ -1,14 +1,8 @@
-package org.fermat.redtooth.loc;
+package org.libertaria.world.loc;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import org.fermat.redtooth.locnet.Explorer;
-import org.fermat.redtooth.locnet.NodeInfo;
 import org.junit.Test;
 
-import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 
 /**
  * Created by furszy on 6/9/17.

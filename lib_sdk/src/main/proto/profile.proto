@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package org.fermat.redtooth.profiles_manager;
+package org.libertaria.world.profiles_manager;
 
 message ProfileInfo{
     bytes version = 1;

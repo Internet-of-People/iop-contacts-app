@@ -66,7 +66,8 @@ public class SettingsBackupPasswordActivity extends BaseActivity {
                 }
 
                 try {
-                    anRedtooth.backupProfile(
+                    profilesModule.backupProfile(
+                            selectedProfPubKey,
                             app.getBackupDir(),
                             pass);
                     onBackPressed();

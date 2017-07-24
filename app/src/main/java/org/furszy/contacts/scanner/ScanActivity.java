@@ -47,8 +47,6 @@ import android.view.TextureView;
 import android.view.TextureView.SurfaceTextureListener;
 import android.view.WindowManager;
 
-import org.furszy.contacts.DialogBuilder;
-import org.furszy.contacts.R;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.PlanarYUVLuminanceSource;
@@ -58,6 +56,9 @@ import com.google.zxing.ResultPoint;
 import com.google.zxing.ResultPointCallback;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeReader;
+
+import org.furszy.contacts.DialogBuilder;
+import org.furszy.contacts.R;
 
 import java.util.EnumMap;
 import java.util.Map;

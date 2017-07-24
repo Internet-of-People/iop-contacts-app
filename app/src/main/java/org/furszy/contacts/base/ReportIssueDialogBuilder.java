@@ -32,13 +32,14 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.common.base.Charsets;
+
+import org.libertaria.world.global.utils.Io;
+import org.libertaria.world.profile_server.DatabaseCollector;
 import org.furszy.contacts.AppConstants;
 import org.furszy.contacts.CrashReporter;
 import org.furszy.contacts.DialogBuilder;
 import org.furszy.contacts.R;
-import com.google.common.base.Charsets;
-
-import org.fermat.redtooth.global.utils.Io;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,8 +53,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.fermat.redtooth.profile_server.DatabaseCollector;
 
 
 public abstract class ReportIssueDialogBuilder extends DialogBuilder implements OnClickListener {

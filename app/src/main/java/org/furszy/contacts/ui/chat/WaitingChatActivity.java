@@ -13,14 +13,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.client.AppServiceCallNotAvailableException;
+import org.libertaria.world.profile_server.engine.futures.BaseMsgFuture;
+import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
 import org.furszy.contacts.App;
 import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.R;
-
-import org.fermat.redtooth.profile_server.ProfileInformation;
-import org.fermat.redtooth.profile_server.client.AppServiceCallNotAvailableException;
-import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
-import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -29,8 +28,8 @@ import java.util.concurrent.TimeUnit;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED;
-import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;
+import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED;
+import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;
 import static org.furszy.contacts.App.INTENT_CHAT_REFUSED_BROADCAST;
 
 /**
@@ -137,7 +136,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
             @Override
             public void run() {
                 try {
-                    if (!anRedtooth.isChatActive(remotePk)) {
+                    if (!chatModule.isChatActive(selectedProfPubKey,remotePk)) {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -161,7 +160,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
             }
         });
 
-        profileInformation = anRedtooth.getKnownProfile(remotePk);
+        profileInformation = profilesModule.getKnownProfile(selectedProfPubKey,remotePk);
         txt_name.setText(profileInformation.getName());
         if (profileInformation.getImg()!=null){
             Bitmap bitmap = BitmapFactory.decodeByteArray(profileInformation.getImg(),0,profileInformation.getImg().length);
@@ -213,7 +212,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
 
     private void refuseChat(){
         try{
-            anRedtooth.refuseChatRequest(profileInformation.getHexPublicKey());
+            chatModule.refuseChatRequest(selectedProfPubKey,profileInformation.getHexPublicKey());
         }catch (Exception e){
             e.printStackTrace();
             // do nothing..
@@ -252,7 +251,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
                             });
                         }
                     });
-                    anRedtooth.acceptChatRequest(profileInformation.getHexPublicKey(), future);
+                    chatModule.acceptChatRequest(selectedProfPubKey,profileInformation.getHexPublicKey(), future);
                 } catch (AppServiceCallNotAvailableException e){
                     e.printStackTrace();
                     runOnUiThread(new Runnable() {

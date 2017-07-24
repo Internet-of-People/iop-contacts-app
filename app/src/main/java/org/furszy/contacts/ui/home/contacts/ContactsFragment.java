@@ -7,15 +7,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.furszy.contacts.App;
+import org.libertaria.world.profile_server.ProfileInformation;
 import org.furszy.contacts.ProfileInformationActivity;
 import org.furszy.contacts.R;
 import org.furszy.contacts.adapter.BaseAdapter;
 import org.furszy.contacts.adapter.FermatListItemListeners;
 import org.furszy.contacts.base.RecyclerFragment;
 import org.furszy.contacts.contacts.ProfileAdapter;
-
-import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +38,7 @@ public class ContactsFragment extends RecyclerFragment<ProfileInformation> {
 
     @Override
     protected BaseAdapter initAdapter() {
-        return new ProfileAdapter(getActivity(), module,new FermatListItemListeners<ProfileInformation>() {
+        return new ProfileAdapter(getActivity(),new FermatListItemListeners<ProfileInformation>() {
             @Override
             public void onItemClickListener(ProfileInformation data, int position) {
                 Intent intent1 = new Intent(getActivity(), ProfileInformationActivity.class);
@@ -58,14 +56,13 @@ public class ContactsFragment extends RecyclerFragment<ProfileInformation> {
     @Override
     protected List onLoading() {
         try {
-            while (module == null) {
-                module = App.getInstance().getAnRedtooth().getRedtooth();
-                if (!Thread.currentThread().isInterrupted())
-                    TimeUnit.SECONDS.sleep(2);
-                else
-                    return null;
+            if (profilesModule!=null)
+                return profilesModule.getKnownProfiles(selectedProfilePubKey);
+            else {
+                loadBasics();
+                TimeUnit.SECONDS.sleep(1);
+                onLoading();
             }
-            return module.getKnownProfiles();
         }catch (Exception e){
             log.info("onLoading",e);
         }

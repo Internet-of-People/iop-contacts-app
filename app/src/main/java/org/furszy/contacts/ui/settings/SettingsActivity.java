@@ -12,23 +12,19 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.libertaria.world.profile_server.DatabaseCollector;
 import org.furszy.contacts.App;
 import org.furszy.contacts.AppConstants;
 import org.furszy.contacts.BaseDrawerActivity;
 import org.furszy.contacts.BuildConfig;
 import org.furszy.contacts.CrashReporter;
-
 import org.furszy.contacts.R;
 import org.furszy.contacts.base.ReportIssueDialogBuilder;
 import org.furszy.contacts.ui.settings_backup.SettingsBackupActivity;
 import org.furszy.contacts.ui.settings_restore.SettingsRestoreActivity;
 
-import org.fermat.redtooth.profile_server.DatabaseCollector;
-import org.fermat.redtooth.profiles_manager.PairingRequest;
-
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -84,11 +80,11 @@ public class SettingsActivity  extends BaseDrawerActivity implements DatabaseCol
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.btn_delete_contacts){
-            anRedtooth.deteleContacts();
-            Toast.makeText(this,"Contacts deleted",Toast.LENGTH_LONG).show();
+            //anRedtooth.deteleContacts();
+            Toast.makeText(this,"Method cancelled..",Toast.LENGTH_LONG).show();
         }else if(id == R.id.btn_delete_requests) {
-            anRedtooth.deletePairingRequests();
-            Toast.makeText(this, "Pairing requests deleted", Toast.LENGTH_LONG).show();
+            //anRedtooth.deletePairingRequests();
+            Toast.makeText(this, "Method cancelled..", Toast.LENGTH_LONG).show();
         }else if(id == R.id.btn_backup) {
             Intent myIntent = new Intent(v.getContext(), SettingsBackupActivity.class);
             startActivity(myIntent);
@@ -150,11 +146,12 @@ public class SettingsActivity  extends BaseDrawerActivity implements DatabaseCol
     @Override
     public List collectData() {
         List<Object> list = new ArrayList<>();
-        Collection<PairingRequest> list1 = anRedtooth.listAllPairingRequests();
+        //// TODO: 7/25/17  
+        /*Collection<PairingRequest> list1 = anRedtooth.listAllPairingRequests();
         if (list1 != null) {
             list.addAll(list1);
             list.addAll(anRedtooth.listAllProfileInformation());
-        }
+        }*/
         return list;
     }
 }

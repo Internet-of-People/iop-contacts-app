@@ -11,14 +11,11 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import org.furszy.contacts.App;
+import org.libertaria.world.profile_server.ProfileInformation;
 import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.ProfileInformationActivity;
 import org.furszy.contacts.R;
 import org.furszy.contacts.adapter.FermatListItemListeners;
-
-import org.fermat.redtooth.profile_server.ModuleRedtooth;
-import org.fermat.redtooth.profile_server.ProfileInformation;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -45,7 +42,6 @@ public class ProfilesInformationActivity extends BaseActivity {
 
     private Handler handler = new Handler();
 
-    private ModuleRedtooth module;
 
     private ExecutorService executor;
 
@@ -53,8 +49,6 @@ public class ProfilesInformationActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstance) {
         super.onCreate(savedInstance);
         setTitle("Profiles");
-
-        module = ((App)getApplication()).getAnRedtooth().getRedtooth();
 
         setContentView(R.layout.profiles_information_main);
 
@@ -66,7 +60,7 @@ public class ProfilesInformationActivity extends BaseActivity {
         recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-        adapter = new ProfileAdapter(this, module,new FermatListItemListeners<ProfileInformation>() {
+        adapter = new ProfileAdapter(this,new FermatListItemListeners<ProfileInformation>() {
             @Override
             public void onItemClickListener(ProfileInformation data, int position) {
                 Intent intent1 = new Intent(ProfilesInformationActivity.this, ProfileInformationActivity.class);
@@ -112,7 +106,7 @@ public class ProfilesInformationActivity extends BaseActivity {
         public void run() {
             boolean res = false;
             try {
-                profiles = module.getKnownProfiles();
+                profiles = profilesModule.getKnownProfiles(selectedProfPubKey);
                 res = true;
             } catch (Exception e){
                 e.printStackTrace();

@@ -48,6 +48,7 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
     compile project(path: ':lib_sdk')
+    compile project(':connect_sdk_android_client')
     compile project(':connect_sdk_android')
 
     compile 'org.slf4j:slf4j-api:1.7.20'

@@ -16,7 +16,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:persistent="true">
-        <activity android:name="org.furszy.contacts.MainActivity"/>
         <activity android:name="org.furszy.contacts.StartActivity">
 
         </activity>
@@ -65,9 +64,6 @@
         </activity>
 
         <activity android:name=".ui.send_request.SendRequestActivity"/>
-
-        <service android:name="iop.org.iop_sdk_android.core.service.IoPConnectService"
-            />
 
         <provider
             android:name="android.support.v4.content.FileProvider"

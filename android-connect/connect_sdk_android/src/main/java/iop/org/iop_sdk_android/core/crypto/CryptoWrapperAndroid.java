@@ -1,6 +1,6 @@
 package iop.org.iop_sdk_android.core.crypto;
 
-import org.fermat.redtooth.crypto.CryptoWrapper;
+import org.libertaria.world.crypto.CryptoWrapper;
 
 /**
  * Created by mati on 07/02/17.

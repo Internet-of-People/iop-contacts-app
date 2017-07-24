@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package iop.org.iop_sdk_android.core.global;
+
+enum ResponseType {
+    OBJ = 0;
+    ERR = 1;
+}
+
+message ModuleObjectWrapper{
+    bytes obj = 2;
+}
+
+message ModuleResponse{
+    string id = 1;
+    ResponseType responseType = 2;
+    ModuleObjectWrapper obj = 3;
+    bytes err = 4;
+}
+

@@ -1,10 +1,10 @@
 package iop.org.iop_sdk_android.core.wrappers;
 
+import org.libertaria.world.global.IntentWrapper;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.fermat.redtooth.global.IntentWrapper;
 
 /**
  * Created by mati on 26/12/16.

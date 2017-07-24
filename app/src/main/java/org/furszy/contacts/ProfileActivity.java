@@ -6,8 +6,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.furszy.contacts.R;
-
 public class ProfileActivity extends BaseActivity {
 
     ProfileFragment profileFragment;

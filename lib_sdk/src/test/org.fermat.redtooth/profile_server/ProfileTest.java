@@ -1,20 +1,20 @@
 /*
-package org.fermat.redtooth.profile_server;
+package org.libertaria.world.profile_server;
 
-import org.fermat.redtooth.core.RedtoothProfileConnection;
-import org.fermat.redtooth.core.RedtoothContext;
-import org.fermat.redtooth.core.pure.CryptoWrapperJava;
-import org.fermat.redtooth.core.pure.KeyEd25519Java;
-import org.fermat.redtooth.crypto.CryptoBytes;
-import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
-import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
-import org.fermat.redtooth.profile_server.engine.SearchProfilesQuery;
-import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
-import org.fermat.redtooth.profile_server.engine.futures.SearchMessageFuture;
-import org.fermat.redtooth.profile_server.model.KeyEd25519;
-import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
-import org.fermat.redtooth.profile_server.utils.*;
-import org.fermat.redtooth.profile_server.utils.SslContextFactory;
+import org.libertaria.world.core.RedtoothProfileConnection;
+import org.libertaria.world.core.RedtoothContext;
+import CryptoWrapperJava;
+import KeyEd25519Java;
+import CryptoBytes;
+import CallProfileAppService;
+import EngineListener;
+import SearchProfilesQuery;
+import MsgListenerFuture;
+import SearchMessageFuture;
+import KeyEd25519;
+import org.libertaria.world.profile_server.protocol.IopProfileServer;
+import org.libertaria.world.profile_server.utils.*;
+import org.libertaria.world.profile_server.utils.SslContextFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;

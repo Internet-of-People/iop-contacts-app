@@ -1,10 +1,10 @@
 package iop.org.iop_sdk_android.core.crypto;
 
-import org.fermat.redtooth.core.pure.KeyEd25519Java;
-import org.fermat.redtooth.crypto.CryptoBytes;
-import org.fermat.redtooth.utils.ArraysUtils;
+import org.libertaria.world.crypto.CryptoBytes;
+import org.libertaria.world.utils.ArraysUtils;
 import org.libsodium.jni.NaCl;
 import org.libsodium.jni.Sodium;
+
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
@@ -12,7 +12,7 @@ import java.util.Arrays;
 /**
  * Created by Matias Furszyfer on 02/10/16.
  */
-public class KeyEd25519 implements Serializable, org.fermat.redtooth.profile_server.model.KeyEd25519{
+public class KeyEd25519 implements Serializable, org.libertaria.world.profile_server.model.KeyEd25519 {
 
     static final long serialVersionUID = 155346454L;
 
@@ -134,7 +134,7 @@ public class KeyEd25519 implements Serializable, org.fermat.redtooth.profile_ser
 
     /**
      * Signs a UTF-8 string message using an extended private key
-     * //todo: ver si funciona porque le puse el int del signLenght como array de entero
+     * // ver si funciona porque le puse el int del signLenght como array de entero
      *
      * @param message -> Message to be signed.
      * @param expandedPrivateKey -> Extended private key.

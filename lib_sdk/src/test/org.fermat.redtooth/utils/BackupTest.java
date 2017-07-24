@@ -1,26 +1,12 @@
-package org.fermat.redtooth.utils;
+package org.libertaria.world.utils;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import org.fermat.redtooth.core.IoPConnect;
-import org.fermat.redtooth.core.pure.KeyEd25519Java;
-import org.fermat.redtooth.global.PlatformSerializer;
-import org.fermat.redtooth.profile_server.ProfileInformation;
-import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
-import org.fermat.redtooth.profile_server.model.KeyEd25519;
-import org.fermat.redtooth.profile_server.model.Profile;
-import org.fermat.redtooth.profiles_manager.ProfileOuterClass;
+import org.libertaria.world.core.pure.KeyEd25519Java;
+import org.libertaria.world.profile_server.model.KeyEd25519;
+import org.libertaria.world.profiles_manager.ProfileOuterClass;
 import org.junit.Test;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by furszy on 6/30/17.

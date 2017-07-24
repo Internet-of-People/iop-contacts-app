@@ -15,15 +15,14 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import org.libertaria.world.crypto.CryptoBytes;
+import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.engine.futures.BaseMsgFuture;
+import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
+import org.libertaria.world.profile_server.utils.ProfileUtils;
 import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.R;
 import org.furszy.contacts.scanner.ScanActivity;
-
-import org.fermat.redtooth.crypto.CryptoBytes;
-import org.fermat.redtooth.profile_server.ProfileInformation;
-import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
-import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
-import org.fermat.redtooth.profile_server.utils.ProfileUtils;
 
 import static android.Manifest.permission.CAMERA;
 import static org.furszy.contacts.scanner.ScanActivity.INTENT_EXTRA_RESULT;
@@ -87,13 +86,14 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                     return;
                 }
                 final ProfileUtils.UriProfile profile = ProfileUtils.fromUri(uri);
-                if (profile.getPubKey().equals(anRedtooth.getMyProfile().getHexPublicKey())) {
+                if (profile.getPubKey().equals(profilesModule.getProfile(selectedProfPubKey).getHexPublicKey())) {
                     enableSendBtn();
                     Snackbar.make(v, R.string.pairing_yourself, Snackbar.LENGTH_LONG).show();
                     return;
 
                 } else {
                     progressBar.setVisibility(View.VISIBLE);
+
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -127,7 +127,13 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                                         });
                                     }
                                 });
-                                anRedtooth.requestPairingProfile(CryptoBytes.fromHexToBytes(profile.getPubKey()), profile.getName(), profile.getProfSerHost(), future);
+                                pairingModule.requestPairingProfile(
+                                        selectedProfPubKey,
+                                        CryptoBytes.fromHexToBytes(profile.getPubKey()),
+                                        profile.getName(),
+                                        profile.getProfSerHost(),
+                                        future
+                                );
 
                             } catch (final IllegalArgumentException e) {
                                 runOnUiThread(new Runnable() {

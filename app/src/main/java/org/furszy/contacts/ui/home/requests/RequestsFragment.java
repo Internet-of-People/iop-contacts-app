@@ -7,14 +7,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import org.furszy.contacts.App;
+import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
+import org.libertaria.world.profiles_manager.PairingRequest;
 import org.furszy.contacts.R;
 import org.furszy.contacts.adapter.BaseAdapter;
 import org.furszy.contacts.base.RecyclerFragment;
 import org.furszy.contacts.ui.home.HomeActivity;
-
-import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
-import org.fermat.redtooth.profiles_manager.PairingRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,14 +50,13 @@ public class RequestsFragment extends RecyclerFragment<PairingRequest> {
     @Override
     protected List<PairingRequest> onLoading() {
         try {
-            while (module == null) {
-                module = App.getInstance().getAnRedtooth().getRedtooth();
-                if (!Thread.currentThread().isInterrupted())
-                    TimeUnit.SECONDS.sleep(5);
-                else
-                    return null;
+            if (pairingModule!=null)
+                return pairingModule.getPairingRequests(selectedProfilePubKey);
+            else {
+                loadBasics();
+                TimeUnit.SECONDS.sleep(1);
+                onLoading();
             }
-            return module.getPairingOpenRequests();
         }catch (Exception e){
             log.info("onLoading",e);
         }
@@ -68,7 +65,7 @@ public class RequestsFragment extends RecyclerFragment<PairingRequest> {
 
     @Override
     protected BaseAdapter initAdapter() {
-        RequestAdapter profileAdapter = new RequestAdapter(getActivity(), module, new RequestAdapter.RequestListener() {
+        RequestAdapter profileAdapter = new RequestAdapter(getActivity(), new RequestAdapter.RequestListener() {
             @Override
             public void onAcceptRequest(final PairingRequest pairingRequest) {
                 if (acceptanceFlag.compareAndSet(false,true)) {
@@ -78,7 +75,7 @@ public class RequestsFragment extends RecyclerFragment<PairingRequest> {
                         @Override
                         public void run() {
                             try {
-                                module.acceptPairingProfile(pairingRequest,new ProfSerMsgListener<Boolean>(){
+                                pairingModule.acceptPairingProfile(pairingRequest,new ProfSerMsgListener<Boolean>(){
 
                                     @Override
                                     public void onMessageReceive(int messageId, Boolean message) {
@@ -131,7 +128,7 @@ public class RequestsFragment extends RecyclerFragment<PairingRequest> {
 
             @Override
             public void onCancelRequest(PairingRequest pairingRequest) {
-                module.cancelPairingRequest(pairingRequest);
+                pairingModule.cancelPairingRequest(pairingRequest);
                 Toast.makeText(getActivity(),"Connection cancelled..",Toast.LENGTH_SHORT).show();
                 refresh();
             }
