@@ -62,10 +62,12 @@ import iop.org.iop_sdk_android.core.crypto.CryptoWrapperAndroid;
 import iop.org.iop_sdk_android.core.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
 import iop.org.iop_sdk_android.core.service.modules.Core;
+import iop.org.iop_sdk_android.core.service.server_broker.PlatformService;
+
 import org.fermat.redtooth.global.Module;
-import iop.org.iop_sdk_android.core.service.modules.interfaces.ChatModule;
-import iop.org.iop_sdk_android.core.service.modules.interfaces.PairingModule;
-import iop.org.iop_sdk_android.core.service.modules.interfaces.ProfilesModule;
+import org.fermat.redtooth.services.chat.ChatModule;
+import org.fermat.redtooth.services.interfaces.PairingModule;
+import org.fermat.redtooth.services.interfaces.ProfilesModule;
 
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_CONNECTED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
@@ -75,7 +77,7 @@ import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PR
  * Created by mati on 09/11/16.
  */
 
-public class IoPConnectService extends Service implements ModuleRedtooth, EngineListener,DeviceLocation {
+public class IoPConnectService extends Service implements PlatformService,ModuleRedtooth, EngineListener,DeviceLocation {
 
     private final Logger logger = LoggerFactory.getLogger(IoPConnectService.class);
 
@@ -195,7 +197,7 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
                 tryScheduleService();
 
                 // init core
-                core = new Core(this,ioPConnect);
+                core = new Core(this,this,ioPConnect);
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -475,6 +477,11 @@ public class IoPConnectService extends Service implements ModuleRedtooth, Engine
     @Override
     public Profile getProfile() {
         return profile;
+    }
+
+    @Override
+    public ProfilesModule getProfileModule() {
+        return core.getModule(EnabledServices.PROFILE_DATA.getName(),ProfilesModule.class);
     }
 
     @Override

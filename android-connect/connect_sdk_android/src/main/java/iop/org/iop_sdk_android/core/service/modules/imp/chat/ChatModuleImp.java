@@ -34,7 +34,7 @@ import java.util.concurrent.TimeoutException;
 
 import iop.org.iop_sdk_android.core.service.exceptions.ChatCallClosedException;
 import iop.org.iop_sdk_android.core.service.modules.AbstractModule;
-import iop.org.iop_sdk_android.core.service.modules.interfaces.ChatModule;
+import org.fermat.redtooth.services.chat.ChatModule;
 
 import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_CHAT_MSG;
 import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;

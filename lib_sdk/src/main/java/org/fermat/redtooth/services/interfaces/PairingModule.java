@@ -1,4 +1,4 @@
-package iop.org.iop_sdk_android.core.service.modules.interfaces;
+package org.fermat.redtooth.services.interfaces;
 
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;

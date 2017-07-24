@@ -1,8 +1,7 @@
-package iop.org.iop_sdk_android.core.service.modules.imp;
+package iop.org.iop_sdk_android.core.service.modules.imp.profile;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 
 import org.fermat.redtooth.core.IoPConnect;
@@ -10,16 +9,20 @@ import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.engine.app_services.PairingListener;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.ConnectionFuture;
+import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.services.EnabledServices;
+import org.fermat.redtooth.wallet.utils.Iso8601Format;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -29,11 +32,14 @@ import java.util.concurrent.TimeoutException;
 import iop.org.iop_sdk_android.core.IntentBroadcastConstants;
 import iop.org.iop_sdk_android.core.service.IoPConnectService;
 import iop.org.iop_sdk_android.core.service.modules.AbstractModule;
-import iop.org.iop_sdk_android.core.service.modules.interfaces.ProfilesModule;
+import org.fermat.redtooth.services.interfaces.ProfilesModule;
+
+import iop.org.iop_sdk_android.core.service.server_broker.PlatformService;
 import iop.org.iop_sdk_android.core.utils.ImageUtils;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_CHECK_IN_FAIL;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PAIR_RECEIVED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_CONNECTED;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_RESPONSE_PAIR_RECEIVED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_NAME;
@@ -43,7 +49,7 @@ import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_RESPO
  * Created by furszy on 7/19/17.
  */
 
-public class ProfilesModuleImp extends AbstractModule implements ProfilesModule{
+public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,EngineListener{
 
     private static final Logger logger = LoggerFactory.getLogger(ProfilesModuleImp.class);
 
@@ -51,9 +57,9 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule{
     private LocalBroadcastManager localBroadcastManager;
     private IoPConnect ioPConnect;
     // This instance is just for now to start dividing things, to get and set the profile
-    private IoPConnectService connectService;
+    private PlatformService connectService;
 
-    public ProfilesModuleImp(Context context, IoPConnect ioPConnect, IoPConnectService connectService) {
+    public ProfilesModuleImp(Context context, IoPConnect ioPConnect, PlatformService connectService) {
         super(
                 context,
                 Version.newProtocolAcceptedVersion(), // version 1 default for now..
@@ -91,6 +97,30 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule{
         // just for now..
         connectService.setProfile(profile);
         return profile.getHexPublicKey();
+    }
+
+    @Override
+    public File backupProfile(File backupDir, String password) throws IOException {
+        File backupFile = new File(
+                backupDir,
+                "backup_iop_connect_"+connectService.getProfile().getName()+ Iso8601Format.formatDateTimeT(new Date(System.currentTimeMillis()))+".dat"
+        );
+        connectService.getConfPref().saveBackupPassword(password);
+        logger.info("Backup file path: "+backupFile.getAbsolutePath());
+        backupOverwriteProfile(connectService.getProfile(),backupFile,password);
+        scheduleBackupProfileFile(connectService.getProfile(),backupDir,password);
+        return backupFile;
+    }
+
+    @Override
+    public void scheduleBackupProfileFile(Profile profile, File backupDir, String password){
+        File backupFile = new File(
+                backupDir,
+                "backup_iop_connect_"+profile.getName()+".dat"
+        );
+        connectService.getConfPref().setScheduleBackupEnable(true);
+        connectService.getConfPref().saveBackupPatch(backupFile.getAbsolutePath());
+        connectService.getConfPref().saveBackupPassword(password);
     }
 
     @Override
@@ -152,8 +182,15 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule{
         ioPConnect.connectProfile(pubKey,pairingListener,null,msgListenerFuture);
     }
 
+    @Override
     public void onCheckInCompleted(String localProfilePubKey) {
         Intent intent = new Intent(ACTION_ON_PROFILE_CONNECTED);
+        localBroadcastManager.sendBroadcast(intent);
+    }
+
+    @Override
+    public void onDisconnect(String localProfilePubKey) {
+        Intent intent = new Intent(ACTION_ON_PROFILE_DISCONNECTED);
         localBroadcastManager.sendBroadcast(intent);
     }
 
@@ -206,6 +243,20 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule{
             e.printStackTrace();
             throw e;
         }
+    }
+
+
+    /**
+     * todo: this is bad.. i need to do it synchronized.
+     * @param backupFile
+     * @param password
+     * @return
+     * @throws IOException
+     */
+    public File backupOverwriteProfile(Profile localProfile,File backupFile, String password) throws IOException {
+        logger.info("Backup file path: "+backupFile.getAbsolutePath());
+        ioPConnect.backupProfile(localProfile,backupFile,password);
+        return backupFile;
     }
 
     private void broadcastUpdateProfile() {

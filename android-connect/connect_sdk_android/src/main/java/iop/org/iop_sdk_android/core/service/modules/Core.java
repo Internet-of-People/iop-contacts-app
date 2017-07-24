@@ -10,8 +10,9 @@ import java.util.HashMap;
 
 import iop.org.iop_sdk_android.core.service.IoPConnectService;
 import iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatModuleImp;
-import iop.org.iop_sdk_android.core.service.modules.imp.PairingModuleImp;
-import iop.org.iop_sdk_android.core.service.modules.imp.ProfilesModuleImp;
+import iop.org.iop_sdk_android.core.service.modules.imp.pairing.PairingModuleImp;
+import iop.org.iop_sdk_android.core.service.modules.imp.profile.ProfilesModuleImp;
+import iop.org.iop_sdk_android.core.service.server_broker.PlatformService;
 
 /**
  * Created by furszy on 7/19/17.
@@ -26,11 +27,11 @@ public class Core {
 
     private Context context;
     private IoPConnect ioPConnect;
-    private IoPConnectService ioPConnectService;
+    private PlatformService ioPConnectService;
 
-    public Core(IoPConnectService ioPConnectService,IoPConnect ioPConnect) {
+    public Core(Context context,PlatformService ioPConnectService, IoPConnect ioPConnect) {
         this.ioPConnectService = ioPConnectService;
-        this.context = ioPConnectService;
+        this.context = context;
         this.ioPConnect = ioPConnect;
     }
 
@@ -49,7 +50,7 @@ public class Core {
                 );
                 break;
             case PROFILE_PAIRING:
-                module = new PairingModuleImp(ioPConnectService,ioPConnect);
+                module = new PairingModuleImp(context,ioPConnectService,ioPConnect);
                 break;
             case CHAT:
                 module = new ChatModuleImp(context,ioPConnect);
