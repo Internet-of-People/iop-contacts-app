@@ -329,6 +329,9 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
                         } catch (CantConnectException e) {
                             e.printStackTrace();
                             notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+                        } catch (CallProfileAppServiceException e) {
+                            e.printStackTrace();
+                            notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
                         }
                     }
 
@@ -350,6 +353,9 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
         } catch (CantConnectException e) {
             e.printStackTrace();
             notifyCallError(callProfileAppService,profSerMsgListener,0, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+        } catch (CallProfileAppServiceException e) {
+            e.printStackTrace();
+            notifyCallError(callProfileAppService,profSerMsgListener,0, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
         }
     }
 
@@ -359,9 +365,21 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
      * @throws CantConnectException
      * @throws CantSendMessageException
      */
-    private void callProfileAppService(final CallProfileAppService callProfileAppService, final ProfSerMsgListener<CallProfileAppService> profSerMsgListener) throws CantConnectException, CantSendMessageException {
+    private synchronized void callProfileAppService(final CallProfileAppService callProfileAppService, final ProfSerMsgListener<CallProfileAppService> profSerMsgListener) throws CantConnectException, CantSendMessageException, CallProfileAppServiceException {
         // call profile
         logger.info("callProfileAppService call profile");
+        // check if the call already exist
+        for (CallProfileAppService call : openCall.values()) {
+            if (call.getAppService().equals(callProfileAppService.getAppService())
+                    &&
+                    call.getRemoteProfile().getHexPublicKey().equals(callProfileAppService.getRemotePubKey())){
+                // if the call don't answer this call intention.
+                logger.info("callProfileAppService, call already exist. blocking this request");
+                profSerMsgListener.onMsgFail(0,400,"Call already exists");
+                throw new CallProfileAppServiceException("Call already exists");
+            }
+        }
+
         callProfileAppService.setStatus(CallProfileAppService.Status.PENDING_CALL_AS);
         final MsgListenerFuture<IopProfileServer.CallIdentityApplicationServiceResponse> callProfileFuture = new MsgListenerFuture<>();
         callProfileFuture.setListener(new BaseMsgFuture.Listener<IopProfileServer.CallIdentityApplicationServiceResponse>() {
@@ -401,13 +419,25 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
 
 
     @Override
-    public void incomingCallNotification(int messageId, IopProfileServer.IncomingCallNotificationRequest message) {
+    public synchronized void incomingCallNotification(int messageId, IopProfileServer.IncomingCallNotificationRequest message) {
         logger.info("incomingCallNotification");
         try {
             // todo: launch notification to accept the incoming call here.
             //String remotePubKey = CryptoBytes.toHexString(message.getCallerPublicKey().toByteArray());
             String callToken = CryptoBytes.toHexString(message.getCalleeToken().toByteArray());
             ProfileInformation remoteProfInfo = new ProfileInformationImp(message.getCallerPublicKey().toByteArray());
+
+            // check if the call exist (if the call exist don't accept it and close the channel)
+            for (CallProfileAppService callProfileAppService : openCall.values()) {
+                if (callProfileAppService.getAppService().equals(message.getServiceName())
+                        &&
+                        callProfileAppService.getRemoteProfile().getHexPublicKey().equals(remoteProfInfo.getHexPublicKey())){
+                    // if the call don't answer this call intention.
+                    logger.info("incomingCallNotification, call already exist. don't answering call intention");
+                    return;
+                }
+            }
+
             final CallProfileAppService callProfileAppService = new CallProfileAppService(message.getServiceName(), profileCache, remoteProfInfo,profSerEngine);
             callProfileAppService.setCallToken(message.getCalleeToken().toByteArray());
 
