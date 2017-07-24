@@ -68,7 +68,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     private View root;
     private CircleImageView imgProfile;
     private TextView txt_name;
-    private Button btn_connect;
+    private Button btn_disconnect;
     private ProgressBar progress_bar;
 
     private TextView txt_chat;
@@ -133,13 +133,12 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         root = getLayoutInflater().inflate(R.layout.profile_information_main,container);
         imgProfile = (CircleImageView) root.findViewById(R.id.profile_image);
         txt_name = (TextView) root.findViewById(R.id.txt_name);
-        btn_connect = (Button) root.findViewById(R.id.btn_connect);
-        btn_connect.setVisibility(View.GONE);
+        btn_disconnect = (Button) root.findViewById(R.id.btn_disconnect);
         progress_bar = (ProgressBar) root.findViewById(R.id.progress_bar);
         txt_chat = (TextView) root.findViewById(R.id.txt_chat);
         txt_chat.setOnClickListener(this);
 
-        btn_connect.setOnClickListener(new View.OnClickListener() {
+        btn_disconnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
@@ -156,7 +155,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
             }else if (extras.containsKey(IS_MY_PROFILE)){
                 isMyProfile = true;
                 profileInformation = module.getMyProfile();
-                btn_connect.setVisibility(View.GONE);
+                btn_disconnect.setVisibility(View.GONE);
                 txt_chat.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_chat_disable, 0);
                 txt_chat.setEnabled (false);
             }
