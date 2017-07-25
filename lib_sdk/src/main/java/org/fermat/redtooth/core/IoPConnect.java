@@ -273,9 +273,10 @@ public class IoPConnect implements ConnectionListener {
 
     }
 
-    public void connectProfile(String profilePublicKey, PairingListener pairingListener, byte[] ownerChallenge,ConnectionFuture future) throws Exception {
+    public Profile connectProfile(String profilePublicKey, PairingListener pairingListener, byte[] ownerChallenge,ConnectionFuture future) throws Exception {
+        IoPProfileConnection connection = null;
         if (managers.containsKey(profilePublicKey)){
-            IoPProfileConnection connection = getProfileConnection(profilePublicKey);
+            connection = getProfileConnection(profilePublicKey);
             if (connection.hasFail()){
                 future.setProfServerData(createEmptyProfileServerConf().getMainProfileServer());
                 connection.init(future,this);
@@ -315,8 +316,10 @@ public class IoPConnect implements ConnectionListener {
             profileServerConfigurations.saveMainProfileServer(profServerData);
             if (keyEd25519 == null) throw new IllegalStateException("no pubkey saved");
             future.setProfServerData(profServerData);
-            addConnection(profileServerConfigurations, profServerData, keyEd25519, pairingListener).init(future, this);
+            connection = addConnection(profileServerConfigurations, profServerData, keyEd25519, pairingListener);
+            connection.init(future, this);
         }
+        return connection.getProfile();
     }
 
     public int updateProfile(Profile profile, ProfSerMsgListener<Boolean> msgListener) throws Exception {
@@ -404,6 +407,7 @@ public class IoPConnect implements ConnectionListener {
             String backupProfilePath = null;
             if ((backupProfilePath = profileServerConfigurations.getBackupProfilePath())!=null)
                 appService.setBackupProfile(backupProfilePath,profileServerConfigurations.getBackupPassword());
+
             profile.addApplicationService(
                     appService
             );
@@ -485,7 +489,7 @@ public class IoPConnect implements ConnectionListener {
      * @param readyListener
      * @param args
      */
-    public void callService(String serviceName, final Profile localProfile, final ProfileInformation remoteProfile, final boolean tryUpdateRemoteServices , final ProfSerMsgListener<Boolean> readyListener , Object... args) {
+    public void callService(String serviceName, final Profile localProfile, final ProfileInformation remoteProfile, final boolean tryUpdateRemoteServices , final ProfSerMsgListener<CallProfileAppService> readyListener , Object... args) {
         logger.info("RunService, remote: " + remoteProfile.getHexPublicKey());
         try {
             final AppService appService = localProfile.getAppService(serviceName);
@@ -510,6 +514,8 @@ public class IoPConnect implements ConnectionListener {
                                 //profilesManager.updateProfile(localProfile.getHexPublicKey(),call.getRemoteProfile());
                             }
                             appService.onCallConnected(localProfile,remoteProfile,call.isCallCreator());
+                            // notify upper layers
+                            readyListener.onMessageReceive(messageId,call);
                         } else {
                             logger.info("call fail with status: " + call.getStatus() + ", error: " + call.getErrorStatus());
                             readyListener.onMsgFail(messageId, 0, call.getStatus().toString() + " " + call.getErrorStatus());

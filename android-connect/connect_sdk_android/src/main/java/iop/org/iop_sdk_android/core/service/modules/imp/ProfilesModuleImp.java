@@ -149,7 +149,10 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule{
             };
 
         });
-        ioPConnect.connectProfile(pubKey,pairingListener,null,msgListenerFuture);
+
+        connectService.setProfile(
+                ioPConnect.connectProfile(pubKey,pairingListener,null,msgListenerFuture)
+        );
     }
 
     public void onCheckInCompleted(String localProfilePubKey) {

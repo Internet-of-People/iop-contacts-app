@@ -11,6 +11,8 @@ import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profile_server.client.AppServiceCallNotAvailableException;
 import org.fermat.redtooth.profile_server.engine.app_services.BaseMsg;
 import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
+import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
+import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.services.EnabledServices;
@@ -35,6 +37,7 @@ import java.util.concurrent.TimeoutException;
 import iop.org.iop_sdk_android.core.service.exceptions.ChatCallClosedException;
 import iop.org.iop_sdk_android.core.service.modules.AbstractModule;
 import iop.org.iop_sdk_android.core.service.modules.interfaces.ChatModule;
+import iop.org.iop_sdk_android.core.utils.EmptyListener;
 
 import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_CHAT_MSG;
 import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;
@@ -99,7 +102,13 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
             Future future = executor.submit(new Callable() {
                 public Object call() {
                     try {
-                        ioPConnect.callService(EnabledServices.CHAT.getName(), localProfile, remoteProfileInformation, tryUpdateRemoteServices, readyListener);
+                        ioPConnect.callService(
+                                EnabledServices.CHAT.getName(),
+                                localProfile,
+                                remoteProfileInformation,
+                                tryUpdateRemoteServices,
+                                new EmptyListener(readyListener)
+                        );
                     }catch (Exception e){
                         throw e;
                     }
@@ -221,4 +230,5 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
         intent.putExtra(EXTRA_INTENT_CHAT_MSG,msg);
         getContext().sendBroadcast(intent);
     }
+
 }

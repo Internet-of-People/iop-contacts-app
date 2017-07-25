@@ -285,7 +285,6 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                                             startActivity(intent);
                                         }
                                     });
-
                                 }
 
                                 @Override
