@@ -46,10 +46,10 @@
             android:textSize="14sp"/>
 
         <Button
-            android:id="@+id/btn_connect"
+            android:id="@+id/btn_disconnect"
             style="@style/ButtomProfile"
             android:layout_width="220dp"
-            android:text="@string/btn_connected" />
+            android:text="@string/btn_disconnect" />
 
 
     </LinearLayout>
