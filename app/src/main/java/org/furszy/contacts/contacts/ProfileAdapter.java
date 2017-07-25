@@ -15,11 +15,9 @@ import org.fermat.redtooth.profile_server.ProfileInformation;
  */
 public class ProfileAdapter extends BaseAdapter<ProfileInformation, ProfileHolder> {
 
-    ModuleRedtooth module;
 
-    public ProfileAdapter(final Activity context, final ModuleRedtooth module, FermatListItemListeners<ProfileInformation> fermatListItemListeners) {
+    public ProfileAdapter(final Activity context, FermatListItemListeners<ProfileInformation> fermatListItemListeners) {
         super(context);
-        this.module = module;
         setFermatListEventListener(fermatListItemListeners);
 
     }

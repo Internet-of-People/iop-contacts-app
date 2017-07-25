@@ -18,8 +18,8 @@ public class ProfileUtils {
      * Profile URI example: IoP:profile/<hash>/update?name=Matias?ps=192.168.0.1
      * @return
      */
-    public static String getProfileURI(ProfileBase profileBase,String psHost){
-        return "IoP:profile/"+profileBase.getHexPublicKey()+"/update?name="+profileBase.getName()+"&ps="+psHost;
+    public static String getProfileURI(ProfileBase profileBase){
+        return "IoP:profile/"+profileBase.getHexPublicKey()+"/update?name="+profileBase.getName()+"&ps="+profileBase.getHomeHost();
     }
 
     /**

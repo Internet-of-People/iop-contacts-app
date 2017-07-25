@@ -36,6 +36,18 @@ public class ModuleObjectWrapper implements Parcelable,Serializable {
         this.e = (Exception) in.readSerializable();
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public Serializable getObject() {
+        return object;
+    }
+
+    public Exception getE() {
+        return e;
+    }
+
     @Override
     public int describeContents() {
         return 0;

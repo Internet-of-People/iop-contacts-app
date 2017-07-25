@@ -61,8 +61,6 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 
     public static final String INTENT_EXTRA_PROF_SERVER_ID = "prof_ser_id";
     public static final String INTENT_EXTRA_SEARCH = "prof_search";
-
-    ModuleRedtooth module;
     ProfileInformation profileInformation;
 
     private View root;
@@ -85,7 +83,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
             String action = intent.getAction();
             if (action.equals(ACTION_PROFILE_UPDATED_CONSTANT)){
                 if (isMyProfile){
-                    profileInformation = anRedtooth.getMyProfile();
+                    profileInformation = profilesModule.getProfile();
                     loadProfileData();
                 }
             }
@@ -118,8 +116,6 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#2998ff")));
 
-        module = ((App)getApplication()).getAnRedtooth().getRedtooth();
-
 //        Uri data = getIntent().getData();
 //        String scheme = data.getScheme(); // "http"
 //        String host = data.getHost(); // "twitter.com"
@@ -150,12 +146,12 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         if (extras!=null){
             if (extras.containsKey(INTENT_EXTRA_PROF_KEY)) {
                 byte[] pubKey = extras.getByteArray(INTENT_EXTRA_PROF_KEY);
-                profileInformation = module.getKnownProfile(CryptoBytes.toHexString(pubKey));
+                profileInformation = profilesModule.getKnownProfile(CryptoBytes.toHexString(pubKey));
                 // and schedule to try to update this profile information..
                 searchForProfile = true;
             }else if (extras.containsKey(IS_MY_PROFILE)){
                 isMyProfile = true;
-                profileInformation = module.getMyProfile();
+                profileInformation = profilesModule.getProfile();
                 btn_connect.setVisibility(View.GONE);
                 txt_chat.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_chat_disable, 0);
                 txt_chat.setEnabled (false);
@@ -187,7 +183,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     protected void onResume() {
         super.onResume();
         if (isMyProfile){
-            profileInformation = anRedtooth.getMyProfile();
+            profileInformation = profilesModule.getProfile();
         }
         loadProfileData();
         if (executor==null){
@@ -224,7 +220,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                                 });
                             }
                         });
-                        anRedtooth.getProfileInformation(profileInformation.getHexPublicKey(),true,msgListenerFuture);
+                        profilesModule.getProfileInformation(profileInformation.getHexPublicKey(),true,msgListenerFuture);
                     } catch (CantSendMessageException e) {
                         e.printStackTrace();
                     } catch (CantConnectException e) {
@@ -265,7 +261,8 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         int id = v.getId();
         if (id==R.id.txt_chat){
             if (isMyProfile) { return; }
-            if (flag.compareAndSet(false,true)) {
+            // todo: // FIXME: 7/25/17
+            /*if (flag.compareAndSet(false,true)) {
                 Toast.makeText(v.getContext(),"Sending chat request..",Toast.LENGTH_SHORT).show();
                 executor.submit(new Runnable() {
                     @Override
@@ -373,7 +370,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                         }
                     }
                 });
-            }
+            }*/
 
         }
     }

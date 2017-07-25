@@ -19,7 +19,6 @@ import org.fermat.redtooth.profiles_manager.PairingRequest;
  */
 public class RequestAdapter extends BaseAdapter<PairingRequest, RequestHolder> {
 
-    private ModuleRedtooth module;
     private RequestListener requestListener;
 
     public interface RequestListener{
@@ -29,9 +28,8 @@ public class RequestAdapter extends BaseAdapter<PairingRequest, RequestHolder> {
         void onCancelRequest(PairingRequest pairingRequest);
     }
 
-    public RequestAdapter(final Activity context, final ModuleRedtooth module,RequestListener requestListener) {
+    public RequestAdapter(final Activity context,RequestListener requestListener) {
         super(context);
-        this.module = module;
         this.requestListener = requestListener;
     }
 

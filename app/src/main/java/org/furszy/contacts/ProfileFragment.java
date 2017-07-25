@@ -35,6 +35,7 @@ import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.furszy.contacts.App;
 import org.furszy.contacts.R;
 import com.squareup.picasso.Picasso;
@@ -42,6 +43,7 @@ import com.squareup.picasso.Picasso;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.model.Profile;
+import org.furszy.contacts.base.BaseAppFragment;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -60,7 +62,7 @@ import static android.app.Activity.RESULT_OK;
  * Created by mati on 16/04/17.
  */
 
-public class ProfileFragment extends Fragment implements View.OnClickListener{
+public class ProfileFragment extends BaseAppFragment implements View.OnClickListener{
 
 
     private static final String TAG = "ProfileActivity";
@@ -76,8 +78,6 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL = 500;
 
 
-    private ModuleRedtooth module;
-
     // UI
     private View root;
     private CircleImageView imgProfile;
@@ -87,7 +87,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
     private ProgressBar progressBar;
     private ProgressBar loading_img;
 
-    private Profile profile;
+    private ProfileInformation profile;
     byte[] profImgData;
     private boolean isRegistered;
     private int screenState;
@@ -107,16 +107,15 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        super.onCreateView(inflater,container,savedInstanceState);
 
         checkPermissions();
-
-        module = ((App)getActivity().getApplication()).anRedtooth.getRedtooth();
 
         getActivity().setTitle("Edit Profile");
 
         root = inflater.inflate(R.layout.profile_main,container);
 
-        isRegistered = module.isProfileRegistered();
+        isRegistered = profilesModule.isProfileRegistered();
 
         imgProfile = (CircleImageView) root.findViewById(R.id.profile_image);
         txt_name = (EditText) root.findViewById(R.id.txt_name);
@@ -195,8 +194,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
         if (executor==null)
             executor = Executors.newSingleThreadExecutor();
         // init profile
-        if (module!=null) {
-            profile = module.getProfile();
+        if (profilesModule!=null) {
+            profile = profilesModule.getProfile();
             if (profile != null) {
                 txt_name.setText(profile.getName());
                 if (profile.getImg() != null && profile.getImg().length > 0 && profImgData == null) {
@@ -415,7 +414,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
         final String name = txt_name.getText().toString();
         if (!name.equals("")) {
             progressBar.setVisibility(View.VISIBLE);
-            final boolean isIdentityCreated = module.isIdentityCreated();
+            final boolean isIdentityCreated = profilesModule.isIdentityCreated();
             if (!isIdentityCreated){
                 IntentFilter intentFilter = new IntentFilter(App.INTENT_ACTION_PROFILE_CONNECTED);
                 ((BaseActivity)getActivity()).localBroadcastManager.registerReceiver(connectionReceiver,intentFilter);
@@ -427,7 +426,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
                     String detail = null;
                     try {
                         MsgListenerFuture<Boolean> listenerFuture = new MsgListenerFuture();
-                        module.updateProfile(
+                        profilesModule.updateProfile(
                                 name,
                                 profImgData,
                                 listenerFuture);

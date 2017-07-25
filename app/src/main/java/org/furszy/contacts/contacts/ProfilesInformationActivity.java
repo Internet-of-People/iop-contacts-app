@@ -45,7 +45,6 @@ public class ProfilesInformationActivity extends BaseActivity {
 
     private Handler handler = new Handler();
 
-    private ModuleRedtooth module;
 
     private ExecutorService executor;
 
@@ -53,8 +52,6 @@ public class ProfilesInformationActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstance) {
         super.onCreate(savedInstance);
         setTitle("Profiles");
-
-        module = ((App)getApplication()).getAnRedtooth().getRedtooth();
 
         setContentView(R.layout.profiles_information_main);
 
@@ -66,7 +63,7 @@ public class ProfilesInformationActivity extends BaseActivity {
         recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-        adapter = new ProfileAdapter(this, module,new FermatListItemListeners<ProfileInformation>() {
+        adapter = new ProfileAdapter(this,new FermatListItemListeners<ProfileInformation>() {
             @Override
             public void onItemClickListener(ProfileInformation data, int position) {
                 Intent intent1 = new Intent(ProfilesInformationActivity.this, ProfileInformationActivity.class);
@@ -112,7 +109,7 @@ public class ProfilesInformationActivity extends BaseActivity {
         public void run() {
             boolean res = false;
             try {
-                profiles = module.getKnownProfiles();
+                profiles = profilesModule.getKnownProfiles();
                 res = true;
             } catch (Exception e){
                 e.printStackTrace();

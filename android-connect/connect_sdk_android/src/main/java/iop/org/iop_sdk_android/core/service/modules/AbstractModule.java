@@ -2,6 +2,7 @@ package iop.org.iop_sdk_android.core.service.modules;
 
 import android.content.Context;
 
+import org.fermat.redtooth.global.Module;
 import org.fermat.redtooth.global.Version;
 
 import java.lang.ref.WeakReference;
@@ -12,7 +13,7 @@ import java.lang.ref.WeakReference;
  * Base module class
  */
 
-public abstract class AbstractModule {
+public abstract class AbstractModule implements Module {
 
     private WeakReference<Context> context;
     /** AbstractModule version */
@@ -26,11 +27,11 @@ public abstract class AbstractModule {
         this.id = id;
     }
 
-    public Version getVersion() {
+    public final Version getVersion() {
         return version;
     }
 
-    public String getId() {
+    public final String getId() {
         return id;
     }
 

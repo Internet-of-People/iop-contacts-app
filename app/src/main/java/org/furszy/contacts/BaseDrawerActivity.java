@@ -113,8 +113,8 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
         localBroadcastManager.registerReceiver(receiver,new IntentFilter(INTENT_ACTION_PROFILE_CHECK_IN_FAIL));
         localBroadcastManager.registerReceiver(receiver,new IntentFilter(INTENT_ACTION_PROFILE_CONNECTED));
 
-        if (anRedtooth!=null){
-            if(!anRedtooth.isProfileConnectedOrConnecting()){
+        if (profilesModule!=null){
+            if(!profilesModule.isProfileConnectedOrConnecting()){
                 btnReload.setVisibility(View.VISIBLE);
             }
         }
@@ -133,12 +133,7 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
     }
 
     private void refreshProfile() {
-        if (anRedtooth!=null) {
-            myProfile = anRedtooth.getProfile();
-            if (myProfile.getImg()!=null) {
 
-            }
-        }
     }
 
     /**

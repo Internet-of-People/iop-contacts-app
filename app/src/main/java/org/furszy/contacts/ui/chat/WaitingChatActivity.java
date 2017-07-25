@@ -137,7 +137,8 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
             @Override
             public void run() {
                 try {
-                    if (!anRedtooth.isChatActive(remotePk)) {
+                    // todo: // FIXME: 7/25/17
+                    /*if (!chatModule.isChatActive(remotePk)) {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -146,7 +147,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
                             }
                         });
 
-                    }
+                    }*/
                 }catch (Exception e){
                     e.printStackTrace();
                     runOnUiThread(new Runnable() {
@@ -161,7 +162,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
             }
         });
 
-        profileInformation = anRedtooth.getKnownProfile(remotePk);
+        profileInformation = profilesModule.getKnownProfile(remotePk);
         txt_name.setText(profileInformation.getName());
         if (profileInformation.getImg()!=null){
             Bitmap bitmap = BitmapFactory.decodeByteArray(profileInformation.getImg(),0,profileInformation.getImg().length);
@@ -213,7 +214,8 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
 
     private void refuseChat(){
         try{
-            anRedtooth.refuseChatRequest(profileInformation.getHexPublicKey());
+            // todo // FIXME: 7/25/17
+            //anRedtooth.refuseChatRequest(profileInformation.getHexPublicKey());
         }catch (Exception e){
             e.printStackTrace();
             // do nothing..
@@ -221,7 +223,8 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
     }
 
     private void acceptChatRequest() {
-        executors.submit(new Runnable() {
+        // todo: // FIXME: 7/25/17
+        /*executors.submit(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -274,6 +277,6 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
                     });
                 }
             }
-        });
+        });*/
     }
 }

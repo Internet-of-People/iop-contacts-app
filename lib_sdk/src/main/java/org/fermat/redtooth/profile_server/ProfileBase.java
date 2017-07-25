@@ -17,4 +17,6 @@ public interface ProfileBase {
     boolean hasService(String serviceName);
 
     void setVersion(Version bytes);
+
+    String getHomeHost();
 }

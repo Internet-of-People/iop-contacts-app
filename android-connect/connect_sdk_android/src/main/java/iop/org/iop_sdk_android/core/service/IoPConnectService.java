@@ -71,6 +71,7 @@ import org.fermat.redtooth.services.interfaces.ProfilesModule;
 
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_CONNECTED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
 
 
 /**
@@ -223,6 +224,7 @@ public class IoPConnectService extends Service implements PlatformService,Module
                         connect(profile.getHexPublicKey());
                     } else {
                         Intent intent = new Intent(ACTION_ON_PROFILE_CONNECTED);
+                        intent.putExtra(INTENT_EXTRA_PROF_KEY,profile.getHexPublicKey());
                         localBroadcastManager.sendBroadcast(intent);
                         logger.info("check, profile connected or connecting. no actions");
                     }
@@ -638,6 +640,7 @@ public class IoPConnectService extends Service implements PlatformService,Module
     @Override
     public void onCheckInCompleted(String localProfilePubKey) {
         Intent intent = new Intent(ACTION_ON_PROFILE_CONNECTED);
+        intent.putExtra(INTENT_EXTRA_PROF_KEY,localProfilePubKey);
         localBroadcastManager.sendBroadcast(intent);
     }
 

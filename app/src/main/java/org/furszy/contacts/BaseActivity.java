@@ -25,6 +25,9 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import org.fermat.redtooth.services.chat.ChatModule;
+import org.fermat.redtooth.services.interfaces.PairingModule;
+import org.fermat.redtooth.services.interfaces.ProfilesModule;
 import org.furszy.contacts.App;
 import org.furszy.contacts.R;
 import org.furszy.contacts.ui.home.HomeActivity;
@@ -48,7 +51,9 @@ public class BaseActivity extends AppCompatActivity{
 
     public static final String NOTIF_DIALOG_EVENT = "nde";
 
-    protected ModuleRedtooth anRedtooth;
+    protected PairingModule pairingModule;
+    protected ChatModule chatModule;
+    protected ProfilesModule profilesModule;
     protected App app;
 
     protected LocalBroadcastManager localBroadcastManager;
@@ -69,7 +74,9 @@ public class BaseActivity extends AppCompatActivity{
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             setContentView(R.layout.activity_base);
             app = App.getInstance();
-            anRedtooth = app.anRedtooth.getRedtooth();
+            pairingModule = app.getPairingModule();
+            chatModule = app.getChatModule();
+            profilesModule = app.getProfilesModule();
             init();
             // onCreateChildMethod
             onCreateView(savedInstanceState, childContainer);
@@ -114,7 +121,9 @@ public class BaseActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
-        anRedtooth = app.anRedtooth.getRedtooth();
+        pairingModule = app.getPairingModule();
+        chatModule = app.getChatModule();
+        profilesModule = app.getProfilesModule();
         localBroadcastManager.registerReceiver(notifReceiver, new IntentFilter(NOTIF_DIALOG_EVENT));
         localBroadcastManager.registerReceiver(notifReceiver, new IntentFilter(INTENT_ACTION_PROFILE_DISCONNECTED));
         localBroadcastManager.registerReceiver(notifReceiver,new IntentFilter(INTENT_ACTION_PROFILE_CHECK_IN_FAIL));

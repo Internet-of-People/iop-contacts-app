@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import iop.org.iop_sdk_android.core.service.modules.AbstractModule;
 import iop.org.iop_sdk_android.core.service.server_broker.PlatformService;
@@ -115,5 +116,10 @@ public class PairingModuleImp extends AbstractModule implements PairingModule{
     @Override
     public void cancelPairingRequest(PairingRequest pairingRequest) {
         ioPConnect.cancelPairingRequest(pairingRequest);
+    }
+
+    @Override
+    public List<PairingRequest> getPairingRequests() {
+        return platformService.getPairingRequestsDb().openPairingRequests(platformService.getProfile().getHexPublicKey());
     }
 }

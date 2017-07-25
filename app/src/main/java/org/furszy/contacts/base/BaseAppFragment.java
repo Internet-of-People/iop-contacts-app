@@ -7,6 +7,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.fermat.redtooth.services.chat.ChatModule;
+import org.fermat.redtooth.services.interfaces.PairingModule;
+import org.fermat.redtooth.services.interfaces.ProfilesModule;
 import org.furszy.contacts.App;
 
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
@@ -17,12 +20,18 @@ import org.fermat.redtooth.profile_server.ModuleRedtooth;
 
 public class BaseAppFragment extends Fragment {
 
-    protected ModuleRedtooth module;
+    protected App app;
+    protected PairingModule pairingModule;
+    protected ChatModule chatModule;
+    protected ProfilesModule profilesModule;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        module = App.getInstance().getAnRedtooth().getRedtooth();
+        app = App.getInstance();
+        pairingModule = app.getPairingModule();
+        chatModule = app.getChatModule();
+        profilesModule = app.getProfilesModule();
         return null;
     }
 }

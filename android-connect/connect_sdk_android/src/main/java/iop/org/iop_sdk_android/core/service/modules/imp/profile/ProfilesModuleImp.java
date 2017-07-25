@@ -5,22 +5,36 @@ import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 
 import org.fermat.redtooth.core.IoPConnect;
+import org.fermat.redtooth.global.Module;
+import org.fermat.redtooth.global.PlatformSerializer;
 import org.fermat.redtooth.global.Version;
+import org.fermat.redtooth.profile_server.CantConnectException;
+import org.fermat.redtooth.profile_server.CantSendMessageException;
+import org.fermat.redtooth.profile_server.ProfileInformation;
+import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 import org.fermat.redtooth.profile_server.engine.app_services.PairingListener;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
 import org.fermat.redtooth.profile_server.engine.futures.ConnectionFuture;
+import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
+import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.services.EnabledServices;
+import org.fermat.redtooth.services.EnabledServicesFactory;
 import org.fermat.redtooth.wallet.utils.Iso8601Format;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -58,6 +72,13 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
     private IoPConnect ioPConnect;
     // This instance is just for now to start dividing things, to get and set the profile
     private PlatformService connectService;
+
+    private PlatformSerializer platformSerializer = new PlatformSerializer(){
+        @Override
+        public KeyEd25519 toPlatformKey(byte[] privKey, byte[] pubKey) {
+            return iop.org.iop_sdk_android.core.crypto.KeyEd25519.wrap(privKey,pubKey);
+        }
+    };
 
     public ProfilesModuleImp(Context context, IoPConnect ioPConnect, PlatformService connectService) {
         super(
@@ -126,6 +147,12 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
     @Override
     public String registerProfile(String name, byte[] img) throws Exception {
         return registerProfile(name,"IoP-contacts",img,0,0,null);
+    }
+
+    public String registerProfile(Profile profile){
+        profile = ioPConnect.createProfile(profile);
+        connectService.setProfile(profile);
+        return profile.getHexPublicKey();
     }
 
     @Override
@@ -201,6 +228,12 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
         localBroadcastManager.sendBroadcast(intent);
     }
 
+    @Override
+    public void updateProfile(String name, byte[] profImgData, MsgListenerFuture<Boolean> listenerFuture) throws Exception {
+        logger.info("Trying to update profile..");
+        updateProfile(connectService.getProfile().getHexPublicKey(),name,profImgData,0,0,null,listenerFuture);
+    }
+
     public int updateProfile(String pubKey , String name, byte[] img, int latitude, int longitude, String extraData, final ProfSerMsgListener<Boolean> msgListener) throws Exception {
         try{
             logger.info("Trying to update profile..");
@@ -257,6 +290,117 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
         logger.info("Backup file path: "+backupFile.getAbsolutePath());
         ioPConnect.backupProfile(localProfile,backupFile,password);
         return backupFile;
+    }
+
+    /**
+     * // todo: improve this doing the LocalProfiles db.
+     * @param profilePubKey
+     * @param serviceName
+     */
+    @Override
+    public void addService(String profilePubKey,String serviceName) {
+        AppService appService = EnabledServicesFactory.buildService(serviceName,this);
+        ioPConnect.addService(connectService.getProfile(),appService);
+    }
+
+    @Override
+    public boolean isProfileConnectedOrConnecting() {
+        return ioPConnect.isProfileConnectedOrConnecting(connectService.getProfile().getHexPublicKey());
+    }
+
+    /**
+     * Return profiles that this profile is paired or it's waiting for some pair answer from the other side.
+     * @return
+     */
+    @Override
+    public List<ProfileInformation> getKnownProfiles() {
+        List<ProfileInformation> ret = new ArrayList<>();
+        Profile profile = connectService.getProfile();
+        List<ProfileInformation> knownProfiles = ioPConnect.getKnownProfiles(profile.getHexPublicKey());
+        // todo: this is a lazy remove..
+        for (ProfileInformation knownProfile : knownProfiles) {
+            if (!Arrays.equals(knownProfile.getPublicKey(),profile.getPublicKey())){
+                ret.add(knownProfile);
+            }
+        }
+        return ret;
+    }
+
+    @Override
+    public ProfileInformation getKnownProfile(String remotePk) {
+        return ioPConnect.getKnownProfile(connectService.getProfile().getHexPublicKey(),remotePk);
+    }
+
+    @Override
+    public boolean isProfileRegistered() {
+        return connectService.getConfPref().isRegisteredInServer();
+    }
+
+    @Override
+    public ProfileInformation getProfile() {
+        return getMyProfile();
+    }
+
+    @Override
+    public boolean isIdentityCreated() {
+        return connectService.getConfPref().isIdentityCreated();
+    }
+
+    public ProfileInformation getMyProfile() {
+        Set<String> services = new HashSet<>();
+        Profile profile = connectService.getProfile();
+        if (profile.getApplicationServices()!=null) {
+            for (AppService appService : profile.getApplicationServices().values()) {
+                services.add(appService.getName());
+            }
+        }
+        return new ProfileInformationImp(
+                profile.getVersion(),
+                profile.getPublicKey(),
+                profile.getName(),
+                profile.getType(),
+                profile.getImg(),
+                profile.getThumbnailImg(),
+                profile.getLatitude(),
+                profile.getLongitude(),
+                profile.getExtraData(),
+                services,
+                profile.getNetworkId(),
+                profile.getHomeHost()
+
+        );
+    }
+
+    @Override
+    public void getProfileInformation(String profPubKey, ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException {
+        getProfileInformation(profPubKey,false,profileFuture);
+    }
+
+    @Override
+    public void getProfileInformation(String profPubKey, boolean getInfo, final ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException {
+        ioPConnect.searchAndGetProfile(connectService.getProfile().getHexPublicKey(),profPubKey,getInfo,profileFuture);
+    }
+
+    @Override
+    public void restoreProfileFrom(File file, String password) {
+        logger.info("Restoring profile");
+        if (file.exists()){
+            try {
+                IoPConnect.ProfileRestored profileRestored = ioPConnect.restoreFromBackup(file, password, platformSerializer);
+                Profile profile = profileRestored.getProfile();
+                connectService.setProfile(profile);
+                // clean everything
+                ioPConnect.stop();
+                profile = profileRestored.getProfile();
+                // connect
+                registerProfile(profile);
+                connect(profile.getHexPublicKey());
+                logger.info("restore profile completed");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }else
+            throw new IllegalArgumentException("File not exist, "+file.getAbsolutePath());
     }
 
     private void broadcastUpdateProfile() {

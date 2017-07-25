@@ -40,7 +40,7 @@ public class ContactsFragment extends RecyclerFragment<ProfileInformation> {
 
     @Override
     protected BaseAdapter initAdapter() {
-        return new ProfileAdapter(getActivity(), module,new FermatListItemListeners<ProfileInformation>() {
+        return new ProfileAdapter(getActivity(),new FermatListItemListeners<ProfileInformation>() {
             @Override
             public void onItemClickListener(ProfileInformation data, int position) {
                 Intent intent1 = new Intent(getActivity(), ProfileInformationActivity.class);
@@ -58,14 +58,7 @@ public class ContactsFragment extends RecyclerFragment<ProfileInformation> {
     @Override
     protected List onLoading() {
         try {
-            while (module == null) {
-                module = App.getInstance().getAnRedtooth().getRedtooth();
-                if (!Thread.currentThread().isInterrupted())
-                    TimeUnit.SECONDS.sleep(2);
-                else
-                    return null;
-            }
-            return module.getKnownProfiles();
+            return profilesModule.getKnownProfiles();
         }catch (Exception e){
             log.info("onLoading",e);
         }

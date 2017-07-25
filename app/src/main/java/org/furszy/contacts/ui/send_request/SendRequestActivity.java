@@ -87,14 +87,15 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                     return;
                 }
                 final ProfileUtils.UriProfile profile = ProfileUtils.fromUri(uri);
-                if (profile.getPubKey().equals(anRedtooth.getMyProfile().getHexPublicKey())) {
+                if (profile.getPubKey().equals(profilesModule.getProfile().getHexPublicKey())) {
                     enableSendBtn();
                     Snackbar.make(v, R.string.pairing_yourself, Snackbar.LENGTH_LONG).show();
                     return;
 
                 } else {
                     progressBar.setVisibility(View.VISIBLE);
-                    new Thread(new Runnable() {
+                    // // TODO: 7/25/17  
+                    /*new Thread(new Runnable() {
                         @Override
                         public void run() {
                             try {
@@ -127,7 +128,12 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                                         });
                                     }
                                 });
-                                anRedtooth.requestPairingProfile(CryptoBytes.fromHexToBytes(profile.getPubKey()), profile.getName(), profile.getProfSerHost(), future);
+                                pairingModule.requestPairingProfile(
+                                        CryptoBytes.fromHexToBytes(profile.getPubKey()),
+                                        profile.getName(),
+                                        profile.getProfSerHost(),
+                                        future
+                                );
 
                             } catch (final IllegalArgumentException e) {
                                 runOnUiThread(new Runnable() {
@@ -153,7 +159,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                                 });
                             }
                         }
-                    }).start();
+                    }).start();*/
                 }
             }catch (IllegalArgumentException e){
                 Log.i(TAG, "pairing request fail  "+ e.getMessage());

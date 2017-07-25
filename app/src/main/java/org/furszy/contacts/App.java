@@ -15,19 +15,16 @@ import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import org.furszy.contacts.ui.chat.WaitingChatActivity;
+import org.fermat.redtooth.services.chat.ChatModule;
+import org.fermat.redtooth.services.interfaces.PairingModule;
+import org.fermat.redtooth.services.interfaces.ProfilesModule;
 import org.furszy.contacts.ui.home.HomeActivity;
 
 import org.fermat.redtooth.core.IoPConnectContext;
-import org.fermat.redtooth.profile_server.ProfileInformation;
-import org.fermat.redtooth.profile_server.engine.app_services.BaseMsg;
 import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.model.Profile;
-import org.fermat.redtooth.services.chat.msg.ChatMsg;
-import org.fermat.redtooth.services.chat.ChatMsgListener;
-import org.fermat.redtooth.services.chat.msg.ChatMsgTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,11 +40,12 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import iop.org.iop_sdk_android.core.AnConnect;
+import iop.org.iop_sdk_android.core.ClientServiceConnectHelper;
 import iop.org.iop_sdk_android.core.InitListener;
 import iop.org.iop_sdk_android.core.service.ProfileServerConfigurationsImp;
+import iop.org.iop_sdk_android.core.service.client_broker.ConnectClientService;
 import iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants;
 
-import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_IOP_SERVICE_CONNECTED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_CHECK_IN_FAIL;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PAIR_RECEIVED;
@@ -81,10 +79,16 @@ public class App extends Application implements IoPConnectContext {
     private ActivityManager activityManager;
     private PackageInfo info;
 
-    AnConnect anRedtooth;
+    ClientServiceConnectHelper connectHelper;
     private LocalBroadcastManager broadcastManager;
     private NotificationManager notificationManager;
     private long timeCreateApplication = System.currentTimeMillis();
+
+    // App's modules
+    private ProfilesModule profilesModule;
+    private ChatModule chatModule;
+    private PairingModule pairingModule;
+
 
     public static App getInstance() {
         return instance;
@@ -103,7 +107,8 @@ public class App extends Application implements IoPConnectContext {
                 String responseDetail = intent.getStringExtra(INTENT_RESPONSE_DETAIL);
                 onPairResponseReceived(pubKey,responseDetail);
             }else if (action.equals(ACTION_ON_PROFILE_CONNECTED)){
-                onConnect();
+                String profPubKey = intent.getStringExtra(INTENT_EXTRA_PROF_KEY);
+                onConnect(profPubKey);
             }else if (action.equals(ACTION_ON_PROFILE_DISCONNECTED)){
                 onDisconnect();
             }else if (action.equals(ACTION_ON_CHECK_IN_FAIL)){
@@ -138,7 +143,7 @@ public class App extends Application implements IoPConnectContext {
             broadcastManager.registerReceiver(serviceReceiver,new IntentFilter(ACTION_ON_PROFILE_CONNECTED));
             broadcastManager.registerReceiver(serviceReceiver,new IntentFilter(ACTION_ON_PROFILE_DISCONNECTED));
 
-            anRedtooth = AnConnect.init(this, new InitListener() {
+            connectHelper = ClientServiceConnectHelper.init(this, new InitListener() {
                 @Override
                 public void onConnected() {
                     try {
@@ -151,15 +156,20 @@ public class App extends Application implements IoPConnectContext {
                             @Override
                             public void run() {
                                 try {
-                                    ModuleRedtooth module = anRedtooth.getRedtooth();
-                                    if (module.isIdentityCreated()) {
+                                    ConnectClientService module = connectHelper.getClient();
+
+                                    profilesModule = (ProfilesModule) module.getModule(EnabledServices.PROFILE_DATA);
+                                    pairingModule = (PairingModule) module.getModule(EnabledServices.PROFILE_PAIRING);
+                                    chatModule = (ChatModule) module.getModule(EnabledServices.CHAT);
+
+                                    /*if (module.isIdentityCreated()) {
                                         log.info("Trying to connect profile");
                                         Profile profile = module.getProfile();
                                         if (profile != null) {
                                             module.connect(profile.getHexPublicKey());
                                         } else
                                             Log.i("App", "Profile not found to connect");
-                                    }
+                                    }*/
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
@@ -241,10 +251,6 @@ public class App extends Application implements IoPConnectContext {
         log.setLevel(Level.INFO);
     }
 
-    public AnConnect getAnRedtooth(){
-        return anRedtooth;
-    }
-
 
     public void onPairReceived(String requesteePubKey, final String name) {
         Intent intent = new Intent(BaseActivity.NOTIF_DIALOG_EVENT);
@@ -275,21 +281,19 @@ public class App extends Application implements IoPConnectContext {
     }
 
 
-    public void onConnect() {
+    public void onConnect(final String profPubKey) {
         log.info("Profile connected");
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    anRedtooth.getRedtooth().addService(EnabledServices.CHAT.getName());
+                    profilesModule.addService(profPubKey,EnabledServices.CHAT.getName());
                 }catch (Exception e){
                     e.printStackTrace();
                     log.error("Error adding chat service",e);
                 }
             }
         }).start();
-        // add available services here
-
         // notify
         Intent intent = new Intent(INTENT_ACTION_PROFILE_CONNECTED);
         broadcastManager.sendBroadcast(intent);
@@ -328,5 +332,17 @@ public class App extends Application implements IoPConnectContext {
 
     public LocalBroadcastManager getBroadcastManager() {
         return broadcastManager;
+    }
+
+    public PairingModule getPairingModule() {
+        return pairingModule;
+    }
+
+    public ChatModule getChatModule() {
+        return chatModule;
+    }
+
+    public ProfilesModule getProfilesModule() {
+        return profilesModule;
     }
 }

@@ -52,14 +52,7 @@ public class RequestsFragment extends RecyclerFragment<PairingRequest> {
     @Override
     protected List<PairingRequest> onLoading() {
         try {
-            while (module == null) {
-                module = App.getInstance().getAnRedtooth().getRedtooth();
-                if (!Thread.currentThread().isInterrupted())
-                    TimeUnit.SECONDS.sleep(5);
-                else
-                    return null;
-            }
-            return module.getPairingOpenRequests();
+            return pairingModule.getPairingRequests();
         }catch (Exception e){
             log.info("onLoading",e);
         }
@@ -68,7 +61,7 @@ public class RequestsFragment extends RecyclerFragment<PairingRequest> {
 
     @Override
     protected BaseAdapter initAdapter() {
-        RequestAdapter profileAdapter = new RequestAdapter(getActivity(), module, new RequestAdapter.RequestListener() {
+        RequestAdapter profileAdapter = new RequestAdapter(getActivity(), new RequestAdapter.RequestListener() {
             @Override
             public void onAcceptRequest(final PairingRequest pairingRequest) {
                 if (acceptanceFlag.compareAndSet(false,true)) {
@@ -78,7 +71,7 @@ public class RequestsFragment extends RecyclerFragment<PairingRequest> {
                         @Override
                         public void run() {
                             try {
-                                module.acceptPairingProfile(pairingRequest,new ProfSerMsgListener<Boolean>(){
+                                pairingModule.acceptPairingProfile(pairingRequest,new ProfSerMsgListener<Boolean>(){
 
                                     @Override
                                     public void onMessageReceive(int messageId, Boolean message) {
@@ -131,7 +124,7 @@ public class RequestsFragment extends RecyclerFragment<PairingRequest> {
 
             @Override
             public void onCancelRequest(PairingRequest pairingRequest) {
-                module.cancelPairingRequest(pairingRequest);
+                pairingModule.cancelPairingRequest(pairingRequest);
                 Toast.makeText(getActivity(),"Connection cancelled..",Toast.LENGTH_SHORT).show();
                 refresh();
             }

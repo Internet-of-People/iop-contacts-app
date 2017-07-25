@@ -8,4 +8,6 @@ public interface Module {
 
     void onDestroy();
 
+    String getId();
+
 }

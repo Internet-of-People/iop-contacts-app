@@ -84,7 +84,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
             window.setStatusBarColor(Color.parseColor("#21619C"));
         }
         remotePk = getIntent().getStringExtra(REMOTE_PROFILE_PUB_KEY);
-        remoteProfile = anRedtooth.getKnownProfile(remotePk);
+        remoteProfile = profilesModule.getKnownProfile(remotePk);
         messagesFragment = (MessagesFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_messages);
 
         // cancel chat notifications if there is any..
@@ -111,7 +111,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
             public void run() {
                 try {
                     // close chat
-                    anRedtooth.refuseChatRequest(remoteProfile.getHexPublicKey());
+                    //todo // FIXME: 7/25/17
+                    //anRedtooth.refuseChatRequest(remoteProfile.getHexPublicKey());
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -136,7 +137,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
             public void run() {
                 try {
                     // close chat
-                    anRedtooth.refuseChatRequest(remoteProfile.getHexPublicKey());
+                    //todo // FIXME: 7/25/17
+                    //anRedtooth.refuseChatRequest(remoteProfile.getHexPublicKey());
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -152,7 +154,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
             final String text = edit_msg.getText().toString();
             if (text.length() > 0) {
                 edit_msg.setText("");
-                executor.submit(new Runnable() {
+                // // TODO: 7/25/17
+                /*executor.submit(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -194,7 +197,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                             });
                         }
                     }
-                });
+                });*/
             }
         }
     }

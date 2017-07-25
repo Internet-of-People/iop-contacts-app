@@ -81,7 +81,7 @@ public class CreateProfileActivity extends BaseActivity {
                             public void run() {
                                 try {
                                     //todo: make this connect non blocking.
-                                    anRedtooth.connect(anRedtooth.registerProfile(name, profImgData));
+                                    profilesModule.connect(profilesModule.registerProfile(name, profImgData));
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
