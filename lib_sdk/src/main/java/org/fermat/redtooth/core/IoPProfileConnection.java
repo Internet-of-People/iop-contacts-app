@@ -36,6 +36,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by mati on 08/05/17.
@@ -47,6 +50,9 @@ import java.util.concurrent.ExecutionException;
 public class IoPProfileConnection implements CallsListener, CallProfileAppService.CallStateListener {
 
     private static final Logger logger = LoggerFactory.getLogger(IoPProfileConnection.class);
+
+    /** Time in millis (20 seconds) */
+    private static final long CALL_IDLE_TIME = 20000;
 
     /** Context wrapper */
     private IoPConnectContext contextWrapper;
@@ -64,6 +70,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
     private DeviceLocation deviceLocation;
     /** Open profile app service calls -> call token -> call in progress */
     private ConcurrentMap<String,CallProfileAppService> openCall = new ConcurrentHashMap<>();
+    private ScheduledExecutorService scheduledExecutorService;
 
     public IoPProfileConnection(IoPConnectContext contextWrapper, Profile profile,ProfServerData psConnData, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, DeviceLocation deviceLocation){
         this.contextWrapper = contextWrapper;
@@ -96,6 +103,14 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
             }
         });
         profSerEngine.start(initWrapper);
+        // schedule the call's agent
+        scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                checkCalls();
+            }
+        },30,CALL_IDLE_TIME, TimeUnit.SECONDS);
     }
 
     public void init(ConnectionListener connectionListener) throws Exception {
@@ -123,6 +138,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
     }
 
     public void stop() {
+        scheduledExecutorService.shutdownNow();
         for (Map.Entry<String, CallProfileAppService> stringCallProfileAppServiceEntry : openCall.entrySet()) {
             try{
                 stringCallProfileAppServiceEntry.getValue().dispose();
@@ -260,7 +276,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
                 profSerEngine,
                 (encryptMsg)?new BoxAlgo():null
         );
-        // wrap call in a Pairing call.
+        // wrap call.
         profileCache.getAppService(appService).wrapCall(callProfileAppService);
         try {
             if (!tryWithoutGetInfo) {
@@ -569,6 +585,27 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
     public void onCallFinished(CallProfileAppService callProfileAppService) {
         try {
             openCall.remove(CryptoBytes.toHexString(callProfileAppService.getCallToken()));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+    private void checkCalls(){
+        try {
+            for (CallProfileAppService callProfileAppService : openCall.values()) {
+                // check if the call is idle and close it
+                long now = System.currentTimeMillis();
+                if (callProfileAppService.getCreationTime() + CALL_IDLE_TIME < now
+                        &&
+                        callProfileAppService.getLastMessageReceived() + CALL_IDLE_TIME < now
+                        &&
+                        callProfileAppService.getLastMessageSent() + CALL_IDLE_TIME < now
+                        ) {
+                    // if the call doesn't receive or sent anything on a CALL_IDLE_TIME period close it
+                    callProfileAppService.dispose();
+                }
+            }
         }catch (Exception e){
             e.printStackTrace();
         }

@@ -98,6 +98,10 @@ public class CallProfileAppService {
     private CopyOnWriteArrayList<CallStateListener> callStateListeners = new CopyOnWriteArrayList<>();
     /** Engine wrapped */
     private ProfSerEngine profSerEngine;
+    /** Information */
+    private long creationTime = System.currentTimeMillis();
+    private long lastMessageSent;
+    private long lastMessageReceived;
 
     public CallProfileAppService(String appService, Profile localProfile,ProfileInformation remoteProfile,ProfSerEngine profSerEngine,CryptoAlgo cryptoAlgo) {
         this(appService,localProfile,remoteProfile,profSerEngine);
@@ -197,6 +201,18 @@ public class CallProfileAppService {
         return callTokenHex;
     }
 
+    public long getLastMessageSent() {
+        return lastMessageSent;
+    }
+
+    public long getLastMessageReceived() {
+        return lastMessageReceived;
+    }
+
+    public long getCreationTime() {
+        return creationTime;
+    }
+
     /**
      *
      *
@@ -248,6 +264,7 @@ public class CallProfileAppService {
             }
         }
         sendMsg(msgTemp,sendListener);
+        lastMessageSent = System.currentTimeMillis();
     }
 
     public void ping() throws CantConnectException, CantSendMessageException {
@@ -304,6 +321,7 @@ public class CallProfileAppService {
      */
     public void onMessageReceived(byte[] msg){
         try {
+            lastMessageReceived = System.currentTimeMillis();
             byte[] msgTemp = msg;
             if (isEncrypted) {
                 if (cryptoAlgo != null) {
