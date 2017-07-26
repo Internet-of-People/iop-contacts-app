@@ -52,7 +52,13 @@ public class RequestsFragment extends RecyclerFragment<PairingRequest> {
     @Override
     protected List<PairingRequest> onLoading() {
         try {
-            return pairingModule.getPairingRequests();
+            if (pairingModule!=null)
+                return pairingModule.getPairingRequests();
+            else {
+                loadBasics();
+                TimeUnit.SECONDS.sleep(1);
+                onLoading();
+            }
         }catch (Exception e){
             log.info("onLoading",e);
         }

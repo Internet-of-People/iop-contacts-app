@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import iop.org.iop_sdk_android.core.service.IoPConnectService;
 import iop.org.iop_sdk_android.core.service.client_broker.ConnectClientService;
+import iop.org.iop_sdk_android.core.service.server_broker.IntentServiceAction;
 import iop.org.iop_sdk_android.core.service.server_broker.PlatformServiceImp;
 
 /**
@@ -60,7 +61,7 @@ public class ClientServiceConnectHelper {
     };
     //
     private void startProfileServerService() {
-        Intent intent = new Intent(application,PlatformServiceImp.class);
+        Intent intent = new Intent(application,ConnectClientService.class);
         application.bindService(intent,profServiceConnection, Context.BIND_AUTO_CREATE);
     }
 

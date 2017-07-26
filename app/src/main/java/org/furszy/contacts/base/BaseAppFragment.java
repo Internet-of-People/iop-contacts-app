@@ -25,13 +25,17 @@ public class BaseAppFragment extends Fragment {
     protected ChatModule chatModule;
     protected ProfilesModule profilesModule;
 
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        loadBasics();
+    }
+
+
+    public void loadBasics() {
         app = App.getInstance();
         pairingModule = app.getPairingModule();
         chatModule = app.getChatModule();
         profilesModule = app.getProfilesModule();
-        return null;
     }
 }

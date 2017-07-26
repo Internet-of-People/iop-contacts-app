@@ -58,7 +58,13 @@ public class ContactsFragment extends RecyclerFragment<ProfileInformation> {
     @Override
     protected List onLoading() {
         try {
-            return profilesModule.getKnownProfiles();
+            if (profilesModule!=null)
+                return profilesModule.getKnownProfiles();
+            else {
+                loadBasics();
+                TimeUnit.SECONDS.sleep(1);
+                onLoading();
+            }
         }catch (Exception e){
             log.info("onLoading",e);
         }

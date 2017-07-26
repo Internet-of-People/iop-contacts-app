@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +41,7 @@ import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_IOP_S
  *
  */
 
-public class ConnectClientService extends Service implements InvocationHandler {
+public class ConnectClientService extends Service  {
 
     private static final Logger logger = LoggerFactory.getLogger(ConnectClientService.class);
 
@@ -79,18 +80,31 @@ public class ConnectClientService extends Service implements InvocationHandler {
         Module module = (Module) Proxy.newProxyInstance(
                   enabledServices.getModuleClass().getClassLoader(),
                   new Class[]{enabledServices.getModuleClass()},
-                  this
+                  new Handler(enabledServices)
         );
         openModules.put(enabledServices,module);
         return module;
     }
 
-    @Override
-    public final Object invoke(Object o, Method method, Object[] args) throws Throwable {
+    private class Handler implements InvocationHandler{
+
+        private EnabledServices enabledServices;
+
+        public Handler(EnabledServices enabledServices) {
+            this.enabledServices = enabledServices;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            return invokeService(proxy,enabledServices,method,args);
+        }
+    }
+
+    public final Object invokeService(Object o,EnabledServices service ,Method method, Object[] args) throws Throwable {
         if (!mPlatformServiceIsBound){
             throw new IllegalStateException("Platform service is not bound yet.");
         }
-        logger.info("invoque method "+method.getName());
+        logger.info("Service "+ service.getName()+" invoque method "+method.getName());
         ModuleParameter[] parameters = null;
         Class<?>[] parametersTypes = method.getParameterTypes();
         if (args != null) {
@@ -113,7 +127,7 @@ public class ConnectClientService extends Service implements InvocationHandler {
         ModuleObjectWrapper respObject = iServerBrokerService.callMethod(
                 null,
                 null, // data id should be packageName+msg_id
-                ((Module)o).getId(),
+                service.getName(),
                 method.getName(),
                 parameters
         );

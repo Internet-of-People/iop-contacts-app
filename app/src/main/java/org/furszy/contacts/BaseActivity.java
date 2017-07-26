@@ -73,10 +73,7 @@ public class BaseActivity extends AppCompatActivity{
             this.notifReceiver = new NotifReceiver();
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             setContentView(R.layout.activity_base);
-            app = App.getInstance();
-            pairingModule = app.getPairingModule();
-            chatModule = app.getChatModule();
-            profilesModule = app.getProfilesModule();
+            loadBasics();
             init();
             // onCreateChildMethod
             onCreateView(savedInstanceState, childContainer);
@@ -94,6 +91,13 @@ public class BaseActivity extends AppCompatActivity{
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    protected void loadBasics(){
+        app = App.getInstance();
+        pairingModule = app.getPairingModule();
+        chatModule = app.getChatModule();
+        profilesModule = app.getProfilesModule();
     }
 
     private void init(){

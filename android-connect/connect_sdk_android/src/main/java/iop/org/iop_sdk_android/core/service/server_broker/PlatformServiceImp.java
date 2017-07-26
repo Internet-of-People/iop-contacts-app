@@ -169,11 +169,12 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                 pairingRequestDb = new SqlitePairingRequestDb(this);
                 profilesDb = new SqliteProfilesDb(this);
                 ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),profilesDb,pairingRequestDb,this);
-                ioPConnect.setEngineListener((ProfilesModuleImp)core.getModule(EnabledServices.PROFILE_DATA.getName()));
-                tryScheduleService();
-
                 // init core
                 core = new Core(this,this,ioPConnect);
+                ioPConnect.setEngineListener((ProfilesModuleImp)core.getModule(EnabledServices.PROFILE_DATA.getName()));
+
+                tryScheduleService();
+
             }
         }catch (Exception e){
             e.printStackTrace();

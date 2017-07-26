@@ -1,6 +1,9 @@
 package org.furszy.contacts.ui.home;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
@@ -15,12 +18,15 @@ import org.furszy.contacts.BaseDrawerActivity;
 import org.furszy.contacts.App;
 import org.furszy.contacts.R;
 import org.furszy.contacts.StartActivity;
+import org.furszy.contacts.base.BaseAppFragment;
 import org.furszy.contacts.ui.home.contacts.ContactsFragment;
 import org.furszy.contacts.ui.home.requests.RequestsFragment;
 import org.furszy.contacts.ui.send_request.SendRequestActivity;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.furszy.contacts.App.INTENT_ACTION_ON_SERVICE_CONNECTED;
 
 /**
  * Created by furszy on 6/20/17.
@@ -36,6 +42,24 @@ public class HomeActivity extends BaseDrawerActivity {
     private ViewPagerAdapter adapter;
 
     private boolean initInRequest;
+
+    private BroadcastReceiver initReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(INTENT_ACTION_ON_SERVICE_CONNECTED)){
+                loadBasics();
+                refreshFragments();
+            }
+        }
+    };
+
+    private void refreshFragments() {
+        for (Fragment fragment : adapter.mFragmentList) {
+            ((BaseAppFragment)fragment).loadBasics();
+        }
+        refreshContacts();
+        refreshRequests();
+    }
 
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
@@ -66,6 +90,8 @@ public class HomeActivity extends BaseDrawerActivity {
                 }
             });
         }
+
+        localBroadcastManager.registerReceiver(initReceiver,new IntentFilter(INTENT_ACTION_ON_SERVICE_CONNECTED));
     }
 
     @Override
@@ -77,6 +103,13 @@ public class HomeActivity extends BaseDrawerActivity {
             viewPager.setCurrentItem(1);
             initInRequest = false;
         }
+        localBroadcastManager.registerReceiver(initReceiver,new IntentFilter(INTENT_ACTION_ON_SERVICE_CONNECTED));
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        localBroadcastManager.unregisterReceiver(initReceiver);
     }
 
     private void setupViewPager(ViewPager viewPager) {
@@ -124,7 +157,19 @@ public class HomeActivity extends BaseDrawerActivity {
                     ((ContactsFragment)fragment).refresh();
                 }
             });
+        }
+    }
 
+
+    private void refreshRequests() {
+        final Fragment fragment = adapter.getItem(1);
+        if (fragment!=null){
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ((RequestsFragment)fragment).refresh();
+                }
+            });
         }
     }
 }

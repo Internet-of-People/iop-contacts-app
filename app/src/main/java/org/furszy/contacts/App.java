@@ -13,7 +13,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
 import org.fermat.redtooth.services.chat.ChatModule;
 import org.fermat.redtooth.services.interfaces.PairingModule;
@@ -22,9 +21,7 @@ import org.furszy.contacts.ui.home.HomeActivity;
 
 import org.fermat.redtooth.core.IoPConnectContext;
 import org.fermat.redtooth.services.EnabledServices;
-import org.fermat.redtooth.profile_server.ModuleRedtooth;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
-import org.fermat.redtooth.profile_server.model.Profile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +36,6 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
-import iop.org.iop_sdk_android.core.AnConnect;
 import iop.org.iop_sdk_android.core.ClientServiceConnectHelper;
 import iop.org.iop_sdk_android.core.InitListener;
 import iop.org.iop_sdk_android.core.service.ProfileServerConfigurationsImp;
@@ -62,6 +58,7 @@ import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_RESPO
 
 public class App extends Application implements IoPConnectContext {
 
+    public static final String INTENT_ACTION_ON_SERVICE_CONNECTED = "service_connected";
     public static final String INTENT_ACTION_PROFILE_CONNECTED = "profile_connected";
     public static final String INTENT_ACTION_PROFILE_CHECK_IN_FAIL= "profile_check_in_fail";
     public static final String INTENT_ACTION_PROFILE_DISCONNECTED = "profile_disconnected";
@@ -161,6 +158,10 @@ public class App extends Application implements IoPConnectContext {
                                     profilesModule = (ProfilesModule) module.getModule(EnabledServices.PROFILE_DATA);
                                     pairingModule = (PairingModule) module.getModule(EnabledServices.PROFILE_PAIRING);
                                     chatModule = (ChatModule) module.getModule(EnabledServices.CHAT);
+
+                                    // notify connection to the service
+                                    Intent notificateIntent = new Intent(INTENT_ACTION_ON_SERVICE_CONNECTED);
+                                    broadcastManager.sendBroadcast(notificateIntent);
 
                                     /*if (module.isIdentityCreated()) {
                                         log.info("Trying to connect profile");
