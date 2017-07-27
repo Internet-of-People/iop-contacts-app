@@ -69,7 +69,6 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
 
     // todo: change this for the non local broadcast..
     private LocalBroadcastManager localBroadcastManager;
-    private IoPConnect ioPConnect;
     // This instance is just for now to start dividing things, to get and set the profile
     private PlatformService connectService;
 
@@ -83,10 +82,10 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
     public ProfilesModuleImp(Context context, IoPConnect ioPConnect, PlatformService connectService) {
         super(
                 context,
+                ioPConnect,
                 Version.newProtocolAcceptedVersion(), // version 1 default for now..
-                EnabledServices.PROFILE_DATA.getName() // module identifier
+                EnabledServices.PROFILE_DATA // module identifier
         );
-        this.ioPConnect = ioPConnect;
         this.connectService = connectService;
         this.localBroadcastManager = LocalBroadcastManager.getInstance(context);
     }

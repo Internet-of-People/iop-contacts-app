@@ -59,6 +59,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import iop.org.iop_sdk_android.core.crypto.CryptoWrapperAndroid;
+import iop.org.iop_sdk_android.core.db.LocalProfilesDb;
 import iop.org.iop_sdk_android.core.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
 import iop.org.iop_sdk_android.core.service.modules.Core;
@@ -100,6 +101,7 @@ public class IoPConnectService extends Service implements PlatformService,Module
     /** Databases */
     private SqlitePairingRequestDb pairingRequestDb;
     private SqliteProfilesDb profilesDb;
+    private LocalProfilesDb localProfilesDb;
 
     private Core core;
 
@@ -193,7 +195,8 @@ public class IoPConnectService extends Service implements PlatformService,Module
                     profile = configurationsPreferences.getProfile();
                 pairingRequestDb = new SqlitePairingRequestDb(this);
                 profilesDb = new SqliteProfilesDb(this);
-                ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),profilesDb,pairingRequestDb,this);
+                localProfilesDb = new LocalProfilesDb(this);
+                ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),localProfilesDb,profilesDb,pairingRequestDb,this);
                 ioPConnect.setEngineListener(this);
                 tryScheduleService();
 
@@ -386,33 +389,33 @@ public class IoPConnectService extends Service implements PlatformService,Module
      */
     @Override
     public void requestChat(final ProfileInformation remoteProfileInformation, final ProfSerMsgListener<Boolean> readyListener, TimeUnit timeUnit, long time) throws RequestChatException, ChatCallAlreadyOpenException {
-        core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
+        /*core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
                 .requestChat(
                         profile,
                         remoteProfileInformation,
                         readyListener,
                         timeUnit,
                         time
-                );
+                );*/
     }
 
     @Override
     public void refuseChatRequest(String hexPublicKey) {
-        core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
+        /*core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
                 .refuseChatRequest(
                         profile,
                         hexPublicKey
-                );
+                );*/
     }
 
     @Override
     public void acceptChatRequest(String remoteHexPublicKey, ProfSerMsgListener<Boolean> future) throws Exception {
-        core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
+        /*core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
                 .acceptChatRequest(
                         profile,
                         remoteHexPublicKey,
                         future
-                );
+                );*/
     }
 
     /**
@@ -424,22 +427,23 @@ public class IoPConnectService extends Service implements PlatformService,Module
      */
     @Override
     public void sendMsgToChat(ProfileInformation remoteProfileInformation, String msg, ProfSerMsgListener<Boolean> msgListener) throws Exception {
-        core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
+        /*core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
                 .sendMsgToChat(
                         profile,
                         remoteProfileInformation,
                         msg,
                         msgListener
-                );
+                );*/
     }
 
     @Override
     public boolean isChatActive(String remotePk){
-        return core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
+        /*return core.getModule(EnabledServices.CHAT.getName(), ChatModule.class)
                 .isChatActive(
                         profile,
                         remotePk
-                );
+                );*/
+        return false;
     }
 
     @Override

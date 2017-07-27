@@ -69,7 +69,6 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // TODO Auto-generated method stub
         db.execSQL(
                 "create table " +CONTACTS_TABLE_NAME+
                         "(" +
@@ -93,7 +92,6 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // TODO Auto-generated method stub
         db.execSQL("DROP TABLE IF EXISTS contacts");
         onCreate(db);
     }

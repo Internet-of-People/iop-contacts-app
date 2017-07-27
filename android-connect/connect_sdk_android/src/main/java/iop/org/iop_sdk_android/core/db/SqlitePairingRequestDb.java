@@ -58,7 +58,6 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // TODO Auto-generated method stub
         db.execSQL(
                 "create table " +PAIRING_TABLE_NAME+
                         "(" +
@@ -79,7 +78,6 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // TODO Auto-generated method stub
         db.execSQL("DROP TABLE IF EXISTS "+PAIRING_TABLE_NAME);
         onCreate(db);
     }

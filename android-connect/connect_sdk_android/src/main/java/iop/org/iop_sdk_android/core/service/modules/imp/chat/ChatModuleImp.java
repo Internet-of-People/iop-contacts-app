@@ -51,80 +51,22 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
     private Logger logger = LoggerFactory.getLogger(ChatModuleImp.class);
 
     private Context context;
-    private IoPConnect ioPConnect;
 
     public ChatModuleImp(Context context,IoPConnect ioPConnect) {
-        super(context,Version.newProtocolAcceptedVersion(), EnabledServices.CHAT.getName());
-        this.ioPConnect = ioPConnect;
+        super(context,ioPConnect,Version.newProtocolAcceptedVersion(), EnabledServices.CHAT);
     }
 
     @Override
-    public void requestChat(final Profile localProfile, final ProfileInformation remoteProfileInformation, final ProfSerMsgListener<Boolean> readyListener, TimeUnit timeUnit, long time) throws RequestChatException, ChatCallAlreadyOpenException {
-        if(!localProfile.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on local profile");
-        ExecutorService executor = null;
-        try {
-            // first check if the chat is active or was requested
-            ChatAppService chatAppService = localProfile.getAppService(EnabledServices.CHAT.getName(), ChatAppService.class);
-            if(chatAppService.hasOpenCall(remoteProfileInformation.getHexPublicKey())){
-                // chat app service call already open, check if it stablish or it's done
-                CallProfileAppService call = chatAppService.getOpenCall(remoteProfileInformation.getHexPublicKey());
-                if (call!=null && !call.isDone() && !call.isFail()){
-                    // call is open
-                    // ping it
-                    try {
-                        call.ping();
-                        // throw exception
-                        throw new ChatCallAlreadyOpenException("Chat call with: "+remoteProfileInformation.getName()+", already open");
-                    } catch (CantConnectException | CantSendMessageException e) {
-                        e.printStackTrace();
-                    }
-                    call.dispose();
-                    chatAppService.removeCall(call,"call done but not closed..");
-                }else {
-                    // this should not happen but i will check that
-                    // the call is not open but the object still active.. i have to close it
-                    try {
-                        if (call!=null) {
-                            call.dispose();
-                            chatAppService.removeCall(call,"call open and done/fail without reason..");
-                        }
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }
-
-            }
-            final boolean tryUpdateRemoteServices = !remoteProfileInformation.hasService(EnabledServices.CHAT.getName());
-            executor = Executors.newSingleThreadExecutor();
-            Future future = executor.submit(new Callable() {
-                public Object call() {
-                    try {
-                        ioPConnect.callService(EnabledServices.CHAT.getName(), localProfile, remoteProfileInformation, tryUpdateRemoteServices, readyListener);
-                    }catch (Exception e){
-                        throw e;
-                    }
-                    return null;
-                }
-            });
-            future.get(time, timeUnit);
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException | InterruptedException e) {
-            // destroy call
-            CallProfileAppService callProfileAppService = localProfile.getAppService(EnabledServices.CHAT.getName()).getOpenCall(remoteProfileInformation.getHexPublicKey());
-            callProfileAppService.dispose();
-            throw new RequestChatException(e);
-        } finally {
-            if (executor!=null){
-                executor.shutdownNow();
-                executor = null;
-            }
-        }
+    public void requestChat(final String localProfilePubKey, final ProfileInformation remoteProfileInformation, final ProfSerMsgListener<Boolean> readyListener) throws RequestChatException, ChatCallAlreadyOpenException {
+        // first check if the chat is active or was requested
+        CallProfileAppService call = getCall(localProfilePubKey,remoteProfileInformation.getHexPublicKey());
+        if (call!=null) throw new ChatCallAlreadyOpenException("chat call already open with "+remoteProfileInformation.getHexPublicKey());
+        prepareCall(localProfilePubKey,remoteProfileInformation,readyListener);
     }
 
     @Override
-    public void acceptChatRequest(Profile localProfile, String remoteHexPublicKey, ProfSerMsgListener<Boolean> future) throws Exception {
-        CallProfileAppService callProfileAppService = localProfile.getAppService(EnabledServices.CHAT.getName()).getOpenCall(remoteHexPublicKey);
+    public void acceptChatRequest(String localProfilePubKey, String remoteHexPublicKey, ProfSerMsgListener<Boolean> future) throws Exception {
+        CallProfileAppService callProfileAppService = getCall(localProfilePubKey,remoteHexPublicKey);
         if (callProfileAppService!=null) {
             callProfileAppService.sendMsg(new ChatAcceptMsg(System.currentTimeMillis()), future);
         }else {
@@ -133,9 +75,8 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
     }
 
     @Override
-    public void refuseChatRequest(Profile localProfile, String remoteHexPublicKey) {
-        ChatAppService chatAppService = localProfile.getAppService(EnabledServices.CHAT.getName(),ChatAppService.class);
-        CallProfileAppService callProfileAppService = chatAppService.getOpenCall(remoteHexPublicKey);
+    public void refuseChatRequest(String localProfilePubKey, String remoteHexPublicKey) {
+        CallProfileAppService callProfileAppService = getCall(localProfilePubKey,remoteHexPublicKey);
         if (callProfileAppService == null) return;
         try {
             callProfileAppService.sendMsg(new ChatRefuseMsg(), null);
@@ -144,7 +85,6 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
             // do nothing..
         }
         callProfileAppService.dispose();
-        chatAppService.removeCall(callProfileAppService,"local profile refuse chat");
     }
 
     /**
@@ -155,14 +95,11 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
      * @throws Exception
      */
     @Override
-    public void sendMsgToChat(Profile localProfile, ProfileInformation remoteProfileInformation, String msg, ProfSerMsgListener<Boolean> msgListener) throws Exception {
-        if(!localProfile.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on local profile");
-        //if(!remoteProfileInformation.hasService(EnabledServices.CHAT.getName())) throw new IllegalStateException("App service "+ EnabledServices.CHAT.name()+" is not enabled on remote profile");
+    public void sendMsgToChat(String localProfilePubKey, ProfileInformation remoteProfileInformation, String msg, ProfSerMsgListener<Boolean> msgListener) throws Exception {
         CallProfileAppService callProfileAppService = null;
         try {
             ChatMsg chatMsg = new ChatMsg(msg);
-            callProfileAppService = localProfile.getAppService(EnabledServices.CHAT.getName())
-                    .getOpenCall(remoteProfileInformation.getHexPublicKey());
+            callProfileAppService = getCall(localProfilePubKey,remoteProfileInformation.getHexPublicKey());
             if (callProfileAppService==null) throw new ChatCallClosedException("Chat connection is not longer available",remoteProfileInformation);
             callProfileAppService.sendMsg(chatMsg, msgListener);
         }catch (AppServiceCallNotAvailableException e){
@@ -172,10 +109,9 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
     }
 
     @Override
-    public boolean isChatActive(Profile localProfile, String remotePk) {
+    public boolean isChatActive(String localProfilePubKey, String remotePk) {
         try {
-            CallProfileAppService callProfileAppService = localProfile.getAppService(EnabledServices.CHAT.getName())
-                    .getOpenCall(remotePk);
+            CallProfileAppService callProfileAppService = getCall(localProfilePubKey,remotePk);
             if (callProfileAppService!=null && callProfileAppService.isStablished()) {
                 // check sending a ping
                 callProfileAppService.ping();

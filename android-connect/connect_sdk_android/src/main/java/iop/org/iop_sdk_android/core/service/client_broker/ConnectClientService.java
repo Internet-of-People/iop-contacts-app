@@ -56,6 +56,9 @@ public class ConnectClientService extends Service  {
     // Android
     private LocalBroadcastManager broadcastManager;
 
+    /** Local profiles collection */
+    private HashMap<String,Profile> localProfiles;
+
 
     public class ConnectBinder extends Binder {
         public ConnectClientService getService() {

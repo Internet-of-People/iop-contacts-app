@@ -1,13 +1,14 @@
 package org.fermat.redtooth.profiles_manager;
 
 import org.fermat.redtooth.core.services.pairing.PairingMsgTypes;
+import org.fermat.redtooth.global.DbObject;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 
 /**
  * Created by furszy on 6/6/17.
  */
 
-public class PairingRequest {
+public class PairingRequest implements DbObject {
 
     private int id;
     private String senderPubKey;

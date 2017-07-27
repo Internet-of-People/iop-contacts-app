@@ -23,13 +23,13 @@ public interface ChatModule extends Module {
      * @param remoteProfileInformation
      * @param readyListener
      */
-    void requestChat(final Profile localProfile, final ProfileInformation remoteProfileInformation, final ProfSerMsgListener<Boolean> readyListener, TimeUnit timeUnit, long time) throws RequestChatException, ChatCallAlreadyOpenException;
+    void requestChat(final String localProfilePubKey, final ProfileInformation remoteProfileInformation, final ProfSerMsgListener<Boolean> readyListener) throws RequestChatException, ChatCallAlreadyOpenException;
 
-    void acceptChatRequest(Profile localProfile, String remoteHexPublicKey, ProfSerMsgListener<Boolean> future) throws Exception;
+    void acceptChatRequest(String localProfilePubKey, String remoteHexPublicKey, ProfSerMsgListener<Boolean> future) throws Exception;
 
-    void refuseChatRequest(Profile localProfile, String remoteHexPublicKey);
+    void refuseChatRequest(String localProfilePubKey, String remoteHexPublicKey);
 
-    void sendMsgToChat(Profile localProfile, ProfileInformation remoteProfileInformation, String msg, ProfSerMsgListener<Boolean> msgListener) throws Exception;
+    void sendMsgToChat(String localProfilePubKey, ProfileInformation remoteProfileInformation, String msg, ProfSerMsgListener<Boolean> msgListener) throws Exception;
 
-    boolean isChatActive(Profile localProfile, String remotePk);
+    boolean isChatActive(String localProfilePubKey, String remotePk);
 }

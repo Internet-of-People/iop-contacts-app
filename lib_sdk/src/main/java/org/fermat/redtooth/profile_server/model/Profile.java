@@ -2,9 +2,12 @@ package org.fermat.redtooth.profile_server.model;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.bitcoinj.core.Sha256Hash;
 import org.fermat.redtooth.crypto.CryptoBytes;
+import org.fermat.redtooth.global.DbObject;
 import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.ProfileBase;
 import org.fermat.redtooth.profile_server.Signer;
@@ -14,7 +17,7 @@ import org.fermat.redtooth.profile_server.engine.app_services.AppService;
  * Created by mati on 06/02/17.
  */
 
-public class Profile implements Signer,ProfileBase {
+public class Profile implements Signer,ProfileBase,DbObject {
 
     // internal sdk fields
     private long id;
@@ -39,6 +42,8 @@ public class Profile implements Signer,ProfileBase {
     private byte[] homeHostId;
     /** Hash map of name-service of available AppServices */
     private HashMap<String,AppService> applicationServices;
+    /** Available app services to load.. */
+    private Set<String> appServices = new HashSet();
 
     /** Key del profile */
     private KeyEd25519 keyEd25519;
@@ -220,6 +225,14 @@ public class Profile implements Signer,ProfileBase {
         return thumbnailImg;
     }
 
+    public Set<String> getAppServices() {
+        return appServices;
+    }
+
+    public void addAllServices(Set<String> appServices){
+        this.appServices.addAll(appServices);
+    }
+
     @Override
     public String toString() {
         return "Profile{" +
@@ -241,5 +254,9 @@ public class Profile implements Signer,ProfileBase {
 
     public byte[] getImgHash() {
         return imgHash;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 }

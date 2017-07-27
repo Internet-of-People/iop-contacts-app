@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import org.fermat.redtooth.crypto.CryptoBytes;
+import org.fermat.redtooth.global.DbObject;
 import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.fermat.redtooth.profiles_manager.PairingRequest;
 
@@ -18,7 +19,7 @@ import java.util.ArrayList;
  * Created by furszy on 6/6/17.
  */
 
-public abstract class AbstractSqliteDb<T> extends SQLiteOpenHelper {
+public abstract class AbstractSqliteDb<T extends DbObject> extends SQLiteOpenHelper {
 
     public AbstractSqliteDb(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);
@@ -72,6 +73,11 @@ public abstract class AbstractSqliteDb<T> extends SQLiteOpenHelper {
     public boolean contains(String whereColumn,Object whereObjValue) {
         Cursor cursor = getData(whereColumn,whereObjValue);
         return cursor.moveToFirst();
+    }
+
+    public void update(String whereColumn,String whereValue,T t){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.update(getTableName(), buildContent(t),whereColumn+"=?",new String[]{whereValue});
     }
 
     public void updateFieldByKey(String whereColumn,String whereValue, String updateColumn, boolean updateValue) {

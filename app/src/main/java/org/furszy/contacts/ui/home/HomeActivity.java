@@ -54,11 +54,13 @@ public class HomeActivity extends BaseDrawerActivity {
     };
 
     private void refreshFragments() {
-        for (Fragment fragment : adapter.mFragmentList) {
-            ((BaseAppFragment)fragment).loadBasics();
+        if (adapter!=null) {
+            for (Fragment fragment : adapter.mFragmentList) {
+                ((BaseAppFragment) fragment).loadBasics();
+            }
+            refreshContacts();
+            refreshRequests();
         }
-        refreshContacts();
-        refreshRequests();
     }
 
     @Override

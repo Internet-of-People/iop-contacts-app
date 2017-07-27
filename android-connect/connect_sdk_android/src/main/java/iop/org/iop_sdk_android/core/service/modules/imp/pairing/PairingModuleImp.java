@@ -31,12 +31,10 @@ public class PairingModuleImp extends AbstractModule implements PairingModule{
 
     private static final Logger logger = LoggerFactory.getLogger(PairingModuleImp.class);
 
-    private IoPConnect ioPConnect;
     private PlatformService platformService;
 
     public PairingModuleImp(Context context, PlatformService ioPConnectService, IoPConnect ioPConnect) {
-        super(context,Version.newProtocolAcceptedVersion(), EnabledServices.PROFILE_PAIRING.getName());
-        this.ioPConnect = ioPConnect;
+        super(context,ioPConnect,Version.newProtocolAcceptedVersion(), EnabledServices.PROFILE_PAIRING);
         this.platformService = ioPConnectService;
 
     }

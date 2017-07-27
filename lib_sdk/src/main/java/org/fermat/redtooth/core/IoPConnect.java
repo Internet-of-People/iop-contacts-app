@@ -6,6 +6,7 @@ import org.fermat.redtooth.core.services.AppServiceListener;
 import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.engine.app_services.AppServiceMsg;
 import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
+import org.fermat.redtooth.profiles_manager.LocalProfilesDao;
 import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.core.services.pairing.PairingAppService;
 import org.fermat.redtooth.core.services.pairing.PairingMsg;
@@ -49,6 +50,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -75,8 +77,12 @@ public class IoPConnect implements ConnectionListener {
     private ConcurrentMap<String,IoPProfileConnection> managers;
     /** Map of device profiles connected to remote PS */
     private ConcurrentMap<PsKey,IoPProfileConnection> remoteManagers = new ConcurrentHashMap<>();
+    /** Cached local profiles */
+    private Map<String,Profile> localProfiles = new HashMap<>();
     /** Enviroment context */
     private IoPConnectContext context;
+    /** Local profiles db */
+    private LocalProfilesDao localProfilesDao;
     /** Profiles manager db */
     private ProfilesManager profilesManager;
     /** Pairing request manager db  */
@@ -87,7 +93,6 @@ public class IoPConnect implements ConnectionListener {
     private CryptoWrapper cryptoWrapper;
     /** Socket factory */
     private SslContextFactory sslContextFactory;
-
     private EngineListener engineListener;
 
     private class PsKey{
@@ -109,12 +114,13 @@ public class IoPConnect implements ConnectionListener {
         }
     }
 
-    public IoPConnect(IoPConnectContext contextWrapper, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, ProfilesManager profilesManager, PairingRequestsManager pairingRequestsManager,DeviceLocation deviceLocation) {
+    public IoPConnect(IoPConnectContext contextWrapper, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory,LocalProfilesDao localProfilesDao, ProfilesManager profilesManager, PairingRequestsManager pairingRequestsManager,DeviceLocation deviceLocation) {
         this.context = contextWrapper;
         this.cryptoWrapper = cryptoWrapper;
         this.sslContextFactory = sslContextFactory;
         this.managers = new ConcurrentHashMap<>();
         this.profilesManager = profilesManager;
+        this.localProfilesDao = localProfilesDao;
         this.pairingRequestsManager = pairingRequestsManager;
         this.deviceLocation = deviceLocation;
     }
@@ -245,6 +251,9 @@ public class IoPConnect implements ConnectionListener {
         profileServerConfigurations.setIsCreated(true);
         // save profile
         profileServerConfigurations.saveProfile(profile);
+        // start moving this to the db
+        localProfilesDao.save(profile);
+        localProfiles.put(profile.getHexPublicKey(),profile);
         // todo: return profile connection pk
         return profile;
     }
@@ -254,6 +263,9 @@ public class IoPConnect implements ConnectionListener {
         profileServerConfigurations.saveProfile(profile);
         profileServerConfigurations.saveUserKeys(profile.getKey());
         profileServerConfigurations.setIsCreated(true);
+        // start moving this to the db
+        localProfilesDao.save(profile);
+        localProfiles.put(profile.getHexPublicKey(),profile);
         return profile;
     }
 
@@ -264,6 +276,9 @@ public class IoPConnect implements ConnectionListener {
      */
     public void addService(Profile profile, AppService appService) {
         profile.addApplicationService(appService);
+        localProfiles.get(profile.getHexPublicKey()).addApplicationService(appService);
+        // start moving this to the db
+        localProfilesDao.updateProfile(profile);
         IoPProfileConnection connection = getProfileConnection(profile.getHexPublicKey());
         if (connection.isReady() || connection.isConnecting()){
             connection.addApplicationService(appService);
@@ -274,6 +289,11 @@ public class IoPConnect implements ConnectionListener {
     }
 
     public void connectProfile(String profilePublicKey, PairingListener pairingListener, byte[] ownerChallenge,ConnectionFuture future) throws Exception {
+        if (!localProfiles.containsKey(profilePublicKey)){
+            Profile profile = localProfilesDao.getProfile(profilePublicKey);
+            if (profile==null) throw new ProfileNotRegisteredException("Profile not registered "+profilePublicKey);
+            localProfiles.put(profilePublicKey,profile);
+        }
         if (managers.containsKey(profilePublicKey)){
             IoPProfileConnection connection = getProfileConnection(profilePublicKey);
             if (connection.hasFail()){
@@ -479,15 +499,18 @@ public class IoPConnect implements ConnectionListener {
     /**
      * Call app profile service
      * @param serviceName
-     * @param localProfile
+     * @param localProfilePubKey
      * @param remoteProfile
      * @param tryUpdateRemoteServices -> param to update the profile information first and then request the call.
      * @param readyListener
      * @param args
      */
-    public void callService(String serviceName, final Profile localProfile, final ProfileInformation remoteProfile, final boolean tryUpdateRemoteServices , final ProfSerMsgListener<Boolean> readyListener , Object... args) {
+    public void callService(String serviceName, final String localProfilePubKey, final ProfileInformation remoteProfile, final boolean tryUpdateRemoteServices , final ProfSerMsgListener<Boolean> readyListener , Object... args) {
         logger.info("RunService, remote: " + remoteProfile.getHexPublicKey());
         try {
+            if (!localProfiles.containsKey(localProfilePubKey)) throw new ProfileNotRegisteredException(localProfilePubKey);
+            final Profile localProfile = localProfiles.get(localProfilePubKey);
+            if(!localProfile.hasService(serviceName)) throw new IllegalStateException("App service "+ serviceName+" is not enabled on local profile "+localProfilePubKey);
             final AppService appService = localProfile.getAppService(serviceName);
             appService.onPreCall();
             // now i stablish the call if it's not exists
@@ -742,6 +765,17 @@ public class IoPConnect implements ConnectionListener {
             return connection.isReady() || !connection.hasFail() || connection.isConnecting();
         }else
             return false;
+    }
+
+    public Profile getProfile(String localProfilePubKey) {
+        return localProfiles.get(localProfilePubKey);
+    }
+
+    public AppService getProfileAppService(String localProfilePubKey,EnabledServices service){
+        return (localProfiles.containsKey(localProfilePubKey))?
+                localProfiles.get(localProfilePubKey).getAppService(service.getName())
+                :
+                null;
     }
 
     /**

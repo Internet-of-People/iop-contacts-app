@@ -134,7 +134,7 @@ public class KeyEd25519 implements Serializable, org.fermat.redtooth.profile_ser
 
     /**
      * Signs a UTF-8 string message using an extended private key
-     * //todo: ver si funciona porque le puse el int del signLenght como array de entero
+     * // ver si funciona porque le puse el int del signLenght como array de entero
      *
      * @param message -> Message to be signed.
      * @param expandedPrivateKey -> Extended private key.

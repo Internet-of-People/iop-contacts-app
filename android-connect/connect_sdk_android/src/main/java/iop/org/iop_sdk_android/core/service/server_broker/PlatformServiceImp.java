@@ -23,6 +23,7 @@ import org.fermat.redtooth.global.PlatformSerializer;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.Profile;
+import org.fermat.redtooth.profiles_manager.LocalProfilesDao;
 import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.services.interfaces.ProfilesModule;
 import org.fermat.redtooth.wallet.utils.BlockchainState;
@@ -40,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import iop.org.iop_sdk_android.core.crypto.CryptoWrapperAndroid;
+import iop.org.iop_sdk_android.core.db.LocalProfilesDb;
 import iop.org.iop_sdk_android.core.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
 import iop.org.iop_sdk_android.core.global.ModuleObjectWrapper;
@@ -80,6 +82,7 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
     /** Databases */
     private SqlitePairingRequestDb pairingRequestDb;
     private SqliteProfilesDb profilesDb;
+    private LocalProfilesDao localProfilesDao;
 
     private Core core;
 
@@ -168,7 +171,8 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                     profile = configurationsPreferences.getProfile();
                 pairingRequestDb = new SqlitePairingRequestDb(this);
                 profilesDb = new SqliteProfilesDb(this);
-                ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),profilesDb,pairingRequestDb,this);
+                localProfilesDao = new LocalProfilesDb(this);
+                ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),localProfilesDao,profilesDb,pairingRequestDb,this);
                 // init core
                 core = new Core(this,this,ioPConnect);
                 ioPConnect.setEngineListener((ProfilesModuleImp)core.getModule(EnabledServices.PROFILE_DATA.getName()));
@@ -367,9 +371,10 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
         } catch (Exception e) {
             return e;
         }
+        if (returnedObject==null) return null;
         if (!(returnedObject instanceof Serializable)){
             logger.warn("Error, Method: "+method+" doesn't return a Serializable object");
-            throw new Exception("Method doesn't return a Serializable object");
+            throw new Exception("Method doesn't return a Serializable object, service "+serviceName+" , method name: "+method);
         }
         return (Serializable) returnedObject;
     }
