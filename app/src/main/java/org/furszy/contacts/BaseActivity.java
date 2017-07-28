@@ -51,6 +51,8 @@ public class BaseActivity extends AppCompatActivity{
 
     public static final String NOTIF_DIALOG_EVENT = "nde";
 
+    protected String selectedProfPubKey;
+
     protected PairingModule pairingModule;
     protected ChatModule chatModule;
     protected ProfilesModule profilesModule;
@@ -98,6 +100,7 @@ public class BaseActivity extends AppCompatActivity{
         pairingModule = app.getPairingModule();
         chatModule = app.getChatModule();
         profilesModule = app.getProfilesModule();
+        selectedProfPubKey = app.getSelectedProfilePubKey();
     }
 
     private void init(){

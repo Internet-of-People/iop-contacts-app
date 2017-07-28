@@ -111,8 +111,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
             public void run() {
                 try {
                     // close chat
-                    //todo // FIXME: 7/25/17
-                    //anRedtooth.refuseChatRequest(remoteProfile.getHexPublicKey());
+                    chatModule.refuseChatRequest(selectedProfPubKey,remoteProfile.getHexPublicKey());
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -137,8 +136,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
             public void run() {
                 try {
                     // close chat
-                    //todo // FIXME: 7/25/17
-                    //anRedtooth.refuseChatRequest(remoteProfile.getHexPublicKey());
+                    chatModule.refuseChatRequest(selectedProfPubKey,remoteProfile.getHexPublicKey());
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -155,11 +153,11 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
             if (text.length() > 0) {
                 edit_msg.setText("");
                 // // TODO: 7/25/17
-                /*executor.submit(new Runnable() {
+                executor.submit(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            anRedtooth.sendMsgToChat(remoteProfile, text, new ProfSerMsgListener<Boolean>() {
+                            chatModule.sendMsgToChat(selectedProfPubKey,remoteProfile, text, new ProfSerMsgListener<Boolean>() {
                                 @Override
                                 public void onMessageReceive(int messageId, Boolean message) {
                                     Log.i("Chat", "msg sent!");
@@ -197,7 +195,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                             });
                         }
                     }
-                });*/
+                });
             }
         }
     }

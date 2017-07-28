@@ -261,8 +261,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         int id = v.getId();
         if (id==R.id.txt_chat){
             if (isMyProfile) { return; }
-            // todo: // FIXME: 7/25/17
-            /*if (flag.compareAndSet(false,true)) {
+            if (flag.compareAndSet(false,true)) {
                 Toast.makeText(v.getContext(),"Sending chat request..",Toast.LENGTH_SHORT).show();
                 executor.submit(new Runnable() {
                     @Override
@@ -298,13 +297,13 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                                     });
                                 }
                             });
-                            anRedtooth.requestChat(profileInformation, readyListener, TimeUnit.SECONDS, 45);
+                            chatModule.requestChat(selectedProfPubKey,profileInformation, readyListener);
                         } catch (ChatCallAlreadyOpenException e) {
                             e.printStackTrace();
                             // chat call already open
                             // first send the acceptance
                             try {
-                                anRedtooth.acceptChatRequest(profileInformation.getHexPublicKey(), new ProfSerMsgListener<Boolean>() {
+                                chatModule.acceptChatRequest(selectedProfPubKey,profileInformation.getHexPublicKey(), new ProfSerMsgListener<Boolean>() {
                                     @Override
                                     public void onMessageReceive(int messageId, Boolean message) {
                                         runOnUiThread(new Runnable() {
@@ -370,7 +369,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                         }
                     }
                 });
-            }*/
+            }
 
         }
     }

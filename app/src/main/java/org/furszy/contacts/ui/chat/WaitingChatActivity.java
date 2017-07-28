@@ -137,8 +137,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
             @Override
             public void run() {
                 try {
-                    // todo: // FIXME: 7/25/17
-                    /*if (!chatModule.isChatActive(remotePk)) {
+                    if (!chatModule.isChatActive(selectedProfPubKey,remotePk)) {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -147,7 +146,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
                             }
                         });
 
-                    }*/
+                    }
                 }catch (Exception e){
                     e.printStackTrace();
                     runOnUiThread(new Runnable() {
@@ -214,8 +213,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
 
     private void refuseChat(){
         try{
-            // todo // FIXME: 7/25/17
-            //anRedtooth.refuseChatRequest(profileInformation.getHexPublicKey());
+            chatModule.refuseChatRequest(selectedProfPubKey,profileInformation.getHexPublicKey());
         }catch (Exception e){
             e.printStackTrace();
             // do nothing..
@@ -223,8 +221,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
     }
 
     private void acceptChatRequest() {
-        // todo: // FIXME: 7/25/17
-        /*executors.submit(new Runnable() {
+        executors.submit(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -255,7 +252,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
                             });
                         }
                     });
-                    anRedtooth.acceptChatRequest(profileInformation.getHexPublicKey(), future);
+                    chatModule.acceptChatRequest(selectedProfPubKey,profileInformation.getHexPublicKey(), future);
                 } catch (AppServiceCallNotAvailableException e){
                     e.printStackTrace();
                     runOnUiThread(new Runnable() {
@@ -277,6 +274,6 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
                     });
                 }
             }
-        });*/
+        });
     }
 }

@@ -70,13 +70,16 @@ public class App extends Application implements IoPConnectContext {
     public static final String INTENT_CHAT_TEXT_BROADCAST = "chat_text";
     public static final String INTENT_CHAT_TEXT_RECEIVED = "text";
 
+    /** Preferences */
+    private static final String PREFS_NAME = "app_prefs";
+
     private static Logger log;
     private static App instance;
 
     private ActivityManager activityManager;
     private PackageInfo info;
 
-    ClientServiceConnectHelper connectHelper;
+    private ClientServiceConnectHelper connectHelper;
     private LocalBroadcastManager broadcastManager;
     private NotificationManager notificationManager;
     private long timeCreateApplication = System.currentTimeMillis();
@@ -85,6 +88,10 @@ public class App extends Application implements IoPConnectContext {
     private ProfilesModule profilesModule;
     private ChatModule chatModule;
     private PairingModule pairingModule;
+
+    /** Pub key of the selected profile */
+    private String selectedProfilePubKey;
+    private AppConf appConf;
 
 
     public static App getInstance() {
@@ -128,9 +135,10 @@ public class App extends Application implements IoPConnectContext {
             info = manager.getPackageInfo(this.getPackageName(), 0);
             activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
             CrashReporter.init(getCacheDir());
+            appConf = new AppConf(getSharedPreferences(PREFS_NAME, 0));
+            selectedProfilePubKey = appConf.getSelectedProfPubKey();
             broadcastManager = LocalBroadcastManager.getInstance(this);
             notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
             registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_CONNECTED));
             registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED));
             registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_MSG_RECEIVED));
@@ -345,5 +353,14 @@ public class App extends Application implements IoPConnectContext {
 
     public ProfilesModule getProfilesModule() {
         return profilesModule;
+    }
+
+    public String getSelectedProfilePubKey() {
+        return selectedProfilePubKey;
+    }
+
+    public void setSelectedProfilePubKey(String selectedProfilePubKey) {
+        appConf.setSelectedProfPubKey(selectedProfilePubKey);
+        this.selectedProfilePubKey = selectedProfilePubKey;
     }
 }

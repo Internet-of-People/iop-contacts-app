@@ -185,14 +185,14 @@ public class IoPConnect implements ConnectionListener {
                             if (engineListener!=null) {
                                 engineListener.onDisconnect(localProfile.getHexPublicKey());
                                 // try to reconnect
-                                ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+                                /*ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
                                 executor.schedule(new Runnable() {
                                     @Override
                                     public void run() {
                                         onConnectionLoose(localProfile,psHost,portType,tokenId);
                                     }
                                 },RECONNECT_TIME,TimeUnit.SECONDS);
-                                executor.shutdown();
+                                executor.shutdown();*/
                             }else {
                                 logger.warn("reconnection fail and the engine listener is null.. please check this..");
                             }
@@ -210,12 +210,12 @@ public class IoPConnect implements ConnectionListener {
                     e.printStackTrace();
                     logger.info("Problems trying to reconnect to the main PS after 5 seconds..",e);
                     // retryng after certain time.
-                    try {
-                        TimeUnit.SECONDS.sleep(5);
+                    /*try {
+                        TimeUnit.SECONDS.sleep(15);
                         onConnectionLoose(localProfile,psHost,portType,tokenId);
                     } catch (InterruptedException e1) {
                         e1.printStackTrace();
-                    }
+                    }*/
                 }
             }
         }
