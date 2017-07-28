@@ -40,6 +40,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -172,8 +173,8 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
                 onCheckInFail(profile,status,statusDetail);
                 if (status==400){
                     logger.info("Checking fail, detail "+statusDetail+", trying to reconnect after 5 seconds");
-                    ExecutorService executor = Executors.newSingleThreadExecutor();
-                    Future future = executor.submit(reconnectRunnable);
+                    /*ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+                    Future future = executor.schedule(reconnectRunnable,15,TimeUnit.SECONDS);
                     try {
                         future.get(15,TimeUnit.SECONDS);
                     } catch (InterruptedException e) {
@@ -184,10 +185,10 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
                         e.printStackTrace();
                     }finally {
                         if (executor!=null){
-                            executor.shutdownNow();
+                            executor.shutdown();
                             executor = null;
                         }
-                    }
+                    }*/
                 }
 
             }

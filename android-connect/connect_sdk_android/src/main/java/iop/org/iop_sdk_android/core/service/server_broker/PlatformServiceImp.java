@@ -46,7 +46,6 @@ import iop.org.iop_sdk_android.core.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
 import iop.org.iop_sdk_android.core.global.ModuleObjectWrapper;
 import iop.org.iop_sdk_android.core.global.ModuleParameter;
-import iop.org.iop_sdk_android.core.service.IoPConnectService;
 import iop.org.iop_sdk_android.core.service.ProfileServerConfigurationsImp;
 import iop.org.iop_sdk_android.core.service.SslContextFactory;
 import iop.org.iop_sdk_android.core.service.modules.Core;
@@ -261,7 +260,7 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
             AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
             long scheduleTime = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5); // 10 minutes from now
 
-            Intent intent = new Intent(this, IoPConnectService.class);
+            Intent intent = new Intent(this, PlatformServiceImp.class);
             intent.setAction(ACTION_SCHEDULE_SERVICE);
             alarm.set(
                     // This alarm will wake up the device when System.currentTimeMillis()
