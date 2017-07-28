@@ -2,13 +2,15 @@ package org.fermat.redtooth.global;
 
 import org.fermat.redtooth.crypto.CryptoBytes;
 
+import java.io.Serializable;
+
 /**
  * Created by furszy on 7/10/17.
  *
  * http://semver.org
  */
 
-public class Version {
+public class Version implements Serializable {
 
     private byte major;
     private byte minor;

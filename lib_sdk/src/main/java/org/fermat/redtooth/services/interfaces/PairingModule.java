@@ -15,7 +15,7 @@ import java.util.List;
 
 public interface PairingModule extends Module {
 
-    void requestPairingProfile(Profile localProfile, byte[] remotePubKey, final String remoteName, final String psHost, final ProfSerMsgListener<ProfileInformation> listener) throws Exception;
+    void requestPairingProfile(String localProfilePubKey, byte[] remotePubKey, final String remoteName, final String psHost, final ProfSerMsgListener<ProfileInformation> listener) throws Exception;
 
     void acceptPairingProfile(PairingRequest pairingRequest, ProfSerMsgListener<Boolean> profSerMsgListener) throws Exception;
 

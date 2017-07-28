@@ -34,7 +34,7 @@ public class SerializationUtils {
         return yourBytes;
     }
 
-    public static <T> T deserialize(byte[] obj,Class<T> tClass) throws IOException, ClassNotFoundException {
+    public static Object deserialize(byte[] obj)throws IOException, ClassNotFoundException {
         ByteArrayInputStream bis = new ByteArrayInputStream(obj);
         ObjectInput in = null;
         Object o = null;
@@ -50,6 +50,11 @@ public class SerializationUtils {
                 // ignore close exception
             }
         }
+        return o;
+    }
+
+    public static <T> T deserialize(byte[] obj,Class<T> tClass) throws IOException, ClassNotFoundException {
+        Object o = deserialize(obj);
         return (o!=null)?(T)o:null;
     }
 

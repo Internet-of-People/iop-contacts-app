@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.LocalSocket;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -12,12 +13,15 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import org.fermat.redtooth.global.Module;
+import org.fermat.redtooth.global.utils.SerializationUtils;
 import org.fermat.redtooth.profile_server.ModuleRedtooth;
+import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.services.EnabledServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -25,9 +29,13 @@ import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
+import iop.org.iop_sdk_android.core.global.ModuleObject;
 import iop.org.iop_sdk_android.core.global.ModuleObjectWrapper;
 import iop.org.iop_sdk_android.core.global.ModuleParameter;
+import iop.org.iop_sdk_android.core.global.socket.LocalSocketSession;
+import iop.org.iop_sdk_android.core.global.socket.SessionHandler;
 import iop.org.iop_sdk_android.core.service.server_broker.IPlatformService;
 import iop.org.iop_sdk_android.core.service.server_broker.IntentServiceAction;
 import iop.org.iop_sdk_android.core.service.server_broker.PlatformServiceImp;
@@ -41,9 +49,12 @@ import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_IOP_S
  *
  */
 
-public class ConnectClientService extends Service  {
+public class ConnectClientService extends Service {
 
     private static final Logger logger = LoggerFactory.getLogger(ConnectClientService.class);
+
+    /** Application must be a sub class of the ConnectApp */
+    private ConnectApp connectApp;
 
     private IPlatformService iServerBrokerService = null;
     /**
@@ -52,13 +63,17 @@ public class ConnectClientService extends Service  {
     boolean mPlatformServiceIsBound;
     /** Module interfaces */
     private Map<EnabledServices,Module> openModules = new HashMap<>();
-
+    /** Requests waiting for response */
+    private Map<String,ProfSerMsgListener> waitingFutures = new HashMap<>();
+    /** Message id */
+    private static final AtomicLong waitingIdGenerator = new AtomicLong(0);
+    /** Service channel */
+    private String clientId;
+    private LocalSocketSession serviceSocket;
     // Android
     private LocalBroadcastManager broadcastManager;
 
-    /** Local profiles collection */
-    private HashMap<String,Profile> localProfiles;
-
+    private SessionHandler sessionHandler = new SessionHandlerImp();
 
     public class ConnectBinder extends Binder {
         public ConnectClientService getService() {
@@ -108,14 +123,22 @@ public class ConnectClientService extends Service  {
             throw new IllegalStateException("Platform service is not bound yet.");
         }
         logger.info("Service "+ service.getName()+" invoque method "+method.getName());
+        ProfSerMsgListener methodListener = null;
         ModuleParameter[] parameters = null;
         Class<?>[] parametersTypes = method.getParameterTypes();
         if (args != null) {
             parameters = new ModuleParameter[args.length];
             for (int i = 0; i < args.length; i++) {
                 try {
-                    ModuleParameter fermatModuleObjectWrapper = new ModuleParameter((Serializable) args[i], parametersTypes[i]);
-                    parameters[i] = fermatModuleObjectWrapper;
+                    Object arg = args[i];
+                    ModuleParameter moduleObjectWrapper;
+                    if (arg instanceof ProfSerMsgListener){
+                        // this is because listeners are not supported, the framework accepts one listeners per module method.
+                        moduleObjectWrapper = new ModuleParameter(null,parametersTypes[i]);
+                        methodListener = (ProfSerMsgListener) arg;
+                    }else
+                        moduleObjectWrapper = new ModuleParameter((Serializable) arg, parametersTypes[i]);
+                    parameters[i] = moduleObjectWrapper;
                 } catch (ClassCastException e) {
                     //e.printStackTrace();
                     logger.error("ERROR: Objet "+args[i].getClass().getName()+(" no implementing Serializable interface"),e);
@@ -127,9 +150,16 @@ public class ConnectClientService extends Service  {
         } else {
             parameters = new ModuleParameter[0];
         }
+
+        String messageId = getNewIdForListener();
+        // Save the listener if there is any:
+        if (methodListener!=null){
+            waitingFutures.put(messageId,methodListener);
+        }
+
         ModuleObjectWrapper respObject = iServerBrokerService.callMethod(
-                null,
-                null, // data id should be packageName+msg_id
+                clientId, // future client key..
+                messageId, // data id should be packageName+msg_id
                 service.getName(),
                 method.getName(),
                 parameters
@@ -140,9 +170,18 @@ public class ConnectClientService extends Service  {
         return respObject.getObject();
     }
 
+    private String getNewIdForListener(){
+        return connectApp.getAppPackage()+" "+waitingIdGenerator.addAndGet(1);
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
+        if (!(getApplication() instanceof ConnectApp)){
+            logger.error("Application is not a sub class of ConnectApp");
+            throw new ApplicationError("Application is not a sub class of ConnectApp");
+        }
+        connectApp = (ConnectApp) getApplication();
         broadcastManager = LocalBroadcastManager.getInstance(this);
         try {
             if (!mPlatformServiceIsBound) {
@@ -157,6 +196,16 @@ public class ConnectClientService extends Service  {
         }
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // desconnect and close local socket
+        if (serviceSocket!=null)
+            serviceSocket.closeNow();
+
+        doUnbindService();
+    }
+
     /**
      * Class for interacting with the main interface of the service.
      */
@@ -167,20 +216,19 @@ public class ConnectClientService extends Service  {
             logger.info("Attached.");
             mPlatformServiceIsBound = true;
             logger.info("Registering client");
-            //try {
-                //serverIdentificationKey = iServerBrokerService.register();
+            try {
+                clientId = iServerBrokerService.register();
                 //running socket receiver
-                /*logger.info("Starting socket receiver");
+                logger.info("Starting socket receiver");
                 LocalSocket localSocket = new LocalSocket();
-                mReceiverSocketSession = new LocalClientSocketSession(serverIdentificationKey, localSocket, bufferChannelAIDL);
-                mReceiverSocketSession.connect();
-                mReceiverSocketSession.startReceiving();*/
-            /*} catch (RemoteException e) {
+                serviceSocket = new LocalSocketSession(IntentServiceAction.SERVICE_NAME,clientId, localSocket, sessionHandler);
+                serviceSocket.connect();
+            } catch (RemoteException e) {
                 e.printStackTrace();
                 logger.error("Cant run socket, register to server fail",e);
             } catch (Exception e) {
                 e.printStackTrace();
-            }*/
+            }
         }
 
 
@@ -221,4 +269,40 @@ public class ConnectClientService extends Service  {
             logger.info("Unbinding.");
         }
     }
+
+
+    private class SessionHandlerImp implements SessionHandler{
+
+        @Override
+        public void onReceive(ModuleObject.ModuleResponse response) {
+            try {
+                switch (response.getResponseType()) {
+                    case OBJ:
+                        logger.info("obj arrived..");
+                        String id = response.getId();
+                        if (waitingFutures.containsKey(id)) {
+                            ModuleObject.ModuleObjectWrapper wrapper = response.getObj();
+                            Object o = SerializationUtils.deserialize(wrapper.getObj().toByteArray());
+                            waitingFutures.get(id).onMessageReceive(0,o);
+                        }
+                        break;
+                    case ERR:
+                        logger.info("err arrived..");
+                        break;
+                }
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void sessionClosed(String clientPk) {
+            logger.info("## connect service session closed..");
+        }
+
+    }
+
+
 }

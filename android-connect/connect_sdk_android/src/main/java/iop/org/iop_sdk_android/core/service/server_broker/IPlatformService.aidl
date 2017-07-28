@@ -7,6 +7,8 @@ import iop.org.iop_sdk_android.core.global.ModuleParameter;
 
 interface IPlatformService {
 
+    String register();
+
     ModuleObjectWrapper callMethod(
                 in String clientKey,
                 in String dataId,

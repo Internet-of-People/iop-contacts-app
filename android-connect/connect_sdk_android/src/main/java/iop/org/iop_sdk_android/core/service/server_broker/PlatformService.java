@@ -21,4 +21,5 @@ public interface PlatformService {
     Profile getProfile();
 
     ProfilesModule getProfileModule();
+
 }

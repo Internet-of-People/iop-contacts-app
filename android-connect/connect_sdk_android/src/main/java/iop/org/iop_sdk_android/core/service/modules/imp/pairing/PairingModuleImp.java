@@ -45,18 +45,20 @@ public class PairingModuleImp extends AbstractModule implements PairingModule{
     }
 
     @Override
-    public void requestPairingProfile(final Profile localProfile, byte[] remotePubKey, String remoteName, final String psHost, final ProfSerMsgListener<ProfileInformation> listener) throws Exception {
+    public void requestPairingProfile(final String localProfilePubKey, byte[] remotePubKey, String remoteName, final String psHost, final ProfSerMsgListener<ProfileInformation> listener) throws Exception {
         // check if the profile already exist
         ProfileInformation profileInformationDb = null;
         String remotePubKeyStr = CryptoBytes.toHexString(remotePubKey);
-        if((profileInformationDb = platformService.getProfilesDb().getProfile(localProfile.getHexPublicKey(),remotePubKeyStr))!=null){
+        if((profileInformationDb = platformService.getProfilesDb().getProfile(localProfilePubKey,remotePubKeyStr))!=null){
             if(profileInformationDb.getPairStatus() != null)
                 throw new IllegalArgumentException("Already known profile");
         }
         // check if the pairing request exist
-        if (platformService.getPairingRequestsDb().containsPairingRequest(localProfile.getHexPublicKey(),remotePubKeyStr)){
+        if (platformService.getPairingRequestsDb().containsPairingRequest(localProfilePubKey,remotePubKeyStr)){
             throw new IllegalStateException("Pairing request already exist");
         }
+
+        final Profile localProfile = ioPConnect.getProfile(localProfilePubKey);
 
         // now send the request
         final PairingRequest pairingRequest = PairingRequest.buildPairingRequestFromHost(
@@ -73,7 +75,7 @@ public class PairingModuleImp extends AbstractModule implements PairingModule{
                 remote.setHomeHost(psHost);
                 remote.setPairStatus(ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE);
                 // Save invisible contact
-                platformService.getProfilesDb().saveProfile(localProfile.getHexPublicKey(),remote);
+                platformService.getProfilesDb().saveProfile(localProfilePubKey,remote);
                 // update backup profile is there is any
                 String backupProfilePath = null;
                 if((backupProfilePath = platformService.getConfPref().getBackupProfilePath())!=null){

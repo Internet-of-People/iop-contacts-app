@@ -39,6 +39,7 @@ import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import iop.org.iop_sdk_android.core.ClientServiceConnectHelper;
 import iop.org.iop_sdk_android.core.InitListener;
 import iop.org.iop_sdk_android.core.service.ProfileServerConfigurationsImp;
+import iop.org.iop_sdk_android.core.service.client_broker.ConnectApp;
 import iop.org.iop_sdk_android.core.service.client_broker.ConnectClientService;
 import iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants;
 
@@ -56,7 +57,7 @@ import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_RESPO
  * Created by furszy on 5/25/17.
  */
 
-public class App extends Application implements IoPConnectContext {
+public class App extends ConnectApp implements IoPConnectContext {
 
     public static final String INTENT_ACTION_ON_SERVICE_CONNECTED = "service_connected";
     public static final String INTENT_ACTION_PROFILE_CONNECTED = "profile_connected";

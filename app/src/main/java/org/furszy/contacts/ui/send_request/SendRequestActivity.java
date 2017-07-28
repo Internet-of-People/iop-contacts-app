@@ -94,8 +94,8 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
 
                 } else {
                     progressBar.setVisibility(View.VISIBLE);
-                    // // TODO: 7/25/17  
-                    /*new Thread(new Runnable() {
+
+                    new Thread(new Runnable() {
                         @Override
                         public void run() {
                             try {
@@ -129,6 +129,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                                     }
                                 });
                                 pairingModule.requestPairingProfile(
+                                        selectedProfPubKey,
                                         CryptoBytes.fromHexToBytes(profile.getPubKey()),
                                         profile.getName(),
                                         profile.getProfSerHost(),
@@ -159,7 +160,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                                 });
                             }
                         }
-                    }).start();*/
+                    }).start();
                 }
             }catch (IllegalArgumentException e){
                 Log.i(TAG, "pairing request fail  "+ e.getMessage());

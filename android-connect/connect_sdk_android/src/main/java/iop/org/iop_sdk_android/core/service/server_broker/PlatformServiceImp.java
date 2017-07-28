@@ -8,11 +8,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.net.LocalServerSocket;
+import android.net.LocalSocket;
 import android.net.NetworkInfo;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+
+import com.google.protobuf.ByteString;
 
 import org.fermat.redtooth.core.IoPConnect;
 import org.fermat.redtooth.core.IoPConnectContext;
@@ -20,7 +24,10 @@ import org.fermat.redtooth.global.DeviceLocation;
 import org.fermat.redtooth.global.GpsLocation;
 import org.fermat.redtooth.global.Module;
 import org.fermat.redtooth.global.PlatformSerializer;
+import org.fermat.redtooth.global.utils.SerializationUtils;
+import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
+import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profiles_manager.LocalProfilesDao;
@@ -30,11 +37,15 @@ import org.fermat.redtooth.wallet.utils.BlockchainState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -44,8 +55,10 @@ import iop.org.iop_sdk_android.core.crypto.CryptoWrapperAndroid;
 import iop.org.iop_sdk_android.core.db.LocalProfilesDb;
 import iop.org.iop_sdk_android.core.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.db.SqliteProfilesDb;
+import iop.org.iop_sdk_android.core.global.ModuleObject;
 import iop.org.iop_sdk_android.core.global.ModuleObjectWrapper;
 import iop.org.iop_sdk_android.core.global.ModuleParameter;
+import iop.org.iop_sdk_android.core.global.socket.LocalSocketSession;
 import iop.org.iop_sdk_android.core.service.ProfileServerConfigurationsImp;
 import iop.org.iop_sdk_android.core.service.SslContextFactory;
 import iop.org.iop_sdk_android.core.service.modules.Core;
@@ -89,12 +102,11 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
 
     private final Set<BlockchainState.Impediment> impediments = EnumSet.noneOf(BlockchainState.Impediment.class);
 
-    private PlatformSerializer platformSerializer = new PlatformSerializer(){
-        @Override
-        public KeyEd25519 toPlatformKey(byte[] privKey, byte[] pubKey) {
-            return iop.org.iop_sdk_android.core.crypto.KeyEd25519.wrap(privKey,pubKey);
-        }
-    };
+    /** Server socket */
+    private LocalServerSocket localServerSocket;
+    private Thread serverThread;
+    /** Clients connected */
+    private Map<String, LocalSocketSession> socketsClients = new HashMap<>();
 
     private final BroadcastReceiver connectivityReceiver = new BroadcastReceiver() {
         @Override
@@ -176,6 +188,12 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                 core = new Core(this,this,ioPConnect);
                 ioPConnect.setEngineListener((ProfilesModuleImp)core.getModule(EnabledServices.PROFILE_DATA.getName()));
 
+                try {
+                    localServerSocket = new LocalServerSocket(IntentServiceAction.SERVICE_NAME);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
                 tryScheduleService();
 
             }
@@ -243,6 +261,15 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
     @Override
     public void onDestroy() {
         logger.info("onDestroy");
+        try {
+            serverThread.interrupt();
+        } catch (Exception e) {
+        }
+
+        try {
+            localServerSocket.close();
+        } catch (IOException e) {
+        }
         core.clean();
         executor.shutdown();
         ioPConnect.stop();
@@ -287,13 +314,57 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
 
     private final IPlatformService.Stub mBinder = new IPlatformService.Stub() {
         @Override
+        public String register() throws RemoteException {
+            // todo: Extend this to more clients..
+            String clientKey = UUID.randomUUID().toString();
+
+            if (serverThread == null) {
+                final String finalClientKey = clientKey;
+                serverThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            LocalSocket localSocket = localServerSocket.accept();
+                            localSocket.setSendBufferSize(LocalSocketSession.RECEIVE_BUFFER_SIZE);
+//                            localSocket.setSoTimeout(0);
+                            LocalSocketSession localServerSocketSession = new LocalSocketSession(
+                                    IntentServiceAction.SERVICE_NAME,
+                                    finalClientKey,
+                                    localSocket,
+                                    null // null because the server is not receiving messages for now
+                            );
+                            /*try {
+                                localServerSocketSession.startSender();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }*/
+                            socketsClients.put(finalClientKey, localServerSocketSession);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
+            }
+            //serverThread.setDaemon(true);
+            serverThread.start();
+
+            return clientKey;
+        }
+
+        @Override
         public ModuleObjectWrapper callMethod(String clientKey, String dataId, String serviceName, String method, ModuleParameter[] parameters) throws RemoteException {
             logger.info("call service: "+serviceName+", method "+method);
             // todo: security checks here..
             Serializable object = null;
             try {
-                object = moduleDataRequest(serviceName,method,parameters);
-                ModuleObjectWrapper moduleObjectWrapper = new ModuleObjectWrapper(dataId,object);
+                object = moduleDataRequest(clientKey,dataId,serviceName,method,parameters);
+                ModuleObjectWrapper moduleObjectWrapper;
+                if (object instanceof Exception){
+                    moduleObjectWrapper = new ModuleObjectWrapper(dataId,(Exception) object);
+                }else {
+                    moduleObjectWrapper = new ModuleObjectWrapper(dataId,object);
+                }
                 return moduleObjectWrapper;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -302,7 +373,70 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
         }
     };
 
-    private Serializable moduleDataRequest(final String serviceName, final String method, final ModuleParameter[] parameters) throws Exception {
+    private class MsgListener implements ProfSerMsgListener {
+
+        private String clientId;
+        private String requestId;
+
+        public MsgListener(String clientId,String requestId) {
+            this.clientId = clientId;
+            this.requestId = requestId;
+        }
+
+        @Override
+        public void onMessageReceive(int messageId, Object message) {
+            logger.info("abstract method onMessageReceive, "+message);
+            // todo: send the response via socket if it's big or via broadcast if it's not
+            try {
+                if (socketsClients.containsKey(clientId)) {
+                    ModuleObject.ModuleObjectWrapper moduleObjectWrapper =
+                            ModuleObject.ModuleObjectWrapper.newBuilder()
+                                    .setObj(
+                                            ByteString.copyFrom(SerializationUtils.serialize(message))
+                                    )
+                                    .build();
+                    ModuleObject.ModuleResponse response = ModuleObject.ModuleResponse.newBuilder()
+                            .setId(requestId)
+                            .setResponseType(ModuleObject.ResponseType.OBJ)
+                            .setObj(moduleObjectWrapper)
+                            .build();
+
+                    socketsClients.get(clientId).write(response);
+                }
+            } catch (CantSendMessageException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onMsgFail(int messageId, int statusValue, String details) {
+            logger.info("abstract method onMsgFail, "+details);
+            // todo: send the response via socket if it's big or via broadcast if it's not
+            try{
+                if (socketsClients.containsKey(clientId)) {
+                    ModuleObject.ModuleResponse response = ModuleObject.ModuleResponse.newBuilder()
+                            .setId(requestId)
+                            .setResponseType(ModuleObject.ResponseType.ERR)
+                            .setErr(ByteString.copyFromUtf8(details))
+                            .build();
+                    socketsClients.get(clientId).write(response);
+                }
+            } catch (CantSendMessageException e) {
+                e.printStackTrace();
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public String getMessageName() {
+            return "abstract method listener";
+        }
+    };
+
+    private Serializable moduleDataRequest(String clientKey, String dataId,final String serviceName, final String method, final ModuleParameter[] parameters) throws Exception {
         EnabledServices service = EnabledServices.getServiceByName(serviceName);
         Class clazz = service.getModuleClass();
         Module module = core.getModule(serviceName);
@@ -314,8 +448,14 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
             params = new Object[parameters.length];
             paramsTypes = new Class[parameters.length];
             for (int i = 0; i < parameters.length; i++) {
-                params[i] = parameters[i].getObject();
-                paramsTypes[i] = parameters[i].getParameterType();
+                Object o = parameters[i].getObject();
+                Class paramType = parameters[i].getParameterType();
+                paramsTypes[i] = paramType;
+                if (paramType == ProfSerMsgListener.class){
+                    params[i] = new MsgListener(clientKey,dataId);
+                }else
+                    params[i] = o;
+
             }
         }
         try{
@@ -326,7 +466,6 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                 try {
                     m = clazz.getDeclaredMethod(method, paramsTypes);
                 } catch (NoSuchMethodException e) {
-                    //Log.e(TAG,"Metodo buscando: "+method);
                     for (Method methodInterface : clazz.getDeclaredMethods()) {
                         if (methodInterface.getName().equals(method)) {
                             m = methodInterface;
@@ -363,11 +502,13 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
             logger.info("NoSuchMethodException:" + method + " on class" + clazz.getName());
             e.printStackTrace();
         } catch (InvocationTargetException e) {
+            e.printStackTrace();
             return e.getTargetException();
 //                    return e;
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (Exception e) {
+            e.printStackTrace();
             return e;
         }
         if (returnedObject==null) return null;

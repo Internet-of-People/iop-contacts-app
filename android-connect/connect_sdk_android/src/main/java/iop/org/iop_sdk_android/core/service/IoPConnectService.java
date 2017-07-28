@@ -355,14 +355,14 @@ public class IoPConnectService extends Service implements PlatformService,Module
 
     @Override
     public void requestPairingProfile(byte[] remotePubKey, final String remoteName, final String psHost, final ProfSerMsgListener<ProfileInformation> listener) throws Exception {
-        core.getModule(EnabledServices.PROFILE_PAIRING.getName(), PairingModule.class)
+        /*core.getModule(EnabledServices.PROFILE_PAIRING.getName(), PairingModule.class)
                 .requestPairingProfile(
                         profile,
                         remotePubKey,
                         remoteName,
                         psHost,
                         listener
-                );
+                );*/
     }
 
     @Override
