@@ -1,7 +1,6 @@
 package org.furszy.contacts;
 
 import android.app.ActivityManager;
-import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -13,6 +12,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.TextUtils;
 
 import org.fermat.redtooth.services.chat.ChatModule;
 import org.fermat.redtooth.services.interfaces.PairingModule;
@@ -36,11 +36,11 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
-import iop.org.iop_sdk_android.core.ClientServiceConnectHelper;
-import iop.org.iop_sdk_android.core.InitListener;
+import iop.org.iop_sdk_android.core.service.client.ClientServiceConnectHelper;
+import iop.org.iop_sdk_android.core.service.client.InitListener;
 import iop.org.iop_sdk_android.core.service.ProfileServerConfigurationsImp;
-import iop.org.iop_sdk_android.core.service.client_broker.ConnectApp;
-import iop.org.iop_sdk_android.core.service.client_broker.ConnectClientService;
+import iop.org.iop_sdk_android.core.service.client.ConnectApp;
+import iop.org.iop_sdk_android.core.service.client.ConnectClientService;
 import iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants;
 
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_IOP_SERVICE_CONNECTED;
@@ -140,6 +140,22 @@ public class App extends ConnectApp implements IoPConnectContext {
             selectedProfilePubKey = appConf.getSelectedProfPubKey();
             broadcastManager = LocalBroadcastManager.getInstance(this);
             notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+            // This is just for now..
+            int pid = android.os.Process.myPid();
+            for (ActivityManager.RunningAppProcessInfo processInfo : activityManager.getRunningAppProcesses()) {
+                if (processInfo.pid == pid) {
+                    String currentProcName = processInfo.processName;
+                    log.info("process name: "+currentProcName);
+                    if (!TextUtils.isEmpty(currentProcName) && currentProcName.equals("org.furszy:connect_service")) {
+                        //Rest of the initializations are not needed for the background
+                        //process
+                        return;
+                    }
+                }
+            }
+
+
             registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_CONNECTED));
             registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED));
             registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_MSG_RECEIVED));
@@ -148,6 +164,8 @@ public class App extends ConnectApp implements IoPConnectContext {
             broadcastManager.registerReceiver(serviceReceiver, new IntentFilter(ACTION_ON_RESPONSE_PAIR_RECEIVED));
             broadcastManager.registerReceiver(serviceReceiver,new IntentFilter(ACTION_ON_PROFILE_CONNECTED));
             broadcastManager.registerReceiver(serviceReceiver,new IntentFilter(ACTION_ON_PROFILE_DISCONNECTED));
+
+
 
             connectHelper = ClientServiceConnectHelper.init(this, new InitListener() {
                 @Override
