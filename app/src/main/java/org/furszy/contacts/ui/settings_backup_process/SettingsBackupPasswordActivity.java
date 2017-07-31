@@ -67,6 +67,7 @@ public class SettingsBackupPasswordActivity extends BaseActivity {
 
                 try {
                     profilesModule.backupProfile(
+                            selectedProfPubKey,
                             app.getBackupDir(),
                             pass);
                     onBackPressed();

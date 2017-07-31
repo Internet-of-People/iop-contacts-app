@@ -59,7 +59,7 @@ public class ContactsFragment extends RecyclerFragment<ProfileInformation> {
     protected List onLoading() {
         try {
             if (profilesModule!=null)
-                return profilesModule.getKnownProfiles();
+                return profilesModule.getKnownProfiles(selectedProfilePubKey);
             else {
                 loadBasics();
                 TimeUnit.SECONDS.sleep(1);

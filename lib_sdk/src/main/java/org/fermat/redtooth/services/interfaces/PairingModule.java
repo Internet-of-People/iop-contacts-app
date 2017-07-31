@@ -21,5 +21,5 @@ public interface PairingModule extends Module {
 
     void cancelPairingRequest(PairingRequest pairingRequest);
 
-    List<PairingRequest> getPairingRequests();
+    List<PairingRequest> getPairingRequests(String localProfPubKey);
 }

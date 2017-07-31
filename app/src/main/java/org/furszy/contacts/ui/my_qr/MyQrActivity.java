@@ -52,7 +52,7 @@ public class MyQrActivity extends BaseActivity implements View.OnClickListener {
         findViewById(R.id.btn_share).setOnClickListener(this);
         img_qr = (ImageView) root.findViewById(R.id.img_qr);
         txt_qr = (TextView) root.findViewById(R.id.txt_qr);
-        uri = ProfileUtils.getProfileURI(profilesModule.getProfile());
+        uri = ProfileUtils.getProfileURI(profilesModule.getProfile(selectedProfPubKey));
         txt_qr.setText(uri);
         txt_qr.setMovementMethod(LinkMovementMethod.getInstance());
         try {

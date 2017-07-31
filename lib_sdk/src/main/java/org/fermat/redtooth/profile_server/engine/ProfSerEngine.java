@@ -173,7 +173,8 @@ public class ProfSerEngine {
     }
 
     private void sendRequest(ProfSerRequest profSerRequest,ProfSerMsgListener listener) throws CantConnectException, CantSendMessageException {
-        addMsgListener(profSerRequest.getMessageId(),listener);
+        if (listener!=null)
+            addMsgListener(profSerRequest.getMessageId(),listener);
         profSerRequest.send();
     }
 

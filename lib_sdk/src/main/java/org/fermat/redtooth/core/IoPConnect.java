@@ -129,6 +129,15 @@ public class IoPConnect implements ConnectionListener {
         this.engineListener = engineListener;
     }
 
+    /**
+     * Init
+     */
+    public void start(){
+        for (Profile profile : this.localProfilesDao.list()) {
+            localProfiles.put(profile.getHexPublicKey(),profile);
+        }
+    }
+
     @Override
     public void onPortsReceived(String psHost, int nonClPort, int clPort, int appSerPort) {
         ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
@@ -271,12 +280,12 @@ public class IoPConnect implements ConnectionListener {
 
     /**
      * todo: improve this..
-     * @param profile
+     * @param localProfilePubKey
      * @param appService
      */
-    public void addService(Profile profile, AppService appService) {
+    public void addService(String localProfilePubKey, AppService appService) {
+        Profile profile = localProfiles.get(localProfilePubKey);
         profile.addApplicationService(appService);
-        localProfiles.get(profile.getHexPublicKey()).addApplicationService(appService);
         // start moving this to the db
         localProfilesDao.updateProfile(profile);
         IoPProfileConnection connection = getProfileConnection(profile.getHexPublicKey());
@@ -339,14 +348,59 @@ public class IoPConnect implements ConnectionListener {
         }
     }
 
-    public int updateProfile(Profile profile, ProfSerMsgListener<Boolean> msgListener) throws Exception {
-        IoPProfileConnection connection = getProfileConnection(profile.getHexPublicKey());
-        if (connection != null && connection.isReady()) {
-            return connection.updateProfile(profile.getVersion(), profile.getName(), profile.getImg(), profile.getLatitude(), profile.getLongitude(), profile.getExtraData(), msgListener);
-        }else {
-            throw new IllegalStateException("Main profile connection is not open");
+    /**
+     * Check local profiles state and try to connect as many profiles as can.
+     */
+    public void checkProfilesState() {
+
+
+    }
+
+    public void updateProfile(Profile localProfile,boolean updatePs,ProfSerMsgListener<Boolean> msgListener) {
+        // update db
+        localProfilesDao.updateProfile(localProfile);
+
+        if (updatePs) {
+            IoPProfileConnection connection = getProfileConnection(localProfile.getHexPublicKey());
+            if (connection != null && connection.isReady()) {
+                connection.updateProfile(
+                        localProfile.getVersion(),
+                        localProfile.getName(),
+                        localProfile.getImg(),
+                        localProfile.getLatitude(),
+                        localProfile.getLongitude(),
+                        localProfile.getExtraData(),
+                        msgListener);
+            } else {
+                throw new IllegalStateException("Main profile connection is not open");
+            }
+        }
+    }
+
+    public void updateProfile(String localProfilePubKey,String name, byte[] img, int latitude, int longitude, String extraData, ProfSerMsgListener<Boolean> msgListener) throws Exception {
+        Profile localProfile = this.localProfiles.get(localProfilePubKey);
+
+        if (name!=null && !localProfile.getName().equals(name)){
+            localProfile.setName(name);
         }
 
+        if (img !=null && !Arrays.equals(localProfile.getImg(),img)){
+            localProfile.setImg(img);
+        }
+
+        if (latitude!=0 && localProfile.getLatitude()!=latitude){
+            localProfile.setLatitude(latitude);
+        }
+
+        if (latitude!=0 && localProfile.getLongitude()!=longitude){
+            localProfile.setLongitude(longitude);
+        }
+
+        if (extraData!=null && !localProfile.getExtraData().equals(extraData)){
+            localProfile.setExtraData(extraData);
+        }
+
+        updateProfile(localProfile,true,msgListener);
     }
 
     /**
@@ -769,6 +823,10 @@ public class IoPConnect implements ConnectionListener {
 
     public Profile getProfile(String localProfilePubKey) {
         return localProfiles.get(localProfilePubKey);
+    }
+
+    public Map<String,Profile> getLocalProfiles() {
+        return localProfiles;
     }
 
     public AppService getProfileAppService(String localProfilePubKey,EnabledServices service){

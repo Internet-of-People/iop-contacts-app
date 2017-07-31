@@ -161,7 +161,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
             }
         });
 
-        profileInformation = profilesModule.getKnownProfile(remotePk);
+        profileInformation = profilesModule.getKnownProfile(selectedProfPubKey,remotePk);
         txt_name.setText(profileInformation.getName());
         if (profileInformation.getImg()!=null){
             Bitmap bitmap = BitmapFactory.decodeByteArray(profileInformation.getImg(),0,profileInformation.getImg().length);

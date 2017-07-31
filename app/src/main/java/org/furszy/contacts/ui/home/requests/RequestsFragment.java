@@ -53,7 +53,7 @@ public class RequestsFragment extends RecyclerFragment<PairingRequest> {
     protected List<PairingRequest> onLoading() {
         try {
             if (pairingModule!=null)
-                return pairingModule.getPairingRequests();
+                return pairingModule.getPairingRequests(selectedProfilePubKey);
             else {
                 loadBasics();
                 TimeUnit.SECONDS.sleep(1);

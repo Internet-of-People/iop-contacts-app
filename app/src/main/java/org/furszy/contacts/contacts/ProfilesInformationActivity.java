@@ -109,7 +109,7 @@ public class ProfilesInformationActivity extends BaseActivity {
         public void run() {
             boolean res = false;
             try {
-                profiles = profilesModule.getKnownProfiles();
+                profiles = profilesModule.getKnownProfiles(selectedProfPubKey);
                 res = true;
             } catch (Exception e){
                 e.printStackTrace();

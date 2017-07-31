@@ -83,7 +83,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
             String action = intent.getAction();
             if (action.equals(ACTION_PROFILE_UPDATED_CONSTANT)){
                 if (isMyProfile){
-                    profileInformation = profilesModule.getProfile();
+                    profileInformation = profilesModule.getProfile(selectedProfPubKey);
                     loadProfileData();
                 }
             }
@@ -146,12 +146,12 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         if (extras!=null){
             if (extras.containsKey(INTENT_EXTRA_PROF_KEY)) {
                 byte[] pubKey = extras.getByteArray(INTENT_EXTRA_PROF_KEY);
-                profileInformation = profilesModule.getKnownProfile(CryptoBytes.toHexString(pubKey));
+                profileInformation = profilesModule.getKnownProfile(selectedProfPubKey,CryptoBytes.toHexString(pubKey));
                 // and schedule to try to update this profile information..
                 searchForProfile = true;
             }else if (extras.containsKey(IS_MY_PROFILE)){
                 isMyProfile = true;
-                profileInformation = profilesModule.getProfile();
+                profileInformation = profilesModule.getProfile(selectedProfPubKey);
                 btn_connect.setVisibility(View.GONE);
                 txt_chat.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_chat_disable, 0);
                 txt_chat.setEnabled (false);
@@ -183,7 +183,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     protected void onResume() {
         super.onResume();
         if (isMyProfile){
-            profileInformation = profilesModule.getProfile();
+            profileInformation = profilesModule.getProfile(selectedProfPubKey);
         }
         loadProfileData();
         if (executor==null){
@@ -220,7 +220,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                                 });
                             }
                         });
-                        profilesModule.getProfileInformation(profileInformation.getHexPublicKey(),true,msgListenerFuture);
+                        profilesModule.getProfileInformation(selectedProfPubKey,profileInformation.getHexPublicKey(),true,msgListenerFuture);
                     } catch (CantSendMessageException e) {
                         e.printStackTrace();
                     } catch (CantConnectException e) {

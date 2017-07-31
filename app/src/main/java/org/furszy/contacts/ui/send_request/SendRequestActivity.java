@@ -87,7 +87,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                     return;
                 }
                 final ProfileUtils.UriProfile profile = ProfileUtils.fromUri(uri);
-                if (profile.getPubKey().equals(profilesModule.getProfile().getHexPublicKey())) {
+                if (profile.getPubKey().equals(profilesModule.getProfile(selectedProfPubKey).getHexPublicKey())) {
                     enableSendBtn();
                     Snackbar.make(v, R.string.pairing_yourself, Snackbar.LENGTH_LONG).show();
                     return;

@@ -114,7 +114,7 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
         localBroadcastManager.registerReceiver(receiver,new IntentFilter(INTENT_ACTION_PROFILE_CONNECTED));
 
         if (profilesModule!=null){
-            if(!profilesModule.isProfileConnectedOrConnecting()){
+            if(!profilesModule.isProfileConnectedOrConnecting(selectedProfPubKey)){
                 btnReload.setVisibility(View.VISIBLE);
             }
         }

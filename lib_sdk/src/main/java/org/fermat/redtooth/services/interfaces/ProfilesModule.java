@@ -24,7 +24,7 @@ public interface ProfilesModule extends Module {
 
     String registerProfile(String name,String type, byte[] img, int latitude, int longitude, String extraData) throws Exception;
 
-    File backupProfile(File backupDir, String password) throws IOException;
+    File backupProfile(String localProfPubKey,File backupDir, String password) throws IOException;
 
     void scheduleBackupProfileFile(Profile profile, File backupDir, String password);
 
@@ -32,28 +32,28 @@ public interface ProfilesModule extends Module {
 
     void connect(String pubKey) throws Exception;
 
-    int updateProfile(String pubKey , String name, byte[] img, int latitude, int longitude, String extraData, final ProfSerMsgListener<Boolean> msgListener) throws Exception;
-    void updateProfile(String name, byte[] profImgData, MsgListenerFuture<Boolean> listenerFuture) throws Exception;
+    void updateProfile(String pubKey , String name, byte[] img, int latitude, int longitude, String extraData, final ProfSerMsgListener<Boolean> msgListener) throws Exception;
+    void updateProfile(String localProfPubKey,String name, byte[] profImgData, MsgListenerFuture<Boolean> listenerFuture) throws Exception;
 
     File backupOverwriteProfile(Profile localProfile, File file, String backupPassword) throws IOException;
 
     void addService(String localProfilePubKey,String name);
 
-    boolean isProfileConnectedOrConnecting();
+    boolean isProfileConnectedOrConnecting(String localProfilePubKey);
 
-    List<ProfileInformation> getKnownProfiles();
+    List<ProfileInformation> getKnownProfiles(String localProfilePubKey);
 
-    ProfileInformation getKnownProfile(String remotePk);
+    ProfileInformation getKnownProfile(String localProfilePubKey,String remotePk);
 
-    boolean isProfileRegistered();
+    boolean isProfileRegistered(String localProfilePubKey);
 
-    ProfileInformation getProfile();
+    ProfileInformation getProfile(String localProfilePubKey);
 
-    boolean isIdentityCreated();
+    boolean isIdentityCreated(String localProfilePubKey);
 
-    void getProfileInformation(String profPubKey, ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException;
+    void getProfileInformation(String localProfilePubKey,String profPubKey, ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException;
 
-    void getProfileInformation(String profPubKey, boolean getInfo, ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException;
+    void getProfileInformation(String localProfilePubKey,String profPubKey, boolean getInfo, ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException;
 
     void restoreProfileFrom(File file, String password);
 }

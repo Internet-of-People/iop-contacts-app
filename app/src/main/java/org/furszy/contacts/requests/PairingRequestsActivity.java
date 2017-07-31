@@ -61,7 +61,7 @@ public class PairingRequestsActivity extends BaseActivity {
         recyclerView.setLayoutManager(layoutManager);
 
         // specify an adapter (see also next example)
-        adapter = new RequestsAdapter(this,profilesModule.getProfile(),new FermatListItemListeners<PairingRequest>() {
+        adapter = new RequestsAdapter(this,profilesModule.getProfile(selectedProfPubKey),new FermatListItemListeners<PairingRequest>() {
             @Override
             public void onItemClickListener(PairingRequest data, int position) {
                 //Intent intent1 = new Intent(PairingRequestsActivity.this, ProfileInformationActivity.class);
@@ -115,7 +115,7 @@ public class PairingRequestsActivity extends BaseActivity {
         public void run() {
             boolean res = false;
             try {
-                requests = pairingModule.getPairingRequests();
+                requests = pairingModule.getPairingRequests(selectedProfPubKey);
                 res = true;
             } catch (Exception e){
                 e.printStackTrace();

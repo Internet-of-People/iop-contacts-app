@@ -4,11 +4,13 @@ import org.fermat.redtooth.core.services.pairing.PairingMsgTypes;
 import org.fermat.redtooth.global.DbObject;
 import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
 
+import java.io.Serializable;
+
 /**
  * Created by furszy on 6/6/17.
  */
 
-public class PairingRequest implements DbObject {
+public class PairingRequest implements DbObject,Serializable {
 
     private int id;
     private String senderPubKey;

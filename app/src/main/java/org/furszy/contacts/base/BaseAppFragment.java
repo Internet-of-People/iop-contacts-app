@@ -21,6 +21,7 @@ import org.fermat.redtooth.profile_server.ModuleRedtooth;
 public class BaseAppFragment extends Fragment {
 
     protected App app;
+    protected String selectedProfilePubKey;
     protected PairingModule pairingModule;
     protected ChatModule chatModule;
     protected ProfilesModule profilesModule;
@@ -37,5 +38,6 @@ public class BaseAppFragment extends Fragment {
         pairingModule = app.getPairingModule();
         chatModule = app.getChatModule();
         profilesModule = app.getProfilesModule();
+        selectedProfilePubKey = app.getSelectedProfilePubKey();
     }
 }

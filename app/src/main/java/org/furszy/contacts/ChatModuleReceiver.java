@@ -65,7 +65,7 @@ public class ChatModuleReceiver extends BroadcastReceiver{
     public void onChatConnected(String localProfilePubKey, String remoteProfilePubKey, boolean isLocalCreator) {
         log.info("on chat connected: " + remoteProfilePubKey);
         App app = App.getInstance();
-        ProfileInformation remoteProflie = app.getProfilesModule().getKnownProfile(remoteProfilePubKey);
+        ProfileInformation remoteProflie = app.getProfilesModule().getKnownProfile(app.getSelectedProfilePubKey(),remoteProfilePubKey);
         if (remoteProflie != null) {
             // todo: negro acá abrí la vista de incoming para aceptar el request..
             Intent intent = new Intent(app, WaitingChatActivity.class);
