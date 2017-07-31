@@ -119,7 +119,7 @@ public class PairingModuleImp extends AbstractModule implements PairingModule{
     }
 
     @Override
-    public List<PairingRequest> getPairingRequests() {
-        return platformService.getPairingRequestsDb().openPairingRequests(platformService.getProfile().getHexPublicKey());
+    public List<PairingRequest> getPairingRequests(String localProfPubKey) {
+        return platformService.getPairingRequestsDb().openPairingRequests(localProfPubKey);
     }
 }

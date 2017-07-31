@@ -201,7 +201,7 @@ public class IoPConnectService extends Service implements PlatformService,Module
                 tryScheduleService();
 
                 // init core
-                core = new Core(this,this,ioPConnect);
+                //core = new Core(this,this,ioPConnect);
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -309,8 +309,8 @@ public class IoPConnectService extends Service implements PlatformService,Module
     @Override
     public void addService(String serviceName, Object... args) {
         Module module = core.getModule(serviceName);
-        AppService appService = EnabledServicesFactory.buildService(serviceName,module,args);
-        ioPConnect.addService(profile,appService);
+        //AppService appService = EnabledServicesFactory.buildService(serviceName,module,args);
+        //ioPConnect.addService(profile,appService);
     }
 
     @Override
@@ -341,7 +341,7 @@ public class IoPConnectService extends Service implements PlatformService,Module
     }
     @Override
     public int updateProfile(String pubKey , String name, byte[] img, int latitude, int longitude, String extraData, final ProfSerMsgListener<Boolean> msgListener) throws Exception {
-        return core.getModule(EnabledServices.PROFILE_DATA.getName(), ProfilesModule.class)
+        /*return core.getModule(EnabledServices.PROFILE_DATA.getName(), ProfilesModule.class)
                 .updateProfile(
                         pubKey,
                         name,
@@ -350,7 +350,8 @@ public class IoPConnectService extends Service implements PlatformService,Module
                         longitude,
                         extraData,
                         msgListener
-                );
+                );*/
+        return 0;
     }
 
     @Override

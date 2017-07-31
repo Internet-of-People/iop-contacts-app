@@ -5,6 +5,7 @@ import android.content.Context;
 import org.fermat.redtooth.core.IoPConnect;
 import org.fermat.redtooth.global.Module;
 import org.fermat.redtooth.services.EnabledServices;
+import org.fermat.redtooth.services.ServiceFactory;
 
 import java.util.HashMap;
 
@@ -28,11 +29,13 @@ public class Core {
     private Context context;
     private IoPConnect ioPConnect;
     private PlatformService ioPConnectService;
+    private ServiceFactory serviceFactory;
 
-    public Core(Context context,PlatformService ioPConnectService, IoPConnect ioPConnect) {
+    public Core(Context context, PlatformService ioPConnectService, IoPConnect ioPConnect, ServiceFactory serviceFactory) {
         this.ioPConnectService = ioPConnectService;
         this.context = context;
         this.ioPConnect = ioPConnect;
+        this.serviceFactory = serviceFactory;
     }
 
     public Module getModule(String id){
@@ -46,7 +49,8 @@ public class Core {
                 module = new ProfilesModuleImp(
                         context,
                         ioPConnect,
-                        ioPConnectService
+                        serviceFactory,
+                        ioPConnectService.getConfPref()
                 );
                 break;
             case PROFILE_PAIRING:

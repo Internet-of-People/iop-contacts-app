@@ -16,6 +16,7 @@ import org.fermat.redtooth.profiles_manager.PairingRequest;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -102,11 +103,14 @@ public class LocalProfilesDb extends AbstractSqliteDb<Profile> implements LocalP
             contentValues.put(COLUMN_VERSION, profile.getVersion().toByteArray());
         contentValues.put(COLUMN_PUB_KEY, profile.getHexPublicKey());
         contentValues.put(COLUMN_PRIV_KEY, profile.getPrivKeyHex());
-        Set<String> services = new HashSet<>();
-        for (AppService appService : profile.getApplicationServices().values()) {
-            services.add(appService.getName());
+        HashMap<String,AppService> map = profile.getApplicationServices();
+        if (map!=null) {
+            Set<String> services = new HashSet<>();
+            for (AppService appService : map.values()){
+                services.add(appService.getName());
+            }
+            contentValues.put(COLUMN_APP_SERVICES, convertToString(services));
         }
-        contentValues.put(COLUMN_APP_SERVICES,convertToString(services));
         contentValues.put(COLUMN_HOME_HOST,profile.getHomeHost());
         if (profile.getImg()!=null && profile.getImg().length>0)
             contentValues.put(COLUMN_IMG,profile.getImg());

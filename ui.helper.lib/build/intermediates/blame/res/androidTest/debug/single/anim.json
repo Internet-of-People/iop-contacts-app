@@ -1,0 +1,42 @@
+[
+    {
+        "merged": "/Users/furszy/Desktop/ContactsApp/ui.helper.lib/build/intermediates/res/merged/androidTest/debug/anim/abc_fade_in.xml",
+        "source": "/Users/furszy/.android/build-cache/5a700775ce980819d5a86bcb8575e44dde47a107/output/res/anim/abc_fade_in.xml"
+    },
+    {
+        "merged": "/Users/furszy/Desktop/ContactsApp/ui.helper.lib/build/intermediates/res/merged/androidTest/debug/anim/abc_fade_out.xml",
+        "source": "/Users/furszy/.android/build-cache/5a700775ce980819d5a86bcb8575e44dde47a107/output/res/anim/abc_fade_out.xml"
+    },
+    {
+        "merged": "/Users/furszy/Desktop/ContactsApp/ui.helper.lib/build/intermediates/res/merged/androidTest/debug/anim/abc_slide_in_top.xml",
+        "source": "/Users/furszy/.android/build-cache/5a700775ce980819d5a86bcb8575e44dde47a107/output/res/anim/abc_slide_in_top.xml"
+    },
+    {
+        "merged": "/Users/furszy/Desktop/ContactsApp/ui.helper.lib/build/intermediates/res/merged/androidTest/debug/anim/abc_slide_in_bottom.xml",
+        "source": "/Users/furszy/.android/build-cache/5a700775ce980819d5a86bcb8575e44dde47a107/output/res/anim/abc_slide_in_bottom.xml"
+    },
+    {
+        "merged": "/Users/furszy/Desktop/ContactsApp/ui.helper.lib/build/intermediates/res/merged/androidTest/debug/anim/abc_grow_fade_in_from_bottom.xml",
+        "source": "/Users/furszy/.android/build-cache/5a700775ce980819d5a86bcb8575e44dde47a107/output/res/anim/abc_grow_fade_in_from_bottom.xml"
+    },
+    {
+        "merged": "/Users/furszy/Desktop/ContactsApp/ui.helper.lib/build/intermediates/res/merged/androidTest/debug/anim/abc_popup_enter.xml",
+        "source": "/Users/furszy/.android/build-cache/5a700775ce980819d5a86bcb8575e44dde47a107/output/res/anim/abc_popup_enter.xml"
+    },
+    {
+        "merged": "/Users/furszy/Desktop/ContactsApp/ui.helper.lib/build/intermediates/res/merged/androidTest/debug/anim/abc_slide_out_top.xml",
+        "source": "/Users/furszy/.android/build-cache/5a700775ce980819d5a86bcb8575e44dde47a107/output/res/anim/abc_slide_out_top.xml"
+    },
+    {
+        "merged": "/Users/furszy/Desktop/ContactsApp/ui.helper.lib/build/intermediates/res/merged/androidTest/debug/anim/abc_popup_exit.xml",
+        "source": "/Users/furszy/.android/build-cache/5a700775ce980819d5a86bcb8575e44dde47a107/output/res/anim/abc_popup_exit.xml"
+    },
+    {
+        "merged": "/Users/furszy/Desktop/ContactsApp/ui.helper.lib/build/intermediates/res/merged/androidTest/debug/anim/abc_slide_out_bottom.xml",
+        "source": "/Users/furszy/.android/build-cache/5a700775ce980819d5a86bcb8575e44dde47a107/output/res/anim/abc_slide_out_bottom.xml"
+    },
+    {
+        "merged": "/Users/furszy/Desktop/ContactsApp/ui.helper.lib/build/intermediates/res/merged/androidTest/debug/anim/abc_shrink_fade_out_from_bottom.xml",
+        "source": "/Users/furszy/.android/build-cache/5a700775ce980819d5a86bcb8575e44dde47a107/output/res/anim/abc_shrink_fade_out_from_bottom.xml"
+    }
+]

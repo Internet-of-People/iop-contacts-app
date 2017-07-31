@@ -14,11 +14,11 @@ import iop.org.iop_sdk_android.core.service.IoPConnectService;
  */
 
 public interface PlatformService {
-    void setProfile(Profile profile);
+    //void setProfile(Profile profile);
     ProfilesManager getProfilesDb();
     SqlitePairingRequestDb getPairingRequestsDb();
     ProfileServerConfigurations getConfPref();
-    Profile getProfile();
+    //Profile getProfile();
 
     ProfilesModule getProfileModule();
 

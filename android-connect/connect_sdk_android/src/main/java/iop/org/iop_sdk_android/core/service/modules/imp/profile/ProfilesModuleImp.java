@@ -11,6 +11,7 @@ import org.fermat.redtooth.global.Version;
 import org.fermat.redtooth.profile_server.CantConnectException;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ProfileInformation;
+import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.fermat.redtooth.profile_server.engine.app_services.AppService;
 import org.fermat.redtooth.profile_server.engine.app_services.PairingListener;
 import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
@@ -23,6 +24,7 @@ import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.services.EnabledServices;
 import org.fermat.redtooth.services.EnabledServicesFactory;
+import org.fermat.redtooth.services.ServiceFactory;
 import org.fermat.redtooth.wallet.utils.Iso8601Format;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,8 +72,10 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
 
     // todo: change this for the non local broadcast..
     private LocalBroadcastManager localBroadcastManager;
+    private ProfileServerConfigurations confPref;
+    private ServiceFactory serviceFactory;
     // This instance is just for now to start dividing things, to get and set the profile
-    private PlatformService connectService;
+    //private PlatformService connectService;
 
     private PlatformSerializer platformSerializer = new PlatformSerializer(){
         @Override
@@ -80,14 +84,16 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
         }
     };
 
-    public ProfilesModuleImp(Context context, IoPConnect ioPConnect, PlatformService connectService) {
+    public ProfilesModuleImp(Context context, IoPConnect ioPConnect,ServiceFactory serviceFactory ,ProfileServerConfigurations confPref) {
         super(
                 context,
                 ioPConnect,
                 Version.newProtocolAcceptedVersion(), // version 1 default for now..
                 EnabledServices.PROFILE_DATA // module identifier
         );
-        this.connectService = connectService;
+        this.confPref = confPref;
+        this.serviceFactory = serviceFactory;
+        //this.connectService = connectService;
         this.localBroadcastManager = LocalBroadcastManager.getInstance(context);
     }
 
@@ -116,20 +122,21 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
         }
         Profile profile = ioPConnect.createProfile(null,name,type,img,extraData,null);
         // just for now..
-        connectService.setProfile(profile);
+        //connectService.setProfile(profile);
         return profile.getHexPublicKey();
     }
 
     @Override
-    public File backupProfile(File backupDir, String password) throws IOException {
+    public File backupProfile(String localProfPubKey,File backupDir, String password) throws IOException {
+        Profile localProfile = ioPConnect.getProfile(localProfPubKey);
         File backupFile = new File(
                 backupDir,
-                "backup_iop_connect_"+connectService.getProfile().getName()+ Iso8601Format.formatDateTimeT(new Date(System.currentTimeMillis()))+".dat"
+                "backup_iop_connect_"+localProfile.getName()+ Iso8601Format.formatDateTimeT(new Date(System.currentTimeMillis()))+".dat"
         );
-        connectService.getConfPref().saveBackupPassword(password);
+        confPref.saveBackupPassword(password);
         logger.info("Backup file path: "+backupFile.getAbsolutePath());
-        backupOverwriteProfile(connectService.getProfile(),backupFile,password);
-        scheduleBackupProfileFile(connectService.getProfile(),backupDir,password);
+        backupOverwriteProfile(localProfile,backupFile,password);
+        scheduleBackupProfileFile(localProfile,backupDir,password);
         return backupFile;
     }
 
@@ -139,9 +146,9 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
                 backupDir,
                 "backup_iop_connect_"+profile.getName()+".dat"
         );
-        connectService.getConfPref().setScheduleBackupEnable(true);
-        connectService.getConfPref().saveBackupPatch(backupFile.getAbsolutePath());
-        connectService.getConfPref().saveBackupPassword(password);
+        confPref.setScheduleBackupEnable(true);
+        confPref.saveBackupPatch(backupFile.getAbsolutePath());
+        confPref.saveBackupPassword(password);
     }
 
     @Override
@@ -151,7 +158,7 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
 
     public String registerProfile(Profile profile){
         profile = ioPConnect.createProfile(profile);
-        connectService.setProfile(profile);
+        //connectService.setProfile(profile);
         return profile.getHexPublicKey();
     }
 
@@ -161,15 +168,16 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
         msgListenerFuture.setListener(new BaseMsgFuture.Listener<Boolean>() {
             @Override
             public void onAction(int messageId, Boolean object) {
-                Profile profile = connectService.getProfile();
+                Profile profile = ioPConnect.getProfile(pubKey);
                 profile.setHomeHost(msgListenerFuture.getProfServerData().getHost());
                 profile.setHomeHostId(msgListenerFuture.getProfServerData().getNetworkId());
+                ioPConnect.updateProfile(profile,false,null);
                 onCheckInCompleted(profile.getHexPublicKey());
             }
 
             @Override
             public void onFail(int messageId, int status, String statusDetail) {
-                Profile profile = connectService.getProfile();
+                Profile profile = ioPConnect.getProfile(pubKey);
                 onCheckInFail(profile,status,statusDetail);
                 if (status==400){
                     logger.info("Checking fail, detail "+statusDetail+", trying to reconnect after 5 seconds");
@@ -212,6 +220,7 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
     @Override
     public void onCheckInCompleted(String localProfilePubKey) {
         Intent intent = new Intent(ACTION_ON_PROFILE_CONNECTED);
+        intent.putExtra(INTENT_EXTRA_PROF_KEY,localProfilePubKey);
         localBroadcastManager.sendBroadcast(intent);
     }
 
@@ -221,7 +230,7 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
         localBroadcastManager.sendBroadcast(intent);
     }
 
-    private void onCheckInFail(Profile profile, int status, String statusDetail) {
+    public void onCheckInFail(Profile profile, int status, String statusDetail) {
         logger.warn("on check in fail: "+statusDetail);
         Intent intent = new Intent(ACTION_ON_CHECK_IN_FAIL);
         intent.putExtra(INTENT_RESPONSE_DETAIL,statusDetail);
@@ -229,29 +238,27 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
     }
 
     @Override
-    public void updateProfile(String name, byte[] profImgData, MsgListenerFuture<Boolean> listenerFuture) throws Exception {
+    public void updateProfile(String localProfPubKey,String name, byte[] profImgData, MsgListenerFuture<Boolean> listenerFuture) throws Exception {
         logger.info("Trying to update profile..");
-        updateProfile(connectService.getProfile().getHexPublicKey(),name,profImgData,0,0,null,listenerFuture);
+        updateProfile(localProfPubKey,name,profImgData,0,0,null,listenerFuture);
     }
 
-    public int updateProfile(String pubKey , String name, byte[] img, int latitude, int longitude, String extraData, final ProfSerMsgListener<Boolean> msgListener) throws Exception {
+    public void updateProfile(String pubKey , String name, byte[] img, int latitude, int longitude, String extraData, final ProfSerMsgListener<Boolean> msgListener) throws Exception {
         try{
             logger.info("Trying to update profile..");
-            Version version = connectService.getProfile().getVersion();
-            Profile profile = new Profile(version,name,img,latitude,longitude,extraData);
-            profile.setKey((KeyEd25519) connectService.getProfile().getKey());
-            if (profile.getImg()!=null){
-                connectService.getProfile().setImg(ImageUtils.compressJpeg(profile.getImg(), 20480));
-            }
-            if (name!=null && !connectService.getProfile().getName().equals(name)){
-                profile.setName(name);
-                connectService.getProfile().setName(name);
-            }
-            connectService.getConfPref().saveProfile(profile);
-            // broadcast profile update
-            broadcastUpdateProfile();
 
-            return ioPConnect.updateProfile(profile, new ProfSerMsgListener<Boolean>() {
+            if (img.length>20480){
+                img = ImageUtils.compressJpeg(img, 20480);
+            }
+
+            ioPConnect.updateProfile(
+                    pubKey,
+                    name,
+                    img,
+                    latitude,
+                    longitude,
+                    extraData,
+                    new ProfSerMsgListener<Boolean>() {
                 @Override
                 public void onMessageReceive(int messageId, Boolean message) {
                     msgListener.onMessageReceive(messageId,message);
@@ -272,6 +279,10 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
                     return "updateProfile";
                 }
             });
+
+            // broadcast profile update
+            broadcastUpdateProfile();
+
         }catch (Exception e){
             e.printStackTrace();
             throw e;
@@ -299,13 +310,13 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
      */
     @Override
     public void addService(String profilePubKey,String serviceName) {
-        AppService appService = EnabledServicesFactory.buildService(serviceName,this);
-        ioPConnect.addService(connectService.getProfile(),appService);
+        AppService appService = serviceFactory.buildOrGetService(serviceName);
+        ioPConnect.addService(profilePubKey,appService);
     }
 
     @Override
-    public boolean isProfileConnectedOrConnecting() {
-        return ioPConnect.isProfileConnectedOrConnecting(connectService.getProfile().getHexPublicKey());
+    public boolean isProfileConnectedOrConnecting(String localProfilePubKey) {
+        return ioPConnect.isProfileConnectedOrConnecting(localProfilePubKey);
     }
 
     /**
@@ -313,13 +324,12 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
      * @return
      */
     @Override
-    public List<ProfileInformation> getKnownProfiles() {
+    public List<ProfileInformation> getKnownProfiles(String localProfilePubKey) {
         List<ProfileInformation> ret = new ArrayList<>();
-        Profile profile = connectService.getProfile();
-        List<ProfileInformation> knownProfiles = ioPConnect.getKnownProfiles(profile.getHexPublicKey());
+        List<ProfileInformation> knownProfiles = ioPConnect.getKnownProfiles(localProfilePubKey);
         // todo: this is a lazy remove..
         for (ProfileInformation knownProfile : knownProfiles) {
-            if (!Arrays.equals(knownProfile.getPublicKey(),profile.getPublicKey())){
+            if (!knownProfile.getHexPublicKey().equals(localProfilePubKey)){
                 ret.add(knownProfile);
             }
         }
@@ -327,28 +337,28 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
     }
 
     @Override
-    public ProfileInformation getKnownProfile(String remotePk) {
-        return ioPConnect.getKnownProfile(connectService.getProfile().getHexPublicKey(),remotePk);
+    public ProfileInformation getKnownProfile(String localProfilePubKey,String remotePk) {
+        return ioPConnect.getKnownProfile(localProfilePubKey,remotePk);
     }
 
     @Override
-    public boolean isProfileRegistered() {
-        return connectService.getConfPref().isRegisteredInServer();
+    public boolean isProfileRegistered(String localProfilePubKey) {
+        return confPref.isRegisteredInServer();
     }
 
     @Override
-    public ProfileInformation getProfile() {
-        return getMyProfile();
+    public ProfileInformation getProfile(String localProfilePubKey) {
+        return getMyProfile(localProfilePubKey);
     }
 
     @Override
-    public boolean isIdentityCreated() {
-        return connectService.getConfPref().isIdentityCreated();
+    public boolean isIdentityCreated(String localProfilePubKey) {
+        return confPref.isIdentityCreated();
     }
 
-    public ProfileInformation getMyProfile() {
+    public ProfileInformation getMyProfile(String localProfilePubKey) {
         Set<String> services = new HashSet<>();
-        Profile profile = connectService.getProfile();
+        Profile profile = ioPConnect.getProfile(localProfilePubKey);
         if (profile.getApplicationServices()!=null) {
             for (AppService appService : profile.getApplicationServices().values()) {
                 services.add(appService.getName());
@@ -372,13 +382,13 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
     }
 
     @Override
-    public void getProfileInformation(String profPubKey, ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException {
-        getProfileInformation(profPubKey,false,profileFuture);
+    public void getProfileInformation(String localProfilePubKey,String profPubKey, ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException {
+        getProfileInformation(localProfilePubKey,profPubKey,false,profileFuture);
     }
 
     @Override
-    public void getProfileInformation(String profPubKey, boolean getInfo, final ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException {
-        ioPConnect.searchAndGetProfile(connectService.getProfile().getHexPublicKey(),profPubKey,getInfo,profileFuture);
+    public void getProfileInformation(String localProfilePubKey,String remoteProfPubKey, boolean getInfo, final ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException {
+        ioPConnect.searchAndGetProfile(localProfilePubKey,remoteProfPubKey,getInfo,profileFuture);
     }
 
     @Override
@@ -388,7 +398,7 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
             try {
                 IoPConnect.ProfileRestored profileRestored = ioPConnect.restoreFromBackup(file, password, platformSerializer);
                 Profile profile = profileRestored.getProfile();
-                connectService.setProfile(profile);
+                //connectService.setProfile(profile);
                 // clean everything
                 ioPConnect.stop();
                 profile = profileRestored.getProfile();
@@ -408,9 +418,13 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
         localBroadcastManager.sendBroadcast(intent);
     }
 
+    public PairingListener getPairingListener() {
+        return pairingListener;
+    }
+
     @Override
     public void onDestroy() {
-        connectService = null;
+        //connectService = null;
         ioPConnect = null;
     }
 }

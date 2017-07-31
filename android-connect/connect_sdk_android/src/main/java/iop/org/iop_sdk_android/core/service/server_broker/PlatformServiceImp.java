@@ -27,11 +27,16 @@ import org.fermat.redtooth.global.PlatformSerializer;
 import org.fermat.redtooth.global.utils.SerializationUtils;
 import org.fermat.redtooth.profile_server.CantSendMessageException;
 import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
+import org.fermat.redtooth.profile_server.engine.app_services.AppService;
+import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
+import org.fermat.redtooth.profile_server.engine.futures.ConnectionFuture;
 import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 import org.fermat.redtooth.profile_server.model.KeyEd25519;
 import org.fermat.redtooth.profile_server.model.Profile;
 import org.fermat.redtooth.profiles_manager.LocalProfilesDao;
 import org.fermat.redtooth.services.EnabledServices;
+import org.fermat.redtooth.services.EnabledServicesFactory;
+import org.fermat.redtooth.services.ServiceFactory;
 import org.fermat.redtooth.services.interfaces.ProfilesModule;
 import org.fermat.redtooth.wallet.utils.BlockchainState;
 import org.slf4j.Logger;
@@ -66,6 +71,7 @@ import iop.org.iop_sdk_android.core.service.modules.imp.profile.ProfilesModuleIm
 
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_CONNECTED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
 
 /**
  * Created by furszy on 7/19/17.
@@ -88,9 +94,10 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
     private IoPConnectContext application;
     /** Main library */
     private IoPConnect ioPConnect;
+    private ServiceFactory serviceFactory;
     /** Configurations impl */
     private ProfileServerConfigurations configurationsPreferences;
-    private Profile profile;
+    //private Profile profile;
     /** Databases */
     private SqlitePairingRequestDb pairingRequestDb;
     private SqliteProfilesDb profilesDb;
@@ -136,13 +143,26 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
         }
     };
 
+    private class ServiceFactoryImp implements ServiceFactory {
+
+        private Core core;
+
+        public ServiceFactoryImp() {
+        }
+
+        public void setCore(Core core) {
+            this.core = core;
+        }
+
+        @Override
+        public AppService buildOrGetService(String serviceName) {
+            return EnabledServicesFactory.buildService(serviceName,core.getModule(serviceName));
+        }
+    };
+
+
     public ProfileServerConfigurations getConfPref() {
         return configurationsPreferences;
-    }
-
-    @Override
-    public Profile getProfile() {
-        return profile;
     }
 
     @Override
@@ -177,16 +197,20 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                 application = (IoPConnectContext) getApplication();
                 executor = Executors.newFixedThreadPool(3);
                 configurationsPreferences = new ProfileServerConfigurationsImp(this, getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME, 0));
-                KeyEd25519 keyEd25519 = (KeyEd25519) configurationsPreferences.getUserKeys();
-                if (keyEd25519 != null)
-                    profile = configurationsPreferences.getProfile();
+                //KeyEd25519 keyEd25519 = (KeyEd25519) configurationsPreferences.getUserKeys();
+                //if (keyEd25519 != null)
+                //    profile = configurationsPreferences.getProfile();
                 pairingRequestDb = new SqlitePairingRequestDb(this);
                 profilesDb = new SqliteProfilesDb(this);
                 localProfilesDao = new LocalProfilesDb(this);
                 ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),localProfilesDao,profilesDb,pairingRequestDb,this);
                 // init core
-                core = new Core(this,this,ioPConnect);
+                ServiceFactoryImp serviceFactoryImp = new ServiceFactoryImp();
+                core = new Core(this,this,ioPConnect,serviceFactoryImp);
+                serviceFactoryImp.setCore(core);
+                serviceFactory = serviceFactoryImp;
                 ioPConnect.setEngineListener((ProfilesModuleImp)core.getModule(EnabledServices.PROFILE_DATA.getName()));
+                ioPConnect.start();
 
                 try {
                     localServerSocket = new LocalServerSocket(IntentServiceAction.SERVICE_NAME);
@@ -215,7 +239,46 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                     localBroadcastManager.sendBroadcast(intent);
                     return;
                 }
-                if (profile != null) {
+                // todo: here i have to check if every profile on this device is connected to the network..
+                //ioPConnect.checkProfilesState();
+                // first check the existing profiles
+                final ProfilesModuleImp moduleImp = core.getModule(EnabledServices.PROFILE_DATA.getName(),ProfilesModuleImp.class);
+                for (final Profile localProfile : ioPConnect.getLocalProfiles().values()) {
+                    if (!ioPConnect.isProfileConnectedOrConnecting(localProfile.getHexPublicKey())) {
+                        final ConnectionFuture future = new ConnectionFuture();
+                        future.setListener(new BaseMsgFuture.Listener<Boolean>() {
+                            @Override
+                            public void onAction(int messageId, Boolean object) {
+                                Profile profile = ioPConnect.getProfile(localProfile.getHexPublicKey());
+                                profile.setHomeHost(future.getProfServerData().getHost());
+                                profile.setHomeHostId(future.getProfServerData().getNetworkId());
+                                ioPConnect.updateProfile(profile,false,null);
+                                moduleImp.onCheckInCompleted(profile.getHexPublicKey());
+                            }
+
+                            @Override
+                            public void onFail(int messageId, int status, String statusDetail) {
+                                Profile profile = ioPConnect.getProfile(localProfile.getHexPublicKey());
+                                moduleImp.onCheckInFail(profile,status,statusDetail);
+                                if (status==400) {
+                                    logger.info("Checking fail, detail " + statusDetail + ", trying to reconnect after 5 seconds");
+                                }
+                            }
+                        });
+                        ioPConnect.connectProfile(
+                                localProfile.getHexPublicKey(),
+                                moduleImp.getPairingListener(),
+                                null,
+                                future
+                        );
+                    } else {
+                        Intent intent = new Intent(ACTION_ON_PROFILE_CONNECTED);
+                        intent.putExtra(INTENT_EXTRA_PROF_KEY,localProfile.getHexPublicKey());
+                        localBroadcastManager.sendBroadcast(intent);
+                        logger.info("check, profile connected or connecting. no actions");
+                    }
+                }
+                /*if (profile != null) {
                     if (!ioPConnect.isProfileConnectedOrConnecting(profile.getHexPublicKey())) {
                         connect(profile.getHexPublicKey());
                     } else {
@@ -225,7 +288,7 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                     }
                 } else {
                     logger.warn("### Trying to check with a null profile.");
-                }
+                }*/
             }else {
                 logger.warn("### background service disabled");
             }
@@ -306,10 +369,6 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
             // save
             configurationsPreferences.saveScheduleServiceTime(scheduleTime);
         }
-    }
-
-    public void setProfile(Profile profile) {
-        this.profile = profile;
     }
 
     private final IPlatformService.Stub mBinder = new IPlatformService.Stub() {

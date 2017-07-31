@@ -1,0 +1,26 @@
+[
+    {
+        "merged": "/Users/furszy/Desktop/ContactsApp/ui.helper.lib/build/intermediates/res/merged/androidTest/debug/layout-v11/notification_template_big_media_narrow.xml",
+        "source": "/Users/furszy/.android/build-cache/5a700775ce980819d5a86bcb8575e44dde47a107/output/res/layout-v11/notification_template_big_media_narrow.xml"
+    },
+    {
+        "merged": "/Users/furszy/Desktop/ContactsApp/ui.helper.lib/build/intermediates/res/merged/androidTest/debug/layout-v11/notification_template_big_media_custom.xml",
+        "source": "/Users/furszy/.android/build-cache/5a700775ce980819d5a86bcb8575e44dde47a107/output/res/layout-v11/notification_template_big_media_custom.xml"
+    },
+    {
+        "merged": "/Users/furszy/Desktop/ContactsApp/ui.helper.lib/build/intermediates/res/merged/androidTest/debug/layout-v11/notification_media_action.xml",
+        "source": "/Users/furszy/.android/build-cache/5a700775ce980819d5a86bcb8575e44dde47a107/output/res/layout-v11/notification_media_action.xml"
+    },
+    {
+        "merged": "/Users/furszy/Desktop/ContactsApp/ui.helper.lib/build/intermediates/res/merged/androidTest/debug/layout-v11/notification_media_cancel_action.xml",
+        "source": "/Users/furszy/.android/build-cache/5a700775ce980819d5a86bcb8575e44dde47a107/output/res/layout-v11/notification_media_cancel_action.xml"
+    },
+    {
+        "merged": "/Users/furszy/Desktop/ContactsApp/ui.helper.lib/build/intermediates/res/merged/androidTest/debug/layout-v11/notification_template_big_media.xml",
+        "source": "/Users/furszy/.android/build-cache/5a700775ce980819d5a86bcb8575e44dde47a107/output/res/layout-v11/notification_template_big_media.xml"
+    },
+    {
+        "merged": "/Users/furszy/Desktop/ContactsApp/ui.helper.lib/build/intermediates/res/merged/androidTest/debug/layout-v11/notification_template_big_media_narrow_custom.xml",
+        "source": "/Users/furszy/.android/build-cache/5a700775ce980819d5a86bcb8575e44dde47a107/output/res/layout-v11/notification_template_big_media_narrow_custom.xml"
+    }
+]
