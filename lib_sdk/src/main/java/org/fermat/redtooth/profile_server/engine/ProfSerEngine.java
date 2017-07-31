@@ -894,6 +894,16 @@ public class ProfSerEngine {
                             LOG.error("response: to msg id: "+messageId+" ERROR_UNINITIALIZED, "+response.getDetails());
                             msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),response.getDetails());
                             break;
+                        case ERROR_UNAUTHORIZED:
+                            LOG.error("response: to msg id: "+messageId+" ERROR_UNAUTHORIZED, "+response.getDetails());
+                            msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),response.getDetails());
+                            break;
+                        case ERROR_PROTOCOL_VIOLATION:
+                            // this should not happen..
+                            LOG.error("response: to msg id: "+messageId+" ERROR_PROTOCOL_VIOLATION, "+response.getDetails());
+                            LOG.error("Closing session for bad protocol: "+session.toString());
+                            session.closeNow();
+                            break;
                         default:
                             LOG.error("response: to msg id: "+messageId+" "+response.toString());
                             msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),response.getDetails());

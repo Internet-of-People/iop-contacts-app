@@ -80,7 +80,8 @@ public class MessageFactory {
     public static IopProfileServer.Message buildRegisterHostRequest(byte[] identityPk, String identityType, long contractStartTime, byte[] planId,Signer signer){
         checkStringNotNullOrEmpty(identityType,"identityType must not be null");
         checkNotNull(identityPk,"identityPk must not be null");
-        checkNotNull(signer,"signet must not be null");
+        checkNotNull(signer,"signer must not be null");
+        checkNotNull(identityType,"identityType must not be null");
 
         IopProfileServer.HostingPlanContract.Builder contract = IopProfileServer.HostingPlanContract
                 .newBuilder()

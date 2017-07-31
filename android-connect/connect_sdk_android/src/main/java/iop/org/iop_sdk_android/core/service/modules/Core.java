@@ -36,11 +36,11 @@ public class Core {
     }
 
     public Module getModule(String id){
-        if (modules.containsKey(id)){
-            return modules.get(id);
+        EnabledServices moduleId = EnabledServices.getServiceByName(id);
+        if (modules.containsKey(moduleId)){
+            return modules.get(moduleId);
         }
         Module module = null;
-        EnabledServices moduleId = EnabledServices.getServiceByName(id);
         switch (moduleId){
             case PROFILE_DATA:
                 module = new ProfilesModuleImp(
