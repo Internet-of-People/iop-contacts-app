@@ -6,8 +6,10 @@
     <application android:label="@string/app_name"
         android:supportsRtl="true">
 
-        <service android:name=".core.service.client_broker.ConnectClientService"/>
-        <service android:name=".core.service.server_broker.PlatformServiceImp"/>
+        <service android:name=".core.service.client.ConnectClientService"/>
+
+        <service android:name=".core.service.server_broker.PlatformServiceImp"
+            android:process=":connect_service"/>
 
         <receiver android:name="iop.org.iop_sdk_android.core.receivers.ReceiverBoot">
             <intent-filter>
