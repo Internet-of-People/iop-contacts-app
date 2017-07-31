@@ -52,7 +52,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
     private static final Logger logger = LoggerFactory.getLogger(IoPProfileConnection.class);
 
     /** Time in millis (20 seconds) */
-    private static final long CALL_IDLE_TIME = 20000;
+    private static final long CALL_IDLE_TIME = 20;
 
     /** Context wrapper */
     private IoPConnectContext contextWrapper;
