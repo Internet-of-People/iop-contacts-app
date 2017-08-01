@@ -6,8 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import org.furszy.contacts.R;
-
 /**
  * Created by Neoperol on 6/20/17.
  */

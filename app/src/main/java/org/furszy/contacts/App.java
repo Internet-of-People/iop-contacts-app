@@ -14,14 +14,13 @@ import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
-import org.fermat.redtooth.services.chat.ChatModule;
-import org.fermat.redtooth.services.interfaces.PairingModule;
-import org.fermat.redtooth.services.interfaces.ProfilesModule;
+import org.libertaria.world.core.IoPConnectContext;
+import org.libertaria.world.profile_server.ProfileServerConfigurations;
+import org.libertaria.world.services.EnabledServices;
+import org.libertaria.world.services.chat.ChatModule;
+import org.libertaria.world.services.interfaces.PairingModule;
+import org.libertaria.world.services.interfaces.ProfilesModule;
 import org.furszy.contacts.ui.home.HomeActivity;
-
-import org.fermat.redtooth.core.IoPConnectContext;
-import org.fermat.redtooth.services.EnabledServices;
-import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,12 +35,12 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
-import iop.org.iop_sdk_android.core.service.client.ClientServiceConnectHelper;
-import iop.org.iop_sdk_android.core.service.client.InitListener;
 import iop.org.iop_sdk_android.core.service.ProfileServerConfigurationsImp;
-import iop.org.iop_sdk_android.core.service.client.ConnectApp;
-import iop.org.iop_sdk_android.core.service.client.ConnectClientService;
-import iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants;
+import iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants;
+import world.libertaria.sdk.android.client.ClientServiceConnectHelper;
+import world.libertaria.sdk.android.client.ConnectClientService;
+import world.libertaria.sdk.android.client.InitListener;
+import world.libertaria.shared.library.global.service.ConnectApp;
 
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_IOP_SERVICE_CONNECTED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_CHECK_IN_FAIL;

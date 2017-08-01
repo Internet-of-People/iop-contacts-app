@@ -10,14 +10,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.furszy.contacts.R;
 import org.furszy.contacts.adapter.BaseAdapter;
 import org.furszy.contacts.adapter.BaseViewHolder;
 import org.furszy.contacts.ui.home.contacts.ContactsFragment;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

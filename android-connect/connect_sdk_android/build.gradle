@@ -45,8 +45,9 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.3.1'
     testCompile 'junit:junit:4.12'
     compile 'commons-io:commons-io:2.5'
+
+    compile project(':connect_sdk_android_shared_library')
     // libsodium
     //compile(name:'libsodium-jni-aar-1.0.3', ext:'aar')
-    compile project(':libsodium-jni-aar-1.0.3')
-    compile project(':lib_sdk')
+
 }

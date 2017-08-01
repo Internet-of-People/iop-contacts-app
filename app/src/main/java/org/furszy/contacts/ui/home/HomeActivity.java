@@ -14,8 +14,8 @@ import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.furszy.contacts.BaseDrawerActivity;
 import org.furszy.contacts.App;
+import org.furszy.contacts.BaseDrawerActivity;
 import org.furszy.contacts.R;
 import org.furszy.contacts.StartActivity;
 import org.furszy.contacts.base.BaseAppFragment;

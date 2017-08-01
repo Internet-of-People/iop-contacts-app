@@ -1,7 +1,6 @@
 package org.furszy.contacts.requests;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -9,13 +8,10 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import org.furszy.contacts.App;
+import org.libertaria.world.profiles_manager.PairingRequest;
 import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.R;
 import org.furszy.contacts.adapter.FermatListItemListeners;
-
-import org.fermat.redtooth.profile_server.ModuleRedtooth;
-import org.fermat.redtooth.profiles_manager.PairingRequest;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;

@@ -13,14 +13,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.client.AppServiceCallNotAvailableException;
+import org.libertaria.world.profile_server.engine.futures.BaseMsgFuture;
+import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
 import org.furszy.contacts.App;
 import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.R;
-
-import org.fermat.redtooth.profile_server.ProfileInformation;
-import org.fermat.redtooth.profile_server.client.AppServiceCallNotAvailableException;
-import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
-import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -29,8 +28,8 @@ import java.util.concurrent.TimeUnit;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED;
-import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;
+import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED;
+import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;
 import static org.furszy.contacts.App.INTENT_CHAT_REFUSED_BROADCAST;
 
 /**

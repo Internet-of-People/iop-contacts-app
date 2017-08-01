@@ -17,12 +17,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.furszy.contacts.BaseActivity;
-
-import org.furszy.contacts.R;
 import com.google.zxing.WriterException;
 
-import org.fermat.redtooth.profile_server.utils.ProfileUtils;
+import org.libertaria.world.profile_server.utils.ProfileUtils;
+import org.furszy.contacts.BaseActivity;
+import org.furszy.contacts.R;
 
 import static android.graphics.Color.WHITE;
 import static org.furszy.contacts.QrUtils.encodeAsBitmap;

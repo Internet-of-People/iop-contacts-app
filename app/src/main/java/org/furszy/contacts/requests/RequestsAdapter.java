@@ -4,14 +4,12 @@ import android.app.Activity;
 import android.icu.text.SimpleDateFormat;
 import android.view.View;
 
-import org.fermat.redtooth.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.utils.ProfileUtils;
+import org.libertaria.world.profiles_manager.PairingRequest;
 import org.furszy.contacts.R;
 import org.furszy.contacts.adapter.BaseAdapter;
 import org.furszy.contacts.adapter.FermatListItemListeners;
-
-import org.fermat.redtooth.profile_server.ModuleRedtooth;
-import org.fermat.redtooth.profile_server.utils.ProfileUtils;
-import org.fermat.redtooth.profiles_manager.PairingRequest;
 
 import java.util.Date;
 

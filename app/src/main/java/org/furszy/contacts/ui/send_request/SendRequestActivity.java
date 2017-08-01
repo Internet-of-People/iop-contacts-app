@@ -15,15 +15,14 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import org.libertaria.world.crypto.CryptoBytes;
+import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.engine.futures.BaseMsgFuture;
+import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
+import org.libertaria.world.profile_server.utils.ProfileUtils;
 import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.R;
 import org.furszy.contacts.scanner.ScanActivity;
-
-import org.fermat.redtooth.crypto.CryptoBytes;
-import org.fermat.redtooth.profile_server.ProfileInformation;
-import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
-import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
-import org.fermat.redtooth.profile_server.utils.ProfileUtils;
 
 import static android.Manifest.permission.CAMERA;
 import static org.furszy.contacts.scanner.ScanActivity.INTENT_EXTRA_RESULT;

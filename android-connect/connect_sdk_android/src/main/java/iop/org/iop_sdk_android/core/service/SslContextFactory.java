@@ -23,7 +23,7 @@ import javax.net.ssl.TrustManagerFactory;
  * Created by mati on 08/11/16.
  */
 
-public class SslContextFactory implements org.fermat.redtooth.profile_server.SslContextFactory{
+public class SslContextFactory implements org.libertaria.world.profile_server.SslContextFactory {
 
     private static final String TAG = "SslContextFactory";
 

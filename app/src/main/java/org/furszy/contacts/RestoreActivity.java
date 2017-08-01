@@ -22,7 +22,6 @@ import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import org.furszy.contacts.R;
 import org.furszy.contacts.ui.home.HomeActivity;
 
 import java.io.File;

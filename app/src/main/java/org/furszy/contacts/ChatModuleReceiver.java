@@ -6,25 +6,23 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import org.fermat.redtooth.profile_server.ProfileInformation;
-import org.fermat.redtooth.profile_server.engine.app_services.BaseMsg;
-import org.fermat.redtooth.services.chat.msg.ChatMsg;
-import org.fermat.redtooth.services.chat.msg.ChatMsgTypes;
+import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.engine.app_services.BaseMsg;
+import org.libertaria.world.services.chat.msg.ChatMsg;
+import org.libertaria.world.services.chat.msg.ChatMsgTypes;
 import org.furszy.contacts.ui.chat.WaitingChatActivity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants;
-
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
-import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.ACTION_ON_CHAT_CONNECTED;
-import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED;
-import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.ACTION_ON_CHAT_MSG_RECEIVED;
-import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_CHAT_MSG;
-import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;
-import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_IS_LOCAL_CREATOR;
-import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_LOCAL_PROFILE;
-import static iop.org.iop_sdk_android.core.service.modules.imp.chat.ChatIntentsConstants.EXTRA_INTENT_REMOTE_PROFILE;
+import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.ACTION_ON_CHAT_CONNECTED;
+import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED;
+import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.ACTION_ON_CHAT_MSG_RECEIVED;
+import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.EXTRA_INTENT_CHAT_MSG;
+import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;
+import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.EXTRA_INTENT_IS_LOCAL_CREATOR;
+import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.EXTRA_INTENT_LOCAL_PROFILE;
+import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.EXTRA_INTENT_REMOTE_PROFILE;
 import static org.furszy.contacts.App.INTENT_CHAT_ACCEPTED_BROADCAST;
 import static org.furszy.contacts.App.INTENT_CHAT_REFUSED_BROADCAST;
 import static org.furszy.contacts.App.INTENT_CHAT_TEXT_BROADCAST;

@@ -3,16 +3,11 @@ package org.furszy.contacts.base;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
-import org.fermat.redtooth.services.chat.ChatModule;
-import org.fermat.redtooth.services.interfaces.PairingModule;
-import org.fermat.redtooth.services.interfaces.ProfilesModule;
+import org.libertaria.world.services.chat.ChatModule;
+import org.libertaria.world.services.interfaces.PairingModule;
+import org.libertaria.world.services.interfaces.ProfilesModule;
 import org.furszy.contacts.App;
-
-import org.fermat.redtooth.profile_server.ModuleRedtooth;
 
 /**
  * Created by furszy on 6/20/17.

@@ -1,6 +1,5 @@
-package org.fermat.redtooth.profile_server;
+package org.libertaria.world.profile_server;
 
-import org.fermat.redtooth.core.IoPConnect;
 import org.junit.Test;
 
 /**

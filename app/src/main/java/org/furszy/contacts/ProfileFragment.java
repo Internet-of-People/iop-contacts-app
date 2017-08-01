@@ -18,7 +18,6 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -35,14 +34,10 @@ import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.Toast;
 
-import org.fermat.redtooth.profile_server.ProfileInformation;
-import org.furszy.contacts.App;
-import org.furszy.contacts.R;
 import com.squareup.picasso.Picasso;
 
-import org.fermat.redtooth.profile_server.ModuleRedtooth;
-import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
-import org.fermat.redtooth.profile_server.model.Profile;
+import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
 import org.furszy.contacts.base.BaseAppFragment;
 
 import java.io.ByteArrayOutputStream;
@@ -53,6 +48,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 import id.zelory.compressor.Compressor;
 

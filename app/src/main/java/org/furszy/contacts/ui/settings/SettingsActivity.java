@@ -12,23 +12,19 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.libertaria.world.profile_server.DatabaseCollector;
 import org.furszy.contacts.App;
 import org.furszy.contacts.AppConstants;
 import org.furszy.contacts.BaseDrawerActivity;
 import org.furszy.contacts.BuildConfig;
 import org.furszy.contacts.CrashReporter;
-
 import org.furszy.contacts.R;
 import org.furszy.contacts.base.ReportIssueDialogBuilder;
 import org.furszy.contacts.ui.settings_backup.SettingsBackupActivity;
 import org.furszy.contacts.ui.settings_restore.SettingsRestoreActivity;
 
-import org.fermat.redtooth.profile_server.DatabaseCollector;
-import org.fermat.redtooth.profiles_manager.PairingRequest;
-
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**

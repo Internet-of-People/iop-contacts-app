@@ -25,23 +25,19 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import org.fermat.redtooth.services.chat.ChatModule;
-import org.fermat.redtooth.services.interfaces.PairingModule;
-import org.fermat.redtooth.services.interfaces.ProfilesModule;
-import org.furszy.contacts.App;
-import org.furszy.contacts.R;
+import org.libertaria.world.services.chat.ChatModule;
+import org.libertaria.world.services.interfaces.PairingModule;
+import org.libertaria.world.services.interfaces.ProfilesModule;
 import org.furszy.contacts.ui.home.HomeActivity;
-
-import org.fermat.redtooth.profile_server.ModuleRedtooth;
 
 import java.util.regex.Pattern;
 
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_NAME;
 import static org.furszy.contacts.App.INTENT_ACTION_PROFILE_CHECK_IN_FAIL;
 import static org.furszy.contacts.App.INTENT_ACTION_PROFILE_CONNECTED;
 import static org.furszy.contacts.App.INTENT_ACTION_PROFILE_DISCONNECTED;
 import static org.furszy.contacts.App.INTENT_EXTRA_ERROR_DETAIL;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_NAME;
 
 /**
  * Created by furszy on 6/5/17.

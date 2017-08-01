@@ -1,7 +1,5 @@
 package org.furszy.client;
 
-import org.furszy.client.IoLooper;
-import org.furszy.client.IoProcessorImp;
 import org.furszy.client.basic.ConnectionId;
 import org.furszy.client.basic.IoSessionImp;
 import org.furszy.client.basic.WriteFutureImp;
@@ -13,6 +11,7 @@ import org.furszy.client.interfaces.IoProcessor;
 import org.furszy.client.interfaces.IoSessionConf;
 import org.furszy.client.interfaces.write.WriteFuture;
 import org.furszy.client.interfaces.write.WriteRequest;
+
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.channels.spi.SelectorProvider;

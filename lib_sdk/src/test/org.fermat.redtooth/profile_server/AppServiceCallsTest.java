@@ -1,20 +1,20 @@
 /*
-package org.fermat.redtooth.profile_server;
+package org.libertaria.world.profile_server;
 
 import com.google.protobuf.ByteString;
 
-import org.fermat.redtooth.core.RedtoothContext;
-import org.fermat.redtooth.core.RedtoothProfileConnection;
-import org.fermat.redtooth.core.pure.CryptoWrapperJava;
-import org.fermat.redtooth.core.pure.KeyEd25519Java;
-import org.fermat.redtooth.crypto.CryptoBytes;
-import org.fermat.redtooth.profile_server.engine.app_services.CallProfileAppService;
-import org.fermat.redtooth.profile_server.engine.listeners.EngineListener;
-import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
-import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
-import org.fermat.redtooth.profile_server.model.KeyEd25519;
-import org.fermat.redtooth.profile_server.utils.*;
-import org.fermat.redtooth.profile_server.utils.SslContextFactory;
+import org.libertaria.world.core.RedtoothContext;
+import org.libertaria.world.core.RedtoothProfileConnection;
+import CryptoWrapperJava;
+import KeyEd25519Java;
+import CryptoBytes;
+import CallProfileAppService;
+import EngineListener;
+import BaseMsgFuture;
+import MsgListenerFuture;
+import KeyEd25519;
+import org.libertaria.world.profile_server.utils.*;
+import org.libertaria.world.profile_server.utils.SslContextFactory;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +53,7 @@ public class AppServiceCallsTest {
             public Boolean call() throws Exception {
                 // Profile connected waiting for call
                 ProfileConfigurationImp confProf1 = new ProfileConfigurationImp();
-                RedtoothProfileConnection redtoothConnectionProf1 = new RedtoothProfileConnection(context,confProf1,new CryptoWrapperJava(),new org.fermat.redtooth.profile_server.utils.SslContextFactory());
+                RedtoothProfileConnection redtoothConnectionProf1 = new RedtoothProfileConnection(context,confProf1,new CryptoWrapperJava(),new org.libertaria.world.profile_server.utils.SslContextFactory());
 
                 redtoothConnectionProf1.setProfileName("Mati_1495076957266");
                 KeyEd25519 keyEd25519 = KeyEd25519Java.wrap(
@@ -102,7 +102,7 @@ public class AppServiceCallsTest {
 
             // profile 2 call profile 1
             ProfileConfigurationImp conf = new ProfileConfigurationImp();
-            RedtoothProfileConnection redtoothProfileConnection = new RedtoothProfileConnection(context,conf,new CryptoWrapperJava(),new org.fermat.redtooth.profile_server.utils.SslContextFactory());
+            RedtoothProfileConnection redtoothProfileConnection = new RedtoothProfileConnection(context,conf,new CryptoWrapperJava(),new org.libertaria.world.profile_server.utils.SslContextFactory());
             redtoothProfileConnection.setProfileName("Mati_1495076957266");
             KeyEd25519 keyEd25519 = KeyEd25519Java.wrap(
                     CryptoBytes.fromHexToBytes("c760a122337df6ee22c23e8cddb64303a6f7894c1f1d02efab22ae0af4063089"), // private key
@@ -213,7 +213,7 @@ public class AppServiceCallsTest {
 
             // profile 2 call profile 1
             ProfileConfigurationImp conf = new ProfileConfigurationImp();
-            RedtoothProfileConnection redtoothProfileConnection = new RedtoothProfileConnection(context,conf,new CryptoWrapperJava(),new org.fermat.redtooth.profile_server.utils.SslContextFactory());
+            RedtoothProfileConnection redtoothProfileConnection = new RedtoothProfileConnection(context,conf,new CryptoWrapperJava(),new org.libertaria.world.profile_server.utils.SslContextFactory());
             redtoothProfileConnection.setProfileName("Mati_1495076957266");
             KeyEd25519 keyEd25519 = KeyEd25519Java.wrap(
                     CryptoBytes.fromHexToBytes("c760a122337df6ee22c23e8cddb64303a6f7894c1f1d02efab22ae0af4063089"), // private key

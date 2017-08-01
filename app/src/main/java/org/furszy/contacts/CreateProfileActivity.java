@@ -21,7 +21,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import org.furszy.contacts.ui.home.HomeActivity;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

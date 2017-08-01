@@ -13,11 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.furszy.contacts.R;
-
 import static android.graphics.Color.WHITE;
-import static org.furszy.contacts.AndroidUtils.shareText;
-import static org.furszy.contacts.AndroidUtils.textToClipboard;
 
 /**
  * Created by furszy on 5/27/17.

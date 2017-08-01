@@ -7,8 +7,6 @@ import android.widget.TextView;
 import org.furszy.contacts.R;
 import org.furszy.contacts.adapter.BaseViewHolder;
 
-import de.hdodenhof.circleimageview.CircleImageView;
-
 /**
  * Created by mati on 03/03/17.
  */

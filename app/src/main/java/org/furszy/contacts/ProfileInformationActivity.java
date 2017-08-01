@@ -18,34 +18,29 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.furszy.contacts.App;
-import org.furszy.contacts.R;
+import org.libertaria.world.crypto.CryptoBytes;
+import org.libertaria.world.profile_server.CantConnectException;
+import org.libertaria.world.profile_server.CantSendMessageException;
+import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.client.AppServiceCallNotAvailableException;
+import org.libertaria.world.profile_server.engine.futures.BaseMsgFuture;
+import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
+import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
+import org.libertaria.world.services.chat.ChatCallAlreadyOpenException;
 import org.furszy.contacts.ui.chat.ChatActivity;
 import org.furszy.contacts.ui.chat.WaitingChatActivity;
-
-import org.fermat.redtooth.crypto.CryptoBytes;
-import org.fermat.redtooth.profile_server.CantConnectException;
-import org.fermat.redtooth.profile_server.CantSendMessageException;
-import org.fermat.redtooth.profile_server.ModuleRedtooth;
-import org.fermat.redtooth.profile_server.ProfileInformation;
-import org.fermat.redtooth.profile_server.client.AppServiceCallNotAvailableException;
-import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
-import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
-import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
-import org.fermat.redtooth.services.chat.ChatCallAlreadyOpenException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-import static org.furszy.contacts.ui.chat.WaitingChatActivity.REMOTE_PROFILE_PUB_KEY;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
+import static org.furszy.contacts.ui.chat.WaitingChatActivity.REMOTE_PROFILE_PUB_KEY;
 
 /**
  * Created by furszy on 5/27/17.

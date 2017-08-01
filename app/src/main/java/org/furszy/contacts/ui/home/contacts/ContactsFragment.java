@@ -7,15 +7,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.furszy.contacts.App;
+import org.libertaria.world.profile_server.ProfileInformation;
 import org.furszy.contacts.ProfileInformationActivity;
 import org.furszy.contacts.R;
 import org.furszy.contacts.adapter.BaseAdapter;
 import org.furszy.contacts.adapter.FermatListItemListeners;
 import org.furszy.contacts.base.RecyclerFragment;
 import org.furszy.contacts.contacts.ProfileAdapter;
-
-import org.fermat.redtooth.profile_server.ProfileInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
