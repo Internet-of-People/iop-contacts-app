@@ -1,7 +1,6 @@
 package org.furszy.contacts.requests;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -9,13 +8,10 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import org.furszy.contacts.App;
+import org.libertaria.world.profiles_manager.PairingRequest;
 import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.R;
 import org.furszy.contacts.adapter.FermatListItemListeners;
-
-import org.fermat.redtooth.profile_server.ModuleRedtooth;
-import org.fermat.redtooth.profiles_manager.PairingRequest;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -37,19 +33,12 @@ public class PairingRequestsActivity extends BaseActivity {
     private View container_empty_screen;
 
     private List<PairingRequest> requests;
-
-    private Handler handler = new Handler();
-
-    private ModuleRedtooth module;
-
     private ExecutorService executor;
 
     @Override
     protected void onCreate(Bundle savedInstance) {
         super.onCreate(savedInstance);
         setTitle("Pairing requests");
-
-        module = ((App)getApplication()).getAnRedtooth().getRedtooth();
 
         setContentView(R.layout.profiles_information_main);
 
@@ -68,7 +57,7 @@ public class PairingRequestsActivity extends BaseActivity {
         recyclerView.setLayoutManager(layoutManager);
 
         // specify an adapter (see also next example)
-        adapter = new RequestsAdapter(this, module,new FermatListItemListeners<PairingRequest>() {
+        adapter = new RequestsAdapter(this,profilesModule.getProfile(selectedProfPubKey),new FermatListItemListeners<PairingRequest>() {
             @Override
             public void onItemClickListener(PairingRequest data, int position) {
                 //Intent intent1 = new Intent(PairingRequestsActivity.this, ProfileInformationActivity.class);
@@ -122,7 +111,7 @@ public class PairingRequestsActivity extends BaseActivity {
         public void run() {
             boolean res = false;
             try {
-                requests = module.getPairingRequests();
+                requests = pairingModule.getPairingRequests(selectedProfPubKey);
                 res = true;
             } catch (Exception e){
                 e.printStackTrace();

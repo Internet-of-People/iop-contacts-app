@@ -4,6 +4,7 @@ import org.furszy.client.basic.IoSessionImp;
 import org.furszy.client.interfaces.ConnectFuture;
 import org.furszy.client.interfaces.IoHandler;
 import org.furszy.client.interfaces.IoSessionConf;
+
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.atomic.AtomicLong;
 

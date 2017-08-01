@@ -1,14 +1,11 @@
 package org.furszy.contacts.ui.chat;
 
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.furszy.contacts.R;
 import org.furszy.contacts.adapter.BaseViewHolder;
-
-import org.w3c.dom.Text;
 
 /**
  * Created by furszy on 7/4/17.

@@ -17,12 +17,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.furszy.contacts.BaseActivity;
-
-import org.furszy.contacts.R;
 import com.google.zxing.WriterException;
 
-import org.fermat.redtooth.profile_server.utils.ProfileUtils;
+import org.libertaria.world.profile_server.utils.ProfileUtils;
+import org.furszy.contacts.BaseActivity;
+import org.furszy.contacts.R;
 
 import static android.graphics.Color.WHITE;
 import static org.furszy.contacts.QrUtils.encodeAsBitmap;
@@ -52,7 +51,7 @@ public class MyQrActivity extends BaseActivity implements View.OnClickListener {
         findViewById(R.id.btn_share).setOnClickListener(this);
         img_qr = (ImageView) root.findViewById(R.id.img_qr);
         txt_qr = (TextView) root.findViewById(R.id.txt_qr);
-        uri = ProfileUtils.getProfileURI(anRedtooth.getProfile(),anRedtooth.getPsHost());
+        uri = ProfileUtils.getProfileURI(profilesModule.getProfile(selectedProfPubKey));
         txt_qr.setText(uri);
         txt_qr.setMovementMethod(LinkMovementMethod.getInstance());
         try {

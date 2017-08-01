@@ -1,5 +1,9 @@
 package org.furszy.contacts.ui.chat;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -12,18 +16,21 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.R;
-
-import org.fermat.redtooth.profile_server.ProfileInformation;
-import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import iop.org.iop_sdk_android.core.service.exceptions.ChatCallClosedException;
+import iop.org.iop_sdk_android.core.modules.chat.ChatCallClosedException;
 
+import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED;
+import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;
+import static org.furszy.contacts.App.INTENT_CHAT_REFUSED_BROADCAST;
 import static org.furszy.contacts.ui.chat.WaitingChatActivity.REMOTE_PROFILE_PUB_KEY;
 
 /**
@@ -36,9 +43,28 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
     private Button btn_send;
     private EditText edit_msg;
 
+    private String remotePk;
     private ProfileInformation remoteProfile;
     private MessagesFragment messagesFragment;
     private ExecutorService executor;
+
+    private BroadcastReceiver chatReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if(action.equals(INTENT_CHAT_REFUSED_BROADCAST)){
+                Toast.makeText(ChatActivity.this,"Chat closed",Toast.LENGTH_LONG).show();
+                onBackPressed();
+            }else if (action.equals(ACTION_ON_CHAT_DISCONNECTED)){
+                String remotePubKey = intent.getStringExtra(REMOTE_PROFILE_PUB_KEY);
+                String reason = intent.getStringExtra(EXTRA_INTENT_DETAIL);
+                if (remotePk.equals(remotePubKey)){
+                    Toast.makeText(ChatActivity.this,"Chat disconnected",Toast.LENGTH_LONG).show();
+                    onBackPressed();
+                }
+            }
+        }
+    };
 
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
@@ -55,12 +81,15 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.setStatusBarColor(Color.parseColor("#21619C"));
         }
-        String remotePk = getIntent().getStringExtra(REMOTE_PROFILE_PUB_KEY);
-        remoteProfile = anRedtooth.getKnownProfile(remotePk);
+        remotePk = getIntent().getStringExtra(REMOTE_PROFILE_PUB_KEY);
+        remoteProfile = profilesModule.getKnownProfile(selectedProfPubKey,remotePk);
         messagesFragment = (MessagesFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_messages);
 
         // cancel chat notifications if there is any..
         app.cancelChatNotifications();
+
+        localBroadcastManager.registerReceiver(chatReceiver,new IntentFilter(INTENT_CHAT_REFUSED_BROADCAST));
+        localBroadcastManager.registerReceiver(chatReceiver,new IntentFilter(ACTION_ON_CHAT_DISCONNECTED));
     }
 
     @Override
@@ -74,28 +103,43 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
     @Override
     protected void onStop() {
         super.onStop();
+
+        executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // close chat
+                    chatModule.refuseChatRequest(selectedProfPubKey,remoteProfile.getHexPublicKey());
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+
         if (executor!=null){
             if (!executor.isShutdown())
-                executor.shutdownNow();
+                executor.shutdown();
             executor = null;
         }
-        try {
-            // close chat
-            anRedtooth.refuseChatRequest(remoteProfile.getHexPublicKey());
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+
+        localBroadcastManager.unregisterReceiver(chatReceiver);
+
         finish();
     }
 
     @Override
     public void onBackPressed() {
-        try {
-            // close chat
-            anRedtooth.refuseChatRequest(remoteProfile.getHexPublicKey());
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+        executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // close chat
+                    chatModule.refuseChatRequest(selectedProfPubKey,remoteProfile.getHexPublicKey());
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
         super.onBackPressed();
     }
 
@@ -106,11 +150,12 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
             final String text = edit_msg.getText().toString();
             if (text.length() > 0) {
                 edit_msg.setText("");
+                // // TODO: 7/25/17
                 executor.submit(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            anRedtooth.sendMsgToChat(remoteProfile, text, new ProfSerMsgListener<Boolean>() {
+                            chatModule.sendMsgToChat(selectedProfPubKey,remoteProfile, text, new ProfSerMsgListener<Boolean>() {
                                 @Override
                                 public void onMessageReceive(int messageId, Boolean message) {
                                     Log.i("Chat", "msg sent!");

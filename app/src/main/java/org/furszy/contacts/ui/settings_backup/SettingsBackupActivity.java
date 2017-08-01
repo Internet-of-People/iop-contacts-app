@@ -47,14 +47,15 @@ public class SettingsBackupActivity extends BaseActivity {
                 // find which radio button is selected
                 if(checkedId == R.id.active) {
                     btnCreateBackup.setVisibility(View.VISIBLE);
-                    try {
+                    // TODO: 7/25/17  
+                    /*try {
                         anRedtooth.scheduleBackupProfileFile(
                                 app.getBackupDir(),
                                 null);
                         Toast.makeText(group.getContext(),"Backup schedule accepted.",Toast.LENGTH_LONG).show();
                     } catch (Exception e){
                         Toast.makeText(group.getContext(),"Backup fail, "+e.getMessage(),Toast.LENGTH_LONG).show();
-                    }
+                    }*/
                 } else if(checkedId == R.id.inactive) {
                     btnCreateBackup.setVisibility(View.GONE);
                 }

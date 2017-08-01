@@ -1,25 +1,18 @@
 package org.furszy.contacts.ui.home.requests;
 
 import android.app.Activity;
-import android.graphics.BitmapFactory;
 import android.view.View;
 
+import org.libertaria.world.profile_server.imp.ProfileInformationImp;
+import org.libertaria.world.profiles_manager.PairingRequest;
 import org.furszy.contacts.R;
 import org.furszy.contacts.adapter.BaseAdapter;
-import org.furszy.contacts.adapter.FermatListItemListeners;
-
-import org.fermat.redtooth.core.services.pairing.PairingMsgTypes;
-import org.fermat.redtooth.profile_server.ModuleRedtooth;
-import org.fermat.redtooth.profile_server.ProfileInformation;
-import org.fermat.redtooth.profile_server.imp.ProfileInformationImp;
-import org.fermat.redtooth.profiles_manager.PairingRequest;
 
 /**
  * Created by mati on 03/03/17.
  */
 public class RequestAdapter extends BaseAdapter<PairingRequest, RequestHolder> {
 
-    private ModuleRedtooth module;
     private RequestListener requestListener;
 
     public interface RequestListener{
@@ -29,9 +22,8 @@ public class RequestAdapter extends BaseAdapter<PairingRequest, RequestHolder> {
         void onCancelRequest(PairingRequest pairingRequest);
     }
 
-    public RequestAdapter(final Activity context, final ModuleRedtooth module,RequestListener requestListener) {
+    public RequestAdapter(final Activity context,RequestListener requestListener) {
         super(context);
-        this.module = module;
         this.requestListener = requestListener;
     }
 

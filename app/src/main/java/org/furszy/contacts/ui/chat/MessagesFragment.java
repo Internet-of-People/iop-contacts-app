@@ -9,17 +9,11 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import org.furszy.contacts.R;
 import org.furszy.contacts.adapter.BaseAdapter;
-import org.furszy.contacts.adapter.BaseViewHolder;
 import org.furszy.contacts.base.RecyclerFragment;
 
-import org.fermat.redtooth.services.chat.ChatMsg;
-import org.fermat.redtooth.services.chat.ChatMsgWrapper;
-
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;

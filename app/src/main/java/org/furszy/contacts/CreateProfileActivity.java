@@ -21,7 +21,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import org.furszy.contacts.ui.home.HomeActivity;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +80,9 @@ public class CreateProfileActivity extends BaseActivity {
                             public void run() {
                                 try {
                                     //todo: make this connect non blocking.
-                                    anRedtooth.connect(anRedtooth.registerProfile(name, profImgData));
+                                    String profPubKey = profilesModule.registerProfile(name, profImgData);
+                                    app.setSelectedProfilePubKey(profPubKey);
+                                    profilesModule.connect(profPubKey);
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {

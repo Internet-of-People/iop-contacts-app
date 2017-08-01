@@ -4,13 +4,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import org.apache.commons.io.IOUtils;
-import org.fermat.redtooth.crypto.CryptoBytes;
-import org.fermat.redtooth.global.HardCodedConstans;
-import org.fermat.redtooth.global.Version;
-import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
-import org.fermat.redtooth.profile_server.model.ProfServerData;
-import org.fermat.redtooth.profile_server.model.Profile;
-import org.fermat.redtooth.profile_server.protocol.IopProfileServer;
+import org.libertaria.world.crypto.CryptoBytes;
+import org.libertaria.world.global.HardCodedConstans;
+import org.libertaria.world.global.Version;
+import org.libertaria.world.profile_server.ProfileServerConfigurations;
+import org.libertaria.world.profile_server.model.ProfServerData;
+import org.libertaria.world.profile_server.model.Profile;
+import org.libertaria.world.profile_server.protocol.IopProfileServer;
 import org.json.JSONArray;
 
 import java.io.File;
@@ -28,6 +28,7 @@ import iop.org.iop_sdk_android.core.utils.PrivateStorage;
  * Created by mati on 09/11/16.
  * //todo: falta guardar la priv key del user y del cliente en un archivo encriptado..
  */
+@Deprecated
 public class ProfileServerConfigurationsImp extends Configurations implements ProfileServerConfigurations {
 
     public static final String PREFS_NAME = "MyPrefsFile";
@@ -201,12 +202,12 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
 
 
     @Override
-    public org.fermat.redtooth.profile_server.model.KeyEd25519 createUserKeys() {
+    public org.libertaria.world.profile_server.model.KeyEd25519 createUserKeys() {
         return new KeyEd25519();
     }
 
     @Override
-    public org.fermat.redtooth.profile_server.model.KeyEd25519 createNewUserKeys() {
+    public org.libertaria.world.profile_server.model.KeyEd25519 createNewUserKeys() {
         return new KeyEd25519().generateKeys();
     }
 

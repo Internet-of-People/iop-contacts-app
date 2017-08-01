@@ -29,8 +29,9 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
 
-import org.furszy.contacts.R;
 import com.google.zxing.ResultPoint;
+
+import org.furszy.contacts.R;
 
 import java.util.HashMap;
 import java.util.Iterator;

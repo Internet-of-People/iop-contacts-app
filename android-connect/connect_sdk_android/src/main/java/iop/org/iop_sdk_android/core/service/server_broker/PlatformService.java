@@ -1,22 +1,23 @@
 package iop.org.iop_sdk_android.core.service.server_broker;
 
-import android.app.Service;
-import android.content.Intent;
-import android.os.IBinder;
-import android.support.annotation.Nullable;
+import org.libertaria.world.profile_server.ProfileServerConfigurations;
+import org.libertaria.world.profiles_manager.ProfilesManager;
+import org.libertaria.world.services.interfaces.ProfilesModule;
+
+import iop.org.iop_sdk_android.core.service.db.SqlitePairingRequestDb;
 
 /**
- * Created by furszy on 7/19/17.
- *
- * Connect sdk broker pattern server side.
- *
+ * Created by furszy on 7/24/17.
+ *  Class just for now..
  */
 
-public class PlatformService extends Service {
+public interface PlatformService {
+    //void setProfile(Profile profile);
+    ProfilesManager getProfilesDb();
+    SqlitePairingRequestDb getPairingRequestsDb();
+    ProfileServerConfigurations getConfPref();
+    //Profile getProfile();
 
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
+    ProfilesModule getProfileModule();
+
 }

@@ -18,34 +18,29 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.furszy.contacts.App;
-import org.furszy.contacts.R;
+import org.libertaria.world.crypto.CryptoBytes;
+import org.libertaria.world.profile_server.CantConnectException;
+import org.libertaria.world.profile_server.CantSendMessageException;
+import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.client.AppServiceCallNotAvailableException;
+import org.libertaria.world.profile_server.engine.futures.BaseMsgFuture;
+import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
+import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
+import org.libertaria.world.services.chat.ChatCallAlreadyOpenException;
 import org.furszy.contacts.ui.chat.ChatActivity;
 import org.furszy.contacts.ui.chat.WaitingChatActivity;
-
-import org.fermat.redtooth.crypto.CryptoBytes;
-import org.fermat.redtooth.profile_server.CantConnectException;
-import org.fermat.redtooth.profile_server.CantSendMessageException;
-import org.fermat.redtooth.profile_server.ModuleRedtooth;
-import org.fermat.redtooth.profile_server.ProfileInformation;
-import org.fermat.redtooth.profile_server.client.AppServiceCallNotAvailableException;
-import org.fermat.redtooth.profile_server.engine.futures.BaseMsgFuture;
-import org.fermat.redtooth.profile_server.engine.futures.MsgListenerFuture;
-import org.fermat.redtooth.profile_server.engine.listeners.ProfSerMsgListener;
-import org.fermat.redtooth.services.chat.ChatCallAlreadyOpenException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-import static org.furszy.contacts.ui.chat.WaitingChatActivity.REMOTE_PROFILE_PUB_KEY;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
+import static org.furszy.contacts.ui.chat.WaitingChatActivity.REMOTE_PROFILE_PUB_KEY;
 
 /**
  * Created by furszy on 5/27/17.
@@ -61,14 +56,12 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 
     public static final String INTENT_EXTRA_PROF_SERVER_ID = "prof_ser_id";
     public static final String INTENT_EXTRA_SEARCH = "prof_search";
-
-    ModuleRedtooth module;
     ProfileInformation profileInformation;
 
     private View root;
     private CircleImageView imgProfile;
     private TextView txt_name;
-    private Button btn_connect;
+    private Button btn_disconnect;
     private ProgressBar progress_bar;
 
     private TextView txt_chat;
@@ -85,7 +78,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
             String action = intent.getAction();
             if (action.equals(ACTION_PROFILE_UPDATED_CONSTANT)){
                 if (isMyProfile){
-                    profileInformation = anRedtooth.getMyProfile();
+                    profileInformation = profilesModule.getProfile(selectedProfPubKey);
                     loadProfileData();
                 }
             }
@@ -118,8 +111,6 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#2998ff")));
 
-        module = ((App)getApplication()).getAnRedtooth().getRedtooth();
-
 //        Uri data = getIntent().getData();
 //        String scheme = data.getScheme(); // "http"
 //        String host = data.getHost(); // "twitter.com"
@@ -133,13 +124,12 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         root = getLayoutInflater().inflate(R.layout.profile_information_main,container);
         imgProfile = (CircleImageView) root.findViewById(R.id.profile_image);
         txt_name = (TextView) root.findViewById(R.id.txt_name);
-        btn_connect = (Button) root.findViewById(R.id.btn_connect);
-        btn_connect.setVisibility(View.GONE);
+        btn_disconnect = (Button) root.findViewById(R.id.btn_disconnect);
         progress_bar = (ProgressBar) root.findViewById(R.id.progress_bar);
         txt_chat = (TextView) root.findViewById(R.id.txt_chat);
         txt_chat.setOnClickListener(this);
 
-        btn_connect.setOnClickListener(new View.OnClickListener() {
+        btn_disconnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
@@ -150,13 +140,13 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         if (extras!=null){
             if (extras.containsKey(INTENT_EXTRA_PROF_KEY)) {
                 byte[] pubKey = extras.getByteArray(INTENT_EXTRA_PROF_KEY);
-                profileInformation = module.getKnownProfile(CryptoBytes.toHexString(pubKey));
+                profileInformation = profilesModule.getKnownProfile(selectedProfPubKey,CryptoBytes.toHexString(pubKey));
                 // and schedule to try to update this profile information..
                 searchForProfile = true;
             }else if (extras.containsKey(IS_MY_PROFILE)){
                 isMyProfile = true;
-                profileInformation = module.getMyProfile();
-                btn_connect.setVisibility(View.GONE);
+                profileInformation = profilesModule.getProfile(selectedProfPubKey);
+                btn_disconnect.setVisibility(View.GONE);
                 txt_chat.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_chat_disable, 0);
                 txt_chat.setEnabled (false);
             }
@@ -187,7 +177,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     protected void onResume() {
         super.onResume();
         if (isMyProfile){
-            profileInformation = anRedtooth.getMyProfile();
+            profileInformation = profilesModule.getProfile(selectedProfPubKey);
         }
         loadProfileData();
         if (executor==null){
@@ -224,7 +214,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                                 });
                             }
                         });
-                        anRedtooth.getProfileInformation(profileInformation.getHexPublicKey(),true,msgListenerFuture);
+                        profilesModule.getProfileInformation(selectedProfPubKey,profileInformation.getHexPublicKey(),true,msgListenerFuture);
                     } catch (CantSendMessageException e) {
                         e.printStackTrace();
                     } catch (CantConnectException e) {
@@ -301,13 +291,13 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                                     });
                                 }
                             });
-                            anRedtooth.requestChat(profileInformation, readyListener, TimeUnit.SECONDS, 45);
+                            chatModule.requestChat(selectedProfPubKey,profileInformation, readyListener);
                         } catch (ChatCallAlreadyOpenException e) {
                             e.printStackTrace();
                             // chat call already open
                             // first send the acceptance
                             try {
-                                anRedtooth.acceptChatRequest(profileInformation.getHexPublicKey(), new ProfSerMsgListener<Boolean>() {
+                                chatModule.acceptChatRequest(selectedProfPubKey,profileInformation.getHexPublicKey(), new ProfSerMsgListener<Boolean>() {
                                     @Override
                                     public void onMessageReceive(int messageId, Boolean message) {
                                         runOnUiThread(new Runnable() {
@@ -373,7 +363,6 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                         }
                     }
                 });
-            }else {
             }
 
         }

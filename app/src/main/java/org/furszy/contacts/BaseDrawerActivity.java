@@ -17,21 +17,20 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-import org.furszy.contacts.R;
+import org.libertaria.world.profile_server.model.Profile;
 import org.furszy.contacts.ui.home.HomeActivity;
 import org.furszy.contacts.ui.my_qr.MyQrActivity;
 import org.furszy.contacts.ui.settings.SettingsActivity;
-import org.fermat.redtooth.profile_server.model.Profile;
 
 import iop.org.iop_sdk_android.core.IntentBroadcastConstants;
 
-import static org.furszy.contacts.App.INTENT_ACTION_PROFILE_CHECK_IN_FAIL;
-import static org.furszy.contacts.App.INTENT_ACTION_PROFILE_CONNECTED;
-import static org.furszy.contacts.App.INTENT_ACTION_PROFILE_DISCONNECTED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_IOP_SERVICE_CONNECTED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_CHECK_IN_FAIL;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT;
+import static org.furszy.contacts.App.INTENT_ACTION_PROFILE_CHECK_IN_FAIL;
+import static org.furszy.contacts.App.INTENT_ACTION_PROFILE_CONNECTED;
+import static org.furszy.contacts.App.INTENT_ACTION_PROFILE_DISCONNECTED;
 
 /**
  * Created by Neoperol on 6/20/17.
@@ -113,8 +112,8 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
         localBroadcastManager.registerReceiver(receiver,new IntentFilter(INTENT_ACTION_PROFILE_CHECK_IN_FAIL));
         localBroadcastManager.registerReceiver(receiver,new IntentFilter(INTENT_ACTION_PROFILE_CONNECTED));
 
-        if (anRedtooth!=null){
-            if(!anRedtooth.isProfileConnectedOrConnecting()){
+        if (profilesModule!=null){
+            if(!profilesModule.isProfileConnectedOrConnecting(selectedProfPubKey)){
                 btnReload.setVisibility(View.VISIBLE);
             }
         }
@@ -133,12 +132,7 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
     }
 
     private void refreshProfile() {
-        if (anRedtooth!=null) {
-            myProfile = anRedtooth.getProfile();
-            if (myProfile.getImg()!=null) {
 
-            }
-        }
     }
 
     /**

@@ -28,8 +28,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.furszy.contacts.R;
-
 
 /**
  * @author Andreas Schildbach

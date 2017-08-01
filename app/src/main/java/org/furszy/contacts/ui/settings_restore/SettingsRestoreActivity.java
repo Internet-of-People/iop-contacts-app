@@ -73,7 +73,7 @@ public class SettingsRestoreActivity extends BaseActivity {
                 return true;
             }
 
-            anRedtooth.restoreFrom(fileList.get(selected),pass);
+            profilesModule.restoreProfileFrom(fileList.get(selected),pass);
             onBackPressed();
             Toast.makeText(getApplicationContext(), R.string.restore_completed_message,
                     Toast.LENGTH_LONG).show();

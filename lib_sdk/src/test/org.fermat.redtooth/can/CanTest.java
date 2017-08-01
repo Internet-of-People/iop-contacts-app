@@ -1,13 +1,15 @@
-package org.fermat.redtooth.can;
+package org.libertaria.world.can;
 
-import org.fermat.redtooth.can.impl.*;
-import org.fermat.redtooth.can.impl.Variant;
-import org.fermat.redtooth.core.IoPConnectContext;
-import org.fermat.redtooth.core.pure.CryptoWrapperJava;
-import org.fermat.redtooth.crypto.CryptoWrapper;
-import org.fermat.redtooth.profile_server.ProfileServerConfigurations;
-import org.fermat.redtooth.profile_server.SslContextFactory;
-import org.fermat.redtooth.profile_server.utils.ProfileConfigurationImp;
+import org.libertaria.world.can.CanProfile;
+import org.libertaria.world.can.impl.CanProfileImp;
+import org.libertaria.world.can.impl.Variant;
+import org.libertaria.world.can.impl.VariantVisitorImp;
+import org.libertaria.world.core.IoPConnectContext;
+import org.libertaria.world.core.pure.CryptoWrapperJava;
+import org.libertaria.world.crypto.CryptoWrapper;
+import org.libertaria.world.profile_server.ProfileServerConfigurations;
+import org.libertaria.world.profile_server.SslContextFactory;
+import org.libertaria.world.profile_server.utils.ProfileConfigurationImp;
 import org.junit.Test;
 
 /**
@@ -23,13 +25,13 @@ public class CanTest {
         }
     };
     CryptoWrapper cryptoWrapper = new CryptoWrapperJava();
-    SslContextFactory sslContextFactory = new org.fermat.redtooth.profile_server.utils.SslContextFactory();
+    SslContextFactory sslContextFactory = new org.libertaria.world.profile_server.utils.SslContextFactory();
 
     @Test
     public void getProfileDateAttributeTest(){
         final long timestamp = System.currentTimeMillis();
         CanProfile.Attribute profileDate = new CanProfileImp.Attribute("timestamp",new Variant.Uint64(timestamp));
-        VariantVisitor variantVisitor = new VariantVisitorImp() {
+        org.libertaria.world.can.VariantVisitor variantVisitor = new VariantVisitorImp() {
             @Override
             public void visitLong(long value) {
                 assert value==timestamp:"We don't rock!";

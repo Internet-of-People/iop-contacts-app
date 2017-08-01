@@ -3,23 +3,20 @@ package org.furszy.contacts.contacts;
 import android.app.Activity;
 import android.graphics.BitmapFactory;
 import android.view.View;
+
+import org.libertaria.world.profile_server.ProfileInformation;
 import org.furszy.contacts.R;
 import org.furszy.contacts.adapter.BaseAdapter;
 import org.furszy.contacts.adapter.FermatListItemListeners;
-
-import org.fermat.redtooth.profile_server.ModuleRedtooth;
-import org.fermat.redtooth.profile_server.ProfileInformation;
 
 /**
  * Created by mati on 03/03/17.
  */
 public class ProfileAdapter extends BaseAdapter<ProfileInformation, ProfileHolder> {
 
-    ModuleRedtooth module;
 
-    public ProfileAdapter(final Activity context, final ModuleRedtooth module, FermatListItemListeners<ProfileInformation> fermatListItemListeners) {
+    public ProfileAdapter(final Activity context, FermatListItemListeners<ProfileInformation> fermatListItemListeners) {
         super(context);
-        this.module = module;
         setFermatListEventListener(fermatListItemListeners);
 
     }

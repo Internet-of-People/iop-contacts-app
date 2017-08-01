@@ -1,4 +1,4 @@
-group 'org.fermat.redtooth'
+group 'org.libertaria.world'
 version '0.0.1'
 
 apply plugin: 'java'

@@ -22,7 +22,6 @@ import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import org.furszy.contacts.R;
 import org.furszy.contacts.ui.home.HomeActivity;
 
 import java.io.File;
@@ -63,7 +62,7 @@ public class RestoreActivity extends BaseActivity {
         if (item.getItemId()==OPTIONS_RESTORE){
             int selected = spinner_files.getSelectedItemPosition();
             if (fileList!=null && !fileList.isEmpty()) {
-                anRedtooth.restoreFrom(fileList.get(selected), null);
+                profilesModule.restoreProfileFrom(fileList.get(selected), null);
                 Toast.makeText(this,"Restore profile from backup completed",Toast.LENGTH_LONG).show();
                 startActivity(new Intent(this, HomeActivity.class));
                 finish();
