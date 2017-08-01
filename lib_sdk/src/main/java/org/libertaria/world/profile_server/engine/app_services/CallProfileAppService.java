@@ -5,10 +5,13 @@ import com.google.protobuf.ByteString;
 import org.libertaria.world.crypto.CryptoBytes;
 import org.libertaria.world.profile_server.CantConnectException;
 import org.libertaria.world.profile_server.CantSendMessageException;
+import org.libertaria.world.profile_server.ProfileInformation;
 import org.libertaria.world.profile_server.client.AppServiceCallNotAvailableException;
 import org.libertaria.world.profile_server.engine.ProfSerEngine;
 import org.libertaria.world.profile_server.engine.crypto.BoxAlgo;
 import org.libertaria.world.profile_server.engine.crypto.CryptoAlgo;
+import org.libertaria.world.profile_server.engine.futures.BaseMsgFuture;
+import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
 import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.profile_server.model.Profile;
 import org.libertaria.world.profile_server.protocol.IopProfileServer;
@@ -58,7 +61,7 @@ public class CallProfileAppService {
 
     public interface CallMessagesListener{
 
-        void onMessage(org.libertaria.world.profile_server.engine.app_services.MsgWrapper msg);
+        void onMessage(MsgWrapper msg);
 
     }
 
@@ -94,15 +97,19 @@ public class CallProfileAppService {
     private CopyOnWriteArrayList<CallStateListener> callStateListeners = new CopyOnWriteArrayList<>();
     /** Engine wrapped */
     private ProfSerEngine profSerEngine;
+    /** Information */
+    private long creationTime = System.currentTimeMillis();
+    private long lastMessageSent;
+    private long lastMessageReceived;
 
-    public CallProfileAppService(String appService, Profile localProfile, org.libertaria.world.profile_server.ProfileInformation remoteProfile, ProfSerEngine profSerEngine, CryptoAlgo cryptoAlgo) {
+    public CallProfileAppService(String appService, Profile localProfile, ProfileInformation remoteProfile, ProfSerEngine profSerEngine, CryptoAlgo cryptoAlgo) {
         this(appService,localProfile,remoteProfile,profSerEngine);
         this.cryptoAlgo = cryptoAlgo;
         this.isEncrypted = (cryptoAlgo != null);
         this.isCallCreator = true;
     }
 
-    public CallProfileAppService(String appService, Profile localProfile, org.libertaria.world.profile_server.ProfileInformation remoteProfile, ProfSerEngine profSerEngine) {
+    public CallProfileAppService(String appService, Profile localProfile, ProfileInformation remoteProfile, ProfSerEngine profSerEngine) {
         this.appService = appService;
         this.localProfile = localProfile;
         this.remoteProfile = remoteProfile;
@@ -146,8 +153,20 @@ public class CallProfileAppService {
         this.isEncrypted = true;
     }
 
-    public org.libertaria.world.profile_server.ProfileInformation getRemoteProfile() {
+    public ProfileInformation getRemoteProfile() {
         return remoteProfile;
+    }
+
+    public long getLastMessageSent() {
+        return lastMessageSent;
+    }
+
+    public long getLastMessageReceived() {
+        return lastMessageReceived;
+    }
+
+    public long getCreationTime() {
+        return creationTime;
     }
 
     public boolean isEncrypted() {
@@ -205,8 +224,8 @@ public class CallProfileAppService {
     public void sendMsgStr(String msg, final ProfSerMsgListener<Boolean> sendListener) throws CantConnectException, CantSendMessageException {
         if (this.status!=CALL_AS_ESTABLISH) throw new IllegalStateException("Call is not ready to send messages");
         byte[] msgBytes = ByteString.copyFromUtf8(msg).toByteArray();
-        org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<IopProfileServer.ApplicationServiceSendMessageResponse> msgListenerFuture = new org.libertaria.world.profile_server.engine.futures.MsgListenerFuture();
-        msgListenerFuture.setListener(new org.libertaria.world.profile_server.engine.futures.BaseMsgFuture.Listener<IopProfileServer.ApplicationServiceSendMessageResponse>() {
+        MsgListenerFuture<IopProfileServer.ApplicationServiceSendMessageResponse> msgListenerFuture = new MsgListenerFuture();
+        msgListenerFuture.setListener(new BaseMsgFuture.Listener<IopProfileServer.ApplicationServiceSendMessageResponse>() {
             @Override
             public void onAction(int messageId, IopProfileServer.ApplicationServiceSendMessageResponse object) {
                 logger.info("App service message sent!");
@@ -223,18 +242,18 @@ public class CallProfileAppService {
     }
 
     public void sendMsg(BaseMsg msg, final ProfSerMsgListener<Boolean> sendListener) throws Exception {
-        org.libertaria.world.profile_server.engine.app_services.MsgWrapper msgWrapper = new org.libertaria.world.profile_server.engine.app_services.MsgWrapper(msg,msg.getType());
+        MsgWrapper msgWrapper = new MsgWrapper(msg,msg.getType());
         wrapAndSend(msgWrapper,sendListener);
     }
 
     public void sendMsg(String type,final ProfSerMsgListener<Boolean> sendListener) throws Exception {
-        org.libertaria.world.profile_server.engine.app_services.MsgWrapper msgWrapper = new org.libertaria.world.profile_server.engine.app_services.MsgWrapper(null,type);
+        MsgWrapper msgWrapper = new MsgWrapper(null,type);
         wrapAndSend(msgWrapper,sendListener);
     }
 
-    private void wrapAndSend(org.libertaria.world.profile_server.engine.app_services.MsgWrapper msgWrapper, final ProfSerMsgListener<Boolean> sendListener) throws Exception {
+    private void wrapAndSend(MsgWrapper msgWrapper, final ProfSerMsgListener<Boolean> sendListener) throws Exception {
         byte[] msgTemp = msgWrapper.encode();
-        if (isEncrypted && !msgWrapper.getMsgType().equals(org.libertaria.world.profile_server.engine.app_services.BasicCallMessages.CRYPTO.getType())){
+        if (isEncrypted && !msgWrapper.getMsgType().equals(BasicCallMessages.CRYPTO.getType())){
             if (cryptoAlgo!=null){
                 // todo: encrypt
                 msgTemp = msgTemp;//cryptoAlgo.digest(msgTemp,msgTemp.length,localProfile.getPublicKey());
@@ -244,13 +263,14 @@ public class CallProfileAppService {
             }
         }
         sendMsg(msgTemp,sendListener);
+        lastMessageSent = System.currentTimeMillis();
     }
 
     public void ping() throws CantConnectException, CantSendMessageException {
         if (this.status != CALL_AS_ESTABLISH)
             throw new IllegalStateException("Call is not ready to send messages");
-        org.libertaria.world.profile_server.engine.futures.MsgListenerFuture msgListenerFuture = new org.libertaria.world.profile_server.engine.futures.MsgListenerFuture();
-        msgListenerFuture.setListener(new org.libertaria.world.profile_server.engine.futures.BaseMsgFuture.Listener() {
+        MsgListenerFuture msgListenerFuture = new MsgListenerFuture();
+        msgListenerFuture.setListener(new BaseMsgFuture.Listener() {
             @Override
             public void onAction(int messageId, Object object) {
                 logger.info("App service call ping ok");
@@ -268,8 +288,8 @@ public class CallProfileAppService {
     private void sendMsg(byte[] msg, final ProfSerMsgListener<Boolean> sendListener) throws CantConnectException, CantSendMessageException {
         if (this.status!=CALL_AS_ESTABLISH) throw new IllegalStateException("Call is not ready to send messages");
         try {
-            org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<IopProfileServer.ApplicationServiceSendMessageResponse> msgListenerFuture = new org.libertaria.world.profile_server.engine.futures.MsgListenerFuture();
-            msgListenerFuture.setListener(new org.libertaria.world.profile_server.engine.futures.BaseMsgFuture.Listener<IopProfileServer.ApplicationServiceSendMessageResponse>() {
+            MsgListenerFuture<IopProfileServer.ApplicationServiceSendMessageResponse> msgListenerFuture = new MsgListenerFuture();
+            msgListenerFuture.setListener(new BaseMsgFuture.Listener<IopProfileServer.ApplicationServiceSendMessageResponse>() {
                 @Override
                 public void onAction(int messageId, IopProfileServer.ApplicationServiceSendMessageResponse object) {
                     logger.info("App service message sent!");
@@ -300,6 +320,7 @@ public class CallProfileAppService {
      */
     public void onMessageReceived(byte[] msg){
         try {
+            lastMessageReceived = System.currentTimeMillis();
             byte[] msgTemp = msg;
             if (isEncrypted) {
                 if (cryptoAlgo != null) {
@@ -310,10 +331,10 @@ public class CallProfileAppService {
                     logger.error("msg decryption, crypto algo not setted");
                 }
             }
-            org.libertaria.world.profile_server.engine.app_services.MsgWrapper msgWrapper = org.libertaria.world.profile_server.engine.app_services.MsgWrapper.decode(msgTemp);
-            if (msgWrapper.getMsgType().equals(org.libertaria.world.profile_server.engine.app_services.BasicCallMessages.CRYPTO.getType())){
+            MsgWrapper msgWrapper = MsgWrapper.decode(msgTemp);
+            if (msgWrapper.getMsgType().equals(BasicCallMessages.CRYPTO.getType())){
                 // todo: do a class with the supported algos instead of this lazy lazy stuff..
-                if(!((org.libertaria.world.profile_server.engine.app_services.CryptoMsg)(msgWrapper.getMsg())).getAlgo().equals("box")){
+                if(!((CryptoMsg)(msgWrapper.getMsg())).getAlgo().equals("box")){
                     setCryptoAlgo(new BoxAlgo());
                 }else {
                     logger.info("crypto msg arrived with an unknown type.. "+msgWrapper.getMsg());

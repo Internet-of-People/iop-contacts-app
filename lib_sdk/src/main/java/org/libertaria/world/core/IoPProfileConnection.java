@@ -6,13 +6,23 @@ import org.libertaria.world.crypto.CryptoWrapper;
 import org.libertaria.world.global.DeviceLocation;
 import org.libertaria.world.global.Version;
 import org.libertaria.world.profile_server.CantSendMessageException;
+import org.libertaria.world.profile_server.SslContextFactory;
 import org.libertaria.world.profile_server.engine.ProfSerEngine;
+import org.libertaria.world.profile_server.engine.app_services.AppService;
 import org.libertaria.world.profile_server.engine.app_services.AppServiceMsg;
 import org.libertaria.world.profile_server.engine.app_services.CallProfileAppService;
+import org.libertaria.world.profile_server.engine.app_services.CallsListener;
+import org.libertaria.world.profile_server.engine.app_services.CryptoMsg;
 import org.libertaria.world.profile_server.engine.crypto.BoxAlgo;
+import org.libertaria.world.profile_server.engine.futures.BaseMsgFuture;
+import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
 import org.libertaria.world.profile_server.engine.futures.SearchMessageFuture;
+import org.libertaria.world.profile_server.engine.futures.SubsequentSearchMsgListenerFuture;
 import org.libertaria.world.profile_server.engine.listeners.ConnectionListener;
+import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.profile_server.imp.ProfileInformationImp;
+import org.libertaria.world.profile_server.model.ProfServerData;
+import org.libertaria.world.profile_server.model.Profile;
 import org.libertaria.world.profile_server.protocol.IopProfileServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +33,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by mati on 08/05/17.
@@ -31,28 +44,32 @@ import java.util.concurrent.ExecutionException;
  *
  */
 
-public class IoPProfileConnection implements org.libertaria.world.profile_server.engine.app_services.CallsListener, org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.CallStateListener {
+public class IoPProfileConnection implements CallsListener, CallProfileAppService.CallStateListener {
 
     private static final Logger logger = LoggerFactory.getLogger(IoPProfileConnection.class);
+
+    /** Time (20 seconds) */
+    private static final long CALL_IDLE_TIME = 20;
 
     /** Context wrapper */
     private IoPConnectContext contextWrapper;
     /** Profile cached */
-    private org.libertaria.world.profile_server.model.Profile profileCache;
+    private Profile profileCache;
     /** PS */
-    private org.libertaria.world.profile_server.model.ProfServerData psConnData;
+    private ProfServerData psConnData;
     /** profile server engine */
     private ProfSerEngine profSerEngine;
     /** Crypto implmentation dependent on the platform */
     private CryptoWrapper cryptoWrapper;
     /** Ssl context factory */
-    private org.libertaria.world.profile_server.SslContextFactory sslContextFactory;
+    private SslContextFactory sslContextFactory;
     /** Location helper dependent on the platform */
     private DeviceLocation deviceLocation;
     /** Open profile app service calls -> call token -> call in progress */
-    private ConcurrentMap<String, org.libertaria.world.profile_server.engine.app_services.CallProfileAppService> openCall = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, CallProfileAppService> openCall = new ConcurrentHashMap<>();
+    private ScheduledExecutorService scheduledExecutorService;
 
-    public IoPProfileConnection(IoPConnectContext contextWrapper, org.libertaria.world.profile_server.model.Profile profile, org.libertaria.world.profile_server.model.ProfServerData psConnData, CryptoWrapper cryptoWrapper, org.libertaria.world.profile_server.SslContextFactory sslContextFactory, DeviceLocation deviceLocation){
+    public IoPProfileConnection(IoPConnectContext contextWrapper, Profile profile, ProfServerData psConnData, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, DeviceLocation deviceLocation){
         this.contextWrapper = contextWrapper;
         this.cryptoWrapper = cryptoWrapper;
         this.sslContextFactory = sslContextFactory;
@@ -66,10 +83,10 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
      *
      * @throws Exception
      */
-    public void init(final org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<Boolean> initFuture, ConnectionListener connectionListener) throws ExecutionException, InterruptedException {
+    public void init(final MsgListenerFuture<Boolean> initFuture, ConnectionListener connectionListener) throws ExecutionException, InterruptedException {
         initProfileServer(psConnData,connectionListener);
-        org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<Boolean> initWrapper = new org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<>();
-        initWrapper.setListener(new org.libertaria.world.profile_server.engine.futures.BaseMsgFuture.Listener<Boolean>() {
+        MsgListenerFuture<Boolean> initWrapper = new MsgListenerFuture<>();
+        initWrapper.setListener(new BaseMsgFuture.Listener<Boolean>() {
             @Override
             public void onAction(int messageId, Boolean object) {
                 // not that this is initialized, init the app services
@@ -83,6 +100,14 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
             }
         });
         profSerEngine.start(initWrapper);
+        // schedule the call's agent
+        scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                checkCalls();
+            }
+        }, 30, CALL_IDLE_TIME, TimeUnit.SECONDS);
     }
 
     public void init(ConnectionListener connectionListener) throws Exception {
@@ -93,7 +118,7 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
      * Initialize the profile server
      * @throws Exception
      */
-    private void initProfileServer(org.libertaria.world.profile_server.model.ProfServerData profServerData, ConnectionListener connectionListener) {
+    private void initProfileServer(ProfServerData profServerData, ConnectionListener connectionListener) {
         if (profServerData.getHost()!=null) {
             profSerEngine = new ProfSerEngine(
                     contextWrapper,
@@ -109,8 +134,31 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
         }
     }
 
+    private void checkCalls() {
+        try {
+            for (CallProfileAppService callProfileAppService : openCall.values()) {
+                // check if the call is idle and close it
+                long now = System.currentTimeMillis();
+                if (callProfileAppService.getCreationTime() + CALL_IDLE_TIME < now
+                        &&
+                        callProfileAppService.getLastMessageReceived() + CALL_IDLE_TIME < now
+                        &&
+                        callProfileAppService.getLastMessageSent() + CALL_IDLE_TIME < now
+                        ) {
+                    // if the call doesn't receive or sent anything on a CALL_IDLE_TIME period close it
+                    callProfileAppService.dispose();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void stop() {
-        for (Map.Entry<String, org.libertaria.world.profile_server.engine.app_services.CallProfileAppService> stringCallProfileAppServiceEntry : openCall.entrySet()) {
+        // shutdown the calls agent
+        scheduledExecutorService.shutdownNow();
+        // shutdown calls
+        for (Map.Entry<String, CallProfileAppService> stringCallProfileAppServiceEntry : openCall.entrySet()) {
             try{
                 stringCallProfileAppServiceEntry.getValue().dispose();
             }catch (Exception e){
@@ -126,8 +174,8 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
      */
     private void registerApplicationServices() {
         // registerConnect application services
-        final org.libertaria.world.profile_server.model.Profile profile = profSerEngine.getProfNodeConnection().getProfile();
-        for (final org.libertaria.world.profile_server.engine.app_services.AppService service : profile.getApplicationServices().values()) {
+        final Profile profile = profSerEngine.getProfNodeConnection().getProfile();
+        for (final AppService service : profile.getApplicationServices().values()) {
             addApplicationService(service);
         }
     }
@@ -143,8 +191,8 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
         return future;
     }
 
-    public org.libertaria.world.profile_server.engine.futures.SubsequentSearchMsgListenerFuture<List<IopProfileServer.ProfileQueryInformation>> searchSubsequentProfiles(org.libertaria.world.profile_server.engine.SearchProfilesQuery searchProfilesQuery) {
-        org.libertaria.world.profile_server.engine.futures.SubsequentSearchMsgListenerFuture future = new org.libertaria.world.profile_server.engine.futures.SubsequentSearchMsgListenerFuture(searchProfilesQuery);
+    public SubsequentSearchMsgListenerFuture<List<IopProfileServer.ProfileQueryInformation>> searchSubsequentProfiles(org.libertaria.world.profile_server.engine.SearchProfilesQuery searchProfilesQuery) {
+        SubsequentSearchMsgListenerFuture future = new SubsequentSearchMsgListenerFuture(searchProfilesQuery);
         profSerEngine.searchSubsequentProfiles(searchProfilesQuery,future);
         return future;
     }
@@ -172,7 +220,7 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
         return updateProfile(profileCache.getVersion(),name,img,0,0,extraData,msgListener);
     }
 
-    public org.libertaria.world.profile_server.model.Profile getProfile() {
+    public Profile getProfile() {
         return profileCache;
     }
 
@@ -205,7 +253,7 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
      * @param appService
      * @param appService
      */
-    public void addApplicationService(org.libertaria.world.profile_server.engine.app_services.AppService appService) {
+    public void addApplicationService(AppService appService) {
         profileCache.addApplicationService(appService);
         profSerEngine.addApplicationService(appService);
     }
@@ -218,7 +266,7 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
      * @param publicKey
      * @param msgProfFuture
      */
-    public void getProfileInformation(String publicKey, org.libertaria.world.profile_server.engine.futures.MsgListenerFuture msgProfFuture) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
+    public void getProfileInformation(String publicKey, MsgListenerFuture msgProfFuture) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
         getProfileInformation(publicKey,false,false,false,msgProfFuture);
     }
 
@@ -240,25 +288,25 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
     public void callProfileAppService(final String remoteProfilePublicKey, final String appService, boolean tryWithoutGetInfo, final boolean encryptMsg, final org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<CallProfileAppService> profSerMsgListener) {
         logger.info("callProfileAppService from "+remoteProfilePublicKey+" using "+appService);
         org.libertaria.world.profile_server.ProfileInformation remoteProfInfo = new ProfileInformationImp(CryptoBytes.fromHexToBytes(remoteProfilePublicKey));
-        final org.libertaria.world.profile_server.engine.app_services.CallProfileAppService callProfileAppService = new org.libertaria.world.profile_server.engine.app_services.CallProfileAppService(
+        final CallProfileAppService callProfileAppService = new CallProfileAppService(
                 appService,
                 profileCache,
                 remoteProfInfo,
                 profSerEngine,
                 (encryptMsg)?new BoxAlgo():null
         );
-        // wrap call in a Pairing call.
+        // wrap call
         profileCache.getAppService(appService).wrapCall(callProfileAppService);
         try {
             if (!tryWithoutGetInfo) {
-                callProfileAppService.setStatus(org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.Status.PENDING_AS_INFO);
+                callProfileAppService.setStatus(CallProfileAppService.Status.PENDING_AS_INFO);
                 // first if the app doesn't have the profileInformation including the app services i have to request it.
-                final org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<IopProfileServer.GetProfileInformationResponse> getProfileInformationFuture = new org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<>();
-                getProfileInformationFuture.setListener(new org.libertaria.world.profile_server.engine.futures.BaseMsgFuture.Listener<IopProfileServer.GetProfileInformationResponse>() {
+                final MsgListenerFuture<IopProfileServer.GetProfileInformationResponse> getProfileInformationFuture = new MsgListenerFuture<>();
+                getProfileInformationFuture.setListener(new BaseMsgFuture.Listener<IopProfileServer.GetProfileInformationResponse>() {
                     @Override
                     public void onAction(int messageId, IopProfileServer.GetProfileInformationResponse getProfileInformationResponse) {
                         logger.info("callProfileAppService getProfileInformation ok");
-                        callProfileAppService.setStatus(org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.Status.AS_INFO);
+                        callProfileAppService.setStatus(CallProfileAppService.Status.AS_INFO);
                         try {
                             // todo: check signature..
                             //getProfileInformationResponse.getSignedProfile().getSignature()
@@ -271,7 +319,7 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
                                         callProfileAppService,
                                         profSerMsgListener,
                                         messageId,
-                                        org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.Status.CALL_FAIL,
+                                        CallProfileAppService.Status.CALL_FAIL,
                                         "Remote profile not online");
                                 return;
                             }
@@ -293,7 +341,7 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
                                         callProfileAppService,
                                         profSerMsgListener,
                                         messageId,
-                                        org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.Status.CALL_FAIL,
+                                        CallProfileAppService.Status.CALL_FAIL,
                                         "Remote profile not accept service " + appService);
                                 return;
                             }
@@ -312,13 +360,13 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
                             callProfileAppService(callProfileAppService,profSerMsgListener);
                         } catch (CantSendMessageException e) {
                             e.printStackTrace();
-                            notifyCallError(callProfileAppService,profSerMsgListener,messageId, org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+                            notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
                         } catch (org.libertaria.world.profile_server.CantConnectException e) {
                             e.printStackTrace();
-                            notifyCallError(callProfileAppService,profSerMsgListener,messageId, org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+                            notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
                         } catch (CallProfileAppServiceException e) {
                             e.printStackTrace();
-                            notifyCallError(callProfileAppService,profSerMsgListener,messageId, org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+                            notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
                         }
                     }
 
@@ -326,7 +374,7 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
                     public void onFail(int messageId, int status, String statusDetail) {
                         // todo: launch notification..
                         logger.info("callProfileAppService getProfileInformation fail");
-                        notifyCallError(callProfileAppService,profSerMsgListener,messageId, org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.Status.CALL_FAIL,statusDetail);
+                        notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,statusDetail);
 
                     }
                 });
@@ -336,13 +384,13 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
             }
         } catch (CantSendMessageException e) {
             e.printStackTrace();
-            notifyCallError(callProfileAppService,profSerMsgListener,0, org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+            notifyCallError(callProfileAppService,profSerMsgListener,0, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
         } catch (org.libertaria.world.profile_server.CantConnectException e) {
             e.printStackTrace();
-            notifyCallError(callProfileAppService,profSerMsgListener,0, org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+            notifyCallError(callProfileAppService,profSerMsgListener,0, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
         } catch (CallProfileAppServiceException e) {
             e.printStackTrace();
-            notifyCallError(callProfileAppService,profSerMsgListener,0, org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+            notifyCallError(callProfileAppService,profSerMsgListener,0, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
         }
     }
 
@@ -352,11 +400,11 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
      * @throws org.libertaria.world.profile_server.CantConnectException
      * @throws CantSendMessageException
      */
-    private synchronized void callProfileAppService(final org.libertaria.world.profile_server.engine.app_services.CallProfileAppService callProfileAppService, final org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<CallProfileAppService> profSerMsgListener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException, CallProfileAppServiceException {
+    private synchronized void callProfileAppService(final CallProfileAppService callProfileAppService, final org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<CallProfileAppService> profSerMsgListener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException, CallProfileAppServiceException {
         // call profile
         logger.info("callProfileAppService call profile");
         // check if the call already exist
-        for (org.libertaria.world.profile_server.engine.app_services.CallProfileAppService call : openCall.values()) {
+        for (CallProfileAppService call : openCall.values()) {
             if (call.getAppService().equals(callProfileAppService.getAppService())
                     &&
                     call.getRemoteProfile().getHexPublicKey().equals(callProfileAppService.getRemotePubKey())){
@@ -367,9 +415,9 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
             }
         }
 
-        callProfileAppService.setStatus(org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.Status.PENDING_CALL_AS);
-        final org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<IopProfileServer.CallIdentityApplicationServiceResponse> callProfileFuture = new org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<>();
-        callProfileFuture.setListener(new org.libertaria.world.profile_server.engine.futures.BaseMsgFuture.Listener<IopProfileServer.CallIdentityApplicationServiceResponse>() {
+        callProfileAppService.setStatus(CallProfileAppService.Status.PENDING_CALL_AS);
+        final MsgListenerFuture<IopProfileServer.CallIdentityApplicationServiceResponse> callProfileFuture = new MsgListenerFuture<>();
+        callProfileFuture.setListener(new BaseMsgFuture.Listener<IopProfileServer.CallIdentityApplicationServiceResponse>() {
             @Override
             public void onAction(int messageId, IopProfileServer.CallIdentityApplicationServiceResponse appServiceResponse) {
                 logger.info("callProfileAppService accepted");
@@ -383,22 +431,22 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
                     setupCallAppServiceInitMessage(callProfileAppService,true,profSerMsgListener);
                 } catch (CantSendMessageException e) {
                     e.printStackTrace();
-                    notifyCallError(callProfileAppService,profSerMsgListener,messageId, org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+                    notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
                 } catch (org.libertaria.world.profile_server.CantConnectException e) {
                     e.printStackTrace();
-                    notifyCallError(callProfileAppService,profSerMsgListener,messageId, org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+                    notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
                 }
             }
             @Override
             public void onFail(int messageId, int status, String statusDetail) {
                 logger.info("callProfileAppService rejected, "+statusDetail);
-                notifyCallError(callProfileAppService,profSerMsgListener,messageId, org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.Status.CALL_FAIL,statusDetail);
+                notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,statusDetail);
             }
         });
         profSerEngine.callProfileAppService(callProfileAppService.getRemotePubKey(), callProfileAppService.getAppService(), callProfileFuture);
     }
 
-    private void notifyCallError(org.libertaria.world.profile_server.engine.app_services.CallProfileAppService callProfileAppService, org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<CallProfileAppService> listener, int msgId, org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.Status status, String errorStatus){
+    private void notifyCallError(CallProfileAppService callProfileAppService, org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<CallProfileAppService> listener, int msgId, CallProfileAppService.Status status, String errorStatus){
         callProfileAppService.setStatus(status);
         callProfileAppService.setErrorStatus(errorStatus);
         listener.onMessageReceive(msgId,callProfileAppService);
@@ -415,7 +463,7 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
             org.libertaria.world.profile_server.ProfileInformation remoteProfInfo = new ProfileInformationImp(message.getCallerPublicKey().toByteArray());
 
             // check if the call exist (if the call exist don't accept it and close the channel)
-            for (org.libertaria.world.profile_server.engine.app_services.CallProfileAppService callProfileAppService : openCall.values()) {
+            for (CallProfileAppService callProfileAppService : openCall.values()) {
                 if (callProfileAppService.getAppService().equals(message.getServiceName())
                         &&
                         callProfileAppService.getRemoteProfile().getHexPublicKey().equals(remoteProfInfo.getHexPublicKey())){
@@ -425,7 +473,7 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
                 }
             }
 
-            final org.libertaria.world.profile_server.engine.app_services.CallProfileAppService callProfileAppService = new org.libertaria.world.profile_server.engine.app_services.CallProfileAppService(message.getServiceName(), profileCache, remoteProfInfo,profSerEngine);
+            final CallProfileAppService callProfileAppService = new CallProfileAppService(message.getServiceName(), profileCache, remoteProfInfo,profSerEngine);
             callProfileAppService.setCallToken(message.getCalleeToken().toByteArray());
 
             // accept every single call
@@ -437,9 +485,9 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
             // init setup call message
             setupCallAppServiceInitMessage(callProfileAppService,false,new org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<CallProfileAppService>() {
                 @Override
-                public void onMessageReceive(int messageId, org.libertaria.world.profile_server.engine.app_services.CallProfileAppService message) {
+                public void onMessageReceive(int messageId, CallProfileAppService message) {
                     // once everything is correct, launch notification
-                    org.libertaria.world.profile_server.engine.app_services.AppService appService = profileCache.getAppService(message.getAppService());
+                    AppService appService = profileCache.getAppService(message.getAppService());
                     appService.wrapCall(callProfileAppService);
                     appService.onCallConnected(profileCache,message.getRemoteProfile(),message.isCallCreator());
                 }
@@ -461,16 +509,16 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
         }
     }
 
-    private void setupCallAppServiceInitMessage(final org.libertaria.world.profile_server.engine.app_services.CallProfileAppService callProfileAppService, final boolean isRequester , final org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<CallProfileAppService> profSerMsgListener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
-        callProfileAppService.setStatus(org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.Status.PENDING_INIT_MESSAGE);
+    private void setupCallAppServiceInitMessage(final CallProfileAppService callProfileAppService, final boolean isRequester , final org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<CallProfileAppService> profSerMsgListener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
+        callProfileAppService.setStatus(CallProfileAppService.Status.PENDING_INIT_MESSAGE);
         // send init message to setup the call
-        final org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<IopProfileServer.ApplicationServiceSendMessageResponse> initMsgFuture = new org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<>();
-        initMsgFuture.setListener(new org.libertaria.world.profile_server.engine.futures.BaseMsgFuture.Listener<IopProfileServer.ApplicationServiceSendMessageResponse>() {
+        final MsgListenerFuture<IopProfileServer.ApplicationServiceSendMessageResponse> initMsgFuture = new MsgListenerFuture<>();
+        initMsgFuture.setListener(new BaseMsgFuture.Listener<IopProfileServer.ApplicationServiceSendMessageResponse>() {
             @Override
             public void onAction(int messageId, IopProfileServer.ApplicationServiceSendMessageResponse object) {
                 try {
                     logger.info("callProfileAppService setup message accepted");
-                    callProfileAppService.setStatus(org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.Status.CALL_AS_ESTABLISH);
+                    callProfileAppService.setStatus(CallProfileAppService.Status.CALL_AS_ESTABLISH);
                     if (callProfileAppService.isEncrypted() && isRequester) {
                         encryptCall(callProfileAppService, profSerMsgListener);
                     } else {
@@ -494,10 +542,10 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
     /**
      * Encrypt call with the default algorithm for now
      */
-    private void encryptCall(final org.libertaria.world.profile_server.engine.app_services.CallProfileAppService callProfileAppService, final org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<CallProfileAppService> profSerMsgListener) throws Exception {
-        org.libertaria.world.profile_server.engine.app_services.CryptoMsg cryptoMsg = new org.libertaria.world.profile_server.engine.app_services.CryptoMsg("box");
-        org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<Boolean> cryptoFuture = new org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<Boolean>();
-        cryptoFuture.setListener(new org.libertaria.world.profile_server.engine.futures.BaseMsgFuture.Listener<Boolean>() {
+    private void encryptCall(final CallProfileAppService callProfileAppService, final ProfSerMsgListener<CallProfileAppService> profSerMsgListener) throws Exception {
+        CryptoMsg cryptoMsg = new CryptoMsg("box");
+        MsgListenerFuture<Boolean> cryptoFuture = new MsgListenerFuture<Boolean>();
+        cryptoFuture.setListener(new BaseMsgFuture.Listener<Boolean>() {
             @Override
             public void onAction(int messageId, Boolean object) {
                 logger.info("Encrypt call sent..");
@@ -542,8 +590,8 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
         }
     }
 
-    public org.libertaria.world.profile_server.engine.app_services.CallProfileAppService getActiveAppCallService(String remoteProfileKey){
-        for (org.libertaria.world.profile_server.engine.app_services.CallProfileAppService callProfileAppService : openCall.values()) {
+    public CallProfileAppService getActiveAppCallService(String remoteProfileKey){
+        for (CallProfileAppService callProfileAppService : openCall.values()) {
             if (callProfileAppService.getRemotePubKey().equals(remoteProfileKey)){
                 return callProfileAppService;
             }
@@ -553,7 +601,7 @@ public class IoPProfileConnection implements org.libertaria.world.profile_server
 
 
     @Override
-    public void onCallFinished(org.libertaria.world.profile_server.engine.app_services.CallProfileAppService callProfileAppService) {
+    public void onCallFinished(CallProfileAppService callProfileAppService) {
         try {
             openCall.remove(CryptoBytes.toHexString(callProfileAppService.getCallToken()));
         }catch (Exception e){
