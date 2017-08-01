@@ -105,7 +105,7 @@ public abstract class AbstractModule implements Module {
         return null;
     }
 
-    protected void prepareCall(String localProfilePubKey, ProfileInformation remoteProfileInformation, ProfSerMsgListener<Boolean> readyListener){
+    protected void prepareCall(String localProfilePubKey, ProfileInformation remoteProfileInformation, ProfSerMsgListener<CallProfileAppService> readyListener){
         ioPConnect.callService(service.getName(), localProfilePubKey, remoteProfileInformation, true, readyListener);
     }
 

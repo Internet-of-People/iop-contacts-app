@@ -5,21 +5,27 @@ import com.google.protobuf.ByteString;
 import org.libertaria.world.core.exceptions.ProfileNotConectedException;
 import org.libertaria.world.core.services.pairing.PairingAppService;
 import org.libertaria.world.core.services.pairing.PairingMsg;
+import org.libertaria.world.core.services.pairing.PairingMsgTypes;
 import org.libertaria.world.crypto.CryptoBytes;
 import org.libertaria.world.crypto.CryptoWrapper;
 import org.libertaria.world.global.DeviceLocation;
 import org.libertaria.world.global.Version;
 import org.libertaria.world.profile_server.CantSendMessageException;
 import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.engine.app_services.AppService;
 import org.libertaria.world.profile_server.engine.app_services.CallProfileAppService;
 import org.libertaria.world.profile_server.engine.futures.ConnectionFuture;
+import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
 import org.libertaria.world.profile_server.engine.listeners.ConnectionListener;
 import org.libertaria.world.profile_server.engine.listeners.EngineListener;
+import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.profile_server.imp.ProfileInformationImp;
 import org.libertaria.world.profile_server.model.KeyEd25519;
+import org.libertaria.world.profile_server.model.Profile;
 import org.libertaria.world.profile_server.protocol.IopProfileServer;
 import org.libertaria.world.profiles_manager.PairingRequest;
 import org.libertaria.world.profiles_manager.ProfilesManager;
+import org.libertaria.world.services.EnabledServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,9 +56,9 @@ public class IoPConnect implements ConnectionListener {
     private static final long RECONNECT_TIME = 15;
 
     /** Map of local device profiles pubKey connected to the home PS, profile public key -> host PS manager*/
-    private ConcurrentMap<String, org.libertaria.world.core.IoPProfileConnection> managers;
+    private ConcurrentMap<String, IoPProfileConnection> managers;
     /** Map of device profiles connected to remote PS */
-    private ConcurrentMap<PsKey, org.libertaria.world.core.IoPProfileConnection> remoteManagers = new ConcurrentHashMap<>();
+    private ConcurrentMap<PsKey, IoPProfileConnection> remoteManagers = new ConcurrentHashMap<>();
     /** Cached local profiles */
     private Map<String, org.libertaria.world.profile_server.model.Profile> localProfiles = new HashMap<>();
     /** Enviroment context */
@@ -184,7 +190,7 @@ public class IoPConnect implements ConnectionListener {
                         }
                     });
                 try {
-                    PairingAppService pairingAppService = localProfile.getAppService(org.libertaria.world.services.EnabledServices.PROFILE_PAIRING.getName(), PairingAppService.class);
+                    PairingAppService pairingAppService = localProfile.getAppService(EnabledServices.PROFILE_PAIRING.getName(), PairingAppService.class);
                     connectProfile(
                             localProfile.getHexPublicKey(),
                             pairingAppService.getPairingListener(),
@@ -264,7 +270,7 @@ public class IoPConnect implements ConnectionListener {
         profile.addApplicationService(appService);
         // start moving this to the db
         localProfilesDao.updateProfile(profile);
-        org.libertaria.world.core.IoPProfileConnection connection = getProfileConnection(profile.getHexPublicKey());
+        IoPProfileConnection connection = getProfileConnection(profile.getHexPublicKey());
         if (connection.isReady() || connection.isConnecting()){
             connection.addApplicationService(appService);
         }else {
@@ -280,7 +286,7 @@ public class IoPConnect implements ConnectionListener {
             localProfiles.put(profilePublicKey,profile);
         }
         if (managers.containsKey(profilePublicKey)){
-            org.libertaria.world.core.IoPProfileConnection connection = getProfileConnection(profilePublicKey);
+            IoPProfileConnection connection = getProfileConnection(profilePublicKey);
             if (connection.hasFail()){
                 future.setProfServerData(createEmptyProfileServerConf().getMainProfileServer());
                 connection.init(future,this);
@@ -337,7 +343,7 @@ public class IoPConnect implements ConnectionListener {
         localProfilesDao.updateProfile(localProfile);
 
         if (updatePs) {
-            org.libertaria.world.core.IoPProfileConnection connection = getProfileConnection(localProfile.getHexPublicKey());
+            IoPProfileConnection connection = getProfileConnection(localProfile.getHexPublicKey());
             if (connection != null && connection.isReady()) {
                 connection.updateProfile(
                         localProfile.getVersion(),
@@ -389,9 +395,9 @@ public class IoPConnect implements ConnectionListener {
      * @param pairingListener
      * @return
      */
-    private org.libertaria.world.core.IoPProfileConnection addConnection(org.libertaria.world.profile_server.ProfileServerConfigurations profileServerConfigurations, org.libertaria.world.profile_server.model.ProfServerData profConn, KeyEd25519 profKey, org.libertaria.world.profile_server.engine.app_services.PairingListener pairingListener){
+    private IoPProfileConnection addConnection(org.libertaria.world.profile_server.ProfileServerConfigurations profileServerConfigurations, org.libertaria.world.profile_server.model.ProfServerData profConn, KeyEd25519 profKey, org.libertaria.world.profile_server.engine.app_services.PairingListener pairingListener){
         // profile connection
-        org.libertaria.world.core.IoPProfileConnection ioPProfileConnection = new org.libertaria.world.core.IoPProfileConnection(
+        IoPProfileConnection ioPProfileConnection = new IoPProfileConnection(
                 context,
                 initClientData(profileServerConfigurations,pairingListener),
                 profConn,
@@ -411,9 +417,9 @@ public class IoPConnect implements ConnectionListener {
      * @param psKey
      * @return
      */
-    private org.libertaria.world.core.IoPProfileConnection addConnection(org.libertaria.world.profile_server.model.ProfServerData profConn, org.libertaria.world.profile_server.model.Profile deviceProfile , PsKey psKey){
+    private IoPProfileConnection addConnection(org.libertaria.world.profile_server.model.ProfServerData profConn, org.libertaria.world.profile_server.model.Profile deviceProfile , PsKey psKey){
         // profile connection
-        org.libertaria.world.core.IoPProfileConnection ioPProfileConnection = new org.libertaria.world.core.IoPProfileConnection(
+        IoPProfileConnection ioPProfileConnection = new IoPProfileConnection(
                 context,
                 deviceProfile,
                 profConn,
@@ -533,23 +539,27 @@ public class IoPConnect implements ConnectionListener {
      * @param remoteProfile
      * @param tryUpdateRemoteServices -> param to update the profile information first and then request the call.
      * @param readyListener
-     * @param args
      */
-    public void callService(String serviceName, final String localProfilePubKey, final org.libertaria.world.profile_server.ProfileInformation remoteProfile, final boolean tryUpdateRemoteServices , final org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<Boolean> readyListener , Object... args) {
+    public void callService(
+            String serviceName,
+            final String localProfilePubKey,
+            final ProfileInformation remoteProfile,
+            final boolean tryUpdateRemoteServices ,
+            final ProfSerMsgListener<CallProfileAppService> readyListener) {
         logger.info("RunService, remote: " + remoteProfile.getHexPublicKey());
         try {
             if (!localProfiles.containsKey(localProfilePubKey)) throw new ProfileNotRegisteredException(localProfilePubKey);
-            final org.libertaria.world.profile_server.model.Profile localProfile = localProfiles.get(localProfilePubKey);
+            final Profile localProfile = localProfiles.get(localProfilePubKey);
             if(!localProfile.hasService(serviceName)) throw new IllegalStateException("App service "+ serviceName+" is not enabled on local profile "+localProfilePubKey);
-            final org.libertaria.world.profile_server.engine.app_services.AppService appService = localProfile.getAppService(serviceName);
+            final AppService appService = localProfile.getAppService(serviceName);
             appService.onPreCall();
             // now i stablish the call if it's not exists
-            final org.libertaria.world.core.IoPProfileConnection connection = getOrStablishConnection(localProfile.getHomeHost(), localProfile.getHexPublicKey(), remoteProfile.getHomeHost());
+            final IoPProfileConnection connection = getOrStablishConnection(localProfile.getHomeHost(), localProfile.getHexPublicKey(), remoteProfile.getHomeHost());
             // first the call
-            org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<CallProfileAppService> callListener = new org.libertaria.world.profile_server.engine.futures.MsgListenerFuture();
+            MsgListenerFuture<CallProfileAppService> callListener = new MsgListenerFuture<>();
             callListener.setListener(new org.libertaria.world.profile_server.engine.futures.BaseMsgFuture.Listener<CallProfileAppService>() {
                 @Override
-                public void onAction(int messageId, final org.libertaria.world.profile_server.engine.app_services.CallProfileAppService call) {
+                public void onAction(int messageId, final CallProfileAppService call) {
                     try {
                         if (call.isStablished()) {
                             logger.info("call establish, remote: " + call.getRemotePubKey());
@@ -563,6 +573,9 @@ public class IoPConnect implements ConnectionListener {
                                 //profilesManager.updateProfile(localProfile.getHexPublicKey(),call.getRemoteProfile());
                             }
                             appService.onCallConnected(localProfile,remoteProfile,call.isCallCreator());
+
+                            // notify upper layers
+                            readyListener.onMessageReceive(messageId,call);
                         } else {
                             logger.info("call fail with status: " + call.getStatus() + ", error: " + call.getErrorStatus());
                             readyListener.onMsgFail(messageId, 0, call.getStatus().toString() + " " + call.getErrorStatus());
@@ -598,12 +611,12 @@ public class IoPConnect implements ConnectionListener {
         final int pairingRequestId = pairingRequestsManager.savePairingRequest(pairingRequest);
         pairingRequest.setId(pairingRequestId);
         // Connection
-        final org.libertaria.world.core.IoPProfileConnection connection = getOrStablishConnection(pairingRequest.getRemotePsHost(),pairingRequest.getSenderPubKey(),pairingRequest.getSenderPsHost());
+        final IoPProfileConnection connection = getOrStablishConnection(pairingRequest.getRemotePsHost(),pairingRequest.getSenderPubKey(),pairingRequest.getSenderPsHost());
         // first the call
         org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<CallProfileAppService> callListener = new org.libertaria.world.profile_server.engine.futures.MsgListenerFuture();
         callListener.setListener(new org.libertaria.world.profile_server.engine.futures.BaseMsgFuture.Listener<CallProfileAppService>() {
             @Override
-            public void onAction(int messageId, final org.libertaria.world.profile_server.engine.app_services.CallProfileAppService call) {
+            public void onAction(int messageId, final CallProfileAppService call) {
                 try {
                     if (call.isStablished()) {
                         logger.info("call establish, remote: " + call.getRemotePubKey());
@@ -647,7 +660,7 @@ public class IoPConnect implements ConnectionListener {
                 listener.onMsgFail(messageId, status, statusDetail);
             }
         });
-        connection.callProfileAppService(pairingRequest.getRemotePubKey(), org.libertaria.world.services.EnabledServices.PROFILE_PAIRING.getName(), false, false, callListener);
+        connection.callProfileAppService(pairingRequest.getRemotePubKey(), EnabledServices.PROFILE_PAIRING.getName(), false, false, callListener);
     }
 
     /**
@@ -664,8 +677,8 @@ public class IoPConnect implements ConnectionListener {
         // first check if i have a connection with the server hosting the pairing sender
         // tengo que ver si el remote profile tiene como home host la conexion principal de el sender profile al PS
         // si no la tiene abro otra conexion.
-        final org.libertaria.world.core.IoPProfileConnection connection = getOrStablishConnection(pairingRequest.getRemotePsHost(),pairingRequest.getRemotePubKey(),pairingRequest.getSenderPsHost());
-        final org.libertaria.world.profile_server.engine.app_services.CallProfileAppService call = connection.getActiveAppCallService(remotePubKeyHex);
+        final IoPProfileConnection connection = getOrStablishConnection(pairingRequest.getRemotePsHost(),pairingRequest.getRemotePubKey(),pairingRequest.getSenderPsHost());
+        final CallProfileAppService call = connection.getActiveAppCallService(remotePubKeyHex);
         final org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<Boolean> future = new org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<>();
         // Add listener -> todo: add future listener and save acceptPairing sent
         future.setListener(new org.libertaria.world.profile_server.engine.futures.BaseMsgFuture.Listener<Boolean>() {
@@ -685,7 +698,7 @@ public class IoPConnect implements ConnectionListener {
                 pairingRequestsManager.updateStatus(
                         remotePubKeyHex,
                         localPubKeyHex,
-                        org.libertaria.world.core.services.pairing.PairingMsgTypes.PAIR_ACCEPT,
+                        PairingMsgTypes.PAIR_ACCEPT,
                         ProfileInformationImp.PairStatus.PAIRED
                 );
 
@@ -710,14 +723,14 @@ public class IoPConnect implements ConnectionListener {
             }
         });
         if (call != null) {
-            call.sendMsg(org.libertaria.world.core.services.pairing.PairingMsgTypes.PAIR_ACCEPT.getType(), future);
+            call.sendMsg(PairingMsgTypes.PAIR_ACCEPT.getType(), future);
         }else {
             org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<CallProfileAppService> callFuture = new org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<>();
             callFuture.setListener(new org.libertaria.world.profile_server.engine.futures.BaseMsgFuture.Listener<CallProfileAppService>() {
                 @Override
-                public void onAction(int messageId, org.libertaria.world.profile_server.engine.app_services.CallProfileAppService call) {
+                public void onAction(int messageId, CallProfileAppService call) {
                     try {
-                        call.sendMsg(org.libertaria.world.core.services.pairing.PairingMsgTypes.PAIR_ACCEPT.getType(), future);
+                        call.sendMsg(PairingMsgTypes.PAIR_ACCEPT.getType(), future);
                     } catch (Exception e) {
                         logger.error("call sendMsg error",e);
                         future.onMsgFail(messageId,400,e.getMessage());
@@ -730,7 +743,7 @@ public class IoPConnect implements ConnectionListener {
                     future.onMsgFail(messageId,status,statusDetail);
                 }
             });
-            connection.callProfileAppService(remotePubKeyHex, org.libertaria.world.services.EnabledServices.PROFILE_PAIRING.getName(),true,false,callFuture);
+            connection.callProfileAppService(remotePubKeyHex, EnabledServices.PROFILE_PAIRING.getName(),true,false,callFuture);
         }
     }
 
@@ -743,7 +756,7 @@ public class IoPConnect implements ConnectionListener {
         return context.createProfSerConfig();
     }
 
-    private org.libertaria.world.core.IoPProfileConnection getProfileConnection(String profPubKey) throws ProfileNotConectedException {
+    private IoPProfileConnection getProfileConnection(String profPubKey) throws ProfileNotConectedException {
         if (!managers.containsKey(profPubKey)) throw new ProfileNotConectedException("Profile connection not established");
         return managers.get(profPubKey);
     }
@@ -758,9 +771,9 @@ public class IoPConnect implements ConnectionListener {
      * @return
      * @throws Exception
      */
-    private org.libertaria.world.core.IoPProfileConnection getOrStablishConnection(String localPsHost, String localProfPubKey, String remotePsHost) throws Exception {
+    private IoPProfileConnection getOrStablishConnection(String localPsHost, String localProfPubKey, String remotePsHost) throws Exception {
         if (remotePsHost==null) throw new IllegalArgumentException("remotePsHost cannot be null");
-        org.libertaria.world.core.IoPProfileConnection connection = null;
+        IoPProfileConnection connection = null;
         if (localPsHost.equals(remotePsHost)) {
             connection = getProfileConnection(localProfPubKey);
         }else {
@@ -790,7 +803,7 @@ public class IoPConnect implements ConnectionListener {
      * @return
      */
     public boolean isProfileConnectedOrConnecting(String hexProfileKey){
-        org.libertaria.world.core.IoPProfileConnection connection = managers.get(hexProfileKey);
+        IoPProfileConnection connection = managers.get(hexProfileKey);
         if (connection!=null){
             return connection.isReady() || !connection.hasFail() || connection.isConnecting();
         }else
@@ -805,7 +818,7 @@ public class IoPConnect implements ConnectionListener {
         return localProfiles;
     }
 
-    public org.libertaria.world.profile_server.engine.app_services.AppService getProfileAppService(String localProfilePubKey, org.libertaria.world.services.EnabledServices service){
+    public AppService getProfileAppService(String localProfilePubKey, EnabledServices service){
         return (localProfiles.containsKey(localProfilePubKey))?
                 localProfiles.get(localProfilePubKey).getAppService(service.getName())
                 :
@@ -997,7 +1010,7 @@ public class IoPConnect implements ConnectionListener {
      * Stop every single profile connection.
      */
     public void stop() {
-        for (Map.Entry<String, org.libertaria.world.core.IoPProfileConnection> stringRedtoothProfileConnectionEntry : managers.entrySet()) {
+        for (Map.Entry<String, IoPProfileConnection> stringRedtoothProfileConnectionEntry : managers.entrySet()) {
             try {
                 stringRedtoothProfileConnectionEntry.getValue().stop();
             }catch (Exception e){
@@ -1005,7 +1018,7 @@ public class IoPConnect implements ConnectionListener {
             }
         }
         managers.clear();
-        for (Map.Entry<PsKey, org.libertaria.world.core.IoPProfileConnection> psKeyIoPProfileConnectionEntry : remoteManagers.entrySet()) {
+        for (Map.Entry<PsKey, IoPProfileConnection> psKeyIoPProfileConnectionEntry : remoteManagers.entrySet()) {
             try {
                 psKeyIoPProfileConnectionEntry.getValue().stop();
             }catch (Exception e){

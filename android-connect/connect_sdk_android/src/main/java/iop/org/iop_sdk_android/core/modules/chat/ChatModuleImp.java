@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import iop.org.iop_sdk_android.core.base.AbstractModule;
+import iop.org.iop_sdk_android.core.utils.EmptyListener;
 
 import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.EXTRA_INTENT_CHAT_MSG;
 import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;
@@ -51,7 +52,7 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
         // first check if the chat is active or was requested
         CallProfileAppService call = getCall(localProfilePubKey,remoteProfileInformation.getHexPublicKey());
         if (call!=null) throw new ChatCallAlreadyOpenException("chat call already open with "+remoteProfileInformation.getHexPublicKey());
-        prepareCall(localProfilePubKey,remoteProfileInformation,readyListener);
+        prepareCall(localProfilePubKey,remoteProfileInformation,new EmptyListener(readyListener));
     }
 
     @Override
