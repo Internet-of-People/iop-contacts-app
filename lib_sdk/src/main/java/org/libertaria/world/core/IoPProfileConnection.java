@@ -51,8 +51,8 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
 
     private static final Logger logger = LoggerFactory.getLogger(IoPProfileConnection.class);
 
-    /** Time (20 seconds) */
-    private static final long CALL_IDLE_TIME = 20;
+    /** Check call agent */
+    private static final long CALL_IDLE_CHECK_TIME = 30;
 
     /** Context wrapper */
     private IoPConnectContext contextWrapper;
@@ -110,7 +110,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
             public void run() {
                 checkCalls();
             }
-        }, 30, CALL_IDLE_TIME, TimeUnit.SECONDS);
+        }, 30, CALL_IDLE_CHECK_TIME, TimeUnit.SECONDS);
     }
 
     public void init(ConnectionListener connectionListener) throws Exception {
@@ -142,11 +142,11 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
             for (CallProfileAppService callProfileAppService : openCall.values()) {
                 // check if the call is idle and close it
                 long now = System.currentTimeMillis();
-                if (callProfileAppService.getCreationTime() + CALL_IDLE_TIME < now
+                if (callProfileAppService.getCreationTime() + callProfileAppService.getCallIdleTime() < now
                         &&
-                        callProfileAppService.getLastMessageReceived() + CALL_IDLE_TIME < now
+                        callProfileAppService.getLastMessageReceived() + callProfileAppService.getCallIdleTime() < now
                         &&
-                        callProfileAppService.getLastMessageSent() + CALL_IDLE_TIME < now
+                        callProfileAppService.getLastMessageSent() + callProfileAppService.getCallIdleTime() < now
                         ) {
                     // if the call doesn't receive or sent anything on a CALL_IDLE_TIME period close it
                     callProfileAppService.dispose();
