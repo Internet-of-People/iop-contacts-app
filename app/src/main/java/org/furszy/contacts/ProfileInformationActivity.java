@@ -26,6 +26,7 @@ import org.libertaria.world.profile_server.client.AppServiceCallNotAvailableExce
 import org.libertaria.world.profile_server.engine.futures.BaseMsgFuture;
 import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
 import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
+import org.libertaria.world.profile_server.imp.ProfileInformationImp;
 import org.libertaria.world.services.chat.ChatCallAlreadyOpenException;
 import org.furszy.contacts.ui.chat.ChatActivity;
 import org.furszy.contacts.ui.chat.WaitingChatActivity;
@@ -53,18 +54,19 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 
     public static final String IS_MY_PROFILE = "extra_is_my_profile";
 
-
     public static final String INTENT_EXTRA_PROF_SERVER_ID = "prof_ser_id";
     public static final String INTENT_EXTRA_SEARCH = "prof_search";
+    private static final int OPTIONS_DELETE = 1;
+
     ProfileInformation profileInformation;
 
     private View root;
     private CircleImageView imgProfile;
     private TextView txt_name;
-    private Button btn_disconnect;
+    private Button btn_action;
     private ProgressBar progress_bar;
 
-    private TextView txt_chat;
+    private TextView txt_chat, disconnected_message;
 
     private ExecutorService executor;
     private AtomicBoolean flag = new AtomicBoolean(false);
@@ -89,6 +91,9 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     public boolean onCreateOptionsMenu(Menu menu) {
         if (getIntent()!=null && getIntent().hasExtra(IS_MY_PROFILE)) {
             getMenuInflater().inflate(R.menu.my_profile_menu, menu);
+        } else {
+            MenuItem menuItem = menu.add(0,OPTIONS_DELETE,0,R.string.delete_contact);
+            return super.onCreateOptionsMenu(menu);
         }
         return true;
     }
@@ -98,6 +103,9 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
             case R.id.editProfile:
                 Intent myIntent = new Intent(this,ProfileActivity.class);
                 startActivity(myIntent);
+                return true;
+            case OPTIONS_DELETE:
+                tappedDeleteButton();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -124,15 +132,17 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         root = getLayoutInflater().inflate(R.layout.profile_information_main,container);
         imgProfile = (CircleImageView) root.findViewById(R.id.profile_image);
         txt_name = (TextView) root.findViewById(R.id.txt_name);
-        btn_disconnect = (Button) root.findViewById(R.id.btn_disconnect);
+        btn_action = (Button) root.findViewById(R.id.btn_action);
         progress_bar = (ProgressBar) root.findViewById(R.id.progress_bar);
         txt_chat = (TextView) root.findViewById(R.id.txt_chat);
         txt_chat.setOnClickListener(this);
-
-        btn_disconnect.setOnClickListener(new View.OnClickListener() {
+        disconnected_message = (TextView) root.findViewById(R.id.disconnected_message);
+        disconnected_message.setVisibility(View.GONE);
+        btn_action.setEnabled(false);
+        btn_action.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                tappedActionButton();
             }
         });
 
@@ -146,7 +156,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
             }else if (extras.containsKey(IS_MY_PROFILE)){
                 isMyProfile = true;
                 profileInformation = profilesModule.getProfile(selectedProfPubKey);
-                btn_disconnect.setVisibility(View.GONE);
+                btn_action.setVisibility(View.GONE);
                 txt_chat.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_chat_disable, 0);
                 txt_chat.setEnabled (false);
             }
@@ -163,8 +173,66 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
             hideLoading();*/
     }
 
+    private void tappedActionButton(){
+
+    }
+
+    private void tappedDeleteButton(){
+        if (flag.compareAndSet(true,true)) { return; }
+        flag.set(true);
+        showLoading();
+        executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                MsgListenerFuture<Boolean> readyListener = new MsgListenerFuture<Boolean>();
+                readyListener.setListener(new BaseMsgFuture.Listener<Boolean>(){
+
+                    @Override
+                    public void onAction(int messageId, Boolean object) {
+                        Log.i("GENERAL","SUCCESS IN DISCONNECT PROFILE");
+                        flag.set(false);
+                        runOnUiThread(new Runnable(){
+                            @Override
+                            public void run() {
+                                hideLoading();
+                                Toast.makeText(ProfileInformationActivity.this, "User has been disconnected",Toast.LENGTH_LONG).show();
+                                onBackPressed();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFail(int messageId, int status, String statusDetail) {
+                        Log.i("GENERAL","FAIL CHAT REQUEST: "+statusDetail);
+                        flag.set(false);
+                        runOnUiThread(new Runnable(){
+                            @Override
+                            public void run() {
+                                hideLoading();
+                                Toast.makeText(ProfileInformationActivity.this, "Fail disconnecting",Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                });
+                if (profileInformation.getPairStatus().equals(ProfileInformationImp.PairStatus.DISCONNECTED)) {
+                    pairingModule.disconectPairingProfile(selectedProfPubKey,profileInformation,false,readyListener);
+                } else {
+                    pairingModule.disconectPairingProfile(selectedProfPubKey, profileInformation, false, readyListener);
+                }
+            }
+        });
+    }
+
     private void loadProfileData() {
         if (profileInformation!=null) {
+            Log.i("GENERAL","PAIR STATUS: "+profileInformation.getPairStatus());
+            if (profileInformation.getPairStatus().equals(ProfileInformationImp.PairStatus.DISCONNECTED)) {
+                btn_action.setEnabled(true);
+                btn_action.setText(R.string.send_request);
+                btn_action.setBackgroundColor(getResources().getColor(R.color.bgBlue,null));
+                btn_action.setTextColor(getResources().getColor(R.color.white,null));
+                disconnected_message.setVisibility(View.VISIBLE);
+            }
             txt_name.setText(profileInformation.getName());
             if (profileInformation.getImg() != null && profileInformation.getImg().length > 1) {
                 Bitmap bitmap = BitmapFactory.decodeByteArray(profileInformation.getImg(), 0, profileInformation.getImg().length);

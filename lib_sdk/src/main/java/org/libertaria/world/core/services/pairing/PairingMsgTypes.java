@@ -6,7 +6,7 @@ package org.libertaria.world.core.services.pairing;
 
 public enum PairingMsgTypes {
 
-    PAIR_REQUEST("pr"),PAIR_ACCEPT("pa"),PAIR_REFUSE("prr");
+    PAIR_REQUEST("pr"),PAIR_ACCEPT("pa"),PAIR_REFUSE("prr"), PAIR_DISCONNECT("pd");
 
     private String type;
 

@@ -70,6 +70,7 @@
     <string name="report_issuea_dialog_title">Report issue</string>
     <string name="report_issue_dialog_message_issue">Please describe your issue precisely enough to be reproduced.</string>
     <string name="report_issue">Report issue</string>
-    <string name="btn_disconnect">Connected</string>
-
+    <string name="btn_connect">Connected</string>
+    <string name="disconnected_text_message">This user has \n disconnected from you.</string>
+    <string name="delete_contact">Delete contact</string>
 </resources>
