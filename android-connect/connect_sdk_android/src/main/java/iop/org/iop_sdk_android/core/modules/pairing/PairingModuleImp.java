@@ -118,6 +118,15 @@ public class PairingModuleImp extends AbstractModule implements PairingModule{
     }
 
     @Override
+    public void disconectPairingProfile(String localProfilePubKey, String remoteProfilePubKey, boolean needsToBeNotified, ProfSerMsgListener<Boolean> listener) {
+        platformService.getPairingRequestsDb().disconnectPairingProfile(localProfilePubKey,remoteProfilePubKey);
+        platformService.getProfilesDb().deleteProfileByPubKey(localProfilePubKey,remoteProfilePubKey);
+        listener.onMessageReceive(1,true);
+        if (!needsToBeNotified) { return; }
+
+    }
+
+    @Override
     public List<PairingRequest> getPairingRequests(String localProfPubKey) {
         return platformService.getPairingRequestsDb().openPairingRequests(localProfPubKey);
     }

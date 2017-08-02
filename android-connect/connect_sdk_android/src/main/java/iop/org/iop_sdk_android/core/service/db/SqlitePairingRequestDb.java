@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import org.libertaria.world.core.services.pairing.PairingMsgTypes;
 import org.libertaria.world.profile_server.imp.ProfileInformationImp;
@@ -176,6 +177,17 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
                 new String[]{remotePubKey,senderPubKey}
         )==1;
 
+    }
+
+    @Override
+    public int disconnectPairingProfile(String senderPubKey, String remotePubKey) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int rows1 = db.delete(PAIRING_TABLE_NAME, PAIRING_COLUMN_SENDER_KEY+"=? and "+PAIRING_COLUMN_REMOTE_KEY+"=?", new String[]{senderPubKey,remotePubKey});
+        int rows2 = db.delete(PAIRING_TABLE_NAME, PAIRING_COLUMN_SENDER_KEY+"=? and "+PAIRING_COLUMN_REMOTE_KEY+"=?", new String[]{remotePubKey,senderPubKey});
+        Log.i("GENERAL","ROWS 1 DELETE IN disconnectPairingProfile "+rows1);
+        Log.i("GENERAL","ROWS 2 DELETE IN disconnectPairingProfile "+rows2);
+        db.close();
+        return  rows1 + rows2;
     }
 
     @Override

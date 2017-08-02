@@ -39,5 +39,7 @@ public interface ProfilesManager {
 
     void saveAllProfiles(String localProfilePubKey, List<org.libertaria.world.profile_server.ProfileInformation> profileInformationList);
 
+    int deleteProfileByPubKey(String localProfilePubKey, String remoteHexPubKey);
+
     void truncate();
 }
