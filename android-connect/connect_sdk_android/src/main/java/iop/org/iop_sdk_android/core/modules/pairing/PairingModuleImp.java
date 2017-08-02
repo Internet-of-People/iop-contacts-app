@@ -50,7 +50,8 @@ public class PairingModuleImp extends AbstractModule implements PairingModule{
         String remotePubKeyStr = CryptoBytes.toHexString(remotePubKey);
         if((profileInformationDb = platformService.getProfilesDb().getProfile(localProfilePubKey,remotePubKeyStr))!=null){
             if(profileInformationDb.getPairStatus() != null)
-                throw new IllegalArgumentException("Already known profile");
+                //throw new IllegalArgumentException("Already known profile");
+                listener.onMsgFail(0,0,"Already known profile");
         }
         // check if the pairing request exist
         if (platformService.getPairingRequestsDb().containsPairingRequest(localProfilePubKey,remotePubKeyStr)){

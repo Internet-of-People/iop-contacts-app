@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
@@ -136,16 +137,19 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
             @Override
             public void run() {
                 try {
-                    if (!chatModule.isChatActive(selectedProfPubKey,remotePk)) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(WaitingChatActivity.this, "Chat not active anymore", Toast.LENGTH_LONG).show();
-                                onBackPressed();
-                            }
-                        });
+                    if (selectedProfPubKey!=null) {
+                        if (!chatModule.isChatActive(selectedProfPubKey, remotePk)) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(WaitingChatActivity.this, "Chat not active anymore", Toast.LENGTH_LONG).show();
+                                    onBackPressed();
+                                }
+                            });
 
-                    }
+                        }
+                    }else
+                        Log.e("WaitingChat","profile pub key is null");
                 }catch (Exception e){
                     e.printStackTrace();
                     runOnUiThread(new Runnable() {

@@ -1,6 +1,7 @@
 package iop.org.iop_sdk_android.core.base;
 
 import android.content.Context;
+import android.content.Intent;
 
 import org.libertaria.world.core.IoPConnect;
 import org.libertaria.world.global.Module;
@@ -14,6 +15,8 @@ import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.services.EnabledServices;
 
 import java.lang.ref.WeakReference;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created by furszy on 7/19/17.
@@ -54,6 +57,10 @@ public abstract class AbstractModule implements Module {
                 '}';
     }
 
+    protected void sendBroadcast(Intent intent){
+        context.get().sendBroadcast(intent);
+    }
+
     protected Context getContext(){
         return context.get();
     }
@@ -72,8 +79,11 @@ public abstract class AbstractModule implements Module {
      * @param remoteProfilePubKey
      * @return
      */
-    protected CallProfileAppService getCall(String localProfilePubKey, String remoteProfilePubKey) {
+    protected CallProfileAppService getCall(String localProfilePubKey, String remoteProfilePubKey) throws ProfileNotSupportAppServiceException {
+        checkNotNull(remoteProfilePubKey,"Remote profile pubKey must not be null");
+        checkNotNull(localProfilePubKey,"Local profile pubKey must not be null");
         AppService appService = ioPConnect.getProfileAppService(localProfilePubKey,service);
+        if (appService==null) throw new ProfileNotSupportAppServiceException(localProfilePubKey,service);
         if(appService.hasOpenCall(remoteProfilePubKey)){
             // chat app service call already open, check if it stablish or it's done
             CallProfileAppService call = appService.getOpenCall(remoteProfilePubKey);

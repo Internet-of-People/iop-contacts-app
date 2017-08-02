@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import iop.org.iop_sdk_android.core.base.AbstractModule;
+import iop.org.iop_sdk_android.core.base.ProfileNotSupportAppServiceException;
 import iop.org.iop_sdk_android.core.utils.EmptyListener;
 
 import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.EXTRA_INTENT_CHAT_MSG;
@@ -50,9 +51,15 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
     @Override
     public void requestChat(final String localProfilePubKey, final ProfileInformation remoteProfileInformation, final ProfSerMsgListener<Boolean> readyListener) throws RequestChatException, ChatCallAlreadyOpenException {
         // first check if the chat is active or was requested
-        CallProfileAppService call = getCall(localProfilePubKey,remoteProfileInformation.getHexPublicKey());
-        if (call!=null) throw new ChatCallAlreadyOpenException("chat call already open with "+remoteProfileInformation.getHexPublicKey());
-        prepareCall(localProfilePubKey,remoteProfileInformation,new EmptyListener(readyListener));
+        try {
+            CallProfileAppService call = getCall(localProfilePubKey, remoteProfileInformation.getHexPublicKey());
+            if (call != null)
+                throw new ChatCallAlreadyOpenException("chat call already open with " + remoteProfileInformation.getHexPublicKey());
+            prepareCall(localProfilePubKey, remoteProfileInformation, new EmptyListener(readyListener));
+        } catch (ProfileNotSupportAppServiceException e) {
+            e.printStackTrace();
+            readyListener.onMsgFail(0,0,e.toString());
+        }
     }
 
     @Override
@@ -67,15 +74,19 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
 
     @Override
     public void refuseChatRequest(String localProfilePubKey, String remoteHexPublicKey) {
-        CallProfileAppService callProfileAppService = getCall(localProfilePubKey,remoteHexPublicKey);
-        if (callProfileAppService == null) return;
         try {
-            callProfileAppService.sendMsg(new ChatRefuseMsg(), null);
-        }catch (Exception e){
+            CallProfileAppService callProfileAppService = getCall(localProfilePubKey, remoteHexPublicKey);
+            if (callProfileAppService == null) return;
+            try {
+                callProfileAppService.sendMsg(new ChatRefuseMsg(), null);
+            } catch (Exception e) {
+                e.printStackTrace();
+                // do nothing..
+            }
+            callProfileAppService.dispose();
+        } catch (ProfileNotSupportAppServiceException e) {
             e.printStackTrace();
-            // do nothing..
         }
-        callProfileAppService.dispose();
     }
 
     /**
@@ -111,6 +122,8 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
         } catch (CantSendMessageException e) {
             e.printStackTrace();
         } catch (CantConnectException e) {
+            e.printStackTrace();
+        } catch (ProfileNotSupportAppServiceException e) {
             e.printStackTrace();
         }
         return false;

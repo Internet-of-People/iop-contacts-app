@@ -157,6 +157,7 @@ public class Profile implements Signer,ProfileBase,DbObject {
 
     public void addApplicationService(AppService service){
         applicationServices.put(service.getName(),service);
+        appServices.add(service.getName());
     }
 
     public void setKey(KeyEd25519 keyEd25519) {
@@ -222,12 +223,12 @@ public class Profile implements Signer,ProfileBase,DbObject {
         return thumbnailImg;
     }
 
-    public Set<String> getAppServices() {
-        return appServices;
-    }
-
     public void addAllServices(Set<String> appServices){
         this.appServices.addAll(appServices);
+    }
+
+    public Set<String> getAppServices() {
+        return appServices;
     }
 
     @Override

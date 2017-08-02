@@ -59,7 +59,6 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
     private static final Logger logger = LoggerFactory.getLogger(ProfilesModuleImp.class);
 
     // todo: change this for the non local broadcast..
-    private LocalBroadcastManager localBroadcastManager;
     private ProfileServerConfigurations confPref;
     private ServiceFactory serviceFactory;
     // This instance is just for now to start dividing things, to get and set the profile
@@ -82,7 +81,6 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
         this.confPref = confPref;
         this.serviceFactory = serviceFactory;
         //this.connectService = connectService;
-        this.localBroadcastManager = LocalBroadcastManager.getInstance(context);
     }
 
     private PairingListener pairingListener = new PairingListener() {
@@ -91,7 +89,7 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
             Intent intent = new Intent(ACTION_ON_PAIR_RECEIVED);
             intent.putExtra(INTENT_EXTRA_PROF_KEY,requesteePubKey);
             intent.putExtra(INTENT_EXTRA_PROF_NAME,name);
-            localBroadcastManager.sendBroadcast(intent);
+            sendBroadcast(intent);
         }
 
         @Override
@@ -99,7 +97,7 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
             Intent intent = new Intent(ACTION_ON_RESPONSE_PAIR_RECEIVED);
             intent.putExtra(INTENT_EXTRA_PROF_KEY,requesteePubKey);
             intent.putExtra(INTENT_RESPONSE_DETAIL,responseDetail);
-            localBroadcastManager.sendBroadcast(intent);
+            sendBroadcast(intent);
         }
     };
 
@@ -206,23 +204,29 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
     }
 
     @Override
+    public AppService appServiceInitializer(String appServiceName) {
+        return serviceFactory.buildOrGetService(appServiceName);
+    }
+
+    @Override
     public void onCheckInCompleted(String localProfilePubKey) {
         Intent intent = new Intent(ACTION_ON_PROFILE_CONNECTED);
         intent.putExtra(INTENT_EXTRA_PROF_KEY,localProfilePubKey);
-        localBroadcastManager.sendBroadcast(intent);
+        sendBroadcast(intent);
     }
 
     @Override
     public void onDisconnect(String localProfilePubKey) {
         Intent intent = new Intent(ACTION_ON_PROFILE_DISCONNECTED);
-        localBroadcastManager.sendBroadcast(intent);
+        intent.putExtra(INTENT_EXTRA_PROF_KEY,localProfilePubKey);
+        sendBroadcast(intent);
     }
 
     public void onCheckInFail(Profile profile, int status, String statusDetail) {
         logger.warn("on check in fail: "+statusDetail);
         Intent intent = new Intent(ACTION_ON_CHECK_IN_FAIL);
         intent.putExtra(INTENT_RESPONSE_DETAIL,statusDetail);
-        localBroadcastManager.sendBroadcast(intent);
+        sendBroadcast(intent);
     }
 
     @Override
@@ -298,6 +302,7 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
      */
     @Override
     public void addService(String profilePubKey,String serviceName) {
+        logger.info("addService: "+serviceName);
         AppService appService = serviceFactory.buildOrGetService(serviceName);
         ioPConnect.addService(profilePubKey,appService);
     }
@@ -403,7 +408,7 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
 
     private void broadcastUpdateProfile() {
         Intent intent = new Intent(IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT);
-        localBroadcastManager.sendBroadcast(intent);
+        sendBroadcast(intent);
     }
 
     public PairingListener getPairingListener() {
