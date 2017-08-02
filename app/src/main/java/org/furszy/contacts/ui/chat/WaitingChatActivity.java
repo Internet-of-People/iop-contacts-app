@@ -89,6 +89,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
         progressBar = (ProgressBar) root.findViewById(R.id.progressBar);
         txt_title = (TextView) root.findViewById(R.id.txt_title);
         remotePk = getIntent().getStringExtra(REMOTE_PROFILE_PUB_KEY);
+        if (remotePk==null) throw new IllegalStateException("remote profile key null");
         isCalling = getIntent().hasExtra(IS_CALLING);
         if (isCalling){
             root.findViewById(R.id.single_cancel_container).setVisibility(View.VISIBLE);
@@ -137,7 +138,7 @@ public class WaitingChatActivity extends BaseActivity implements View.OnClickLis
             @Override
             public void run() {
                 try {
-                    if (selectedProfPubKey!=null) {
+                    if (selectedProfPubKey!=null && remotePk!=null) {
                         if (!chatModule.isChatActive(selectedProfPubKey, remotePk)) {
                             runOnUiThread(new Runnable() {
                                 @Override

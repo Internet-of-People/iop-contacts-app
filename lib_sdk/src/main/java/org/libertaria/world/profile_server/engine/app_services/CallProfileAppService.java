@@ -35,6 +35,9 @@ public class CallProfileAppService {
 
     private static final Logger logger = LoggerFactory.getLogger(CallProfileAppService.class);
 
+    /** Default Time (20 seconds) */
+    private static final long DEFAULT_CALL_IDLE_TIME = 20000;
+
     public enum Status{
 
         // no information
@@ -83,6 +86,8 @@ public class CallProfileAppService {
     private String callTokenHex;
     /** Call status */
     private Status status = NO_INFORMATION;
+    /** Call idle time */
+    private long callIdleTime = DEFAULT_CALL_IDLE_TIME;
     /** Call error status */
     private String errorStatus;
     /** If the local profile is the creator of the call */
@@ -151,6 +156,14 @@ public class CallProfileAppService {
     public void setCryptoAlgo(CryptoAlgo cryptoAlgo){
         this.cryptoAlgo = cryptoAlgo;
         this.isEncrypted = true;
+    }
+
+    public void setCallIdleTime(long callIdleTime) {
+        this.callIdleTime = callIdleTime;
+    }
+
+    public long getCallIdleTime() {
+        return callIdleTime;
     }
 
     public ProfileInformation getRemoteProfile() {

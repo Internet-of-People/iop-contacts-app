@@ -561,9 +561,9 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
         } catch (InvocationTargetException e) {
             e.printStackTrace();
             return e.getTargetException();
-//                    return e;
         } catch (IllegalAccessException e) {
             e.printStackTrace();
+            return e;
         } catch (Exception e) {
             e.printStackTrace();
             return e;
