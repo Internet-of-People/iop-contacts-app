@@ -100,12 +100,8 @@ public class LocalProfilesDb extends AbstractSqliteDb<Profile> implements LocalP
             contentValues.put(COLUMN_VERSION, profile.getVersion().toByteArray());
         contentValues.put(COLUMN_PUB_KEY, profile.getHexPublicKey());
         contentValues.put(COLUMN_PRIV_KEY, profile.getPrivKeyHex());
-        HashMap<String,AppService> map = profile.getApplicationServices();
-        if (map!=null) {
-            Set<String> services = new HashSet<>();
-            for (AppService appService : map.values()){
-                services.add(appService.getName());
-            }
+        Set<String> services = profile.getAppServices();
+        if (services!=null) {
             contentValues.put(COLUMN_APP_SERVICES, convertToString(services));
         }
         contentValues.put(COLUMN_HOME_HOST,profile.getHomeHost());
