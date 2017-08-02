@@ -275,10 +275,10 @@ public class ConnectClientService extends Service {
         @Override
         public void onReceive(ModuleObject.ModuleResponse response) {
             try {
+                String id = response.getId();
                 switch (response.getResponseType()) {
                     case OBJ:
                         logger.info("obj arrived..");
-                        String id = response.getId();
                         if (waitingFutures.containsKey(id)) {
                             ModuleObject.ModuleObjectWrapper wrapper = response.getObj();
                             Object o = SerializationUtils.deserialize(wrapper.getObj().toByteArray());
@@ -287,6 +287,10 @@ public class ConnectClientService extends Service {
                         break;
                     case ERR:
                         logger.info("err arrived..");
+                        if (waitingFutures.containsKey(id)) {
+                            String detail = response.getErr().toStringUtf8();
+                            waitingFutures.get(id).onMsgFail(0,0,detail);
+                        }
                         break;
                 }
             } catch (ClassNotFoundException e) {
