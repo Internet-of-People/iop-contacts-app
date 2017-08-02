@@ -81,6 +81,7 @@ public class CreateProfileActivity extends BaseActivity {
                                 try {
                                     //todo: make this connect non blocking.
                                     String profPubKey = profilesModule.registerProfile(name, profImgData);
+                                    App.getInstance().createProfSerConfig().setIsCreated(true);
                                     app.setSelectedProfilePubKey(profPubKey);
                                     profilesModule.connect(profPubKey);
                                     runOnUiThread(new Runnable() {
