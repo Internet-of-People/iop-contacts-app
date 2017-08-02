@@ -3,6 +3,7 @@ package org.furszy.contacts;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -127,6 +128,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#2998ff")));
+        localBroadcastManager.registerReceiver(receiver, new IntentFilter(ACTION_ON_PAIR_DISCONNECTED));
 
 //        Uri data = getIntent().getData();
 //        String scheme = data.getScheme(); // "http"
