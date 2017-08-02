@@ -160,6 +160,7 @@ public class ConnectClientService extends Service {
                 parameters
         );
         if (respObject.getE()!=null){
+            logger.info("Method exception arrive.. name: "+method.getName());
             throw respObject.getE();
         }
         return respObject.getObject();

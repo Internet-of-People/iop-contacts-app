@@ -804,11 +804,11 @@ public class IoPConnect implements ConnectionListener {
         return connection;
     }
 
-    public List<org.libertaria.world.profile_server.ProfileInformation> getKnownProfiles(String pubKey){
+    public List<ProfileInformation> getKnownProfiles(String pubKey){
         return profilesManager.listConnectedProfiles(pubKey);
     }
 
-    public org.libertaria.world.profile_server.ProfileInformation getKnownProfile(String contactOwnerPubKey, String pubKey) {
+    public ProfileInformation getKnownProfile(String contactOwnerPubKey, String pubKey) {
         return profilesManager.getProfile(contactOwnerPubKey,pubKey);
     }
 
