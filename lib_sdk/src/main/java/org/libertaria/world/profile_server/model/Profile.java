@@ -6,6 +6,7 @@ import org.libertaria.world.global.DbObject;
 import org.libertaria.world.global.Version;
 import org.libertaria.world.profile_server.ProfileBase;
 import org.libertaria.world.profile_server.Signer;
+import org.libertaria.world.profile_server.engine.app_services.AppService;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,7 +41,7 @@ public class Profile implements Signer,ProfileBase,DbObject {
     private String homeHost;
     private byte[] homeHostId;
     /** Hash map of name-service of available AppServices */
-    private HashMap<String, org.libertaria.world.profile_server.engine.app_services.AppService> applicationServices;
+    private HashMap<String, AppService> applicationServices = new HashMap<>();
     /** Available app services to load.. */
     private Set<String> appServices = new HashSet();
 
@@ -154,10 +155,7 @@ public class Profile implements Signer,ProfileBase,DbObject {
         this.type = type;
     }
 
-    public void addApplicationService(org.libertaria.world.profile_server.engine.app_services.AppService service){
-        if (applicationServices==null){
-            applicationServices = new HashMap<>();
-        }
+    public void addApplicationService(AppService service){
         applicationServices.put(service.getName(),service);
     }
 
@@ -196,15 +194,15 @@ public class Profile implements Signer,ProfileBase,DbObject {
     }
 
 
-    public HashMap<String, org.libertaria.world.profile_server.engine.app_services.AppService> getApplicationServices() {
+    public HashMap<String, AppService> getApplicationServices() {
         return applicationServices;
     }
 
-    public <T extends org.libertaria.world.profile_server.engine.app_services.AppService> T getAppService(String name, Class<T> clazz){
+    public <T extends AppService> T getAppService(String name, Class<T> clazz){
         return (T) applicationServices.get(name);
     }
 
-    public org.libertaria.world.profile_server.engine.app_services.AppService getAppService(String name){
+    public AppService getAppService(String name){
         return applicationServices.get(name);
     }
 
