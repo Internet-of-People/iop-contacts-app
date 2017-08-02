@@ -14,6 +14,8 @@ public class IntentBroadcastConstants {
     public static final String ACTION_ON_PAIR_RECEIVED = "on_pair_received";
     public static final String ACTION_ON_RESPONSE_PAIR_RECEIVED = "on_response_pair_received";
 
+    public static final String ACTION_ON_PAIR_DISCONNECTED = "on_pair_disconnected";
+
     public static final String ACTION_IOP_SERVICE_CONNECTED = "iop_service_connected";
 
 

@@ -1,5 +1,8 @@
 package org.libertaria.world.profiles_manager;
 
+import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.imp.ProfileInformationImp;
+
 import java.util.List;
 import java.util.Set;
 

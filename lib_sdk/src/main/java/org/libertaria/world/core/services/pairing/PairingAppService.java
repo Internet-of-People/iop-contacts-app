@@ -1,5 +1,7 @@
 package org.libertaria.world.core.services.pairing;
 
+import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.imp.ProfileInformationImp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -142,6 +144,22 @@ public class PairingAppService extends org.libertaria.world.profile_server.engin
                                     } else {
                                         logger.info("pairListener null, please add it if you want to receive pairs");
                                     }
+                                }
+                                break;
+                            case PAIR_DISCONNECT:
+                                logger.info("PAIR_DISCONNECT");
+                                pairingRequestsManager.disconnectPairingProfile(
+                                        callProfileAppService.getRemotePubKey(),
+                                        profileServiceOwner.getHexPublicKey());
+                                boolean wasUpdateProfile = profilesManager.updatePaired(
+                                        profileServiceOwner.getHexPublicKey(),
+                                        callProfileAppService.getRemotePubKey(),
+                                        ProfileInformationImp.PairStatus.DISCONNECTED);
+                                logger.info("UPDATESTATUS IN PROFILE {}",wasUpdateProfile);
+                                if (pairingListener != null){
+
+                                } else {
+
                                 }
                                 break;
                         }

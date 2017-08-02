@@ -39,6 +39,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PAIR_DISCONNECTED;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
 import static org.furszy.contacts.ui.chat.WaitingChatActivity.REMOTE_PROFILE_PUB_KEY;
@@ -81,6 +83,13 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
             if (action.equals(ACTION_PROFILE_UPDATED_CONSTANT)){
                 if (isMyProfile){
                     profileInformation = profilesModule.getProfile(selectedProfPubKey);
+                    loadProfileData();
+                }
+            } else if (action.equals(ACTION_ON_PAIR_DISCONNECTED)) {
+                Log.i("GENERAL","EN ACTIO ON PAIR DISCONNECTED");
+                if (profileInformation != null) {
+                    String pubKey = profileInformation.getHexPublicKey();
+                    profileInformation = profilesModule.getKnownProfile(selectedProfPubKey,pubKey);
                     loadProfileData();
                 }
             }

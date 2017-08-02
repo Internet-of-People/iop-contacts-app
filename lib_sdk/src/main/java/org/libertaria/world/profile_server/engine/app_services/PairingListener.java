@@ -10,4 +10,6 @@ public interface PairingListener {
 
     void onPairResponseReceived(String requesteePubKey,String responseDetail);
 
+    void onPairDisconnectReceived(String remotePubKey);
+
 }
