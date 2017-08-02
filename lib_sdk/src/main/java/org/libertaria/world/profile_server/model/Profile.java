@@ -257,4 +257,8 @@ public class Profile implements Signer,ProfileBase,DbObject {
     public void setId(long id) {
         this.id = id;
     }
+
+    public boolean containsAppService(String service) {
+        return applicationServices.containsKey(service);
+    }
 }

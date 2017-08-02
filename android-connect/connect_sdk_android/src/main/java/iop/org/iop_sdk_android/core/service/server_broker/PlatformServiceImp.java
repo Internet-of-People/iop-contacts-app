@@ -265,7 +265,6 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                         });
                         ioPConnect.connectProfile(
                                 localProfile.getHexPublicKey(),
-                                moduleImp.getPairingListener(),
                                 null,
                                 future
                         );

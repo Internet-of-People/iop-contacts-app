@@ -200,12 +200,17 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
             };
 
         });
-        ioPConnect.connectProfile(pubKey,pairingListener,null,msgListenerFuture);
+        ioPConnect.connectProfile(pubKey,null,msgListenerFuture);
     }
 
     @Override
     public AppService appServiceInitializer(String appServiceName) {
         return serviceFactory.buildOrGetService(appServiceName);
+    }
+
+    @Override
+    public PairingListener initializePairing() {
+        return pairingListener;
     }
 
     @Override
