@@ -42,6 +42,7 @@ import iop.org.iop_sdk_android.core.base.AbstractModule;
 import iop.org.iop_sdk_android.core.utils.ImageUtils;
 
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_CHECK_IN_FAIL;
+import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PAIR_DISCONNECTED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PAIR_RECEIVED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_CONNECTED;
 import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
@@ -97,6 +98,12 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
             Intent intent = new Intent(ACTION_ON_RESPONSE_PAIR_RECEIVED);
             intent.putExtra(INTENT_EXTRA_PROF_KEY,requesteePubKey);
             intent.putExtra(INTENT_RESPONSE_DETAIL,responseDetail);
+            sendBroadcast(intent);
+        }
+
+        @Override
+        public void onPairDisconnectReceived(String remotePubKey) {
+            Intent intent = new Intent(ACTION_ON_PAIR_DISCONNECTED);
             sendBroadcast(intent);
         }
     };

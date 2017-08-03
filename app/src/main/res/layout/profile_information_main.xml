@@ -46,11 +46,21 @@
             android:textSize="14sp"/>
 
         <Button
-            android:id="@+id/btn_disconnect"
+            android:id="@+id/btn_action"
             style="@style/ButtomProfile"
             android:layout_width="220dp"
-            android:text="@string/btn_disconnect" />
+            android:text="@string/btn_connect" />
 
+        <TextView
+            android:id="@+id/disconnected_message"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/disconnected_text_message"
+            android:gravity="center"
+            android:textColor="@color/mainText"
+            android:textSize="15sp"/>
 
     </LinearLayout>
 

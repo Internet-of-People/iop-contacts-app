@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import org.libertaria.world.crypto.CryptoBytes;
 import org.libertaria.world.global.Version;
@@ -349,7 +350,8 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor res =  db.rawQuery( "select * from "+CONTACTS_TABLE_NAME
                 +" where "+CONTACTS_COLUMN_DEVICE_PROFILE_PUB_KEY+" = '" +localProfileOwnerOfContacts+"' " +
-                "AND "+CONTACTS_COLUMN_PAIR+"='"+ ProfileInformationImp.PairStatus.PAIRED.name()+"'", null );
+                "AND ("+CONTACTS_COLUMN_PAIR+"='"+ ProfileInformationImp.PairStatus.PAIRED.name()+
+                "' OR "+CONTACTS_COLUMN_PAIR+"='"+ ProfileInformationImp.PairStatus.DISCONNECTED.name()+"')", null );
         if(res.moveToFirst()) {
             do {
                 list.add(buildFrom(res).profileInformation);
@@ -358,7 +360,13 @@ public class SqliteProfilesDb extends SQLiteOpenHelper implements ProfilesManage
         return list;
     }
 
-
+    @Override
+    public int deleteProfileByPubKey(String localProfilePubKey, String remoteHexPubKey) {
+        SQLiteDatabase db = getWritableDatabase();
+        int rows = db.delete(CONTACTS_TABLE_NAME, CONTACTS_COLUMN_DEVICE_PROFILE_PUB_KEY+"=? and "+CONTACTS_COLUMN_PUB_KEY+"=?",new String[]{localProfilePubKey,remoteHexPubKey});
+        Log.i("GENERAL","ROWS DELETE IN deleteProfileByPubKey "+rows);
+        return rows;
+    }
 
     private class ProfileInformationWrapper{
         String localProfilePubKey;

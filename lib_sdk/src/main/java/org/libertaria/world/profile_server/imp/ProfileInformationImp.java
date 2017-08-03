@@ -22,6 +22,7 @@ public class ProfileInformationImp implements Serializable, org.libertaria.world
         NOT_PAIRED,
         BLOCKED,
         WAITING_FOR_RESPONSE,
+        DISCONNECTED,
         WAITING_FOR_MY_RESPONSE;
     }
 

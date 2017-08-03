@@ -22,6 +22,8 @@ public interface PairingRequestsManager {
 
     boolean updateStatus(String senderPubKey, String remotePubKey, org.libertaria.world.core.services.pairing.PairingMsgTypes status, ProfileInformationImp.PairStatus paired);
 
+    int disconnectPairingProfile(String senderPubKey, String remotePubKey);
+
     int removeRequest(String senderPubKey, String remotePubkey);
 
     void delete(long id);

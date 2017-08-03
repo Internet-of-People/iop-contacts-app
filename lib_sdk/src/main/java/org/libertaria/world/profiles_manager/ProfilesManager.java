@@ -1,5 +1,8 @@
 package org.libertaria.world.profiles_manager;
 
+import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.imp.ProfileInformationImp;
+
 import java.util.List;
 import java.util.Set;
 
@@ -38,6 +41,8 @@ public interface ProfilesManager {
     boolean updateRemoteServices(String localProfilePubKey, String remotePubKey,Set<String> services);
 
     void saveAllProfiles(String localProfilePubKey, List<org.libertaria.world.profile_server.ProfileInformation> profileInformationList);
+
+    int deleteProfileByPubKey(String localProfilePubKey, String remoteHexPubKey);
 
     void truncate();
 }
