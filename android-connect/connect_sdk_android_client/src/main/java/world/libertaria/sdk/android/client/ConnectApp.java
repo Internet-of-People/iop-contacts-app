@@ -9,16 +9,12 @@ import android.text.TextUtils;
 
 import org.libertaria.world.global.Module;
 import org.libertaria.world.services.EnabledServices;
-import org.libertaria.world.services.chat.ChatModule;
-import org.libertaria.world.services.interfaces.PairingModule;
-import org.libertaria.world.services.interfaces.ProfilesModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;

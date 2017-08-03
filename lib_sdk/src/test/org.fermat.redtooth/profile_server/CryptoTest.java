@@ -1,12 +1,14 @@
+/*
 package org.libertaria.world.profile_server;
 
 import org.libertaria.world.core.pure.KeyEd25519Java;
 import org.libertaria.world.profile_server.model.KeyEd25519;
 import org.junit.Test;
 
-/**
+*
  * Created by mati on 17/05/17.
- */
+
+
 
 public class CryptoTest {
 
@@ -23,3 +25,4 @@ public class CryptoTest {
 
     }
 }
+*/

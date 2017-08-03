@@ -1,3 +1,4 @@
+/*
 package org.libertaria.world.profile_server.utils;
 
 import org.libertaria.world.core.pure.KeyEd25519Java;
@@ -13,9 +14,10 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-/**
+*
  * Created by mati on 09/05/17.
- */
+
+
 
 public class ProfileConfigurationImp implements ProfileServerConfigurations {
 
@@ -210,18 +212,67 @@ public class ProfileConfigurationImp implements ProfileServerConfigurations {
 
     @Override
     public Profile getProfile() {
-        Profile profile = new Profile(
-                getProtocolVersion(),
-                getUsername(),
-                getProfileType(),
-                (KeyEd25519) getUserKeys()
-        );
-        profile.setImg(getUserImage());
-        return profile;
+        return null;
     }
 
     @Override
     public byte[] getUserImage() {
         return null;
     }
+
+    @Override
+    public void saveMainProfileServer(ProfServerData profServerData) {
+
+    }
+
+    @Override
+    public long getScheduleServiceTime() {
+        return 0;
+    }
+
+    @Override
+    public void saveScheduleServiceTime(long scheduleTime) {
+
+    }
+
+    @Override
+    public String getBackupProfilePath() {
+        return null;
+    }
+
+    @Override
+    public void saveBackupPatch(String fileName) {
+
+    }
+
+    @Override
+    public void saveBackupPassword(String password) {
+
+    }
+
+    @Override
+    public String getBackupPassword() {
+        return null;
+    }
+
+    @Override
+    public boolean isScheduleBackupEnabled() {
+        return false;
+    }
+
+    @Override
+    public void setScheduleBackupEnable(boolean enable) {
+
+    }
+
+    @Override
+    public boolean getBackgroundServiceEnable() {
+        return false;
+    }
+
+    @Override
+    public void setBackgroundServiceEnable(boolean enable) {
+
+    }
 }
+*/
