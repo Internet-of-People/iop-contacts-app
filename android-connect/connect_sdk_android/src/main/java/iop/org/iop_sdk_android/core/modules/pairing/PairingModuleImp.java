@@ -123,10 +123,11 @@ public class PairingModuleImp extends AbstractModule implements PairingModule{
 
     @Override
     public void disconectPairingProfile(String localProfilePubKey, ProfileInformation remoteProfile, boolean needsToBeNotified, ProfSerMsgListener<Boolean> listener) {
-        platformService.getPairingRequestsDb().disconnectPairingProfile(localProfilePubKey,remoteProfile.getHexPublicKey());
-        platformService.getProfilesDb().deleteProfileByPubKey(localProfilePubKey,remoteProfile.getHexPublicKey());
+        //platformService.getPairingRequestsDb().disconnectPairingProfile(localProfilePubKey,remoteProfile.getHexPublicKey());
+        //platformService.getProfilesDb().deleteProfileByPubKey(localProfilePubKey,remoteProfile.getHexPublicKey());
         listener.onMessageReceive(1,true);
         if (!needsToBeNotified) { return; }
+        Log.i("GENERAL","CUANDO SE VA A NOTIFICAR");
         prepareCallServiceForProfilePairingDisconnect(localProfilePubKey,remoteProfile);
     }
 
@@ -135,12 +136,13 @@ public class PairingModuleImp extends AbstractModule implements PairingModule{
         ProfSerMsgListener<CallProfileAppService> localReadyListener = new ProfSerMsgListener<CallProfileAppService>() {
             @Override
             public void onMessageReceive(int messageId, CallProfileAppService message) {
+                Log.i("GENERAL","PREPARANDO LA LLAMADA");
                 doCallForProfilePairingDisconnect(message);
             }
 
             @Override
             public void onMsgFail(int messageId, int statusValue, String details) {
-                Log.i("GENERAL","prepareCallServiceForProfilePairingDisconnect localReadyListener onMsgFail");
+                Log.i("GENERAL","prepareCallServiceForProfilePairingDisconnect localReadyListener onMsgFail "+details);
             }
 
             @Override
