@@ -3,6 +3,7 @@ package org.furszy.contacts;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -127,7 +128,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#2998ff")));
-
+        localBroadcastManager.registerReceiver(receiver,new IntentFilter(ACTION_ON_PAIR_DISCONNECTED));
 //        Uri data = getIntent().getData();
 //        String scheme = data.getScheme(); // "http"
 //        String host = data.getHost(); // "twitter.com"
@@ -381,6 +382,10 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         int id = v.getId();
         if (id==R.id.txt_chat){
             if (isMyProfile) { return; }
+            if (profileInformation.getPairStatus().equals(ProfileInformationImp.PairStatus.DISCONNECTED)) {
+                Toast.makeText(v.getContext(),"You need connect with "+profileInformation.getName()+" in order to send messages",Toast.LENGTH_SHORT).show();
+                return;
+            }
             if (flag.compareAndSet(false,true)) {
                 Toast.makeText(v.getContext(),"Sending chat request..",Toast.LENGTH_SHORT).show();
                 executor.submit(new Runnable() {

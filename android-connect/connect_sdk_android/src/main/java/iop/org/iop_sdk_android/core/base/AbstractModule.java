@@ -146,6 +146,7 @@ public abstract class AbstractModule implements Module {
             @Override
             public void onMessageReceive(int messageId, CallProfileAppService call) {
                 try {
+                    logger.info("prepareCallAndSend sucess");
                     call.sendMsg(msg,readyListener);
                 } catch (Exception e) {
                     logger.info("prepareCallAndSend msg fail, "+e.getMessage());
