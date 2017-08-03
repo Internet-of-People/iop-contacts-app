@@ -206,7 +206,6 @@ public class IoPConnect implements ConnectionListener {
                         }
                     });
                 try {
-                    PairingAppService pairingAppService = localProfile.getAppService(EnabledServices.PROFILE_PAIRING.getName(), PairingAppService.class);
                     connectProfile(
                             localProfile.getHexPublicKey(),
                             null,
@@ -259,7 +258,7 @@ public class IoPConnect implements ConnectionListener {
         profileServerConfigurations.saveProfile(profile);
 
         // profile basic services
-        setupProfile(profile,profileServerConfigurations);
+        //setupProfile(profile,profileServerConfigurations);
 
 
         // start moving this to the db
@@ -282,6 +281,7 @@ public class IoPConnect implements ConnectionListener {
             String backupProfilePath = null;
             if ((backupProfilePath = profileServerConfigurations.getBackupProfilePath()) != null)
                 appService.setBackupProfile(backupProfilePath, profileServerConfigurations.getBackupPassword());
+
             profile.addApplicationService(
                     appService
             );
@@ -322,9 +322,7 @@ public class IoPConnect implements ConnectionListener {
     public void connectProfile(String profilePublicKey, byte[] ownerChallenge, ConnectionFuture future) throws Exception {
         if (!localProfiles.containsKey(profilePublicKey)) throw new ProfileNotRegisteredException("Profile not registered "+profilePublicKey);
 
-        Profile profile = localProfilesDao.getProfile(profilePublicKey);
-        if (profile==null) throw new ProfileNotRegisteredException("Profile not registered "+profilePublicKey);
-
+        Profile profile = localProfiles.get(profilePublicKey);
         // profile basic services
         setupProfile(profile,createEmptyProfileServerConf());
 
@@ -549,205 +547,59 @@ public class IoPConnect implements ConnectionListener {
             final Profile localProfile = localProfiles.get(localProfilePubKey);
             if(!localProfile.hasService(serviceName)) throw new IllegalStateException("App service "+ serviceName+" is not enabled on local profile "+localProfilePubKey);
             final AppService appService = localProfile.getAppService(serviceName);
-            appService.onPreCall();
             // now i stablish the call if it's not exists
             final IoPProfileConnection connection = getOrStablishConnection(localProfile.getHomeHost(), localProfile.getHexPublicKey(), remoteProfile.getHomeHost());
-            // first the call
-            MsgListenerFuture<CallProfileAppService> callListener = new MsgListenerFuture<>();
-            callListener.setListener(new BaseMsgFuture.Listener<CallProfileAppService>() {
-                @Override
-                public void onAction(int messageId, final CallProfileAppService call) {
-                    try {
-                        if (call.isStablished()) {
-                            logger.info("call establish, remote: " + call.getRemotePubKey());
-                            if (tryUpdateRemoteServices){
-                                // update remote profile
-                                // todo: update more than just the services..
-                                profilesManager.updateRemoteServices(
-                                        call.getLocalProfile().getHexPublicKey(),
-                                        call.getRemotePubKey(),
-                                        call.getRemoteProfile().getServices());
-                                //profilesManager.updateProfile(localProfile.getHexPublicKey(),call.getRemoteProfile());
+            appService.onPreCall();
+
+            CallProfileAppService activeCall = connection.getActiveAppCallService(remoteProfile.getHexPublicKey());
+            if (activeCall!=null){
+                // call is active
+                readyListener.onMessageReceive(0,activeCall);
+            }else {
+                // first the call
+                MsgListenerFuture<CallProfileAppService> callListener = new MsgListenerFuture<>();
+                callListener.setListener(new BaseMsgFuture.Listener<CallProfileAppService>() {
+                    @Override
+                    public void onAction(int messageId, final CallProfileAppService call) {
+                        try {
+                            if (call.isStablished()) {
+                                logger.info("call establish, remote: " + call.getRemotePubKey());
+                                if (tryUpdateRemoteServices) {
+                                    // update remote profile
+                                    // todo: update more than just the services..
+                                    profilesManager.updateRemoteServices(
+                                            call.getLocalProfile().getHexPublicKey(),
+                                            call.getRemotePubKey(),
+                                            call.getRemoteProfile().getServices());
+                                    //profilesManager.updateProfile(localProfile.getHexPublicKey(),call.getRemoteProfile());
+                                }
+                                appService.onCallConnected(localProfile, remoteProfile, call.isCallCreator());
+
+                                // notify upper layers
+                                readyListener.onMessageReceive(messageId, call);
+                            } else {
+                                logger.info("call fail with status: " + call.getStatus() + ", error: " + call.getErrorStatus());
+                                readyListener.onMsgFail(messageId, 0, call.getStatus().toString() + " " + call.getErrorStatus());
                             }
-                            appService.onCallConnected(localProfile,remoteProfile,call.isCallCreator());
-
-                            // notify upper layers
-                            readyListener.onMessageReceive(messageId,call);
-                        } else {
-                            logger.info("call fail with status: " + call.getStatus() + ", error: " + call.getErrorStatus());
-                            readyListener.onMsgFail(messageId, 0, call.getStatus().toString() + " " + call.getErrorStatus());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            readyListener.onMsgFail(messageId, 400, e.getMessage());
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        readyListener.onMsgFail(messageId, 400, e.getMessage());
                     }
-                }
 
-                @Override
-                public void onFail(int messageId, int status, String statusDetail) {
-                    logger.info("call fail, remote: " + statusDetail);
-                    readyListener.onMsgFail(messageId, status, statusDetail);
-                }
-            });
-            connection.callProfileAppService(remoteProfile.getHexPublicKey(), serviceName, false, true, callListener);
+                    @Override
+                    public void onFail(int messageId, int status, String statusDetail) {
+                        logger.info("call fail, remote: " + statusDetail);
+                        readyListener.onMsgFail(messageId, status, statusDetail);
+                    }
+                });
+                connection.callProfileAppService(remoteProfile.getHexPublicKey(), serviceName, false, true, callListener);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             readyListener.onMsgFail(0,400,e.getMessage());
         }
     }
-
-    /**
-     * Send a request pair notification to a remote profile
-     *
-     * @param pairingRequest
-     * @param listener -> returns the pairing request id
-     */
-    public void requestPairingProfile(final PairingRequest pairingRequest, final ProfSerMsgListener<ProfileInformation> listener) throws Exception {
-        logger.info("requestPairingProfile, remote: " + pairingRequest.getRemotePubKey());
-        // save request
-        final int pairingRequestId = pairingRequestsManager.savePairingRequest(pairingRequest);
-        pairingRequest.setId(pairingRequestId);
-        // Connection
-        final IoPProfileConnection connection = getOrStablishConnection(pairingRequest.getRemotePsHost(),pairingRequest.getSenderPubKey(),pairingRequest.getSenderPsHost());
-        // first the call
-        MsgListenerFuture<CallProfileAppService> callListener = new MsgListenerFuture();
-        callListener.setListener(new BaseMsgFuture.Listener<CallProfileAppService>() {
-            @Override
-            public void onAction(int messageId, final CallProfileAppService call) {
-                try {
-                    if (call.isStablished()) {
-                        logger.info("call establish, remote: " + call.getRemotePubKey());
-                        // now send the pairing message
-                        MsgListenerFuture<Boolean> pairingMsgFuture = new MsgListenerFuture();
-                        pairingMsgFuture.setListener(new BaseMsgFuture.Listener<Boolean>() {
-                            @Override
-                            public void onAction(int messageId, Boolean res) {
-                                logger.info("pairing msg sent, remote: " + call.getRemotePubKey());
-                                listener.onMessageReceive(messageId, call.getRemoteProfile());
-                            }
-
-                            @Override
-                            public void onFail(int messageId, int status, String statusDetail) {
-                                logger.info("pairing msg fail, remote: " + call.getRemotePubKey());
-                                listener.onMsgFail(messageId, status, statusDetail);
-                            }
-                        });
-                        PairingMsg pairingMsg = new PairingMsg(pairingRequest.getSenderName(),pairingRequest.getSenderPsHost());
-                        call.sendMsg(pairingMsg, pairingMsgFuture);
-                    } else {
-                        logger.info("call fail with status: " + call.getStatus() + ", error: " + call.getErrorStatus());
-                        listener.onMsgFail(messageId, 0, call.getStatus().toString() + " " + call.getErrorStatus());
-                    }
-
-                } catch (CantSendMessageException e) {
-                    e.printStackTrace();
-                    listener.onMsgFail(messageId, 400, e.getMessage());
-                } catch (CantConnectException e) {
-                    e.printStackTrace();
-                    listener.onMsgFail(messageId, 400, e.getMessage());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    listener.onMsgFail(messageId, 400, e.getMessage());
-                }
-            }
-
-            @Override
-            public void onFail(int messageId, int status, String statusDetail) {
-                logger.info("call fail, remote: " + statusDetail);
-                listener.onMsgFail(messageId, status, statusDetail);
-            }
-        });
-        connection.callProfileAppService(pairingRequest.getRemotePubKey(), EnabledServices.PROFILE_PAIRING.getName(), false, false, callListener);
-    }
-
-    /**
-     * Send a pair acceptance
-     *
-     * @param pairingRequest
-     */
-    public void acceptPairingRequest(PairingRequest pairingRequest, final ProfSerMsgListener<Boolean> callback) throws Exception {
-        // Remember that here the local device is the pairingRequest.getSender()
-        final String remotePubKeyHex =  pairingRequest.getSenderPubKey();
-        final String localPubKeyHex = pairingRequest.getRemotePubKey();
-        logger.info("acceptPairingRequest, remote: " + remotePubKeyHex);
-        // Notify the other side if it's connected.
-        // first check if i have a connection with the server hosting the pairing sender
-        // tengo que ver si el remote profile tiene como home host la conexion principal de el sender profile al PS
-        // si no la tiene abro otra conexion.
-        final IoPProfileConnection connection = getOrStablishConnection(pairingRequest.getRemotePsHost(),pairingRequest.getRemotePubKey(),pairingRequest.getSenderPsHost());
-        final CallProfileAppService call = connection.getActiveAppCallService(remotePubKeyHex);
-        final MsgListenerFuture<Boolean> future = new MsgListenerFuture<>();
-        // Add listener -> todo: add future listener and save acceptPairing sent
-        future.setListener(new BaseMsgFuture.Listener<Boolean>() {
-            @Override
-            public void onAction(int messageId, Boolean object) {
-                logger.info("PairAccept sent");
-                if (call!=null)
-                    call.dispose();
-                else
-                    logger.warn("call null trying to dispose pairing app service. Check this");
-
-                // update in db the acceptance
-                profilesManager.updatePaired(
-                        localPubKeyHex,
-                        remotePubKeyHex,
-                        ProfileInformationImp.PairStatus.PAIRED);
-                pairingRequestsManager.updateStatus(
-                        remotePubKeyHex,
-                        localPubKeyHex,
-                        PairingMsgTypes.PAIR_ACCEPT,
-                        ProfileInformationImp.PairStatus.PAIRED
-                );
-
-                // notify
-                if (callback!=null)
-                    callback.onMessageReceive(messageId,object);
-
-            }
-
-            @Override
-            public void onFail(int messageId, int status, String statusDetail) {
-                logger.info("PairAccept fail, "+status+", detail: "+statusDetail);
-                //todo: schedule and re try
-                if (call!=null)
-                    call.dispose();
-                else
-                    logger.warn("call null trying to dispose pairing app service. Check this");
-
-                // notify
-                if (callback!=null)
-                    callback.onMsgFail(messageId,status,statusDetail);
-            }
-        });
-        if (call != null) {
-            call.sendMsg(PairingMsgTypes.PAIR_ACCEPT.getType(), future);
-        }else {
-            MsgListenerFuture<CallProfileAppService> callFuture = new MsgListenerFuture<>();
-            callFuture.setListener(new BaseMsgFuture.Listener<CallProfileAppService>() {
-                @Override
-                public void onAction(int messageId, CallProfileAppService call) {
-                    try {
-                        call.sendMsg(PairingMsgTypes.PAIR_ACCEPT.getType(), future);
-                    } catch (Exception e) {
-                        logger.error("call sendMsg error",e);
-                        future.onMsgFail(messageId,400,e.getMessage());
-                    }
-                }
-
-                @Override
-                public void onFail(int messageId, int status, String statusDetail) {
-                    logger.error("call sendMsg fail",statusDetail);
-                    future.onMsgFail(messageId,status,statusDetail);
-                }
-            });
-            connection.callProfileAppService(remotePubKeyHex, EnabledServices.PROFILE_PAIRING.getName(),true,false,callFuture);
-        }
-    }
-
-    public void cancelPairingRequest(PairingRequest pairingRequest) {
-        pairingRequestsManager.delete(pairingRequest.getId());
-    }
-
 
     private ProfileServerConfigurations createEmptyProfileServerConf(){
         return context.createProfSerConfig();

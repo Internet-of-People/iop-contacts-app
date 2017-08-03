@@ -602,7 +602,6 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
         return null;
     }
 
-
     @Override
     public void onCallFinished(CallProfileAppService callProfileAppService) {
         try {
