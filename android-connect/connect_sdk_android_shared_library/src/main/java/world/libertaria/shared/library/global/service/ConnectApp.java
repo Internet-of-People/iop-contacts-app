@@ -8,6 +8,10 @@ import android.app.Application;
 
 public class ConnectApp extends Application{
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+    }
 
     public final String getAppPackage(){
         return getPackageName();

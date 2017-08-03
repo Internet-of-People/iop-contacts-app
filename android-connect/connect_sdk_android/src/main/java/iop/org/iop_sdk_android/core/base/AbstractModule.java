@@ -10,9 +10,13 @@ import org.libertaria.world.profile_server.CantConnectException;
 import org.libertaria.world.profile_server.CantSendMessageException;
 import org.libertaria.world.profile_server.ProfileInformation;
 import org.libertaria.world.profile_server.engine.app_services.AppService;
+import org.libertaria.world.profile_server.engine.app_services.BaseMsg;
 import org.libertaria.world.profile_server.engine.app_services.CallProfileAppService;
+import org.libertaria.world.profile_server.engine.app_services.MsgWrapper;
 import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.services.EnabledServices;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.ref.WeakReference;
 
@@ -25,6 +29,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 
 public abstract class AbstractModule implements Module {
+
+    private static final Logger logger = LoggerFactory.getLogger(AbstractModule.class);
 
     private WeakReference<Context> context;
 
@@ -123,6 +129,41 @@ public abstract class AbstractModule implements Module {
         ProfileInformation remoteProfileInformation = ioPConnect.getKnownProfile(localProfilePubKey,remoteProfPubKey);
         if (remoteProfileInformation==null) throw new IllegalArgumentException("remote profile not exist");
         ioPConnect.callService(service.getName(), localProfilePubKey, remoteProfileInformation, true, readyListener);
+    }
+
+
+    /**
+     * Send a single msg on a single call
+     *
+     * @param localProfilePubKey
+     * @param remoteProfileInformation
+     * @param msg
+     * @param readyListener
+     */
+    protected void prepareCallAndSend(String localProfilePubKey, ProfileInformation remoteProfileInformation, final BaseMsg msg, final ProfSerMsgListener<Boolean> readyListener){
+        logger.info("prepareCallAndSend");
+        ioPConnect.callService(service.getName(), localProfilePubKey, remoteProfileInformation, true, new ProfSerMsgListener<CallProfileAppService>() {
+            @Override
+            public void onMessageReceive(int messageId, CallProfileAppService call) {
+                try {
+                    call.sendMsg(msg,readyListener);
+                } catch (Exception e) {
+                    logger.info("prepareCallAndSend msg fail, "+e.getMessage());
+                    readyListener.onMsgFail(messageId,0,e.getMessage());
+                }
+            }
+
+            @Override
+            public void onMsgFail(int messageId, int statusValue, String details) {
+                logger.info("prepareCallAndSend msg fail, "+details);
+                readyListener.onMsgFail(messageId,statusValue,details);
+            }
+
+            @Override
+            public String getMessageName() {
+                return "prepareCallAndSend";
+            }
+        });
     }
 
 }
