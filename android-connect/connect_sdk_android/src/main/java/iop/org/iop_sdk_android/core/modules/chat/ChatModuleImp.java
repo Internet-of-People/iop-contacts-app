@@ -161,4 +161,9 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
         intent.putExtra(EXTRA_INTENT_CHAT_MSG,msg);
         getContext().sendBroadcast(intent);
     }
+
+    @Override
+    public boolean onPreCall(String localPublicKey, ProfileInformation remoteProfile) {
+        return ioPConnect.getKnownProfile(localPublicKey,remoteProfile.getHexPublicKey())!=null;
+    }
 }

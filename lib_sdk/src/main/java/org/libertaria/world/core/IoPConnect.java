@@ -4,8 +4,6 @@ import com.google.protobuf.ByteString;
 
 import org.libertaria.world.core.exceptions.ProfileNotConectedException;
 import org.libertaria.world.core.services.pairing.PairingAppService;
-import org.libertaria.world.core.services.pairing.PairingMsg;
-import org.libertaria.world.core.services.pairing.PairingMsgTypes;
 import org.libertaria.world.crypto.CryptoBytes;
 import org.libertaria.world.crypto.CryptoWrapper;
 import org.libertaria.world.global.DeviceLocation;
@@ -18,7 +16,6 @@ import org.libertaria.world.profile_server.ProfileServerConfigurations;
 import org.libertaria.world.profile_server.SslContextFactory;
 import org.libertaria.world.profile_server.engine.app_services.AppService;
 import org.libertaria.world.profile_server.engine.app_services.CallProfileAppService;
-import org.libertaria.world.profile_server.engine.app_services.PairingListener;
 import org.libertaria.world.profile_server.engine.futures.BaseMsgFuture;
 import org.libertaria.world.profile_server.engine.futures.ConnectionFuture;
 import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
@@ -31,7 +28,6 @@ import org.libertaria.world.profile_server.model.ProfServerData;
 import org.libertaria.world.profile_server.model.Profile;
 import org.libertaria.world.profile_server.protocol.IopProfileServer;
 import org.libertaria.world.profiles_manager.LocalProfilesDao;
-import org.libertaria.world.profiles_manager.PairingRequest;
 import org.libertaria.world.profiles_manager.PairingRequestsManager;
 import org.libertaria.world.profiles_manager.ProfilesManager;
 import org.libertaria.world.services.EnabledServices;
@@ -549,7 +545,6 @@ public class IoPConnect implements ConnectionListener {
             final AppService appService = localProfile.getAppService(serviceName);
             // now i stablish the call if it's not exists
             final IoPProfileConnection connection = getOrStablishConnection(localProfile.getHomeHost(), localProfile.getHexPublicKey(), remoteProfile.getHomeHost());
-            appService.onPreCall();
 
             CallProfileAppService activeCall = connection.getActiveAppCallService(remoteProfile.getHexPublicKey());
             if (activeCall!=null){
