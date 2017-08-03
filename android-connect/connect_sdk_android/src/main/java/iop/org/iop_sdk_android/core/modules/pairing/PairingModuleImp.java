@@ -56,9 +56,10 @@ public class PairingModuleImp extends AbstractModule implements PairingModule{
             final String psHost,
             final ProfSerMsgListener<ProfileInformation> listener) throws Exception {
         // check if the profile already exist
-        ProfileInformation remoteProfileInformationDb = null;
+        //ProfileInformation remoteProfileInformationDb = null;
         String remotePubKeyStr = CryptoBytes.toHexString(remotePubKey);
-        if((remoteProfileInformationDb = platformService.getProfilesDb().getProfile(localProfilePubKey,remotePubKeyStr))!=null){
+        ProfileInformation remoteProfileInformationDb = platformService.getProfilesDb().getProfile(localProfilePubKey,remotePubKeyStr);
+        if(remoteProfileInformationDb!= null && !remoteProfileInformationDb.getPairStatus().equals(ProfileInformationImp.PairStatus.DISCONNECTED)){
             if(remoteProfileInformationDb.getPairStatus() != null)
                 //throw new IllegalArgumentException("Already known profile");
                 listener.onMsgFail(0,0,"Already known profile");
@@ -101,53 +102,30 @@ public class PairingModuleImp extends AbstractModule implements PairingModule{
                     logger.warn("Backup profile fail.");
                 }
             }
+        } else {
+            remoteProfileInformationDb.setPairStatus(ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE);
+            platformService.getProfilesDb().updateProfile(localProfilePubKey,remoteProfileInformationDb);
         }
-
+        PairingMsg pairingMsg = new PairingMsg(pairingRequest.getSenderName(), pairingRequest.getSenderPsHost());
         final ProfileInformation finalRemoteProfileInformationDb = remoteProfileInformationDb;
-        prepareCall(localProfilePubKey, remoteProfileInformationDb, new ProfSerMsgListener<CallProfileAppService>() {
+        prepareCallAndSend(localProfilePubKey,remoteProfileInformationDb,pairingMsg,new ProfSerMsgListener<Boolean>() {
             @Override
-            public void onMessageReceive(int messageId, CallProfileAppService call) {
-                try {
-                    PairingMsg pairingMsg = new PairingMsg(pairingRequest.getSenderName(), pairingRequest.getSenderPsHost());
-                    call.sendMsg(pairingMsg, new ProfSerMsgListener<Boolean>() {
-                        @Override
-                        public void onMessageReceive(int messageId, Boolean message) {
-                            // notify
-                            listener.onMessageReceive(messageId, finalRemoteProfileInformationDb);
-                        }
-
-                        @Override
-                        public void onMsgFail(int messageId, int statusValue, String details) {
-                            // rollback pairing request:
-                            logger.info("fail pairing request: "+details);
-                            platformService.getPairingRequestsDb().delete(pairingRequest.getId());
-                            listener.onMsgFail(messageId,statusValue,details);
-                        }
-
-                        @Override
-                        public String getMessageName() {
-                            return null;
-                        }
-                    });
-                }catch (Exception e){
-                    logger.info("Error sending pair msg",e);
-                    // rollback pairing request:
-                    platformService.getPairingRequestsDb().delete(pairingRequest.getId());
-                    listener.onMsgFail(messageId,400,e.getMessage());
-                }
+            public void onMessageReceive(int messageId, Boolean message) {
+                // notify
+                listener.onMessageReceive(messageId, finalRemoteProfileInformationDb);
             }
 
             @Override
             public void onMsgFail(int messageId, int statusValue, String details) {
-                // todo rollback
                 // rollback pairing request:
+                logger.info("fail pairing request: "+details);
                 platformService.getPairingRequestsDb().delete(pairingRequest.getId());
                 listener.onMsgFail(messageId,statusValue,details);
             }
 
             @Override
             public String getMessageName() {
-                return "requestPairing";
+                return null;
             }
         });
     }

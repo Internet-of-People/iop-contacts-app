@@ -129,7 +129,6 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#2998ff")));
         localBroadcastManager.registerReceiver(receiver, new IntentFilter(ACTION_ON_PAIR_DISCONNECTED));
-
 //        Uri data = getIntent().getData();
 //        String scheme = data.getScheme(); // "http"
 //        String host = data.getHost(); // "twitter.com"
@@ -383,6 +382,10 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         int id = v.getId();
         if (id==R.id.txt_chat){
             if (isMyProfile) { return; }
+            if (profileInformation.getPairStatus().equals(ProfileInformationImp.PairStatus.DISCONNECTED)) {
+                Toast.makeText(v.getContext(),"You need connect with "+profileInformation.getName()+" in order to send messages",Toast.LENGTH_SHORT).show();
+                return;
+            }
             if (flag.compareAndSet(false,true)) {
                 Toast.makeText(v.getContext(),"Sending chat request..",Toast.LENGTH_SHORT).show();
                 executor.submit(new Runnable() {
