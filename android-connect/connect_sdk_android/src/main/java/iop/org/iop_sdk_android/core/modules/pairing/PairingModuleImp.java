@@ -102,52 +102,26 @@ public class PairingModuleImp extends AbstractModule implements PairingModule{
                 }
             }
         }
-
+        PairingMsg pairingMsg = new PairingMsg(pairingRequest.getSenderName(), pairingRequest.getSenderPsHost());
         final ProfileInformation finalRemoteProfileInformationDb = remoteProfileInformationDb;
-        prepareCall(localProfilePubKey, remoteProfileInformationDb, new ProfSerMsgListener<CallProfileAppService>() {
+        prepareCallAndSend(localProfilePubKey,remoteProfileInformationDb,pairingMsg,new ProfSerMsgListener<Boolean>() {
             @Override
-            public void onMessageReceive(int messageId, CallProfileAppService call) {
-                try {
-                    PairingMsg pairingMsg = new PairingMsg(pairingRequest.getSenderName(), pairingRequest.getSenderPsHost());
-                    call.sendMsg(pairingMsg, new ProfSerMsgListener<Boolean>() {
-                        @Override
-                        public void onMessageReceive(int messageId, Boolean message) {
-                            // notify
-                            listener.onMessageReceive(messageId, finalRemoteProfileInformationDb);
-                        }
-
-                        @Override
-                        public void onMsgFail(int messageId, int statusValue, String details) {
-                            // rollback pairing request:
-                            logger.info("fail pairing request: "+details);
-                            platformService.getPairingRequestsDb().delete(pairingRequest.getId());
-                            listener.onMsgFail(messageId,statusValue,details);
-                        }
-
-                        @Override
-                        public String getMessageName() {
-                            return null;
-                        }
-                    });
-                }catch (Exception e){
-                    logger.info("Error sending pair msg",e);
-                    // rollback pairing request:
-                    platformService.getPairingRequestsDb().delete(pairingRequest.getId());
-                    listener.onMsgFail(messageId,400,e.getMessage());
-                }
+            public void onMessageReceive(int messageId, Boolean message) {
+                // notify
+                listener.onMessageReceive(messageId, finalRemoteProfileInformationDb);
             }
 
             @Override
             public void onMsgFail(int messageId, int statusValue, String details) {
-                // todo rollback
                 // rollback pairing request:
+                logger.info("fail pairing request: "+details);
                 platformService.getPairingRequestsDb().delete(pairingRequest.getId());
                 listener.onMsgFail(messageId,statusValue,details);
             }
 
             @Override
             public String getMessageName() {
-                return "requestPairing";
+                return null;
             }
         });
     }

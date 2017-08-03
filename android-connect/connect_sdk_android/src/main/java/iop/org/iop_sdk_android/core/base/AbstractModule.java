@@ -149,14 +149,16 @@ public abstract class AbstractModule implements Module {
                     call.sendMsg(msg,readyListener);
                 } catch (Exception e) {
                     logger.info("prepareCallAndSend msg fail, "+e.getMessage());
-                    readyListener.onMsgFail(messageId,0,e.getMessage());
+                    if (readyListener!=null)
+                        readyListener.onMsgFail(messageId,0,e.getMessage());
                 }
             }
 
             @Override
             public void onMsgFail(int messageId, int statusValue, String details) {
                 logger.info("prepareCallAndSend msg fail, "+details);
-                readyListener.onMsgFail(messageId,statusValue,details);
+                if (readyListener!=null)
+                    readyListener.onMsgFail(messageId,statusValue,details);
             }
 
             @Override
