@@ -22,12 +22,12 @@ import org.furszy.contacts.ui.home.HomeActivity;
 import org.furszy.contacts.ui.my_qr.MyQrActivity;
 import org.furszy.contacts.ui.settings.SettingsActivity;
 
-import iop.org.iop_sdk_android.core.IntentBroadcastConstants;
+import world.libertaria.shared.library.global.client.IntentBroadcastConstants;
 
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_IOP_SERVICE_CONNECTED;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_CHECK_IN_FAIL;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_IOP_SERVICE_CONNECTED;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_CHECK_IN_FAIL;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT;
 import static org.furszy.contacts.App.INTENT_ACTION_PROFILE_CHECK_IN_FAIL;
 import static org.furszy.contacts.App.INTENT_ACTION_PROFILE_CONNECTED;
 import static org.furszy.contacts.App.INTENT_ACTION_PROFILE_DISCONNECTED;

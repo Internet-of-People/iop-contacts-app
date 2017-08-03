@@ -32,8 +32,8 @@ import org.furszy.contacts.ui.home.HomeActivity;
 
 import java.util.regex.Pattern;
 
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_NAME;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.INTENT_EXTRA_PROF_NAME;
 import static org.furszy.contacts.App.INTENT_ACTION_PROFILE_CHECK_IN_FAIL;
 import static org.furszy.contacts.App.INTENT_ACTION_PROFILE_CONNECTED;
 import static org.furszy.contacts.App.INTENT_ACTION_PROFILE_DISCONNECTED;

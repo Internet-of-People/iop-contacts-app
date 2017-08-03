@@ -1,4 +1,4 @@
-package iop.org.iop_sdk_android.core;
+package world.libertaria.shared.library.global.client;
 
 /**
  * Created by furszy on 7/7/17.
