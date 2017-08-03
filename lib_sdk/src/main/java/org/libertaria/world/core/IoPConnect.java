@@ -127,8 +127,9 @@ public class IoPConnect implements ConnectionListener {
         for (Profile profile : this.localProfilesDao.list()) {
             // add app services
             for (String service : profile.getAppServices()) {
-                if (engineListener!=null && !service.equals("prof_pair")){
-                    profile.addApplicationService(engineListener.appServiceInitializer(service));
+                if (engineListener != null) {
+                    if (!service.equals("prof_pair"))
+                        profile.addApplicationService(engineListener.appServiceInitializer(service));
                 }
             }
             localProfiles.put(profile.getHexPublicKey(),profile);
