@@ -5,6 +5,8 @@ import android.util.Log;
 
 import org.libertaria.world.core.IoPConnect;
 import org.libertaria.world.core.services.pairing.DisconnectMsg;
+import org.libertaria.world.core.services.pairing.PairingMsg;
+import org.libertaria.world.core.services.pairing.PairingMsgTypes;
 import org.libertaria.world.crypto.CryptoBytes;
 import org.libertaria.world.global.Version;
 import org.libertaria.world.profile_server.ProfileInformation;
@@ -47,12 +49,17 @@ public class PairingModuleImp extends AbstractModule implements PairingModule{
     }
 
     @Override
-    public void requestPairingProfile(final String localProfilePubKey, byte[] remotePubKey, String remoteName, final String psHost, final ProfSerMsgListener<ProfileInformation> listener) throws Exception {
+    public void requestPairingProfile(
+            final String localProfilePubKey,
+            byte[] remotePubKey,
+            String remoteName,
+            final String psHost,
+            final ProfSerMsgListener<ProfileInformation> listener) throws Exception {
         // check if the profile already exist
-        ProfileInformation profileInformationDb = null;
+        ProfileInformation remoteProfileInformationDb = null;
         String remotePubKeyStr = CryptoBytes.toHexString(remotePubKey);
-        if((profileInformationDb = platformService.getProfilesDb().getProfile(localProfilePubKey,remotePubKeyStr))!=null){
-            if(profileInformationDb.getPairStatus() != null)
+        if((remoteProfileInformationDb = platformService.getProfilesDb().getProfile(localProfilePubKey,remotePubKeyStr))!=null){
+            if(remoteProfileInformationDb.getPairStatus() != null)
                 //throw new IllegalArgumentException("Already known profile");
                 listener.onMsgFail(0,0,"Already known profile");
         }
@@ -72,33 +79,67 @@ public class PairingModuleImp extends AbstractModule implements PairingModule{
                 remoteName,
                 ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE
         );
-        ioPConnect.requestPairingProfile(pairingRequest, new ProfSerMsgListener<ProfileInformation>() {
-            @Override
-            public void onMessageReceive(int messageId, ProfileInformation remote) {
-                remote.setHomeHost(psHost);
-                remote.setPairStatus(ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE);
-                // Save invisible contact
-                platformService.getProfilesDb().saveProfile(localProfilePubKey,remote);
-                // update backup profile is there is any
-                String backupProfilePath = null;
-                if((backupProfilePath = platformService.getConfPref().getBackupProfilePath())!=null){
-                    try {
-                        platformService.getProfileModule().backupOverwriteProfile(
-                                localProfile,
-                                new File(backupProfilePath),
-                                platformService.getConfPref().getBackupPassword()
-                        );
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        logger.warn("Backup profile fail.");
-                    }
+
+        // save request
+        final int pairingRequestId = platformService.getPairingRequestsDb().savePairingRequest(pairingRequest);
+        pairingRequest.setId(pairingRequestId);
+
+        if (remoteProfileInformationDb==null){
+            remoteProfileInformationDb = new ProfileInformationImp(remotePubKey,remoteName,psHost, ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE);
+            platformService.getProfilesDb().saveProfile(localProfilePubKey,remoteProfileInformationDb);
+            // update backup profile is there is any
+            String backupProfilePath = null;
+            if((backupProfilePath = platformService.getConfPref().getBackupProfilePath())!=null){
+                try {
+                    platformService.getProfileModule().backupOverwriteProfile(
+                            localProfile,
+                            new File(backupProfilePath),
+                            platformService.getConfPref().getBackupPassword()
+                    );
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    logger.warn("Backup profile fail.");
                 }
-                // notify
-                listener.onMessageReceive(messageId,remote);
+            }
+        }
+
+        final ProfileInformation finalRemoteProfileInformationDb = remoteProfileInformationDb;
+        prepareCall(localProfilePubKey, remoteProfileInformationDb, new ProfSerMsgListener<CallProfileAppService>() {
+            @Override
+            public void onMessageReceive(int messageId, CallProfileAppService call) {
+                try {
+                    PairingMsg pairingMsg = new PairingMsg(pairingRequest.getSenderName(), pairingRequest.getSenderPsHost());
+                    call.sendMsg(pairingMsg, new ProfSerMsgListener<Boolean>() {
+                        @Override
+                        public void onMessageReceive(int messageId, Boolean message) {
+                            // notify
+                            listener.onMessageReceive(messageId, finalRemoteProfileInformationDb);
+                        }
+
+                        @Override
+                        public void onMsgFail(int messageId, int statusValue, String details) {
+                            // rollback pairing request:
+                            logger.info("fail pairing request: "+details);
+                            platformService.getPairingRequestsDb().delete(pairingRequest.getId());
+                            listener.onMsgFail(messageId,statusValue,details);
+                        }
+
+                        @Override
+                        public String getMessageName() {
+                            return null;
+                        }
+                    });
+                }catch (Exception e){
+                    logger.info("Error sending pair msg",e);
+                    // rollback pairing request:
+                    platformService.getPairingRequestsDb().delete(pairingRequest.getId());
+                    listener.onMsgFail(messageId,400,e.getMessage());
+                }
             }
 
             @Override
             public void onMsgFail(int messageId, int statusValue, String details) {
+                // todo rollback
                 // rollback pairing request:
                 platformService.getPairingRequestsDb().delete(pairingRequest.getId());
                 listener.onMsgFail(messageId,statusValue,details);
@@ -106,19 +147,83 @@ public class PairingModuleImp extends AbstractModule implements PairingModule{
 
             @Override
             public String getMessageName() {
-                return "Request pairing";
+                return "requestPairing";
             }
         });
     }
 
     @Override
-    public void acceptPairingProfile(PairingRequest pairingRequest, ProfSerMsgListener<Boolean> profSerMsgListener) throws Exception{
-        ioPConnect.acceptPairingRequest(pairingRequest,profSerMsgListener);
+    public void acceptPairingProfile(PairingRequest pairingRequest, final ProfSerMsgListener<Boolean> profSerMsgListener) throws Exception{
+
+        // Remember that here the local device is the pairingRequest.getSender()
+        final String remotePubKeyHex =  pairingRequest.getSenderPubKey();
+        final String localPubKeyHex = pairingRequest.getRemotePubKey();
+        logger.info("acceptPairingRequest, remote: " + remotePubKeyHex);
+
+        prepareCall(localPubKeyHex, remotePubKeyHex, new ProfSerMsgListener<CallProfileAppService>() {
+            @Override
+            public void onMessageReceive(int messageId, final CallProfileAppService call) {
+                try {
+                    call.sendMsg(PairingMsgTypes.PAIR_ACCEPT.getType(), new ProfSerMsgListener<Boolean>() {
+                        @Override
+                        public void onMessageReceive(int messageId, Boolean object) {
+                            logger.info("PairAccept sent");
+                            if (call!=null)
+                                call.dispose();
+                            else
+                                logger.warn("call null trying to dispose pairing app service. Check this");
+
+                            // update in db the acceptance
+                            platformService.getProfilesDb().updatePaired(
+                                    localPubKeyHex,
+                                    remotePubKeyHex,
+                                    ProfileInformationImp.PairStatus.PAIRED);
+                            platformService.getPairingRequestsDb().updateStatus(
+                                    remotePubKeyHex,
+                                    localPubKeyHex,
+                                    PairingMsgTypes.PAIR_ACCEPT,
+                                    ProfileInformationImp.PairStatus.PAIRED
+                            );
+
+                            // notify
+                            if (profSerMsgListener!=null)
+                                profSerMsgListener.onMessageReceive(messageId,object);
+                        }
+
+                        @Override
+                        public void onMsgFail(int messageId, int statusValue, String details) {
+                            if (profSerMsgListener!=null){
+                                profSerMsgListener.onMsgFail(messageId,statusValue,details);
+                            }
+                        }
+
+                        @Override
+                        public String getMessageName() {
+                            return "Pair acceptance";
+                        }
+                    });
+                }catch (Exception e){
+                    logger.info("Error sending pair accept "+e.getMessage());
+                    profSerMsgListener.onMsgFail(0,0,e.getMessage());
+                }
+            }
+
+            @Override
+            public void onMsgFail(int messageId, int statusValue, String details) {
+                logger.info("accept pairing fail, "+details);
+                profSerMsgListener.onMsgFail(messageId,statusValue,details);
+            }
+
+            @Override
+            public String getMessageName() {
+                return "acceptPairingRequest";
+            }
+        });
     }
 
     @Override
     public void cancelPairingRequest(PairingRequest pairingRequest) {
-        ioPConnect.cancelPairingRequest(pairingRequest);
+        platformService.getPairingRequestsDb().delete(pairingRequest.getId());
     }
 
     @Override
