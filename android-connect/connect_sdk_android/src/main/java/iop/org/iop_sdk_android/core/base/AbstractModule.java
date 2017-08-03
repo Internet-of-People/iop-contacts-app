@@ -119,4 +119,10 @@ public abstract class AbstractModule implements Module {
         ioPConnect.callService(service.getName(), localProfilePubKey, remoteProfileInformation, true, readyListener);
     }
 
+    protected void prepareCall(String localProfilePubKey, String remoteProfPubKey, ProfSerMsgListener<CallProfileAppService> readyListener){
+        ProfileInformation remoteProfileInformation = ioPConnect.getKnownProfile(localProfilePubKey,remoteProfPubKey);
+        if (remoteProfileInformation==null) throw new IllegalArgumentException("remote profile not exist");
+        ioPConnect.callService(service.getName(), localProfilePubKey, remoteProfileInformation, true, readyListener);
+    }
+
 }
