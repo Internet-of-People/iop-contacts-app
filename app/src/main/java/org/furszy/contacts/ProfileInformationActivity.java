@@ -185,7 +185,55 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     }
 
     private void tappedActionButton(){
+        if (flag.compareAndSet(true,true)){ return; }
+        flag.set(true);
+        showLoading();
+        executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                MsgListenerFuture<ProfileInformation> future = new MsgListenerFuture<>();
+                future.setListener(new BaseMsgFuture.Listener<ProfileInformation>() {
+                    @Override
+                    public void onAction(int messageId, ProfileInformation object) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                flag.set(false);
+                                hideLoading();
+                                Log.i("GENERAL", "pairing request sent");
+                                Toast.makeText(ProfileInformationActivity.this, R.string.pairing_success, Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
 
+                    @Override
+                    public void onFail(int messageId, final int status, final String statusDetail) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                flag.set(false);
+                                hideLoading();
+                                Log.i("GENERAL", "pairing request fail on Fail");
+                                String baseMsg = getResources().getString(R.string.pairing_fail);
+                                Toast.makeText(ProfileInformationActivity.this, baseMsg+": Remote profile not available", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                });
+                try {
+                    pairingModule.requestPairingProfile(
+                            selectedProfPubKey,
+                            CryptoBytes.fromHexToBytes(profileInformation.getHexPublicKey()),
+                            profileInformation.getName(),
+                            profileInformation.getHomeHost(),
+                            future
+                    );
+                } catch (Exception e) {
+                    String baseMsg = getResources().getString(R.string.pairing_fail);
+                    Toast.makeText(ProfileInformationActivity.this, baseMsg+": "+e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 
     private void tappedDeleteButton(){
@@ -228,7 +276,8 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                 if (profileInformation.getPairStatus().equals(ProfileInformationImp.PairStatus.DISCONNECTED)) {
                     pairingModule.disconectPairingProfile(selectedProfPubKey,profileInformation,false,readyListener);
                 } else {
-                    pairingModule.disconectPairingProfile(selectedProfPubKey, profileInformation, false, readyListener);
+                    Log.i("GENERAL","CASO CUANDO HAY Q NOTIFICAR");
+                    pairingModule.disconectPairingProfile(selectedProfPubKey, profileInformation, true, readyListener);
                 }
             }
         });
