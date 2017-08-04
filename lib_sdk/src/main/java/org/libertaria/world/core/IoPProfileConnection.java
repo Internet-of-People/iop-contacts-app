@@ -479,32 +479,40 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
             final CallProfileAppService callProfileAppService = new CallProfileAppService(message.getServiceName(), profileCache, remoteProfInfo,profSerEngine);
             callProfileAppService.setCallToken(message.getCalleeToken().toByteArray());
 
-            // accept every single call
-            logger.info("Adding call, token: "+callToken);
-            callProfileAppService.addCallStateListener(this);
-            openCall.put(callToken, callProfileAppService);
-            profSerEngine.acceptCall(messageId);
+            boolean resp = profileCache.getAppService(message.getServiceName()).onPreCall(callProfileAppService);
 
-            // init setup call message
-            setupCallAppServiceInitMessage(callProfileAppService,false,new ProfSerMsgListener<CallProfileAppService>() {
-                @Override
-                public void onMessageReceive(int messageId, CallProfileAppService message) {
-                    // once everything is correct, launch notification
-                    AppService appService = profileCache.getAppService(message.getAppService());
-                    appService.wrapCall(callProfileAppService);
-                    appService.onCallConnected(profileCache,message.getRemoteProfile(),message.isCallCreator());
-                }
+            if (resp) {
+                // accept every single call
+                logger.info("Adding call, token: " + callToken);
+                callProfileAppService.addCallStateListener(this);
+                openCall.put(callToken, callProfileAppService);
+                profSerEngine.acceptCall(messageId);
 
-                @Override
-                public void onMsgFail(int messageId, int statusValue, String details) {
-                    logger.info("setupCallAppServiceInitMessage init message fail, "+details);
-                }
+                // init setup call message
+                setupCallAppServiceInitMessage(callProfileAppService, false, new ProfSerMsgListener<CallProfileAppService>() {
+                    @Override
+                    public void onMessageReceive(int messageId, CallProfileAppService message) {
+                        // once everything is correct, launch notification
+                        AppService appService = profileCache.getAppService(message.getAppService());
+                        appService.wrapCall(callProfileAppService);
+                        appService.onCallConnected(profileCache, message.getRemoteProfile(), message.isCallCreator());
+                    }
 
-                @Override
-                public String getMessageName() {
-                    return "setupCallAppServiceInitMessage";
-                }
-            });
+                    @Override
+                    public void onMsgFail(int messageId, int statusValue, String details) {
+                        logger.info("setupCallAppServiceInitMessage init message fail, " + details);
+                    }
+
+                    @Override
+                    public String getMessageName() {
+                        return "setupCallAppServiceInitMessage";
+                    }
+                });
+            }else {
+                // call not accepted
+                logger.info("call not accepted for the AppService");
+                callProfileAppService.dispose();
+            }
         } catch (CantSendMessageException e) {
             e.printStackTrace();
         } catch (CantConnectException e) {

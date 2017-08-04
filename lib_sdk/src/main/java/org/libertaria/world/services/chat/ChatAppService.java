@@ -1,6 +1,7 @@
 package org.libertaria.world.services.chat;
 
 import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.engine.app_services.AppService;
 import org.libertaria.world.profile_server.engine.app_services.CallProfileAppService;
 import org.libertaria.world.profile_server.model.Profile;
 import org.libertaria.world.services.EnabledServices;
@@ -15,28 +16,23 @@ import java.util.concurrent.TimeUnit;
  * Created by mati on 16/05/17.
  */
 
-public class ChatAppService extends org.libertaria.world.profile_server.engine.app_services.AppService {
+public class ChatAppService extends AppService {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatAppService.class);
 
-    private LinkedList<ChatMsgListener> listeners;
+    private ChatMsgListener listener;
 
     public ChatAppService() {
         super(EnabledServices.CHAT.getName());
-        listeners = new LinkedList<>();
     }
 
     public void addListener(ChatMsgListener msgListener){
-        listeners.add(msgListener);
-    }
-
-    public void removeListener(ChatMsgListener msgListener){
-        listeners.remove(msgListener);
+        this.listener = msgListener;
     }
 
     @Override
-    public void onPreCall() {
-        super.onPreCall();
+    public boolean onPreCall(CallProfileAppService callProfileAppService) {
+        return listener.onPreCall(callProfileAppService.getLocalProfile().getHexPublicKey(),callProfileAppService.getRemoteProfile());
     }
 
     @Override
@@ -49,10 +45,10 @@ public class ChatAppService extends org.libertaria.world.profile_server.engine.a
                     // clean the connection here
                     callProfileAppService.dispose();
                 }
-                for (ChatMsgListener listener : listeners) {
-                    // todo: Cambiar esto, en vez de enviar el chat message tengo que enviar el chatMsgWrapper con el local y remote profile..
-                    listener.onMsgReceived(callProfileAppService.getRemotePubKey(),msg.getMsg());
-                }
+
+                // todo: Cambiar esto, en vez de enviar el chat message tengo que enviar el chatMsgWrapper con el local y remote profile..
+                listener.onMsgReceived(callProfileAppService.getRemotePubKey(),msg.getMsg());
+
 
             }
         });
@@ -60,15 +56,11 @@ public class ChatAppService extends org.libertaria.world.profile_server.engine.a
 
     @Override
     public void onCallConnected(Profile localProfile, ProfileInformation remoteProfile, boolean isLocalCreator) {
-        for (ChatMsgListener listener : listeners) {
-            listener.onChatConnected(localProfile,remoteProfile.getHexPublicKey(),isLocalCreator);
-        }
+        listener.onChatConnected(localProfile,remoteProfile.getHexPublicKey(),isLocalCreator);
     }
 
     @Override
     public void onCallDisconnected(Profile localProfile, ProfileInformation remoteProfile, String reason) {
-        for (ChatMsgListener listener : listeners) {
-            listener.onChatDisconnected(remoteProfile.getHexPublicKey(),reason);
-        }
+        listener.onChatDisconnected(remoteProfile.getHexPublicKey(),reason);
     }
 }

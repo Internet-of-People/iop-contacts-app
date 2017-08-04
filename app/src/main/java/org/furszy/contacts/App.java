@@ -40,17 +40,17 @@ import iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants;
 import world.libertaria.sdk.android.client.ClientServiceConnectHelper;
 import world.libertaria.sdk.android.client.ConnectClientService;
 import world.libertaria.sdk.android.client.InitListener;
-import world.libertaria.shared.library.global.service.ConnectApp;
+import world.libertaria.sdk.android.client.ConnectApp;
 
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_IOP_SERVICE_CONNECTED;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_CHECK_IN_FAIL;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PAIR_RECEIVED;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_CONNECTED;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_RESPONSE_PAIR_RECEIVED;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_NAME;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_RESPONSE_DETAIL;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_IOP_SERVICE_CONNECTED;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_CHECK_IN_FAIL;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PAIR_RECEIVED;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PROFILE_CONNECTED;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_RESPONSE_PAIR_RECEIVED;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.INTENT_EXTRA_PROF_NAME;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.INTENT_RESPONSE_DETAIL;
 
 /**
  * Created by furszy on 5/25/17.
@@ -58,7 +58,6 @@ import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_RESPO
 
 public class App extends ConnectApp implements IoPConnectContext {
 
-    public static final String INTENT_ACTION_ON_SERVICE_CONNECTED = "service_connected";
     public static final String INTENT_ACTION_PROFILE_CONNECTED = "profile_connected";
     public static final String INTENT_ACTION_PROFILE_CHECK_IN_FAIL= "profile_check_in_fail";
     public static final String INTENT_ACTION_PROFILE_DISCONNECTED = "profile_disconnected";
@@ -75,12 +74,8 @@ public class App extends ConnectApp implements IoPConnectContext {
 
     private static Logger log;
     private static App instance;
-
-    private ActivityManager activityManager;
     private PackageInfo info;
 
-    private ClientServiceConnectHelper connectHelper;
-    private LocalBroadcastManager broadcastManager;
     private NotificationManager notificationManager;
     private long timeCreateApplication = System.currentTimeMillis();
 
@@ -129,15 +124,13 @@ public class App extends ConnectApp implements IoPConnectContext {
         super.onCreate();
         try {
             instance = this;
-            initLogging();
             log = LoggerFactory.getLogger(App.class);
             PackageManager manager = getPackageManager();
             info = manager.getPackageInfo(this.getPackageName(), 0);
-            activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
             CrashReporter.init(getCacheDir());
             appConf = new AppConf(getSharedPreferences(PREFS_NAME, 0));
             selectedProfilePubKey = appConf.getSelectedProfPubKey();
-            broadcastManager = LocalBroadcastManager.getInstance(this);
+
             notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
             // This is just for now..
@@ -164,60 +157,22 @@ public class App extends ConnectApp implements IoPConnectContext {
             broadcastManager.registerReceiver(serviceReceiver,new IntentFilter(ACTION_ON_PROFILE_CONNECTED));
             broadcastManager.registerReceiver(serviceReceiver,new IntentFilter(ACTION_ON_PROFILE_DISCONNECTED));
 
-
-
-            connectHelper = ClientServiceConnectHelper.init(this, new InitListener() {
-                @Override
-                public void onConnected() {
-                    try {
-                        // notify connection
-                        Intent intent = new Intent(ACTION_IOP_SERVICE_CONNECTED);
-                        broadcastManager.sendBroadcast(intent);
-
-                        ExecutorService executors = Executors.newSingleThreadExecutor();
-                        executors.submit(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    ConnectClientService module = connectHelper.getClient();
-
-                                    profilesModule = (ProfilesModule) module.getModule(EnabledServices.PROFILE_DATA);
-                                    pairingModule = (PairingModule) module.getModule(EnabledServices.PROFILE_PAIRING);
-                                    chatModule = (ChatModule) module.getModule(EnabledServices.CHAT);
-
-                                    // notify connection to the service
-                                    Intent notificateIntent = new Intent(INTENT_ACTION_ON_SERVICE_CONNECTED);
-                                    broadcastManager.sendBroadcast(notificateIntent);
-
-                                    /*if (module.isIdentityCreated()) {
-                                        log.info("Trying to connect profile");
-                                        Profile profile = module.getProfile();
-                                        if (profile != null) {
-                                            module.connect(profile.getHexPublicKey());
-                                        } else
-                                            Log.i("App", "Profile not found to connect");
-                                    }*/
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        });
-                        executors.shutdown();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void onDisconnected() {
-
-                }
-            });
         }catch (Exception e){
             e.printStackTrace();
             // check here...
         }
+    }
 
+    @Override
+    protected void onConnectClientServiceBind() {
+        super.onConnectClientServiceBind();
+        profilesModule = (ProfilesModule) getModule(EnabledServices.PROFILE_DATA);
+        pairingModule = (PairingModule) getModule(EnabledServices.PROFILE_PAIRING);
+        chatModule = (ChatModule) getModule(EnabledServices.CHAT);
+
+        // notify connection to the service
+        Intent notificateIntent = new Intent(INTENT_ACTION_ON_SERVICE_CONNECTED);
+        broadcastManager.sendBroadcast(notificateIntent);
 
     }
 
@@ -226,56 +181,6 @@ public class App extends ConnectApp implements IoPConnectContext {
         ProfileServerConfigurationsImp conf = new ProfileServerConfigurationsImp(this,getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));
         conf.setHost(AppConstants.TEST_PROFILE_SERVER_HOST);//"192.168.0.10");
         return conf;
-    }
-
-
-    private void initLogging() {
-
-        final File logDir = getDir("log", MODE_PRIVATE);
-        final File logFile = new File(logDir, "app.log");
-
-        final LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-
-        final PatternLayoutEncoder filePattern = new PatternLayoutEncoder();
-        filePattern.setContext(context);
-        filePattern.setPattern("%d{HH:mm:ss,UTC} [%thread] %logger{0} - %msg%n");
-        filePattern.start();
-
-        final RollingFileAppender<ILoggingEvent> fileAppender = new RollingFileAppender<ILoggingEvent>();
-        fileAppender.setContext(context);
-        fileAppender.setFile(logFile.getAbsolutePath());
-
-        final TimeBasedRollingPolicy<ILoggingEvent> rollingPolicy = new TimeBasedRollingPolicy<ILoggingEvent>();
-        rollingPolicy.setContext(context);
-        rollingPolicy.setParent(fileAppender);
-        rollingPolicy.setFileNamePattern(logDir.getAbsolutePath() + "/wallet.%d{yyyy-MM-dd,UTC}.log.gz");
-        rollingPolicy.setMaxHistory(7);
-        rollingPolicy.start();
-
-        fileAppender.setEncoder(filePattern);
-        fileAppender.setRollingPolicy(rollingPolicy);
-        fileAppender.start();
-
-        final PatternLayoutEncoder logcatTagPattern = new PatternLayoutEncoder();
-        logcatTagPattern.setContext(context);
-        logcatTagPattern.setPattern("%logger{0}");
-        logcatTagPattern.start();
-
-        final PatternLayoutEncoder logcatPattern = new PatternLayoutEncoder();
-        logcatPattern.setContext(context);
-        logcatPattern.setPattern("[%thread] %msg%n");
-        logcatPattern.start();
-
-        final LogcatAppender logcatAppender = new LogcatAppender();
-        logcatAppender.setContext(context);
-        logcatAppender.setTagEncoder(logcatTagPattern);
-        logcatAppender.setEncoder(logcatPattern);
-        logcatAppender.start();
-
-        final ch.qos.logback.classic.Logger log = context.getLogger(Logger.ROOT_LOGGER_NAME);
-        log.addAppender(fileAppender);
-        log.addAppender(logcatAppender);
-        log.setLevel(Level.INFO);
     }
 
 

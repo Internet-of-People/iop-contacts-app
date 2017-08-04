@@ -75,9 +75,10 @@ public abstract class AppService implements ProfSerMsgListener{
 
     /**
      * Method called before do the app service call init
+     * @param callProfileAppService
      */
-    public void onPreCall(){
-
+    public boolean onPreCall(CallProfileAppService callProfileAppService){
+        return true;
     }
 
     /**

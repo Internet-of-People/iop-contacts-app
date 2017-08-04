@@ -1,3 +1,4 @@
+/*
 package org.libertaria.world.profile_server.utils;
 
 import java.io.ByteArrayInputStream;
@@ -15,9 +16,10 @@ import java.security.cert.X509Certificate;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-/**
+*
  * Created by mati on 09/05/17.
- */
+
+
 
 public class SslContextFactory implements org.libertaria.world.profile_server.SslContextFactory {
 
@@ -122,3 +124,4 @@ public class SslContextFactory implements org.libertaria.world.profile_server.Ss
         throw new Exception("See logs above..");
     }
 }
+*/

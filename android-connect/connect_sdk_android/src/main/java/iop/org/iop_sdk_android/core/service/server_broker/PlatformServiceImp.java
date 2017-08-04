@@ -67,9 +67,9 @@ import world.libertaria.shared.library.global.ModuleParameter;
 import world.libertaria.shared.library.global.service.IntentServiceAction;
 import world.libertaria.shared.library.global.socket.LocalSocketSession;
 import world.libertaria.shared.library.global.service.IPlatformService;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_CONNECTED;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
-import static iop.org.iop_sdk_android.core.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PROFILE_CONNECTED;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
 
 /**
  * Created by furszy on 7/19/17.
