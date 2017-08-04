@@ -20,6 +20,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.libertaria.world.crypto.CryptoBytes;
+import org.libertaria.world.global.DeviceLocation;
+import org.libertaria.world.global.GpsLocation;
 import org.libertaria.world.profile_server.CantConnectException;
 import org.libertaria.world.profile_server.CantSendMessageException;
 import org.libertaria.world.profile_server.ProfileInformation;
