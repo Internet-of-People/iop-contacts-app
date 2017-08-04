@@ -130,7 +130,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#2998ff")));
-        localBroadcastManager.registerReceiver(receiver,new IntentFilter(ACTION_ON_PAIR_DISCONNECTED));
+        localBroadcastManager.registerReceiver(receiver, new IntentFilter(ACTION_ON_PAIR_DISCONNECTED));
 //        Uri data = getIntent().getData();
 //        String scheme = data.getScheme(); // "http"
 //        String host = data.getHost(); // "twitter.com"
