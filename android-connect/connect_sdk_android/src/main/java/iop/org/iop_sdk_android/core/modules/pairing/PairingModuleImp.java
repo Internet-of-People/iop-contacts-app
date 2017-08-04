@@ -205,6 +205,7 @@ public class PairingModuleImp extends AbstractModule implements PairingModule{
     public void cancelPairingRequest(PairingRequest pairingRequest) {
         platformService.getPairingRequestsDb().delete(pairingRequest.getId());
         platformService.getProfilesDb().deleteProfileByPubKey(pairingRequest.getSenderPubKey(),pairingRequest.getRemotePubKey());
+        platformService.getProfilesDb().deleteProfileByPubKey(pairingRequest.getRemotePubKey(),pairingRequest.getSenderPubKey());
     }
 
     @Override
