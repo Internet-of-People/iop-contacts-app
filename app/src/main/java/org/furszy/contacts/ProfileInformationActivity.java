@@ -67,7 +67,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     private Button btn_action;
     private ProgressBar progress_bar;
 
-    private TextView txt_chat, disconnected_message;
+    private TextView txt_chat, disconnected_message, txt_location ;
 
     private ExecutorService executor;
     private AtomicBoolean flag = new AtomicBoolean(false);
@@ -153,6 +153,11 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                 tappedActionButton();
             }
         });
+
+
+        //Set Location
+        txt_location = (TextView) root.findViewById(R.id.txt_location);
+        txt_location.setText("My Location");
 
         Bundle extras = getIntent().getExtras();
         if (extras!=null){
