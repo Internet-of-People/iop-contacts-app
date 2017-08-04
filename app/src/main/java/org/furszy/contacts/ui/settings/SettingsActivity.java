@@ -52,7 +52,9 @@ public class SettingsActivity  extends BaseDrawerActivity implements DatabaseCol
         buttonBackup.setOnClickListener(this);
 
         root.findViewById(R.id.btn_delete_contacts).setOnClickListener(this);
+        root.findViewById(R.id.btn_delete_contacts).setVisibility(View.GONE);
         root.findViewById(R.id.btn_delete_requests).setOnClickListener(this);
+        root.findViewById(R.id.btn_delete_requests).setVisibility(View.GONE);
 
         Switch switchView = ((Switch)root.findViewById(R.id.switch_background_service));
         switchView.setChecked(app.createProfSerConfig().getBackgroundServiceEnable());
