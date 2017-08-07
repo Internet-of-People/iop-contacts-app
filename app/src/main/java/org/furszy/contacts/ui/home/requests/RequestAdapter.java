@@ -43,6 +43,7 @@ public class RequestAdapter extends BaseAdapter<PairingRequest, RequestHolder> {
             holder.btn_confirm.setVisibility(View.GONE);
             holder.txt_name.setText(data.getRemoteName());
         }else {
+            holder.btn_confirm.setVisibility(View.VISIBLE);
             holder.txt_name.setText(data.getSenderName());
             holder.btn_confirm.setOnClickListener(new View.OnClickListener() {
                 @Override
