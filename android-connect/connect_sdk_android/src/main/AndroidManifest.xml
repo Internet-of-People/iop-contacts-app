@@ -6,10 +6,14 @@
     <application android:label="@string/app_name"
         android:supportsRtl="true">
 
-        <service android:name="world.libertaria.sdk.android.client.ConnectClientService"/>
-
         <service android:name=".core.service.server_broker.PlatformServiceImp"
-            android:process=":connect_service"/>
+            android:process=":connect_service"
+            android:exported="true"
+            >
+            <intent-filter>
+                <action android:name="iop.org.iop_sdk_android.core.service.server_broker.PlatformService"/>
+            </intent-filter>
+            </service>
 
         <receiver android:name="iop.org.iop_sdk_android.core.receivers.ReceiverBoot">
             <intent-filter>
