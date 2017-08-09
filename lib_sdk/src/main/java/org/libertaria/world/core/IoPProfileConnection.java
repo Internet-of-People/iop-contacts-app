@@ -394,6 +394,9 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
         } catch (CallProfileAppServiceException e) {
             e.printStackTrace();
             notifyCallError(callProfileAppService,profSerMsgListener,0, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+        } catch (Exception e){
+            e.printStackTrace();
+            notifyCallError(callProfileAppService,profSerMsgListener,0, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
         }
     }
 
@@ -452,6 +455,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
     private void notifyCallError(CallProfileAppService callProfileAppService, ProfSerMsgListener<CallProfileAppService> listener, int msgId, CallProfileAppService.Status status, String errorStatus){
         callProfileAppService.setStatus(status);
         callProfileAppService.setErrorStatus(errorStatus);
+        callProfileAppService.dispose();
         listener.onMessageReceive(msgId,callProfileAppService);
     }
 

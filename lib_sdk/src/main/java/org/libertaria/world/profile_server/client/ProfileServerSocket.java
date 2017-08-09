@@ -183,6 +183,7 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
 
     @Override
     public boolean isActive() {
+        if (socket==null) throw new ConnectionException("socket null for some reason.., "+port);
         return !socket.isClosed();
     }
 

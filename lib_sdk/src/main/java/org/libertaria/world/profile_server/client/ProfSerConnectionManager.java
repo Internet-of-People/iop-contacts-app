@@ -40,12 +40,12 @@ public class ProfSerConnectionManager {
 
     private String host;
     /** Regular channel */
-    private ConcurrentMap<IopProfileServer.ServerRoleType, org.libertaria.world.profile_server.client.ProfileServerSocket> serverSockets;
+    private ConcurrentMap<IopProfileServer.ServerRoleType, ProfileServerSocket> serverSockets;
     /**
      * Channels opened by AppServicesCalls on the app service port (shity implementation of the profile server)
      * The mapping is AppServiceCall token -> channel for this call
      */
-    private ConcurrentMap<String, org.libertaria.world.profile_server.client.ProfileServerSocket> appServicesSockets = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, ProfileServerSocket> appServicesSockets = new ConcurrentHashMap<>();
 
     private PsSocketHandler<IopProfileServer.Message> handler;
 
@@ -79,12 +79,21 @@ public class ProfSerConnectionManager {
         if (!serverSockets.containsKey(portType)){
             isActive = syncAddServer(portType,port,null);
         }else {
-            isActive = serverSockets.get(portType).isActive();
-            if (!isActive){
+            try {
+                isActive = serverSockets.get(portType).isActive();
+                if (!isActive) {
+                    // remove references and notify upper layer about it
+                    serverSockets.remove(portType);
+                    // todo: Improve this.
+                    throw new IllegalStateException("Connection not available with port: " + portType);
+                }
+            }catch (ConnectionException e){
+                // something bad happen
+                e.printStackTrace();
                 // remove references and notify upper layer about it
                 serverSockets.remove(portType);
                 // todo: Improve this.
-                throw new IllegalStateException("Connection not available with port: "+portType);
+                throw new IllegalStateException("Connection not available with port: " + portType);
             }
         }
         return isActive;
@@ -100,7 +109,7 @@ public class ProfSerConnectionManager {
                 // remove references and notify upper layer about it
                 appServicesSockets.remove(tokenHex);
                 // todo: Improve this.
-                throw new org.libertaria.world.profile_server.client.AppServiceCallNotAvailableException("Connection not longer available with appService with token: "+tokenHex);
+                throw new AppServiceCallNotAvailableException("Connection not longer available with appService with token: "+tokenHex);
             }
         }
         return isActive;
@@ -159,8 +168,8 @@ public class ProfSerConnectionManager {
         return isActive;
     }
 
-    private org.libertaria.world.profile_server.client.ProfileServerSocket addServerSocket(SocketFactory socketFactory, IopProfileServer.ServerRoleType portType, String host, int port, String tokenIdentifierHex) throws Exception {
-        org.libertaria.world.profile_server.client.ProfileServerSocket profileServerSocket = new org.libertaria.world.profile_server.client.ProfileServerSocket(
+    private ProfileServerSocket addServerSocket(SocketFactory socketFactory, IopProfileServer.ServerRoleType portType, String host, int port, String tokenIdentifierHex) throws Exception {
+        ProfileServerSocket profileServerSocket = new ProfileServerSocket(
                 socketFactory,
                 host,
                 port,
@@ -194,7 +203,7 @@ public class ProfSerConnectionManager {
     public void write(IopProfileServer.ServerRoleType portType, int port, IopProfileServer.Message message) throws CantSendMessageException,CantConnectException {
         boolean result = connectToPort(portType,port,null);
         if (!result) throw new CantSendMessageException("Cant connect to: "+portType.name()+", port number: "+port);
-        org.libertaria.world.profile_server.client.ProfileServerSocket profileServerSocket = serverSockets.get(portType);
+        ProfileServerSocket profileServerSocket = serverSockets.get(portType);
         profileServerSocket.write(message);
     }
 
@@ -202,7 +211,7 @@ public class ProfSerConnectionManager {
         if (token==null || token.length()<1) throw new IllegalArgumentException("bad token value");
         boolean result = connectToPort(portType,port,token);
         if (!result) throw new CantSendMessageException("Connection fail");
-        org.libertaria.world.profile_server.client.ProfileServerSocket profileServerSocket = appServicesSockets.get(token);
+        ProfileServerSocket profileServerSocket = appServicesSockets.get(token);
         profileServerSocket.write(message);
     }
 
@@ -236,14 +245,14 @@ public class ProfSerConnectionManager {
     }
 
     public void shutdown() throws IOException {
-        for (org.libertaria.world.profile_server.client.ProfileServerSocket profileServerSocket : this.serverSockets.values()) {
+        for (ProfileServerSocket profileServerSocket : this.serverSockets.values()) {
             try {
                 profileServerSocket.closeNow();
             }catch (Exception e){
                 e.printStackTrace();
             }
         }
-        for (Map.Entry<String, org.libertaria.world.profile_server.client.ProfileServerSocket> stringProfileServerSocketEntry : appServicesSockets.entrySet()) {
+        for (Map.Entry<String, ProfileServerSocket> stringProfileServerSocketEntry : appServicesSockets.entrySet()) {
             try {
                 stringProfileServerSocketEntry.getValue().closeNow();
             }catch (Exception e){
