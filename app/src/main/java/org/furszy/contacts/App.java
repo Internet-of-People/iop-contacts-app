@@ -152,10 +152,10 @@ public class App extends ConnectApp implements IoPConnectContext {
             registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED));
             registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_MSG_RECEIVED));
             // register broadcast listeners
-            broadcastManager.registerReceiver(serviceReceiver, new IntentFilter(ACTION_ON_PAIR_RECEIVED));
-            broadcastManager.registerReceiver(serviceReceiver, new IntentFilter(ACTION_ON_RESPONSE_PAIR_RECEIVED));
-            broadcastManager.registerReceiver(serviceReceiver,new IntentFilter(ACTION_ON_PROFILE_CONNECTED));
-            broadcastManager.registerReceiver(serviceReceiver,new IntentFilter(ACTION_ON_PROFILE_DISCONNECTED));
+            registerReceiver(serviceReceiver, new IntentFilter(ACTION_ON_PAIR_RECEIVED));
+            registerReceiver(serviceReceiver, new IntentFilter(ACTION_ON_RESPONSE_PAIR_RECEIVED));
+            registerReceiver(serviceReceiver,new IntentFilter(ACTION_ON_PROFILE_CONNECTED));
+            registerReceiver(serviceReceiver,new IntentFilter(ACTION_ON_PROFILE_DISCONNECTED));
 
         }catch (Exception e){
             e.printStackTrace();

@@ -585,8 +585,8 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
         // todo: para notificar al otro lado que todo llegó bien.
 
         // todo: por alguna razon llega un mensaje para una llamada la cual no tiene listener asociado.. esto no deberia pasar.
-        logger.info("Open calls keys: "+Arrays.toString(openCall.keySet().toArray()));
-        logger.info("Open calls "+Arrays.toString(openCall.values().toArray()));
+        //logger.info("Open calls keys: "+Arrays.toString(openCall.keySet().toArray()));
+        //logger.info("Open calls "+Arrays.toString(openCall.values().toArray()));
         if (openCall.containsKey(message.getCallTokenId())){
             // launch notification
             openCall.get(message.getCallTokenId()).onMessageReceived(message.getMsg());
