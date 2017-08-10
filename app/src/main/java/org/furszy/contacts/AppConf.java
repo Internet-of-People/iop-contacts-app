@@ -2,7 +2,7 @@ package org.furszy.contacts;
 
 import android.content.SharedPreferences;
 
-import iop.org.iop_sdk_android.core.base.Configurations;
+import world.libertaria.shared.library.ui.Configurations;
 
 /**
  * Created by furszy on 7/27/17.

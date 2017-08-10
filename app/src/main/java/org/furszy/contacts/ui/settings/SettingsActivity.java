@@ -19,7 +19,7 @@ import org.furszy.contacts.BaseDrawerActivity;
 import org.furszy.contacts.BuildConfig;
 import org.furszy.contacts.CrashReporter;
 import org.furszy.contacts.R;
-import org.furszy.contacts.base.ReportIssueDialogBuilder;
+import org.furszy.contacts.app_base.ReportIssueDialogBuilder;
 import org.furszy.contacts.ui.settings_backup.SettingsBackupActivity;
 import org.furszy.contacts.ui.settings_restore.SettingsRestoreActivity;
 

@@ -8,8 +8,8 @@ import org.libertaria.world.profile_server.ProfileInformation;
 import org.libertaria.world.profile_server.utils.ProfileUtils;
 import org.libertaria.world.profiles_manager.PairingRequest;
 import org.furszy.contacts.R;
-import org.furszy.contacts.adapter.BaseAdapter;
-import org.furszy.contacts.adapter.FermatListItemListeners;
+import tech.furszy.ui.lib.base.adapter.BaseAdapter;
+import tech.furszy.ui.lib.base.adapter.FermatListItemListeners;
 
 import java.util.Date;
 

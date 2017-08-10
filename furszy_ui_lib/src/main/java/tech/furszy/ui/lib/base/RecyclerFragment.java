@@ -1,7 +1,8 @@
-package org.furszy.contacts.base;
+package tech.furszy.ui.lib.base;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,10 +13,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.furszy.contacts.R;
-import org.furszy.contacts.adapter.BaseAdapter;
-import org.furszy.contacts.adapter.BaseViewHolder;
-import org.furszy.contacts.ui.home.contacts.ContactsFragment;
+import tech.furszy.ui.lib.base.adapter.BaseAdapter;
+import tech.furszy.ui.lib.base.adapter.BaseViewHolder;
+import tech.furszy_ui_lib.R;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,9 +28,9 @@ import java.util.concurrent.Executors;
  * Created by furszy on 6/20/17.
  */
 
-public abstract class RecyclerFragment<T> extends BaseAppFragment {
+public abstract class RecyclerFragment<T> extends Fragment {
 
-    private static final Logger log = LoggerFactory.getLogger(ContactsFragment.class);
+    private static final Logger log = LoggerFactory.getLogger(RecyclerFragment.class);
 
     private View root;
     protected RecyclerView.LayoutManager layoutManager;
@@ -56,7 +57,7 @@ public abstract class RecyclerFragment<T> extends BaseAppFragment {
                              Bundle savedInstanceState) {
         super.onCreateView(inflater,container,savedInstanceState);
         localBroadcastManager = LocalBroadcastManager.getInstance(getActivity());
-        root = inflater.inflate(R.layout.contacts_fragment, container, false);
+        root = inflater.inflate(R.layout.recycler_fragment, container, false);
         recycler = (RecyclerView) root.findViewById(R.id.recycler_contacts);
         swipeRefreshLayout = (SwipeRefreshLayout) root.findViewById(R.id.swipeRefresh);
         container_empty_screen = root.findViewById(R.id.container_empty_screen);

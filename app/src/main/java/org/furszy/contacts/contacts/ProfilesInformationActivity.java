@@ -15,7 +15,7 @@ import org.libertaria.world.profile_server.ProfileInformation;
 import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.ProfileInformationActivity;
 import org.furszy.contacts.R;
-import org.furszy.contacts.adapter.FermatListItemListeners;
+import tech.furszy.ui.lib.base.adapter.FermatListItemListeners;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;

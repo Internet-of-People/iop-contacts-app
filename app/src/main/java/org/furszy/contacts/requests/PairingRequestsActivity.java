@@ -11,7 +11,7 @@ import android.widget.TextView;
 import org.libertaria.world.profiles_manager.PairingRequest;
 import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.R;
-import org.furszy.contacts.adapter.FermatListItemListeners;
+import tech.furszy.ui.lib.base.adapter.FermatListItemListeners;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;

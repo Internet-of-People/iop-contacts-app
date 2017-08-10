@@ -7,11 +7,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import org.furszy.contacts.app_base.BaseAppRecyclerFragment;
 import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.profiles_manager.PairingRequest;
 import org.furszy.contacts.R;
-import org.furszy.contacts.adapter.BaseAdapter;
-import org.furszy.contacts.base.RecyclerFragment;
+import tech.furszy.ui.lib.base.adapter.BaseAdapter;
+import tech.furszy.ui.lib.base.RecyclerFragment;
 import org.furszy.contacts.ui.home.HomeActivity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +21,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class RequestsFragment extends RecyclerFragment<PairingRequest> {
+public class RequestsFragment extends BaseAppRecyclerFragment<PairingRequest> {
 
     private static final Logger log = LoggerFactory.getLogger(RequestsFragment.class);
 

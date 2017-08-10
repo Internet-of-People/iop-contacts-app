@@ -38,7 +38,7 @@ import com.squareup.picasso.Picasso;
 
 import org.libertaria.world.profile_server.ProfileInformation;
 import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
-import org.furszy.contacts.base.BaseAppFragment;
+import org.furszy.contacts.app_base.BaseAppFragment;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

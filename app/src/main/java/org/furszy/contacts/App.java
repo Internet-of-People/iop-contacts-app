@@ -166,9 +166,9 @@ public class App extends ConnectApp implements IoPConnectContext {
     @Override
     protected void onConnectClientServiceBind() {
         super.onConnectClientServiceBind();
-        profilesModule = (ProfilesModule) getModule(EnabledServices.PROFILE_DATA);
-        pairingModule = (PairingModule) getModule(EnabledServices.PROFILE_PAIRING);
-        chatModule = (ChatModule) getModule(EnabledServices.CHAT);
+        profilesModule = getProfilesModule();
+        pairingModule = getPairingModule();
+        chatModule = getChatModule();
 
         // notify connection to the service
         Intent notificateIntent = new Intent(INTENT_ACTION_ON_SERVICE_CONNECTED);
@@ -264,18 +264,6 @@ public class App extends ConnectApp implements IoPConnectContext {
 
     public LocalBroadcastManager getBroadcastManager() {
         return broadcastManager;
-    }
-
-    public PairingModule getPairingModule() {
-        return pairingModule;
-    }
-
-    public ChatModule getChatModule() {
-        return chatModule;
-    }
-
-    public ProfilesModule getProfilesModule() {
-        return profilesModule;
     }
 
     public String getSelectedProfilePubKey() {

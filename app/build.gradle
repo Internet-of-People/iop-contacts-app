@@ -50,6 +50,7 @@ dependencies {
     compile project(path: ':lib_sdk')
     compile project(':connect_sdk_android_client')
     compile project(':connect_sdk_android')
+    compile project(':furszy_ui_lib')
 
     compile 'org.slf4j:slf4j-api:1.7.20'
     compile('com.github.tony19:logback-android-classic:1.1.1-5') {

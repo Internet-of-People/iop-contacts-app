@@ -13,6 +13,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import tech.furszy.ui.lib.base.utils.AndroidUtils;
+
 import static android.graphics.Color.WHITE;
 
 /**

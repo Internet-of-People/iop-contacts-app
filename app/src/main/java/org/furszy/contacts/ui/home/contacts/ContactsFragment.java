@@ -7,12 +7,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.furszy.contacts.app_base.BaseAppRecyclerFragment;
 import org.libertaria.world.profile_server.ProfileInformation;
 import org.furszy.contacts.ProfileInformationActivity;
 import org.furszy.contacts.R;
-import org.furszy.contacts.adapter.BaseAdapter;
-import org.furszy.contacts.adapter.FermatListItemListeners;
-import org.furszy.contacts.base.RecyclerFragment;
+import tech.furszy.ui.lib.base.adapter.BaseAdapter;
+import tech.furszy.ui.lib.base.adapter.FermatListItemListeners;
+import tech.furszy.ui.lib.base.RecyclerFragment;
 import org.furszy.contacts.contacts.ProfileAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
 
 
-public class ContactsFragment extends RecyclerFragment<ProfileInformation> {
+public class ContactsFragment extends BaseAppRecyclerFragment<ProfileInformation> {
 
     private static final Logger log = LoggerFactory.getLogger(ContactsFragment.class);
 

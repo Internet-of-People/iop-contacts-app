@@ -1,4 +1,4 @@
-include ':app', ':iopj', ':lib_sdk', ':non-blocking-client'
+include ':app', ':iopj', ':lib_sdk', ':non-blocking-client', ':furszy_ui_lib'
 
 include ':libsodium-jni-aar-1.0.3'
 project(':libsodium-jni-aar-1.0.3').projectDir = new File('android-connect/libsodium-jni-aar-1.0.3')

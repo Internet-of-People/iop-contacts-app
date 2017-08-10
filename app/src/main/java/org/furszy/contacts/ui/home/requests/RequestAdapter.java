@@ -6,7 +6,7 @@ import android.view.View;
 import org.libertaria.world.profile_server.imp.ProfileInformationImp;
 import org.libertaria.world.profiles_manager.PairingRequest;
 import org.furszy.contacts.R;
-import org.furszy.contacts.adapter.BaseAdapter;
+import tech.furszy.ui.lib.base.adapter.BaseAdapter;
 
 /**
  * Created by mati on 03/03/17.
