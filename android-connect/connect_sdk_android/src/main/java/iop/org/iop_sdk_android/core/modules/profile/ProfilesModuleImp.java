@@ -61,8 +61,6 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
     // todo: change this for the non local broadcast..
     private ProfileServerConfigurations confPref;
     private ServiceFactory serviceFactory;
-    // This instance is just for now to start dividing things, to get and set the profile
-    //private PlatformService connectService;
 
     private PlatformSerializer platformSerializer = new PlatformSerializer(){
         @Override
@@ -346,6 +344,15 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
     }
 
     @Override
+    public List<ProfileInformation> getLocalProfiles() {
+        List<ProfileInformation> list = new ArrayList<>();
+        for (Profile profile : ioPConnect.getLocalProfiles().values()) {
+            list.add(convertLocalProfile(profile));
+        }
+        return list;
+    }
+
+    @Override
     public boolean isProfileRegistered(String localProfilePubKey) {
         return confPref.isRegisteredInServer();
     }
@@ -361,8 +368,12 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
     }
 
     public ProfileInformation getMyProfile(String localProfilePubKey) {
-        Set<String> services = new HashSet<>();
         Profile profile = ioPConnect.getProfile(localProfilePubKey);
+        return convertLocalProfile(profile);
+    }
+
+    private ProfileInformation convertLocalProfile(Profile profile){
+        Set<String> services = new HashSet<>();
         if (profile.getApplicationServices()!=null) {
             for (AppService appService : profile.getApplicationServices().values()) {
                 services.add(appService.getName());

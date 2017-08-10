@@ -44,6 +44,8 @@ public interface ProfilesModule extends Module {
 
     ProfileInformation getKnownProfile(String localProfilePubKey,String remotePk);
 
+    List<ProfileInformation> getLocalProfiles();
+
     boolean isProfileRegistered(String localProfilePubKey);
 
     ProfileInformation getProfile(String localProfilePubKey);

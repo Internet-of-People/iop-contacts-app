@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import java.util.List;
 
 /**
- * Fermat Adapter
+ *  Adapter
  * Use with RecyclerView Widgets
  *
  * @author Matias Furszyfer
@@ -19,7 +19,7 @@ public abstract class BaseAdapter<M, H extends BaseViewHolder> extends RecyclerV
 
     protected List<M> dataSet;
     protected Context context;
-    protected FermatListItemListeners<M> eventListeners;
+    protected RecyclerListItemListeners<M> eventListeners;
 
     protected BaseAdapter(Context context) {
         this.context = context;
@@ -143,7 +143,7 @@ public abstract class BaseAdapter<M, H extends BaseViewHolder> extends RecyclerV
         return item;
     }
 
-    public void setFermatListEventListener(FermatListItemListeners<M> onEventListeners) {
+    public void setListEventListener(RecyclerListItemListeners<M> onEventListeners) {
         this.eventListeners = onEventListeners;
     }
 

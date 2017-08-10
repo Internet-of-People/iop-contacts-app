@@ -7,7 +7,7 @@ import android.view.View;
 import org.libertaria.world.profile_server.ProfileInformation;
 import org.furszy.contacts.R;
 import tech.furszy.ui.lib.base.adapter.BaseAdapter;
-import tech.furszy.ui.lib.base.adapter.FermatListItemListeners;
+import tech.furszy.ui.lib.base.adapter.RecyclerListItemListeners;
 
 /**
  * Created by mati on 03/03/17.
@@ -15,9 +15,9 @@ import tech.furszy.ui.lib.base.adapter.FermatListItemListeners;
 public class ProfileAdapter extends BaseAdapter<ProfileInformation, ProfileHolder> {
 
 
-    public ProfileAdapter(final Activity context, FermatListItemListeners<ProfileInformation> fermatListItemListeners) {
+    public ProfileAdapter(final Activity context, RecyclerListItemListeners<ProfileInformation> recyclerListItemListeners) {
         super(context);
-        setFermatListEventListener(fermatListItemListeners);
+        setListEventListener(recyclerListItemListeners);
 
     }
 

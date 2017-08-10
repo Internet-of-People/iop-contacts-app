@@ -1,4 +1,4 @@
-package iop.org.iop_sdk_android.core.modules.chat;
+package world.libertaria.shared.library.services.chat;
 
 /**
  * Created by furszy on 7/20/17.

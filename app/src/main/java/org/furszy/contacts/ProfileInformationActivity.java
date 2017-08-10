@@ -88,7 +88,6 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                     loadProfileData();
                 }
             } else if (action.equals(ACTION_ON_PAIR_DISCONNECTED)) {
-                Log.i("GENERAL","EN ACTIO ON PAIR DISCONNECTED");
                 if (profileInformation != null) {
                     String pubKey = profileInformation.getHexPublicKey();
                     profileInformation = profilesModule.getKnownProfile(selectedProfPubKey,pubKey);
@@ -213,7 +212,6 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                             public void run() {
                                 flag.set(false);
                                 hideLoading();
-                                Log.i("GENERAL", "pairing request fail on Fail");
                                 String baseMsg = getResources().getString(R.string.pairing_fail);
                                 Toast.makeText(ProfileInformationActivity.this, baseMsg+": Remote profile not available", Toast.LENGTH_LONG).show();
                             }
@@ -248,7 +246,6 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 
                     @Override
                     public void onAction(int messageId, Boolean object) {
-                        Log.i("GENERAL","SUCCESS IN DISCONNECT PROFILE");
                         flag.set(false);
                         runOnUiThread(new Runnable(){
                             @Override
@@ -262,7 +259,6 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 
                     @Override
                     public void onFail(int messageId, int status, String statusDetail) {
-                        Log.i("GENERAL","FAIL CHAT REQUEST: "+statusDetail);
                         flag.set(false);
                         runOnUiThread(new Runnable(){
                             @Override
@@ -276,7 +272,6 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                 if (profileInformation.getPairStatus().equals(ProfileInformationImp.PairStatus.DISCONNECTED)) {
                     pairingModule.disconectPairingProfile(selectedProfPubKey,profileInformation,false,readyListener);
                 } else {
-                    Log.i("GENERAL","CASO CUANDO HAY Q NOTIFICAR");
                     pairingModule.disconectPairingProfile(selectedProfPubKey, profileInformation, true, readyListener);
                 }
             }
@@ -285,7 +280,6 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 
     private void loadProfileData() {
         if (profileInformation!=null) {
-            Log.i("GENERAL","PAIR STATUS: "+profileInformation.getPairStatus());
             if (profileInformation.getPairStatus().equals(ProfileInformationImp.PairStatus.DISCONNECTED)) {
                 btn_action.setEnabled(true);
                 btn_action.setText(R.string.send_request);

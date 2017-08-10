@@ -25,24 +25,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.android.LogcatAppender;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.rolling.RollingFileAppender;
-import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import iop.org.iop_sdk_android.core.service.ProfileServerConfigurationsImp;
-import iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants;
-import world.libertaria.sdk.android.client.ClientServiceConnectHelper;
-import world.libertaria.sdk.android.client.ConnectClientService;
-import world.libertaria.sdk.android.client.InitListener;
+import world.libertaria.shared.library.services.chat.ChatIntentsConstants;
 import world.libertaria.sdk.android.client.ConnectApp;
 
-import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_IOP_SERVICE_CONNECTED;
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_CHECK_IN_FAIL;
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PAIR_RECEIVED;
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PROFILE_CONNECTED;
