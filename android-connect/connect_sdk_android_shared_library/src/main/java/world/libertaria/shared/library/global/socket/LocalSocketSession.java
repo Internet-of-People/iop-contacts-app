@@ -148,6 +148,9 @@ public class LocalSocketSession {
 
         } catch (Exception e){
             e.printStackTrace();
+            logger.info("Connection closed, unknown error, removing socket");
+
+            closeNow();
         }
     }
 

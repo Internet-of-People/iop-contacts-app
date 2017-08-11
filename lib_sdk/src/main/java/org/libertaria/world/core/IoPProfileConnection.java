@@ -394,6 +394,9 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
         } catch (CallProfileAppServiceException e) {
             e.printStackTrace();
             notifyCallError(callProfileAppService,profSerMsgListener,0, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+        } catch (Exception e){
+            e.printStackTrace();
+            notifyCallError(callProfileAppService,profSerMsgListener,0, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
         }
     }
 
@@ -452,6 +455,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
     private void notifyCallError(CallProfileAppService callProfileAppService, ProfSerMsgListener<CallProfileAppService> listener, int msgId, CallProfileAppService.Status status, String errorStatus){
         callProfileAppService.setStatus(status);
         callProfileAppService.setErrorStatus(errorStatus);
+        callProfileAppService.dispose();
         listener.onMessageReceive(msgId,callProfileAppService);
     }
 
@@ -581,8 +585,8 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
         // todo: para notificar al otro lado que todo llegó bien.
 
         // todo: por alguna razon llega un mensaje para una llamada la cual no tiene listener asociado.. esto no deberia pasar.
-        logger.info("Open calls keys: "+Arrays.toString(openCall.keySet().toArray()));
-        logger.info("Open calls "+Arrays.toString(openCall.values().toArray()));
+        //logger.info("Open calls keys: "+Arrays.toString(openCall.keySet().toArray()));
+        //logger.info("Open calls "+Arrays.toString(openCall.values().toArray()));
         if (openCall.containsKey(message.getCallTokenId())){
             // launch notification
             openCall.get(message.getCallTokenId()).onMessageReceived(message.getMsg());

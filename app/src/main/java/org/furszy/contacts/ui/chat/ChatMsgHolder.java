@@ -5,7 +5,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.furszy.contacts.R;
-import org.furszy.contacts.adapter.BaseViewHolder;
+import tech.furszy.ui.lib.base.adapter.BaseViewHolder;
 
 /**
  * Created by furszy on 7/4/17.

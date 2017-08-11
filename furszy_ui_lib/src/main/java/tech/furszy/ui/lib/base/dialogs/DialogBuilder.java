@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.furszy.contacts;
-
+package tech.furszy.ui.lib.base.dialogs;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -27,6 +26,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import tech.furszy_ui_lib.R;
 
 
 /**

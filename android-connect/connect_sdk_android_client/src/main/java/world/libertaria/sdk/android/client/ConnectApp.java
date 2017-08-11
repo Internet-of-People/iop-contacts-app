@@ -9,6 +9,9 @@ import android.text.TextUtils;
 
 import org.libertaria.world.global.Module;
 import org.libertaria.world.services.EnabledServices;
+import org.libertaria.world.services.chat.ChatModule;
+import org.libertaria.world.services.interfaces.PairingModule;
+import org.libertaria.world.services.interfaces.ProfilesModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,11 +139,25 @@ public class ConnectApp extends Application implements ConnectApplication {
     }
 
     protected final Module getModule(EnabledServices enabledService){
-        return clientService.get().getModule(enabledService);
+        if (clientService!=null)
+            return clientService.get().getModule(enabledService);
+        return null;
     }
 
     public final String getAppPackage(){
         return getPackageName();
+    }
+
+    public final ProfilesModule getProfilesModule(){
+        return (ProfilesModule) getModule(EnabledServices.PROFILE_DATA);
+    }
+
+    public final PairingModule getPairingModule(){
+        return (PairingModule) getModule(EnabledServices.PROFILE_PAIRING);
+    }
+
+    public final ChatModule getChatModule(){
+        return (ChatModule) getModule(EnabledServices.CHAT);
     }
 
     /**

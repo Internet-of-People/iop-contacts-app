@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-import iop.org.iop_sdk_android.core.base.Configurations;
+import world.libertaria.shared.library.ui.Configurations;
 import iop.org.iop_sdk_android.core.crypto.KeyEd25519;
 import iop.org.iop_sdk_android.core.utils.PrivateStorage;
 

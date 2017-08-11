@@ -4,7 +4,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.furszy.contacts.R;
-import org.furszy.contacts.adapter.BaseViewHolder;
+import tech.furszy.ui.lib.base.adapter.BaseViewHolder;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 

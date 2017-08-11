@@ -5,7 +5,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import org.furszy.contacts.R;
-import org.furszy.contacts.adapter.BaseViewHolder;
+import tech.furszy.ui.lib.base.adapter.BaseViewHolder;
 
 /**
  * Created by mati on 03/03/17.

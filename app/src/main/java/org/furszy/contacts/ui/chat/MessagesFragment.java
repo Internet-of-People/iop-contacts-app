@@ -11,8 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.furszy.contacts.R;
-import org.furszy.contacts.adapter.BaseAdapter;
-import org.furszy.contacts.base.RecyclerFragment;
+import tech.furszy.ui.lib.base.adapter.BaseAdapter;
+import tech.furszy.ui.lib.base.RecyclerFragment;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

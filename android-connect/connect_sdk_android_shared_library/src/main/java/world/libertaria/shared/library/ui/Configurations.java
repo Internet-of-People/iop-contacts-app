@@ -1,4 +1,4 @@
-package iop.org.iop_sdk_android.core.base;
+package world.libertaria.shared.library.ui;
 
 import android.content.SharedPreferences;
 

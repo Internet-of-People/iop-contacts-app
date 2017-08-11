@@ -8,7 +8,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import org.furszy.contacts.BaseActivity;
-import org.furszy.contacts.DialogBuilder;
+import tech.furszy.ui.lib.base.dialogs.DialogBuilder;
 import org.furszy.contacts.R;
 
 /**

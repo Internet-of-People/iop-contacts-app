@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.furszy.contacts.base;
+package org.furszy.contacts.app_base;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -38,7 +38,7 @@ import org.libertaria.world.global.utils.Io;
 import org.libertaria.world.profile_server.DatabaseCollector;
 import org.furszy.contacts.AppConstants;
 import org.furszy.contacts.CrashReporter;
-import org.furszy.contacts.DialogBuilder;
+import tech.furszy.ui.lib.base.dialogs.DialogBuilder;
 import org.furszy.contacts.R;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

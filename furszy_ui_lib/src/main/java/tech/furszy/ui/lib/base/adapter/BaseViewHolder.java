@@ -1,4 +1,4 @@
-package org.furszy.contacts.adapter;
+package tech.furszy.ui.lib.base.adapter;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;

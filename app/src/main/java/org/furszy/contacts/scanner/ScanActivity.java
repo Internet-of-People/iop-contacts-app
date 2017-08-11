@@ -57,7 +57,7 @@ import com.google.zxing.ResultPointCallback;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeReader;
 
-import org.furszy.contacts.DialogBuilder;
+import tech.furszy.ui.lib.base.dialogs.DialogBuilder;
 import org.furszy.contacts.R;
 
 import java.util.EnumMap;

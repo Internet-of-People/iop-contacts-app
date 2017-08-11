@@ -1,4 +1,4 @@
-package org.furszy.contacts;
+package tech.furszy.ui.lib.base.utils;
 
 import android.app.Activity;
 import android.content.ClipboardManager;

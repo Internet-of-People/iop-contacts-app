@@ -13,6 +13,7 @@ import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.InputFilter;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import iop.org.iop_sdk_android.core.service.exceptions.BigImageException;
@@ -287,4 +289,19 @@ public class CreateProfileActivity extends BaseActivity {
             // permissions this app might request
         }
     }
+
+    public InputFilter filter = new InputFilter() {
+        @Override
+        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+            for (int i = start; i < end; ++i)
+            {
+                if (!Pattern.compile("[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890]*").matcher(String.valueOf(source.charAt(i))).matches())
+                {
+                    return "";
+                }
+            }
+
+            return null;
+        }
+    };
 }

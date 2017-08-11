@@ -1,4 +1,4 @@
-package org.furszy.contacts.adapter;
+package tech.furszy.ui.lib.base.adapter;
 
 /**
  * Created by francisco on 25/08/15.

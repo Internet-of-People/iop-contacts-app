@@ -171,6 +171,7 @@ public class ConnectClientService extends Service {
 
     @Override
     public void onCreate() {
+        logger.info("onCrate "+getClass().getName());
         super.onCreate();
         if (!(getApplication() instanceof ConnectApp)){
             logger.error("Application is not a sub class of ConnectApp");
@@ -252,6 +253,7 @@ public class ConnectClientService extends Service {
                 logger.info("Binding to ISERVERBROKERSERVICE returned false");
             }
         } catch (SecurityException e) {
+            e.printStackTrace();
             logger.info("can't bind to ISERVERBROKERSERVICE, check permission in Manifest");
         } catch (Exception e) {
             e.printStackTrace();

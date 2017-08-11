@@ -6,8 +6,8 @@ import android.view.View;
 
 import org.libertaria.world.profile_server.ProfileInformation;
 import org.furszy.contacts.R;
-import org.furszy.contacts.adapter.BaseAdapter;
-import org.furszy.contacts.adapter.FermatListItemListeners;
+import tech.furszy.ui.lib.base.adapter.BaseAdapter;
+import tech.furszy.ui.lib.base.adapter.FermatListItemListeners;
 
 /**
  * Created by mati on 03/03/17.

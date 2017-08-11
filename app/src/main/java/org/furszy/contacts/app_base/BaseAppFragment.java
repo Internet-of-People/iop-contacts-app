@@ -1,4 +1,4 @@
-package org.furszy.contacts.base;
+package org.furszy.contacts.app_base;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;

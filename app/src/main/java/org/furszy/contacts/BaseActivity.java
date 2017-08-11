@@ -124,9 +124,7 @@ public class BaseActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
-        pairingModule = app.getPairingModule();
-        chatModule = app.getChatModule();
-        profilesModule = app.getProfilesModule();
+        loadBasics();
         localBroadcastManager.registerReceiver(notifReceiver, new IntentFilter(NOTIF_DIALOG_EVENT));
         localBroadcastManager.registerReceiver(notifReceiver, new IntentFilter(INTENT_ACTION_PROFILE_DISCONNECTED));
         localBroadcastManager.registerReceiver(notifReceiver,new IntentFilter(INTENT_ACTION_PROFILE_CHECK_IN_FAIL));
@@ -196,18 +194,5 @@ public class BaseActivity extends AppCompatActivity{
         btnReload.setVisibility(View.VISIBLE);
     }
 
-    public InputFilter filter = new InputFilter() {
-        @Override
-        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-            for (int i = start; i < end; ++i)
-            {
-                if (!Pattern.compile("[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890]*").matcher(String.valueOf(source.charAt(i))).matches())
-                {
-                    return "";
-                }
-            }
 
-            return null;
-        }
-    };
 }

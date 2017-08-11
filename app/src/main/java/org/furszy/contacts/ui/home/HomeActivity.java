@@ -18,7 +18,8 @@ import org.furszy.contacts.App;
 import org.furszy.contacts.BaseDrawerActivity;
 import org.furszy.contacts.R;
 import org.furszy.contacts.StartActivity;
-import org.furszy.contacts.base.BaseAppFragment;
+import org.furszy.contacts.app_base.BaseAppFragment;
+import org.furszy.contacts.app_base.BaseAppRecyclerFragment;
 import org.furszy.contacts.ui.home.contacts.ContactsFragment;
 import org.furszy.contacts.ui.home.requests.RequestsFragment;
 import org.furszy.contacts.ui.send_request.SendRequestActivity;
@@ -56,7 +57,7 @@ public class HomeActivity extends BaseDrawerActivity {
     private void refreshFragments() {
         if (adapter!=null) {
             for (Fragment fragment : adapter.mFragmentList) {
-                ((BaseAppFragment) fragment).loadBasics();
+                ((BaseAppRecyclerFragment) fragment).loadBasics();
             }
             refreshContacts();
             refreshRequests();

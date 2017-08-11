@@ -8,6 +8,7 @@
       <module fileurl="file://$PROJECT_DIR$/android-connect/connect_sdk_android/connect_sdk_android.iml" filepath="$PROJECT_DIR$/android-connect/connect_sdk_android/connect_sdk_android.iml" />
       <module fileurl="file://$PROJECT_DIR$/android-connect/connect_sdk_android_client/connect_sdk_android_client.iml" filepath="$PROJECT_DIR$/android-connect/connect_sdk_android_client/connect_sdk_android_client.iml" />
       <module fileurl="file://$PROJECT_DIR$/android-connect/connect_sdk_android_shared_library/connect_sdk_android_shared_library.iml" filepath="$PROJECT_DIR$/android-connect/connect_sdk_android_shared_library/connect_sdk_android_shared_library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/furszy_ui_lib/furszy_ui_lib.iml" filepath="$PROJECT_DIR$/furszy_ui_lib/furszy_ui_lib.iml" />
       <module fileurl="file://$PROJECT_DIR$/iopj/iopj.iml" filepath="$PROJECT_DIR$/iopj/iopj.iml" />
       <module fileurl="file://$PROJECT_DIR$/lib_sdk/lib_sdk.iml" filepath="$PROJECT_DIR$/lib_sdk/lib_sdk.iml" />
       <module fileurl="file://$PROJECT_DIR$/android-connect/libsodium-jni-aar-1.0.3/libsodium-jni-aar-1.0.3.iml" filepath="$PROJECT_DIR$/android-connect/libsodium-jni-aar-1.0.3/libsodium-jni-aar-1.0.3.iml" />
