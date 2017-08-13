@@ -104,7 +104,7 @@ public class App extends ConnectApp implements IoPConnectContext {
         }
     };
 
-    private ChatModuleReceiver chatModuleReceiver = new ChatModuleReceiver();
+    //private ChatModuleReceiver chatModuleReceiver = new ChatModuleReceiver();
 
     @Override
     public void onCreate() {
@@ -135,9 +135,9 @@ public class App extends ConnectApp implements IoPConnectContext {
             }
 
 
-            registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_CONNECTED));
+            /*registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_CONNECTED));
             registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED));
-            registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_MSG_RECEIVED));
+            registerReceiver(chatModuleReceiver,new IntentFilter(ChatIntentsConstants.ACTION_ON_CHAT_MSG_RECEIVED));*/
             // register broadcast listeners
             registerReceiver(serviceReceiver, new IntentFilter(ACTION_ON_PAIR_RECEIVED));
             registerReceiver(serviceReceiver, new IntentFilter(ACTION_ON_RESPONSE_PAIR_RECEIVED));

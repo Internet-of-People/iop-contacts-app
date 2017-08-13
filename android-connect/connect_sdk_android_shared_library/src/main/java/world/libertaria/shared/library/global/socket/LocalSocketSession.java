@@ -100,8 +100,10 @@ public class LocalSocketSession {
                         read();
                         logger.info("reading from local session..");
                     } else {
-                        if (!Thread.currentThread().isInterrupted())
+                        if (!Thread.currentThread().isInterrupted()) {
                             Thread.currentThread().interrupt();
+                            break;
+                        }
                     }
                 }
             } catch (Exception e){

@@ -199,7 +199,6 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                             public void run() {
                                 flag.set(false);
                                 hideLoading();
-                                Log.i("GENERAL", "pairing request sent");
                                 Toast.makeText(ProfileInformationActivity.this, R.string.pairing_success, Toast.LENGTH_LONG).show();
                             }
                         });
@@ -381,7 +380,9 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                 Toast.makeText(v.getContext(),"You need connect with "+profileInformation.getName()+" in order to send messages",Toast.LENGTH_SHORT).show();
                 return;
             }
-            if (flag.compareAndSet(false,true)) {
+            Intent intent = new Intent();
+            Toast.makeText(this,"Open chat app here please",Toast.LENGTH_LONG).show();
+            /*if (flag.compareAndSet(false,true)) {
                 Toast.makeText(v.getContext(),"Sending chat request..",Toast.LENGTH_SHORT).show();
                 executor.submit(new Runnable() {
                     @Override
@@ -490,7 +491,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                         }
                     }
                 });
-            }
+            }*/
 
         }
     }

@@ -15,6 +15,7 @@ import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.profile_server.model.Profile;
 import org.libertaria.world.services.EnabledServices;
 import org.libertaria.world.services.chat.ChatCallAlreadyOpenException;
+import org.libertaria.world.services.chat.ChatCallClosedException;
 import org.libertaria.world.services.chat.ChatModule;
 import org.libertaria.world.services.chat.ChatMsgListener;
 import org.libertaria.world.services.chat.RequestChatException;
