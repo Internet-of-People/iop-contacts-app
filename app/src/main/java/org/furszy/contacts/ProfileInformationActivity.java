@@ -398,7 +398,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                                             Toast.makeText(ProfileInformationActivity.this, "Chat request sent", Toast.LENGTH_LONG).show();
                                             Intent intent = new Intent(ProfileInformationActivity.this, WaitingChatActivity.class);
                                             intent.putExtra(REMOTE_PROFILE_PUB_KEY,profileInformation.getHexPublicKey());
-                                            intent.putExtra(WaitingChatActivity.IS_CALLING, false);
+                                            intent.putExtra(WaitingChatActivity.IS_CALLING, true);
                                             startActivity(intent);
                                         }
                                     });
