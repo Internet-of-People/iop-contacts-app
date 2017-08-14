@@ -8,7 +8,7 @@ import org.libertaria.world.profile_server.ModuleRedtooth;
 import org.libertaria.world.profile_server.ProfileInformation;
 import org.furszy.contacts.R;
 import tech.furszy.ui.lib.base.adapter.BaseAdapter;
-import tech.furszy.ui.lib.base.adapter.FermatListItemListeners;
+import tech.furszy.ui.lib.base.adapter.RecyclerListItemListeners;
 
 /**
  * Created by mati on 03/03/17.
@@ -17,10 +17,10 @@ public class ProfileAdapter extends BaseAdapter<ProfileInformation, ProfileHolde
 
     ModuleRedtooth module;
 
-    public ProfileAdapter(final Activity context, final ModuleRedtooth module, FermatListItemListeners<ProfileInformation> fermatListItemListeners) {
+    public ProfileAdapter(final Activity context, final ModuleRedtooth module, RecyclerListItemListeners<ProfileInformation> recyclerListItemListeners) {
         super(context);
         this.module = module;
-        setFermatListEventListener(fermatListItemListeners);
+        setListEventListener(recyclerListItemListeners);
 
     }
 

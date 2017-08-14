@@ -26,10 +26,10 @@ import org.furszy.contacts.R;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import iop.org.iop_sdk_android.core.modules.chat.ChatCallClosedException;
+import org.libertaria.world.services.chat.ChatCallClosedException;
 
-import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED;
-import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;
+import static world.libertaria.shared.library.services.chat.ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED;
+import static world.libertaria.shared.library.services.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;
 import static org.furszy.contacts.App.INTENT_CHAT_REFUSED_BROADCAST;
 import static org.furszy.contacts.ui.chat.WaitingChatActivity.REMOTE_PROFILE_PUB_KEY;
 

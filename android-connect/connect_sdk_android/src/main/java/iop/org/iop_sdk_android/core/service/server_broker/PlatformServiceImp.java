@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -109,7 +110,6 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
 
     /** Server socket */
     private LocalServerSocket localServerSocket;
-    private Thread serverThread;
     /** Clients connected */
     private Map<String, LocalSocketSession> socketsClients = new HashMap<>();
 
@@ -321,10 +321,6 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
     @Override
     public void onDestroy() {
         logger.info("onDestroy");
-        try {
-            serverThread.interrupt();
-        } catch (Exception e) {
-        }
 
         try {
             localServerSocket.close();
@@ -371,21 +367,18 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
     private final IPlatformService.Stub mBinder = new IPlatformService.Stub() {
         @Override
         public String register() throws RemoteException {
-            // todo: Extend this to more clients..
-            String clientKey = UUID.randomUUID().toString();
 
-            if (serverThread == null) {
-                final String finalClientKey = clientKey;
-                serverThread = new Thread(new Runnable() {
+            final String clientKey = UUID.randomUUID().toString();
+            Thread serverThread = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         try {
                             LocalSocket localSocket = localServerSocket.accept();
                             localSocket.setSendBufferSize(LocalSocketSession.RECEIVE_BUFFER_SIZE);
 //                            localSocket.setSoTimeout(0);
-                            LocalSocketSession localServerSocketSession = new LocalSocketSession(
+                            LocalSocketSession session = new LocalSocketSession(
                                     IntentServiceAction.SERVICE_NAME,
-                                    finalClientKey,
+                                    clientKey,
                                     localSocket,
                                     null // null because the server is not receiving messages for now
                             );
@@ -394,14 +387,15 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }*/
-                            socketsClients.put(finalClientKey, localServerSocketSession);
+                            socketsClients.put(clientKey, session);
+
+                            logger.info("app client registered with session key: "+clientKey);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
 
                     }
                 });
-            }
             //serverThread.setDaemon(true);
             serverThread.start();
 
@@ -458,6 +452,8 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                             .build();
 
                     socketsClients.get(clientId).write(response);
+                }else {
+                    logger.warn("ClientId not found on open local channels.. id: "+clientId+", open channels: "+ Arrays.toString(socketsClients.keySet().toArray()));
                 }
             } catch (CantSendMessageException e) {
                 e.printStackTrace();

@@ -28,6 +28,11 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="world.libertaria.profiles.MY_PROFILE"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
         </activity>
 
         <activity android:name=".scanner.ScanActivity"/>
@@ -63,7 +68,13 @@
         <activity android:name=".ui.chat.WaitingChatActivity">
         </activity>
 
-        <activity android:name=".ui.send_request.SendRequestActivity"/>
+        <activity android:name=".ui.send_request.SendRequestActivity">
+            <intent-filter>
+                <action android:name="world.libertaria.profiles.REQUEST"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
+        </activity>
 
         <provider
             android:name="android.support.v4.content.FileProvider"

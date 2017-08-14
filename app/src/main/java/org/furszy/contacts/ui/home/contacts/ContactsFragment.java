@@ -12,8 +12,8 @@ import org.libertaria.world.profile_server.ProfileInformation;
 import org.furszy.contacts.ProfileInformationActivity;
 import org.furszy.contacts.R;
 import tech.furszy.ui.lib.base.adapter.BaseAdapter;
-import tech.furszy.ui.lib.base.adapter.FermatListItemListeners;
-import tech.furszy.ui.lib.base.RecyclerFragment;
+import tech.furszy.ui.lib.base.adapter.RecyclerListItemListeners;
+
 import org.furszy.contacts.contacts.ProfileAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +39,7 @@ public class ContactsFragment extends BaseAppRecyclerFragment<ProfileInformation
 
     @Override
     protected BaseAdapter initAdapter() {
-        return new ProfileAdapter(getActivity(),new FermatListItemListeners<ProfileInformation>() {
+        return new ProfileAdapter(getActivity(),new RecyclerListItemListeners<ProfileInformation>() {
             @Override
             public void onItemClickListener(ProfileInformation data, int position) {
                 Intent intent1 = new Intent(getActivity(), ProfileInformationActivity.class);

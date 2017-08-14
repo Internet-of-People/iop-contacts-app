@@ -104,7 +104,7 @@ public class KeyEd25519Java implements KeyEd25519,Serializable{
      * Generates new keys using a given seed (private key).
      *
      * @param privateKey -> 32 byte private key seed to generate public key and extended private key from.
-     * @return org.fermat.KeyEd25519
+     * @return KeyEd25519
      */
     public static KeyEd25519 generateKeys(byte[] privateKey){
         // Generate the key pair

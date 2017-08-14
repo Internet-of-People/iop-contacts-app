@@ -9,7 +9,7 @@ import org.libertaria.world.profile_server.utils.ProfileUtils;
 import org.libertaria.world.profiles_manager.PairingRequest;
 import org.furszy.contacts.R;
 import tech.furszy.ui.lib.base.adapter.BaseAdapter;
-import tech.furszy.ui.lib.base.adapter.FermatListItemListeners;
+import tech.furszy.ui.lib.base.adapter.RecyclerListItemListeners;
 
 import java.util.Date;
 
@@ -20,10 +20,10 @@ public class RequestsAdapter extends BaseAdapter<PairingRequest, RequestHolder> 
 
     private ProfileInformation localProfile;
 
-    public RequestsAdapter(final Activity context, final ProfileInformation localProfile, FermatListItemListeners<PairingRequest> fermatListItemListeners) {
+    public RequestsAdapter(final Activity context, final ProfileInformation localProfile, RecyclerListItemListeners<PairingRequest> recyclerListItemListeners) {
         super(context);
         this.localProfile = localProfile;
-        setFermatListEventListener(fermatListItemListeners);
+        setListEventListener(recyclerListItemListeners);
     }
 
     @Override

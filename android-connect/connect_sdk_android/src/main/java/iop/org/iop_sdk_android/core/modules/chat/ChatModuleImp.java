@@ -15,6 +15,7 @@ import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.profile_server.model.Profile;
 import org.libertaria.world.services.EnabledServices;
 import org.libertaria.world.services.chat.ChatCallAlreadyOpenException;
+import org.libertaria.world.services.chat.ChatCallClosedException;
 import org.libertaria.world.services.chat.ChatModule;
 import org.libertaria.world.services.chat.ChatMsgListener;
 import org.libertaria.world.services.chat.RequestChatException;
@@ -27,12 +28,13 @@ import org.slf4j.LoggerFactory;
 import iop.org.iop_sdk_android.core.base.AbstractModule;
 import iop.org.iop_sdk_android.core.base.ProfileNotSupportAppServiceException;
 import iop.org.iop_sdk_android.core.utils.EmptyListener;
+import world.libertaria.shared.library.services.chat.ChatIntentsConstants;
 
-import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.EXTRA_INTENT_CHAT_MSG;
-import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;
-import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.EXTRA_INTENT_IS_LOCAL_CREATOR;
-import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.EXTRA_INTENT_LOCAL_PROFILE;
-import static iop.org.iop_sdk_android.core.modules.chat.ChatIntentsConstants.EXTRA_INTENT_REMOTE_PROFILE;
+import static world.libertaria.shared.library.services.chat.ChatIntentsConstants.EXTRA_INTENT_CHAT_MSG;
+import static world.libertaria.shared.library.services.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;
+import static world.libertaria.shared.library.services.chat.ChatIntentsConstants.EXTRA_INTENT_IS_LOCAL_CREATOR;
+import static world.libertaria.shared.library.services.chat.ChatIntentsConstants.EXTRA_INTENT_LOCAL_PROFILE;
+import static world.libertaria.shared.library.services.chat.ChatIntentsConstants.EXTRA_INTENT_REMOTE_PROFILE;
 
 /**
  * Created by furszy on 7/20/17.

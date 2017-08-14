@@ -11,7 +11,7 @@ import android.widget.TextView;
 import org.libertaria.world.profiles_manager.PairingRequest;
 import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.R;
-import tech.furszy.ui.lib.base.adapter.FermatListItemListeners;
+import tech.furszy.ui.lib.base.adapter.RecyclerListItemListeners;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -57,7 +57,7 @@ public class PairingRequestsActivity extends BaseActivity {
         recyclerView.setLayoutManager(layoutManager);
 
         // specify an adapter (see also next example)
-        adapter = new RequestsAdapter(this,profilesModule.getProfile(selectedProfPubKey),new FermatListItemListeners<PairingRequest>() {
+        adapter = new RequestsAdapter(this,profilesModule.getProfile(selectedProfPubKey),new RecyclerListItemListeners<PairingRequest>() {
             @Override
             public void onItemClickListener(PairingRequest data, int position) {
                 //Intent intent1 = new Intent(PairingRequestsActivity.this, ProfileInformationActivity.class);

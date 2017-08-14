@@ -175,7 +175,7 @@ public class ForumClientDiscourseImp implements ForumClient {
 
     /**
      *
-     * curl -X PUT -d id=32 -d post[raw="This is mey weafafearqwrwas]  afafafwaea" http://fermat.community/posts/32.json?api_key=70f4d61d58a2ebcf024e3514e2e64c5e106985ec9d9fd99b9b19bcc8742648e6&api_username=jhon123
+     * curl -X PUT -d id=32 -d post[raw="This is mey weafafearqwrwas]  afafafwaea" http://.community/posts/32.json?api_key=70f4d61d58a2ebcf024e3514e2e64c5e106985ec9d9fd99b9b19bcc8742648e6&api_username=jhon123
 
      *
      * @param title

@@ -221,7 +221,7 @@ public class ConnectClientService extends Service {
             try {
                 clientId = iServerBrokerService.register();
                 //running socket receiver
-                logger.info("Starting socket receiver");
+                logger.info("Starting socket receiver, client id: "+clientId);
                 LocalSocket localSocket = new LocalSocket();
                 serviceSocket = new LocalSocketSession(IntentServiceAction.SERVICE_NAME,clientId, localSocket, sessionHandler);
                 serviceSocket.connect();

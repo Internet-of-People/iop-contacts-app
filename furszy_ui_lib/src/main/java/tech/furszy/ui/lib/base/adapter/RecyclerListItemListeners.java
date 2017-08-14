@@ -3,7 +3,7 @@ package tech.furszy.ui.lib.base.adapter;
 /**
  * Created by francisco on 25/08/15.
  */
-public interface FermatListItemListeners<M> {
+public interface RecyclerListItemListeners<M> {
 
     /**
      * onItem click listener event

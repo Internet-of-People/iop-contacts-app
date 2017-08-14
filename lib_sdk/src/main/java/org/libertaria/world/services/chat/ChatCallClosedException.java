@@ -1,4 +1,4 @@
-package iop.org.iop_sdk_android.core.modules.chat;
+package org.libertaria.world.services.chat;
 
 import org.libertaria.world.profile_server.ProfileInformation;
 

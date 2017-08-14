@@ -2,6 +2,7 @@ package tech.furszy.ui.lib.base;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -53,10 +54,15 @@ public abstract class RecyclerFragment<T> extends Fragment {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        localBroadcastManager = LocalBroadcastManager.getInstance(getActivity());
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         super.onCreateView(inflater,container,savedInstanceState);
-        localBroadcastManager = LocalBroadcastManager.getInstance(getActivity());
         root = inflater.inflate(R.layout.recycler_fragment, container, false);
         recycler = (RecyclerView) root.findViewById(R.id.recycler_contacts);
         swipeRefreshLayout = (SwipeRefreshLayout) root.findViewById(R.id.swipeRefresh);

@@ -15,7 +15,7 @@ import org.libertaria.world.profile_server.ProfileInformation;
 import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.ProfileInformationActivity;
 import org.furszy.contacts.R;
-import tech.furszy.ui.lib.base.adapter.FermatListItemListeners;
+import tech.furszy.ui.lib.base.adapter.RecyclerListItemListeners;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -60,7 +60,7 @@ public class ProfilesInformationActivity extends BaseActivity {
         recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-        adapter = new ProfileAdapter(this,new FermatListItemListeners<ProfileInformation>() {
+        adapter = new ProfileAdapter(this,new RecyclerListItemListeners<ProfileInformation>() {
             @Override
             public void onItemClickListener(ProfileInformation data, int position) {
                 Intent intent1 = new Intent(ProfilesInformationActivity.this, ProfileInformationActivity.class);
