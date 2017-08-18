@@ -88,6 +88,7 @@ public abstract class AbstractModule implements Module {
     protected CallProfileAppService getCall(String localProfilePubKey, String remoteProfilePubKey) throws ProfileNotSupportAppServiceException {
         checkNotNull(remoteProfilePubKey,"Remote profile pubKey must not be null");
         checkNotNull(localProfilePubKey,"Local profile pubKey must not be null");
+        if (remoteProfilePubKey.equals(localProfilePubKey)) throw new IllegalArgumentException("local profile pub key is the same than the remote profile pub key");
         AppService appService = ioPConnect.getProfileAppService(localProfilePubKey,service);
         if (appService==null) throw new ProfileNotSupportAppServiceException(localProfilePubKey,service);
         if(appService.hasOpenCall(remoteProfilePubKey)){
@@ -121,13 +122,14 @@ public abstract class AbstractModule implements Module {
         return null;
     }
 
-    protected void prepareCall(String localProfilePubKey, ProfileInformation remoteProfileInformation, ProfSerMsgListener<CallProfileAppService> readyListener){
-        ioPConnect.callService(service.getName(), localProfilePubKey, remoteProfileInformation, true, readyListener);
-    }
-
     protected void prepareCall(String localProfilePubKey, String remoteProfPubKey, ProfSerMsgListener<CallProfileAppService> readyListener){
         ProfileInformation remoteProfileInformation = ioPConnect.getKnownProfile(localProfilePubKey,remoteProfPubKey);
         if (remoteProfileInformation==null) throw new IllegalArgumentException("remote profile not exist");
+        prepareCall(localProfilePubKey,remoteProfileInformation,readyListener);
+    }
+
+    protected void prepareCall(String localProfilePubKey, ProfileInformation remoteProfileInformation, ProfSerMsgListener<CallProfileAppService> readyListener){
+        if (remoteProfileInformation.getHexPublicKey().equals(localProfilePubKey)) throw new IllegalArgumentException("local profile pub key is the same than the remote profile pub key");
         ioPConnect.callService(service.getName(), localProfilePubKey, remoteProfileInformation, true, readyListener);
     }
 
