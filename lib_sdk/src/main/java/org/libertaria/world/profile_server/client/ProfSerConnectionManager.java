@@ -204,7 +204,13 @@ public class ProfSerConnectionManager {
         boolean result = connectToPort(portType,port,null);
         if (!result) throw new CantSendMessageException("Cant connect to: "+portType.name()+", port number: "+port);
         ProfileServerSocket profileServerSocket = serverSockets.get(portType);
-        profileServerSocket.write(message);
+        if (profileServerSocket==null){
+            serverSockets.remove(portType);
+            throw new CantSendMessageException("Cant connect to: "+portType.name()+", port number: "+port);
+        }else {
+            profileServerSocket.write(message);
+        }
+
     }
 
     public void writeToAppServiceCall(IopProfileServer.ServerRoleType portType, int port, IopProfileServer.Message message,String token) throws CantSendMessageException,CantConnectException {

@@ -328,7 +328,14 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
         }
         core.clean();
         executor.shutdown();
-        ioPConnect.stop();
+        // this is because android bother with network operations on the main thread..
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ioPConnect.stop();
+            }
+        });
+
         super.onDestroy();
     }
 
