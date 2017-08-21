@@ -17,6 +17,7 @@ import world.libertaria.shared.library.global.ModuleObject;
 
 /**
  * Created by furszy on 7/28/17.
+ * todo: improve the thread with an executor..
  */
 
 public class LocalSocketSession {
@@ -35,12 +36,18 @@ public class LocalSocketSession {
     private Thread readThread;
     /***/
     private SessionHandler sessionHandler;
+    private boolean isServerSide = false;
 
     public LocalSocketSession(String serverName,String pkIdentity,LocalSocket localSocket,SessionHandler sessionHandler) {
         this.pkIdentity = pkIdentity;
         this.localSocket = localSocket;
         this.serverName = serverName;
         this.sessionHandler = sessionHandler;
+    }
+
+    public LocalSocketSession(String serverName,String pkIdentity,LocalSocket localSocket,SessionHandler sessionHandler,boolean isServerSide) {
+        this(serverName,pkIdentity,localSocket,sessionHandler);
+        this.isServerSide = isServerSide;
     }
 
     /**
@@ -54,7 +61,11 @@ public class LocalSocketSession {
                 localSocket.setReceiveBufferSize(RECEIVE_BUFFER_SIZE);
                 localSocket.setSoTimeout(0);
             }
+            startReceiver();
         }
+    }
+
+    public void startReceiver(){
         readThread = new Thread(new SessionRunner());
         readThread.start();
     }
@@ -66,6 +77,7 @@ public class LocalSocketSession {
             logger.info("Message lenght to send: "+messageSize);
             localSocket.getOutputStream().write(messageToSend);
             localSocket.getOutputStream().flush();
+            logger.info("message sent");
             //sessionHandler.messageSent(this,message);
         }catch (Exception e){
             try {
@@ -83,6 +95,18 @@ public class LocalSocketSession {
         return localSocket.isConnected();
     }
 
+    public boolean isAuth() {
+        return pkIdentity != null;
+    }
+
+    public void setClientId(String clientId) {
+        this.pkIdentity = clientId;
+    }
+
+    public String getClientId() {
+        return pkIdentity;
+    }
+
 
     private class SessionRunner implements Runnable{
 
@@ -96,14 +120,18 @@ public class LocalSocketSession {
                     return;
                 }
                 for (; ; ) {
-                    if (localSocket.isConnected()) {
+                    if (localSocket.isConnected() || isServerSide) {
+                        logger.info("prepare to read from local session..");
                         read();
                         logger.info("reading from local session..");
                     } else {
+                        logger.warn("local socket is not connected "+pkIdentity);
                         if (!Thread.currentThread().isInterrupted()) {
                             Thread.currentThread().interrupt();
                             break;
                         }
+                        closeNow();
+                        break;
                     }
                 }
             } catch (Exception e){
@@ -121,7 +149,7 @@ public class LocalSocketSession {
         byte[] buffer = new byte[RECEIVE_BUFFER_SIZE];
         try {
             // read reply
-            if (localSocket.isConnected()) {
+            if (localSocket.isConnected() || isServerSide) {
                 count = localSocket.getInputStream().read(buffer);
                 logger.info("Reciving data..");
                 ModuleObject.ModuleResponse response = null;
@@ -129,7 +157,7 @@ public class LocalSocketSession {
                     ByteBuffer byteBufferToRead = ByteBuffer.allocate(count);
                     byteBufferToRead.put(buffer, 0, count);
                     response = ModuleObject.ModuleResponse.parseFrom(byteBufferToRead.array());
-                    sessionHandler.onReceive(response);
+                    sessionHandler.onReceive(this,response);
                 } else {
                     // read < 0 -> connection closed
                     logger.info("Connection closed, read<0 with connect service , removing socket");
@@ -169,7 +197,7 @@ public class LocalSocketSession {
         // notify upper layers
         if (sessionHandler!=null){
             try {
-                sessionHandler.sessionClosed(pkIdentity);
+                sessionHandler.sessionClosed(this,pkIdentity);
             } catch (Exception e) {
                 // swallow
                 e.printStackTrace();
@@ -177,4 +205,33 @@ public class LocalSocketSession {
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        LocalSocketSession session = (LocalSocketSession) o;
+
+        if (pkIdentity != null ? !pkIdentity.equals(session.pkIdentity) : session.pkIdentity != null)
+            return false;
+        if (!serverName.equals(session.serverName)) return false;
+        return localSocket.equals(session.localSocket);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = pkIdentity != null ? pkIdentity.hashCode() : 0;
+        result = 31 * result + serverName.hashCode();
+        result = 31 * result + localSocket.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "LocalSocketSession{" +
+                "pkIdentity='" + pkIdentity + '\'' +
+                ", serverName='" + serverName + '\'' +
+                '}';
+    }
 }

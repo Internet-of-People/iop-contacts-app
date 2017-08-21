@@ -86,7 +86,6 @@ public class ConnectApp extends Application implements ConnectApplication {
                 onConnectClientServiceUnbind();
             }
         });
-
     }
 
     private void initLogging() {

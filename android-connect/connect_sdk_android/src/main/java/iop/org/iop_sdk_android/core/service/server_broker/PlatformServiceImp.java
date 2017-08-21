@@ -68,6 +68,8 @@ import world.libertaria.shared.library.global.ModuleParameter;
 import world.libertaria.shared.library.global.service.IntentServiceAction;
 import world.libertaria.shared.library.global.socket.LocalSocketSession;
 import world.libertaria.shared.library.global.service.IPlatformService;
+import world.libertaria.shared.library.global.socket.SessionHandler;
+
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PROFILE_CONNECTED;
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
@@ -107,11 +109,8 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
     private AtomicBoolean isInitialized = new AtomicBoolean(false);
 
     private final Set<BlockchainState.Impediment> impediments = EnumSet.noneOf(BlockchainState.Impediment.class);
-
-    /** Server socket */
-    private LocalServerSocket localServerSocket;
-    /** Clients connected */
-    private Map<String, LocalSocketSession> socketsClients = new HashMap<>();
+    /** Server Manager */
+    private LocalServer localServer;
 
     private final BroadcastReceiver connectivityReceiver = new BroadcastReceiver() {
         @Override
@@ -211,7 +210,8 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                 ioPConnect.start();
 
                 try {
-                    localServerSocket = new LocalServerSocket(IntentServiceAction.SERVICE_NAME);
+                    localServer = new LocalServer(this);
+                    localServer.start();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -224,6 +224,7 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
             isInitialized.set(false);
         }
     }
+
 
     /**
      * Try to solve some impediment if there is any.
@@ -322,13 +323,10 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
     public void onDestroy() {
         logger.info("onDestroy");
 
-        try {
-            localServerSocket.close();
-        } catch (IOException e) {
-        }
+        localServer.shutdown();
         core.clean();
         executor.shutdown();
-        // this is because android bother with network operations on the main thread..
+        // this is because android bother with network operations on  main thread..
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -371,41 +369,22 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
         }
     }
 
+    private SessionHandler sessionHandler = new SessionHandler() {
+        @Override
+        public void onReceive(LocalSocketSession localSocketSession,ModuleObject.ModuleResponse response) {
+            logger.info("onReceive "+localSocketSession.toString());
+        }
+
+        @Override
+        public void sessionClosed(LocalSocketSession localSocketSession,String clientPk) {
+            logger.info("sessionClosed "+clientPk);
+        }
+    };
+
     private final IPlatformService.Stub mBinder = new IPlatformService.Stub() {
         @Override
         public String register() throws RemoteException {
-
             final String clientKey = UUID.randomUUID().toString();
-            Thread serverThread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            LocalSocket localSocket = localServerSocket.accept();
-                            localSocket.setSendBufferSize(LocalSocketSession.RECEIVE_BUFFER_SIZE);
-//                            localSocket.setSoTimeout(0);
-                            LocalSocketSession session = new LocalSocketSession(
-                                    IntentServiceAction.SERVICE_NAME,
-                                    clientKey,
-                                    localSocket,
-                                    null // null because the server is not receiving messages for now
-                            );
-                            /*try {
-                                localServerSocketSession.startSender();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }*/
-                            socketsClients.put(clientKey, session);
-
-                            logger.info("app client registered with session key: "+clientKey);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-
-                    }
-                });
-            //serverThread.setDaemon(true);
-            serverThread.start();
-
             return clientKey;
         }
 
@@ -445,7 +424,7 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
             logger.info("abstract method onMessageReceive, "+message);
             // todo: send the response via socket if it's big or via broadcast if it's not
             try {
-                if (socketsClients.containsKey(clientId)) {
+                if (localServer.isClientConnected(clientId)){
                     ModuleObject.ModuleObjectWrapper moduleObjectWrapper =
                             ModuleObject.ModuleObjectWrapper.newBuilder()
                                     .setObj(
@@ -457,10 +436,9 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                             .setResponseType(ModuleObject.ResponseType.OBJ)
                             .setObj(moduleObjectWrapper)
                             .build();
-
-                    socketsClients.get(clientId).write(response);
+                    localServer.dispathMsg(clientId,requestId,messageId,response);
                 }else {
-                    logger.warn("ClientId not found on open local channels.. id: "+clientId+", open channels: "+ Arrays.toString(socketsClients.keySet().toArray()));
+                    logger.error("client is not connected anymore.. "+clientId);
                 }
             } catch (CantSendMessageException e) {
                 e.printStackTrace();
@@ -474,13 +452,15 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
             logger.info("abstract method onMsgFail, "+details);
             // todo: send the response via socket if it's big or via broadcast if it's not
             try{
-                if (socketsClients.containsKey(clientId)) {
+                if (localServer.isClientConnected(clientId)){
                     ModuleObject.ModuleResponse response = ModuleObject.ModuleResponse.newBuilder()
                             .setId(requestId)
                             .setResponseType(ModuleObject.ResponseType.ERR)
                             .setErr(ByteString.copyFromUtf8(details))
                             .build();
-                    socketsClients.get(clientId).write(response);
+                    localServer.dispathMsg(clientId,requestId,messageId,response);
+                }else {
+                    logger.error("client is not connected anymore.. "+clientId);
                 }
             } catch (CantSendMessageException e) {
                 e.printStackTrace();

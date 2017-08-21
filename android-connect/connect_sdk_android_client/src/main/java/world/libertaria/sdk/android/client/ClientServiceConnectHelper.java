@@ -18,22 +18,22 @@ public class ClientServiceConnectHelper {
 
     public static final String TAG = "ClientConnHelper";
 
-    private Application application;
+    private Context application;
     private ConnectClientService clientService;
 
     private AtomicBoolean isConnected = new AtomicBoolean(false);
     private InitListener listener;
 
 
-    public static ClientServiceConnectHelper init(Application application, InitListener initListener) {
-        ClientServiceConnectHelper anRedtooth = new ClientServiceConnectHelper(application);
+    public static ClientServiceConnectHelper init(Context context, InitListener initListener) {
+        ClientServiceConnectHelper anRedtooth = new ClientServiceConnectHelper(context);
         anRedtooth.setListener(initListener);
         anRedtooth.startProfileServerService();
         return anRedtooth;
     }
 
-    private ClientServiceConnectHelper(Application application) {
-        this.application = application;
+    private ClientServiceConnectHelper(Context context) {
+        this.application = context;
     }
 
     public ServiceConnection profServiceConnection = new ServiceConnection() {
