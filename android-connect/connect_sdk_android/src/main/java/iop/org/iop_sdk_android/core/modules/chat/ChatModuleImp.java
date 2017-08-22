@@ -148,6 +148,7 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
 
     @Override
     public void onChatDisconnected(String remotePubKey,String reason) {
+        logger.info("onChatDisconnected");
         Intent intent = new Intent();
         intent.setAction(ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED);
         intent.putExtra(EXTRA_INTENT_REMOTE_PROFILE,remotePubKey);

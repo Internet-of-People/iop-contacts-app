@@ -46,6 +46,9 @@ import static world.libertaria.shared.library.global.client.IntentBroadcastConst
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT;
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
 import static org.furszy.contacts.ui.chat.WaitingChatActivity.REMOTE_PROFILE_PUB_KEY;
+import static world.libertaria.shared.library.services.chat.ChatIntentsConstants.ACTION_OPEN_CHAT_APP;
+import static world.libertaria.shared.library.services.chat.ChatIntentsConstants.EXTRA_INTENT_LOCAL_PROFILE;
+import static world.libertaria.shared.library.services.chat.ChatIntentsConstants.EXTRA_INTENT_REMOTE_PROFILE;
 
 /**
  * Created by furszy on 5/27/17.
@@ -380,8 +383,11 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                 Toast.makeText(v.getContext(),"You need connect with "+profileInformation.getName()+" in order to send messages",Toast.LENGTH_SHORT).show();
                 return;
             }
-            Intent intent = new Intent();
-            Toast.makeText(this,"Open chat app here please",Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(ACTION_OPEN_CHAT_APP);
+            intent.putExtra(EXTRA_INTENT_LOCAL_PROFILE,selectedProfPubKey);
+            intent.putExtra(EXTRA_INTENT_REMOTE_PROFILE,profileInformation.getHexPublicKey());
+            sendBroadcast(intent);
+            //Toast.makeText(this,"Open chat app here please",Toast.LENGTH_LONG).show();
             /*if (flag.compareAndSet(false,true)) {
                 Toast.makeText(v.getContext(),"Sending chat request..",Toast.LENGTH_SHORT).show();
                 executor.submit(new Runnable() {

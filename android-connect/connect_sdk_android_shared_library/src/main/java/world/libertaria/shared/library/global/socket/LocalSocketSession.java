@@ -122,8 +122,12 @@ public class LocalSocketSession {
                 for (; ; ) {
                     if (localSocket.isConnected() || isServerSide) {
                         logger.info("prepare to read from local session..");
-                        read();
-                        logger.info("reading from local session..");
+                        boolean r = read();
+                        if (!r){
+                            logger.info("break loop");
+                            break;
+                        }else
+                            logger.info("reading from local session..");
                     } else {
                         logger.warn("local socket is not connected "+pkIdentity);
                         if (!Thread.currentThread().isInterrupted()) {
@@ -144,7 +148,7 @@ public class LocalSocketSession {
         }
     }
 
-    private synchronized void read() {
+    private synchronized boolean read() {
         int count;
         byte[] buffer = new byte[RECEIVE_BUFFER_SIZE];
         try {
@@ -158,6 +162,7 @@ public class LocalSocketSession {
                     byteBufferToRead.put(buffer, 0, count);
                     response = ModuleObject.ModuleResponse.parseFrom(byteBufferToRead.array());
                     sessionHandler.onReceive(this,response);
+                    return true;
                 } else {
                     // read < 0 -> connection closed
                     logger.info("Connection closed, read<0 with connect service , removing socket");
@@ -170,6 +175,7 @@ public class LocalSocketSession {
             }
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
+            closeNow();
         } catch (SocketException e){
             e.printStackTrace();
             logger.info("Connection closed, sslException with connect service, removing socket");
@@ -182,6 +188,7 @@ public class LocalSocketSession {
 
             closeNow();
         }
+        return false;
     }
 
     public void closeNow() {

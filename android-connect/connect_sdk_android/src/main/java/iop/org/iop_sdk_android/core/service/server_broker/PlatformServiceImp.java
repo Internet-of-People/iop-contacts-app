@@ -322,7 +322,7 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
     @Override
     public void onDestroy() {
         logger.info("onDestroy");
-
+        unregisterReceiver(connectivityReceiver);
         localServer.shutdown();
         core.clean();
         executor.shutdown();
