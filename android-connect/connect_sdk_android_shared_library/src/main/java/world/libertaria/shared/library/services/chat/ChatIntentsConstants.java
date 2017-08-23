@@ -6,6 +6,8 @@ package world.libertaria.shared.library.services.chat;
 
 public class ChatIntentsConstants {
 
+    public static final String ACTION_OPEN_CHAT_APP = "world.libertaria.broadcast.OPEN_CHAT_APP";
+
     public static final String ACTION_ON_CHAT_CONNECTED = "org.furszy.broadcast.on_chat_connected";
     public static final String ACTION_ON_CHAT_DISCONNECTED = "org.furszy.broadcast.on_chat_disconnected";
     public static final String ACTION_ON_CHAT_MSG_RECEIVED = "org.furszy.broadcast.on_chat_msg_received";

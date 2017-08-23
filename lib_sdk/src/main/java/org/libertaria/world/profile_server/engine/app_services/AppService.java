@@ -9,6 +9,8 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * Created by furszy on 6/8/17.
+ *
+ * //todo: agregar el listener de mensajes acá en lugar de tenerlo en la clase de abajo.
  */
 
 public abstract class AppService implements ProfSerMsgListener{

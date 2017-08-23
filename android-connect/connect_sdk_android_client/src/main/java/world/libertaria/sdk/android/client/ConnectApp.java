@@ -4,6 +4,7 @@ import android.app.ActivityManager;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
@@ -65,6 +66,13 @@ public class ConnectApp extends Application implements ConnectApplication {
             }
         }
         broadcastManager = LocalBroadcastManager.getInstance(this);
+
+        // check if the Connect is installed first
+        if(!isPackageInstalled("org.furszy.contacts",getPackageManager())){
+
+
+        }
+
         connectHelper = ClientServiceConnectHelper.init(this, new InitListener() {
             @Override
             public void onConnected() {
@@ -86,7 +94,15 @@ public class ConnectApp extends Application implements ConnectApplication {
                 onConnectClientServiceUnbind();
             }
         });
+    }
 
+    private boolean isPackageInstalled(String packagename, PackageManager packageManager) {
+        try {
+            packageManager.getPackageInfo(packagename, 0);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
     }
 
     private void initLogging() {

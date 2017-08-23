@@ -11,6 +11,8 @@ import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 
+import com.google.protobuf.ByteString;
+
 import org.libertaria.world.global.Module;
 import org.libertaria.world.global.utils.SerializationUtils;
 import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
@@ -62,8 +64,7 @@ public class ConnectClientService extends Service {
     /** Message id */
     private static final AtomicLong waitingIdGenerator = new AtomicLong(0);
     /** Service channel */
-    private String clientId;
-    private LocalSocketSession serviceSocket;
+    private LocalConnection localConnection;
     // Android
     private LocalBroadcastManager broadcastManager;
 
@@ -152,7 +153,7 @@ public class ConnectClientService extends Service {
         }
 
         ModuleObjectWrapper respObject = iServerBrokerService.callMethod(
-                clientId, // future client key..
+                localConnection.getClientId(), // future client key..
                 messageId, // data id should be packageName+msg_id
                 service.getName(),
                 method.getName(),
@@ -202,8 +203,8 @@ public class ConnectClientService extends Service {
     public void onDestroy() {
         super.onDestroy();
         // desconnect and close local socket
-        if (serviceSocket!=null)
-            serviceSocket.closeNow();
+        if (localConnection!=null)
+            localConnection.shutdown();
 
         doUnbindService();
     }
@@ -216,15 +217,13 @@ public class ConnectClientService extends Service {
                                        IBinder service) {
             iServerBrokerService = IPlatformService.Stub.asInterface(service);
             logger.info("Attached.");
-            mPlatformServiceIsBound = true;
             logger.info("Registering client");
             try {
-                clientId = iServerBrokerService.register();
+                String clientId = iServerBrokerService.register();
                 //running socket receiver
-                logger.info("Starting socket receiver, client id: "+clientId);
-                LocalSocket localSocket = new LocalSocket();
-                serviceSocket = new LocalSocketSession(IntentServiceAction.SERVICE_NAME,clientId, localSocket, sessionHandler);
-                serviceSocket.connect();
+                localConnection = new LocalConnection(clientId,sessionHandler);
+                localConnection.start();
+                mPlatformServiceIsBound = true;
             } catch (RemoteException e) {
                 e.printStackTrace();
                 logger.error("Cant run socket, register to server fail",e);
@@ -232,7 +231,6 @@ public class ConnectClientService extends Service {
                 e.printStackTrace();
             }
         }
-
 
         public void onServiceDisconnected(ComponentName className) {
             // This is called when the connection with the service has been
@@ -275,7 +273,7 @@ public class ConnectClientService extends Service {
     private class SessionHandlerImp implements SessionHandler{
 
         @Override
-        public void onReceive(ModuleObject.ModuleResponse response) {
+        public void onReceive(LocalSocketSession localSocketSession,ModuleObject.ModuleResponse response) {
             try {
                 String id = response.getId();
                 switch (response.getResponseType()) {
@@ -303,8 +301,8 @@ public class ConnectClientService extends Service {
         }
 
         @Override
-        public void sessionClosed(String clientPk) {
-            logger.info("## connect service session closed..");
+        public void sessionClosed(LocalSocketSession localSocketSession,String clientPk) {
+            logger.warn("## connect service session closed..");
         }
 
     }

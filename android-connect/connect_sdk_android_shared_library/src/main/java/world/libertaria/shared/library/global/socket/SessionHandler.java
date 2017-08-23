@@ -8,7 +8,7 @@ import world.libertaria.shared.library.global.ModuleObject;
 
 public interface SessionHandler {
 
-    void onReceive(ModuleObject.ModuleResponse response);
+    void onReceive(LocalSocketSession localSocketSession,ModuleObject.ModuleResponse response);
 
-    void sessionClosed(String clientPk);
+    void sessionClosed(LocalSocketSession localSocketSession,String clientPk);
 }

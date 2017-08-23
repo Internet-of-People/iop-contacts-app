@@ -126,7 +126,7 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
                     handler.messageReceived(this, message1.getBody());
                 } else {
                     // read < 0 -> connection closed
-                    logger.info("Connection closed, read<0 with portType: " + portType + " , removing socket");
+                    logger.info("Connection closed, read<0 with portType: " + portType +" , read: "+count+ " , removing socket");
                     closeNow();
                 }
             } else {

@@ -1,0 +1,48 @@
+### What is an App Service
+
+App Services are specific communication protocols between end devices. Each service should correspond to an specific task which could be re used
+ by other service, creating in this way a tree of more and more complex services solving different situations.
+
+ The architecture was prepared to be Abstract,Agnostic,Plug&Play
+
+ * Abstract and Agnostic: Means that the architecture was built in a way to not be tied to any service or platform, we are not fixing the Libertaria network
+  to any technology (blockchain,decentralized file system, profiles network, etc..) and any developer could create his own service and use it on top of the
+  Connect library on the App Service layer.
+
+ * Plug&Play: Means that any end device can include a new app service at any time and connect it to the network
+ without have to reinstall or configure anything.
+
+
+ Security:
+    For security reasons services only can communicate between each other and the channel has a default configuration.
+
+
+### How to build an App Service
+
+Have to create a class inside the Connect lib and extend it from the AppService class.
+
+The app service flow is the following:
+
+* onRegistered
+
+* onRegistrationFail
+
+* onPreCal
+
+* onWrapCall
+
+* onCallConnected
+
+* onCallDisconnected
+
+
+### How to build a Module
+
+Create a class inside the Platform and extend it from the AbstractModule class.
+
+
+### How to use the App Service on an external app
+
+The way to use it is really simple, you just have to extend the Application class of your android project with the ConnectApplication class and call
+the specific method to get your Module, if it was added, if was not added you can use the getModule(Class<T> clazz) with the module interface that you
+ are looking for as input. Then you can start using the App Service methods running on the background process.
