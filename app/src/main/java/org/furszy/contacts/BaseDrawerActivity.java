@@ -57,11 +57,17 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
                 refreshProfile();
             }else if(action.equals(ACTION_IOP_SERVICE_CONNECTED)){
                 refreshProfile();
-                hideConnectionLoose();
+                if (profilesModule != null) {
+                    if (!profilesModule.isProfileConnectedOrConnecting(selectedProfPubKey)) {
+                        btnReload.setVisibility(View.VISIBLE);
+                    }
+                }
             }else if (action.equals(ACTION_ON_PROFILE_DISCONNECTED)){
                 showConnectionLoose();
             }else if (action.equals(ACTION_ON_CHECK_IN_FAIL)){
                 showConnectionLoose();
+            }else if (action.equals(INTENT_ACTION_PROFILE_CONNECTED)){
+                hideConnectionLoose();
             }
         }
     };
@@ -112,10 +118,14 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
         localBroadcastManager.registerReceiver(receiver,new IntentFilter(INTENT_ACTION_PROFILE_CHECK_IN_FAIL));
         localBroadcastManager.registerReceiver(receiver,new IntentFilter(INTENT_ACTION_PROFILE_CONNECTED));
 
-        if (profilesModule!=null){
-            if(!profilesModule.isProfileConnectedOrConnecting(selectedProfPubKey)){
-                btnReload.setVisibility(View.VISIBLE);
+        try {
+            if (profilesModule != null) {
+                if (!profilesModule.isProfileConnectedOrConnecting(selectedProfPubKey)) {
+                    btnReload.setVisibility(View.VISIBLE);
+                }
             }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -128,7 +138,17 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
     @Override
     protected void onStop() {
         super.onStop();
-        unregisterReceiver(receiver);
+
+        try {
+            unregisterReceiver(receiver);
+        }catch (Exception e){
+            // nothing..
+        }
+        try {
+            localBroadcastManager.unregisterReceiver(receiver);
+        }catch (Exception e){
+            // nothing..
+        }
     }
 
     private void refreshProfile() {

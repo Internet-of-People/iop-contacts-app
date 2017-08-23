@@ -6,6 +6,7 @@ package world.libertaria.shared.library.global.client;
 
 public class IntentBroadcastConstants {
 
+
     public static final String ACTION_PROFILE_UPDATED_CONSTANT = "prof_update";
 
     public static final String ACTION_ON_PROFILE_CONNECTED = "on_profile_connected";

@@ -369,6 +369,7 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
 
     public ProfileInformation getMyProfile(String localProfilePubKey) {
         Profile profile = ioPConnect.getProfile(localProfilePubKey);
+        if (profile==null) return null;
         return convertLocalProfile(profile);
     }
 

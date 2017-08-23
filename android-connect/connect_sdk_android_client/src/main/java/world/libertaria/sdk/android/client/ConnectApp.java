@@ -82,7 +82,6 @@ public class ConnectApp extends Application implements ConnectApplication {
                     broadcastManager.sendBroadcast(intent);
 
                     clientService = new WeakReference<ConnectClientService>(connectHelper.getClient());
-                    onConnectClientServiceBind();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -91,7 +90,6 @@ public class ConnectApp extends Application implements ConnectApplication {
             @Override
             public void onDisconnected() {
                 clientService.clear();
-                onConnectClientServiceUnbind();
             }
         });
     }
