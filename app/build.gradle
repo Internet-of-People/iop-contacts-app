@@ -62,6 +62,7 @@ dependencies {
 
     compile 'id.zelory:compressor:2.1.0'
 
+    compile 'com.bugsee:bugsee-android:+'
     //qr
     compile group: 'com.google.zxing', name: 'core', version: '3.3.0'
 

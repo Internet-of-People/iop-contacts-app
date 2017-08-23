@@ -89,10 +89,14 @@ public abstract class RecyclerFragment<T> extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        initExecutor();
+        load();
+    }
+
+    private void initExecutor() {
         if (executor==null){
             executor = Executors.newSingleThreadExecutor();
         }
-        load();
     }
 
     /**
@@ -100,6 +104,7 @@ public abstract class RecyclerFragment<T> extends Fragment {
      */
     private void load() {
         swipeRefreshLayout.setRefreshing(true);
+        initExecutor();
         executor.execute(loadRunnable);
     }
 
