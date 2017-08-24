@@ -25,5 +25,38 @@
     <color name="subtitles">#7F7F7F</color>
     <color name="time">#AFAFAF</color>
 
+    <!-- Welcome-->
+    <color name="dot_inactive">#d8d8d8</color>
+    <color name="dot_active">#4d4d4d</color>
+    <color name="btn_light_grey">#b0b0b0</color>
+
+    <!-- dots inactive colors -->
+    <color name="dot_inactive_screen1">#d8d8d8</color>
+    <color name="dot_inactive_screen2">#d0d0d0</color>
+    <color name="dot_inactive_screen3">#d8d8d8</color>
+    <color name="dot_inactive_screen4">#d0d0d0</color>
+    <color name="dot_inactive_screen5">#d8d8d8</color>
+    <!-- dots active colors -->
+    <color name="dot_active_screen1">#2998FF</color>
+    <color name="dot_active_screen2">#FF4081</color>
+    <color name="dot_active_screen3">#2998FF</color>
+    <color name="dot_active_screen4">#FF4081</color>
+    <color name="dot_active_screen5">#2998FF</color>
+    <array name="array_dot_active">
+        <item>@color/dot_active_screen1</item>
+        <item>@color/dot_active_screen2</item>
+        <item>@color/dot_active_screen3</item>
+        <item>@color/dot_active_screen4</item>
+        <item>@color/dot_active_screen5</item>
+    </array>
+    <array name="array_dot_inactive">
+        <item>@color/dot_inactive_screen1</item>
+        <item>@color/dot_inactive_screen2</item>
+        <item>@color/dot_inactive_screen3</item>
+        <item>@color/dot_inactive_screen4</item>
+        <item>@color/dot_inactive_screen5</item>
+    </array>
+
+
 
 </resources>

@@ -35,13 +35,12 @@
             android:textSize="18sp" />
 
         <TextView
-            android:id="@+id/myLocation"
+            android:id="@+id/txt_location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:drawableLeft="@drawable/ic_location"
             android:textColor="@color/subtitles"
             android:drawablePadding="2dp"
-            android:visibility="gone"
             android:text="My Location"
             android:textSize="14sp"/>
 
