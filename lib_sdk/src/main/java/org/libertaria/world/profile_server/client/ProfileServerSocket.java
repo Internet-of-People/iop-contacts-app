@@ -78,9 +78,10 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
                     .setBody(message)
                     .build();
             byte[] messageToSend = messageWithHeaderBuilder.toByteArray();
-            logger.info("Message lenght to send: "+messageToSend.length+", Message lenght in the header: "+messageWithHeaderBuilder.getHeader());
+            logger.info("Message "+message.getId()+" lenght to send: "+messageToSend.length+", Message lenght in the header: "+messageWithHeaderBuilder.getHeader());
             socket.getOutputStream().write(messageToSend);
             socket.getOutputStream().flush();
+            logger.info("message sent: "+message.getId());
             handler.messageSent(this,message);
         }catch (Exception e){
             try {

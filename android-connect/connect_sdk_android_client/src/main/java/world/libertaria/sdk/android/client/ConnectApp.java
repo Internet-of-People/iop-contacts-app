@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 import ch.qos.logback.classic.Level;
@@ -45,6 +46,14 @@ public class ConnectApp extends Application implements ConnectApplication {
     protected LocalBroadcastManager broadcastManager;
     protected ActivityManager activityManager;
     private WeakReference<ConnectClientService> clientService;
+
+    private CopyOnWriteArrayList<ConnectListener> connectListeners;
+
+    public interface ConnectListener{
+
+        void onPlatformConnected(Context context);
+        void onPlatformDisconnected(Context context);
+    }
 
 
     @Override
@@ -178,13 +187,42 @@ public class ConnectApp extends Application implements ConnectApplication {
      * Method to override reciving the bind notification
      */
     protected void onConnectClientServiceBind() {
-
+        // notify listeners
+        if (connectListeners!=null){
+            for (ConnectListener connectListener : connectListeners) {
+                connectListener.onPlatformConnected(this);
+            }
+        }
     }
     /**
      * Method to override reciving the unbind notification
      */
     protected void onConnectClientServiceUnbind() {
-
+        // notify listeners
+        if (connectListeners!=null){
+            for (ConnectListener connectListener : connectListeners) {
+                connectListener.onPlatformDisconnected(this);
+            }
+        }
     }
 
+    public boolean isConnectedToPlatform() {
+        if ( clientService!=null && clientService.get()!=null){
+            return clientService.get().mPlatformServiceIsBound;
+        }
+        return false;
+    }
+
+    public void addConnectListener(ConnectListener connectListener) {
+        if (connectListeners==null){
+            connectListeners = new CopyOnWriteArrayList<>();
+        }
+        connectListeners.add(connectListener);
+    }
+
+    public void removeConnectListener(ConnectListener connectListener){
+        if (connectListeners!=null){
+            connectListeners.remove(connectListener);
+        }
+    }
 }
