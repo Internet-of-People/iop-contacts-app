@@ -2,6 +2,7 @@ package org.libertaria.world.profile_server.client;
 
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import org.libertaria.world.profile_server.CantSendMessageException;
 import org.libertaria.world.profile_server.IoSession;
@@ -13,6 +14,10 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.SocketFactory;
@@ -38,6 +43,7 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
     private PsSocketHandler<IopProfileServer.Message> handler;
     /** Reader thread */
     private Thread readThread;
+    private ExecutorService executorService;
 
     public ProfileServerSocket(SocketFactory socketFactory, String host, int port,IopProfileServer.ServerRoleType portType) throws Exception {
         this.socketFactory = socketFactory;
@@ -45,6 +51,7 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
         this.port = port;
         this.host = host;
         this.portType = portType;
+        this.executorService = Executors.newFixedThreadPool(3);
     }
 
     public ProfileServerSocket(SocketFactory socketFactory, String host, int port,IopProfileServer.ServerRoleType portType,String tokenId) throws Exception {
@@ -77,21 +84,43 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
                     .setHeader(messageSize+computeProtocolOverhead(messageSize))
                     .setBody(message)
                     .build();
-            byte[] messageToSend = messageWithHeaderBuilder.toByteArray();
+            final byte[] messageToSend = messageWithHeaderBuilder.toByteArray();
             logger.info("Message "+message.getId()+" lenght to send: "+messageToSend.length+", Message lenght in the header: "+messageWithHeaderBuilder.getHeader());
-            socket.getOutputStream().write(messageToSend);
-            socket.getOutputStream().flush();
-            logger.info("message sent: "+message.getId());
-            handler.messageSent(this,message);
-        }catch (Exception e){
-            try {
-                if (socket.isClosed()) {
-                    closeNow();
+            // timeout
+            final Future<Boolean> future = executorService.submit(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    try {
+                        socket.getOutputStream().write(messageToSend);
+                        socket.getOutputStream().flush();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                    return true;
                 }
-            }catch (Exception e1){
-                e.printStackTrace();
+            });
+            boolean ret = future.get(15,TimeUnit.SECONDS);
+            if (ret) {
+                logger.info("message sent: " + message.getId());
+                handler.messageSent(this, message);
+            }else {
+                checkSocket();
             }
+        }catch (Exception e){
+            e.printStackTrace();
+            checkSocket();
             throw new CantSendMessageException(e);
+        }
+    }
+
+    private void checkSocket(){
+        try {
+            if (socket.isClosed()) {
+                closeNow();
+            }
+        }catch (Exception e1){
+            e1.printStackTrace();
         }
     }
 
@@ -169,6 +198,10 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
         logger.info("Closing socket port: "+portType);
         if (!readThread.isInterrupted())
             readThread.interrupt();
+        if (executorService!=null){
+            executorService.shutdownNow();
+            executorService = null;
+        }
         if (!socket.isClosed())
             socket.close();
         // notify upper layers
