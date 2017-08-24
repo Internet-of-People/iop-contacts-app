@@ -700,7 +700,7 @@ public class ProfSerEngine {
             LOG.info("sessionClosed: "+session.toString());
             // notify upper layers
             for (org.libertaria.world.profile_server.engine.listeners.ConnectionListener listener : connectionListener) {
-                listener.onConnectionLoose(
+                listener.onConnectionLost(
                         profNodeConnection.getProfile(),
                         profServerData.getHost(),
                         session.getPortType(),

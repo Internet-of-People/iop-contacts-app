@@ -14,5 +14,5 @@ public interface ConnectionListener {
 
     void onNonClConnectionStablished(String host);
 
-    void onConnectionLoose(org.libertaria.world.profile_server.model.Profile localProfile, String psHost, IopProfileServer.ServerRoleType portType, String tokenId);
+    void onConnectionLost(org.libertaria.world.profile_server.model.Profile localProfile, String psHost, IopProfileServer.ServerRoleType portType, String tokenId);
 }
