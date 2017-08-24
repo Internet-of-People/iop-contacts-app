@@ -9,6 +9,8 @@ import org.libertaria.world.services.EnabledServices;
 import org.libertaria.world.services.chat.ChatModule;
 import org.libertaria.world.services.interfaces.PairingModule;
 import org.libertaria.world.services.interfaces.ProfilesModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -17,7 +19,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * Created by furszy on 8/21/17.
  */
 
-public abstract class ConnectReceiver extends BroadcastReceiver {
+public abstract class ConnectReceiver extends BroadcastReceiver implements ConnectApp.ConnectListener {
+
+    private Logger logger = LoggerFactory.getLogger(ConnectReceiver.class);
 
     private WeakReference<ConnectClientService> clientServiceRef;
     private ConnectApp connectApp;
@@ -32,7 +36,12 @@ public abstract class ConnectReceiver extends BroadcastReceiver {
         }
         connectApp = (ConnectApp) context.getApplicationContext();
         if (connectApp!=null){
-            onConnectReceive(context,intent);
+            if (connectApp.isConnectedToPlatform()){
+                onConnectReceive(context,intent);
+            }else {
+                pendingIntents.add(intent);
+                connectApp.addConnectListener(this);
+            }
             return;
         }else {
             pendingIntents.add(intent);
@@ -96,4 +105,18 @@ public abstract class ConnectReceiver extends BroadcastReceiver {
     }
 
     public abstract void onConnectReceive(Context context, Intent intent);
+
+    @Override
+    public void onPlatformConnected(Context context) {
+        logger.info("onPlatformConnected");
+        onConnectClientServiceBind();
+        for (int i=0;i<pendingIntents.size();i++){
+            onConnectReceive(context,pendingIntents.poll());
+        }
+    }
+
+    @Override
+    public void onPlatformDisconnected(Context context) {
+
+    }
 }
