@@ -2,6 +2,8 @@ package org.libertaria.world.core;
 
 import com.google.protobuf.ByteString;
 
+import org.libertaria.world.connection.DeviceNetworkConnection;
+import org.libertaria.world.connection.ReconnectionManager;
 import org.libertaria.world.core.exceptions.ProfileNotConectedException;
 import org.libertaria.world.core.services.pairing.PairingAppService;
 import org.libertaria.world.crypto.CryptoBytes;
@@ -57,32 +59,59 @@ public class IoPConnect implements ConnectionListener {
 
     private final Logger logger = LoggerFactory.getLogger(IoPConnect.class);
 
-    /** Reconnect time in seconds */
+    /**
+     * Reconnect time in seconds
+     */
     private static final long RECONNECT_TIME = 15;
 
-    /** Map of local device profiles pubKey connected to the home PS, profile public key -> host PS manager*/
+    /**
+     * Map of local device profiles pubKey connected to the home PS, profile public key -> host PS manager
+     */
     private ConcurrentMap<String, IoPProfileConnection> managers;
-    /** Map of device profiles connected to remote PS */
+    /**
+     * Map of device profiles connected to remote PS
+     */
     private ConcurrentMap<PsKey, IoPProfileConnection> remoteManagers = new ConcurrentHashMap<>();
-    /** Cached local profiles */
+    /**
+     * Cached local profiles
+     */
     private Map<String, Profile> localProfiles = new HashMap<>();
-    /** Enviroment context */
+    /**
+     * Enviroment context
+     */
     private IoPConnectContext context;
-    /** Local profiles db */
+    /**
+     * Local profiles db
+     */
     private LocalProfilesDao localProfilesDao;
-    /** Profiles manager db */
+    /**
+     * Profiles manager db
+     */
     private ProfilesManager profilesManager;
-    /** Pairing request manager db  */
+    /**
+     * Pairing request manager db
+     */
     private PairingRequestsManager pairingRequestsManager;
-    /** Gps */
+    /**
+     * Device network connection
+     */
+    private DeviceNetworkConnection deviceNetworkConnection;
+    /**
+     * Gps
+     */
     private DeviceLocation deviceLocation;
-    /** Crypto platform implementation */
+    /**
+     * Crypto platform implementation
+     */
     private CryptoWrapper cryptoWrapper;
-    /** Socket factory */
+    /**
+     * Socket factory
+     */
     private SslContextFactory sslContextFactory;
     private EngineListener engineListener;
+    private final ReconnectionManager reconnectionManager;
 
-    private class PsKey{
+    private class PsKey {
 
         private String deviceProfPubKey;
         private String psHost;
@@ -101,7 +130,7 @@ public class IoPConnect implements ConnectionListener {
         }
     }
 
-    public IoPConnect(IoPConnectContext contextWrapper, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, LocalProfilesDao localProfilesDao, ProfilesManager profilesManager, PairingRequestsManager pairingRequestsManager, DeviceLocation deviceLocation) {
+    public IoPConnect(IoPConnectContext contextWrapper, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, LocalProfilesDao localProfilesDao, ProfilesManager profilesManager, PairingRequestsManager pairingRequestsManager, DeviceLocation deviceLocation, DeviceNetworkConnection deviceNetworkConnection) {
         this.context = contextWrapper;
         this.cryptoWrapper = cryptoWrapper;
         this.sslContextFactory = sslContextFactory;
@@ -110,6 +139,8 @@ public class IoPConnect implements ConnectionListener {
         this.localProfilesDao = localProfilesDao;
         this.pairingRequestsManager = pairingRequestsManager;
         this.deviceLocation = deviceLocation;
+        this.deviceNetworkConnection = deviceNetworkConnection;
+        this.reconnectionManager = new ReconnectionManager();
     }
 
     public void setEngineListener(EngineListener engineListener) {
@@ -119,7 +150,7 @@ public class IoPConnect implements ConnectionListener {
     /**
      * Init
      */
-    public void start(){
+    public void start() {
         for (Profile profile : this.localProfilesDao.list()) {
             // add app services
             for (String service : profile.getAppServices()) {
@@ -128,7 +159,7 @@ public class IoPConnect implements ConnectionListener {
                         profile.addApplicationService(engineListener.appServiceInitializer(service));
                 }
             }
-            localProfiles.put(profile.getHexPublicKey(),profile);
+            localProfiles.put(profile.getHexPublicKey(), profile);
         }
     }
 
@@ -147,7 +178,7 @@ public class IoPConnect implements ConnectionListener {
         org.libertaria.world.profile_server.ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
         // todo: implement this for multi profiles..
         // for now i don't have to worry, i just have one profile.
-        profileServerConfigurations.setProfileRegistered(host,CryptoBytes.toHexString(contract.getIdentityPublicKey().toByteArray()));
+        profileServerConfigurations.setProfileRegistered(host, CryptoBytes.toHexString(contract.getIdentityPublicKey().toByteArray()));
     }
 
     @Override
@@ -156,69 +187,63 @@ public class IoPConnect implements ConnectionListener {
     }
 
     @Override
-    public void onConnectionLoose(final org.libertaria.world.profile_server.model.Profile localProfile, final String psHost, final IopProfileServer.ServerRoleType portType, final String tokenId) {
-        if (managers.containsKey(localProfile.getHexPublicKey())){
-            // The connection is one of the connections to the Home server
-            // Let's check now if this is the main connection
-            if (portType == IopProfileServer.ServerRoleType.CL_CUSTOMER){
-                try {
-                    managers.remove(localProfile.getHexPublicKey()).stop();
-                }catch (Exception e){
-                    // remove connection
-                    e.printStackTrace();
-                }
-                // todo: notify the disconnection from the main PS to the upper layer..
-                if (engineListener!=null)
-                    engineListener.onDisconnect(localProfile.getHexPublicKey());
+    public void onConnectionLost(final org.libertaria.world.profile_server.model.Profile localProfile, final String psHost, final IopProfileServer.ServerRoleType portType, final String tokenId) {
+        if (deviceNetworkConnection.isConnected()) {
+            if (managers.containsKey(localProfile.getHexPublicKey())) {
+                // The connection is one of the connections to the Home server
+                // Let's check now if this is the main connection
+                if (portType == IopProfileServer.ServerRoleType.CL_CUSTOMER) {
+                    try {
+                        managers.remove(localProfile.getHexPublicKey()).stop();
+                    } catch (Exception e) {
+                        // remove connection
+                        e.printStackTrace();
+                    }
+                    // todo: notify the disconnection from the main PS to the upper layer..
+                    if (engineListener != null)
+                        engineListener.onDisconnect(localProfile.getHexPublicKey());
                     // if the main connection is out we try to reconnect on a fixed period for now. (Later should increase the reconnection time exponentially..)
-                    ConnectionFuture connectionFuture = new ConnectionFuture();
+                    final ConnectionFuture connectionFuture = new ConnectionFuture();
                     connectionFuture.setListener(new BaseMsgFuture.Listener<Boolean>() {
                         @Override
                         public void onAction(int messageId, Boolean object) {
                             logger.info("Main home host connected again!");
                             //todo: launch notification to the users
-                            if (engineListener!=null)
+                            if (engineListener != null)
                                 engineListener.onCheckInCompleted(localProfile.getHexPublicKey());
                         }
 
                         @Override
                         public void onFail(int messageId, int status, String statusDetail) {
                             logger.info("Main home host reconnected fail");
-                            //todo: try to connect again.
-                            if (engineListener!=null) {
+                            if (engineListener != null) {
                                 engineListener.onDisconnect(localProfile.getHexPublicKey());
-                                // try to reconnect
-                                /*ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-                                executor.schedule(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        onConnectionLoose(localProfile,psHost,portType,tokenId);
-                                    }
-                                },RECONNECT_TIME,TimeUnit.SECONDS);
-                                executor.shutdown();*/
-                            }else {
+                            } else {
                                 logger.warn("reconnection fail and the engine listener is null.. please check this..");
+                                reconnectionManager.scheduleReconnection(localProfile, psHost, portType, tokenId, IoPConnect.this);
+                                logger.info("Reconnection scheduled in: {} seconds", reconnectionManager.getCurrentWaitingTime());
                             }
                         }
                     });
-                try {
-                    connectProfile(
-                            localProfile.getHexPublicKey(),
-                            null,
-                            connectionFuture
-                    );
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    logger.info("Problems trying to reconnect to the main PS after 5 seconds..",e);
-                    // retryng after certain time.
-                    /*try {
-                        TimeUnit.SECONDS.sleep(15);
-                        onConnectionLoose(localProfile,psHost,portType,tokenId);
-                    } catch (InterruptedException e1) {
-                        e1.printStackTrace();
-                    }*/
+                    try {
+                        connectProfile(
+                                localProfile.getHexPublicKey(),
+                                null,
+                                connectionFuture
+                        );
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        reconnectionManager.scheduleReconnection(localProfile, psHost, portType, tokenId, IoPConnect.this);
+                        logger.info("Reconnection scheduled in: {} seconds", reconnectionManager.getCurrentWaitingTime());
+                    }
                 }
             }
+        } else {
+            /*
+              If we are not connected to internet then let's retry in a while...
+             */
+            reconnectionManager.scheduleReconnection(localProfile, psHost, portType, tokenId, IoPConnect.this);
+            logger.info("Reconnection scheduled in: {} seconds", reconnectionManager.getCurrentWaitingTime());
         }
     }
 
@@ -230,11 +255,11 @@ public class IoPConnect implements ConnectionListener {
      * @param name
      * @param type
      * @param extraData
-     * @param secretPassword -> encription password for the profile keys
+     * @param secretPassword        -> encription password for the profile keys
      * @return profile pubKey
      */
-    public Profile createProfile(byte[] profileOwnerChallenge, String name, String type, byte[] img, String extraData, String secretPassword){
-        Version version = new Version((byte) 1,(byte)0,(byte)0);
+    public Profile createProfile(byte[] profileOwnerChallenge, String name, String type, byte[] img, String extraData, String secretPassword) {
+        Version version = new Version((byte) 1, (byte) 0, (byte) 0);
         ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
         KeyEd25519 keyEd25519 = profileServerConfigurations.createNewUserKeys();
         //     public Profile(Version version, String name, String type, String extraData, byte[] img, String homeHost, KeyEd25519 keyEd25519) {
@@ -259,12 +284,12 @@ public class IoPConnect implements ConnectionListener {
 
         // start moving this to the db
         localProfilesDao.save(profile);
-        localProfiles.put(profile.getHexPublicKey(),profile);
+        localProfiles.put(profile.getHexPublicKey(), profile);
         // todo: return profile connection pk
         return profile;
     }
 
-    private void setupProfile(Profile profile,ProfileServerConfigurations profileServerConfigurations) {
+    private void setupProfile(Profile profile, ProfileServerConfigurations profileServerConfigurations) {
         if (!profile.containsAppService(EnabledServices.PROFILE_PAIRING.getName())) {
             // pairing default
             PairingAppService appService = new PairingAppService(
@@ -285,19 +310,20 @@ public class IoPConnect implements ConnectionListener {
 
     }
 
-    public Profile createProfile(Profile profile){
+    public Profile createProfile(Profile profile) {
         ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
         profileServerConfigurations.saveProfile(profile);
         profileServerConfigurations.saveUserKeys(profile.getKey());
         profileServerConfigurations.setIsCreated(true);
         // start moving this to the db
         localProfilesDao.save(profile);
-        localProfiles.put(profile.getHexPublicKey(),profile);
+        localProfiles.put(profile.getHexPublicKey(), profile);
         return profile;
     }
 
     /**
      * todo: improve this..
+     *
      * @param localProfilePubKey
      * @param appService
      */
@@ -307,32 +333,33 @@ public class IoPConnect implements ConnectionListener {
         // start moving this to the db
         localProfilesDao.updateProfile(profile);
         IoPProfileConnection connection = getProfileConnection(profile.getHexPublicKey());
-        if (connection.isReady() || connection.isConnecting()){
+        if (connection.isReady() || connection.isConnecting()) {
             connection.addApplicationService(appService);
-        }else {
+        } else {
             throw new IllegalStateException("Connection is not ready or connecting to register a service");
         }
 
     }
 
     public void connectProfile(String profilePublicKey, byte[] ownerChallenge, ConnectionFuture future) throws Exception {
-        if (!localProfiles.containsKey(profilePublicKey)) throw new ProfileNotRegisteredException("Profile not registered "+profilePublicKey);
+        if (!localProfiles.containsKey(profilePublicKey))
+            throw new ProfileNotRegisteredException("Profile not registered " + profilePublicKey);
 
         Profile profile = localProfiles.get(profilePublicKey);
         // profile basic services
-        setupProfile(profile,createEmptyProfileServerConf());
+        setupProfile(profile, createEmptyProfileServerConf());
 
-        if (managers.containsKey(profilePublicKey)){
+        if (managers.containsKey(profilePublicKey)) {
             IoPProfileConnection connection = getProfileConnection(profilePublicKey);
-            if (connection.hasFail()){
+            if (connection.hasFail()) {
                 future.setProfServerData(createEmptyProfileServerConf().getMainProfileServer());
-                connection.init(future,this);
-            }else if (connection.isReady()){
-                throw new IllegalStateException("Connection already initilized and running, profKey: "+profilePublicKey);
-            }else {
-                throw new IllegalStateException("Connection already initilized and trying to check-in the profile, profKey: "+profilePublicKey);
+                connection.init(future, this);
+            } else if (connection.isReady()) {
+                throw new IllegalStateException("Connection already initilized and running, profKey: " + profilePublicKey);
+            } else {
+                throw new IllegalStateException("Connection already initilized and trying to check-in the profile, profKey: " + profilePublicKey);
             }
-        }else {
+        } else {
             ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
             ProfServerData profServerData = null;
             if (profileServerConfigurations.getMainProfileServerContract() == null) {
@@ -387,41 +414,40 @@ public class IoPConnect implements ConnectionListener {
         }
     }
 
-    public void updateProfile(String localProfilePubKey,String name, byte[] img, int latitude, int longitude, String extraData, ProfSerMsgListener<Boolean> msgListener) throws Exception {
+    public void updateProfile(String localProfilePubKey, String name, byte[] img, int latitude, int longitude, String extraData, ProfSerMsgListener<Boolean> msgListener) throws Exception {
         Profile localProfile = this.localProfiles.get(localProfilePubKey);
 
-        if (name!=null && !localProfile.getName().equals(name)){
+        if (name != null && !localProfile.getName().equals(name)) {
             localProfile.setName(name);
         }
 
-        if (img !=null && !Arrays.equals(localProfile.getImg(),img)){
+        if (img != null && !Arrays.equals(localProfile.getImg(), img)) {
             localProfile.setImg(img);
         }
 
-        if (latitude!=0 && localProfile.getLatitude()!=latitude){
+        if (latitude != 0 && localProfile.getLatitude() != latitude) {
             localProfile.setLatitude(latitude);
         }
 
-        if (latitude!=0 && localProfile.getLongitude()!=longitude){
+        if (latitude != 0 && localProfile.getLongitude() != longitude) {
             localProfile.setLongitude(longitude);
         }
 
-        if (extraData!=null && !localProfile.getExtraData().equals(extraData)){
+        if (extraData != null && !localProfile.getExtraData().equals(extraData)) {
             localProfile.setExtraData(extraData);
         }
 
-        updateProfile(localProfile,true,msgListener);
+        updateProfile(localProfile, true, msgListener);
     }
 
     /**
-     *
      * Add PS home connection
      *
      * @param profConn
      * @param profile
      * @return
      */
-    private IoPProfileConnection addConnection(ProfServerData profConn, Profile profile){
+    private IoPProfileConnection addConnection(ProfServerData profConn, Profile profile) {
         // profile connection
         IoPProfileConnection ioPProfileConnection = new IoPProfileConnection(
                 context,
@@ -443,7 +469,7 @@ public class IoPConnect implements ConnectionListener {
      * @param psKey
      * @return
      */
-    private IoPProfileConnection addConnection(ProfServerData profConn, Profile deviceProfile , PsKey psKey){
+    private IoPProfileConnection addConnection(ProfServerData profConn, Profile deviceProfile, PsKey psKey) {
         // profile connection
         IoPProfileConnection ioPProfileConnection = new IoPProfileConnection(
                 context,
@@ -463,19 +489,20 @@ public class IoPConnect implements ConnectionListener {
      *
      * @param requeteerPubKey
      * @param profPubKey
-     * @param getInfo -> if you are sure that you want to get the info of the profile
+     * @param getInfo         -> if you are sure that you want to get the info of the profile
      * @param future
      * @throws CantConnectException
      * @throws CantSendMessageException
      */
-    public void searchAndGetProfile(final String requeteerPubKey, String profPubKey, boolean getInfo ,final ProfSerMsgListener<ProfileInformation> future) throws CantConnectException, CantSendMessageException {
-        if (!managers.containsKey(requeteerPubKey)) throw new IllegalStateException("Profile connection not established");
-        final ProfileInformation info = profilesManager.getProfile(requeteerPubKey,profPubKey);
-        if (info!=null && !getInfo){
+    public void searchAndGetProfile(final String requeteerPubKey, String profPubKey, boolean getInfo, final ProfSerMsgListener<ProfileInformation> future) throws CantConnectException, CantSendMessageException {
+        if (!managers.containsKey(requeteerPubKey))
+            throw new IllegalStateException("Profile connection not established");
+        final ProfileInformation info = profilesManager.getProfile(requeteerPubKey, profPubKey);
+        if (info != null && !getInfo) {
             //todo: add TTL and expiration -> info.getLastUpdateTime().
             // if it's not valid go to CAN.
-            future.onMessageReceive(0,info);
-        }else {
+            future.onMessageReceive(0, info);
+        } else {
             // CAN FLOW
 
 
@@ -500,7 +527,7 @@ public class IoPConnect implements ConnectionListener {
                     //todo: improve with input flags and not just hardcoded
                     profileInformation.setImg(message.getProfileImage().toByteArray());
                     profileInformation.setThumbnailImg(message.getThumbnailImage().toByteArray());
-                    if (info!=null) {
+                    if (info != null) {
                         profileInformation.setHomeHost(info.getHomeHost());
                         profileInformation.setProfileServerId(info.getProfileServerId());
                     }
@@ -509,7 +536,7 @@ public class IoPConnect implements ConnectionListener {
                         profileInformation.addAppService(message.getApplicationServices(i));
                     }
                     // save or update profile
-                    profilesManager.saveOrUpdateProfile(requeteerPubKey,profileInformation);
+                    profilesManager.saveOrUpdateProfile(requeteerPubKey, profileInformation);
 
                     future.onMessageReceive(messageId, profileInformation);
                 }
@@ -525,6 +552,7 @@ public class IoPConnect implements ConnectionListener {
 
     /**
      * Call app profile service
+     *
      * @param serviceName
      * @param localProfilePubKey
      * @param remoteProfile
@@ -535,22 +563,24 @@ public class IoPConnect implements ConnectionListener {
             String serviceName,
             final String localProfilePubKey,
             final ProfileInformation remoteProfile,
-            final boolean tryUpdateRemoteServices ,
+            final boolean tryUpdateRemoteServices,
             final ProfSerMsgListener<CallProfileAppService> readyListener) {
         logger.info("RunService, remote: " + remoteProfile.getHexPublicKey());
         try {
-            if (!localProfiles.containsKey(localProfilePubKey)) throw new ProfileNotRegisteredException(localProfilePubKey);
+            if (!localProfiles.containsKey(localProfilePubKey))
+                throw new ProfileNotRegisteredException(localProfilePubKey);
             final Profile localProfile = localProfiles.get(localProfilePubKey);
-            if(!localProfile.hasService(serviceName)) throw new IllegalStateException("App service "+ serviceName+" is not enabled on local profile "+localProfilePubKey);
+            if (!localProfile.hasService(serviceName))
+                throw new IllegalStateException("App service " + serviceName + " is not enabled on local profile " + localProfilePubKey);
             final AppService appService = localProfile.getAppService(serviceName);
             // now i stablish the call if it's not exists
             final IoPProfileConnection connection = getOrStablishConnection(localProfile.getHomeHost(), localProfile.getHexPublicKey(), remoteProfile.getHomeHost());
 
             CallProfileAppService activeCall = connection.getActiveAppCallService(remoteProfile.getHexPublicKey());
-            if (activeCall!=null){
+            if (activeCall != null) {
                 // call is active
-                readyListener.onMessageReceive(0,activeCall);
-            }else {
+                readyListener.onMessageReceive(0, activeCall);
+            } else {
                 // first the call
                 MsgListenerFuture<CallProfileAppService> callListener = new MsgListenerFuture<>();
                 callListener.setListener(new BaseMsgFuture.Listener<CallProfileAppService>() {
@@ -592,21 +622,21 @@ public class IoPConnect implements ConnectionListener {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            readyListener.onMsgFail(0,400,e.getMessage());
+            readyListener.onMsgFail(0, 400, e.getMessage());
         }
     }
 
-    private ProfileServerConfigurations createEmptyProfileServerConf(){
+    private ProfileServerConfigurations createEmptyProfileServerConf() {
         return context.createProfSerConfig();
     }
 
     private IoPProfileConnection getProfileConnection(String profPubKey) throws ProfileNotConectedException {
-        if (!managers.containsKey(profPubKey)) throw new ProfileNotConectedException("Profile connection not established");
+        if (!managers.containsKey(profPubKey))
+            throw new ProfileNotConectedException("Profile connection not established");
         return managers.get(profPubKey);
     }
 
     /**
-     *
      * If the remote ps host is the same as the home node return the main connection if not create another one to the remote server.
      *
      * @param localPsHost
@@ -616,41 +646,42 @@ public class IoPConnect implements ConnectionListener {
      * @throws Exception
      */
     private IoPProfileConnection getOrStablishConnection(String localPsHost, String localProfPubKey, String remotePsHost) throws Exception {
-        if (remotePsHost==null) throw new IllegalArgumentException("remotePsHost cannot be null");
+        if (remotePsHost == null) throw new IllegalArgumentException("remotePsHost cannot be null");
         IoPProfileConnection connection = null;
         if (localPsHost.equals(remotePsHost)) {
             connection = getProfileConnection(localProfPubKey);
-        }else {
-            PsKey psKey = new PsKey(localProfPubKey,remotePsHost);
-            if(remoteManagers.containsKey(psKey)){
+        } else {
+            PsKey psKey = new PsKey(localProfPubKey, remotePsHost);
+            if (remoteManagers.containsKey(psKey)) {
                 connection = remoteManagers.get(psKey);
-            }else {
+            } else {
                 ProfServerData profServerData = new ProfServerData(remotePsHost);
                 Profile profile = createEmptyProfileServerConf().getProfile();
-                connection = addConnection(profServerData,profile,psKey);
+                connection = addConnection(profServerData, profile, psKey);
                 connection.init(this);
             }
         }
         return connection;
     }
 
-    public List<ProfileInformation> getKnownProfiles(String pubKey){
+    public List<ProfileInformation> getKnownProfiles(String pubKey) {
         return profilesManager.listConnectedProfiles(pubKey);
     }
 
     public ProfileInformation getKnownProfile(String contactOwnerPubKey, String pubKey) {
-        return profilesManager.getProfile(contactOwnerPubKey,pubKey);
+        return profilesManager.getProfile(contactOwnerPubKey, pubKey);
     }
 
     /**
      * If the profile is connected to his home node
+     *
      * @return
      */
-    public boolean isProfileConnectedOrConnecting(String hexProfileKey){
+    public boolean isProfileConnectedOrConnecting(String hexProfileKey) {
         IoPProfileConnection connection = managers.get(hexProfileKey);
-        if (connection!=null){
+        if (connection != null) {
             return connection.isReady() || !connection.hasFail() || connection.isConnecting();
-        }else
+        } else
             return false;
     }
 
@@ -662,8 +693,8 @@ public class IoPConnect implements ConnectionListener {
         return localProfiles;
     }
 
-    public AppService getProfileAppService(String localProfilePubKey, EnabledServices service){
-        return (localProfiles.containsKey(localProfilePubKey))?
+    public AppService getProfileAppService(String localProfilePubKey, EnabledServices service) {
+        return (localProfiles.containsKey(localProfilePubKey)) ?
                 localProfiles.get(localProfilePubKey).getAppService(service.getName())
                 :
                 null;
@@ -671,7 +702,7 @@ public class IoPConnect implements ConnectionListener {
 
     /**
      * Backup the profile on a single encrypted file.
-     *
+     * <p>
      * Including keys, connections, pairing requests
      * to be restored in other device.
      *
@@ -679,9 +710,9 @@ public class IoPConnect implements ConnectionListener {
      * @param externalFile
      */
     public synchronized void backupProfile(Profile profile, File externalFile, String password) throws IOException {
-        if (!externalFile.exists()){
+        if (!externalFile.exists()) {
             externalFile.getParentFile().mkdirs();
-        }else {
+        } else {
             externalFile.delete();
         }
         externalFile.createNewFile();
@@ -694,10 +725,10 @@ public class IoPConnect implements ConnectionListener {
                 .setHomeHost(profile.getHomeHost())
                 .setPubKey(ByteString.copyFrom(profile.getPublicKey()));
 
-        if (profile.getExtraData()!=null){
+        if (profile.getExtraData() != null) {
             mainInfo.setExtraData(profile.getExtraData());
         }
-        if (profile.getImg()!=null){
+        if (profile.getImg() != null) {
             mainInfo.setImg(ByteString.copyFrom(profile.getImg()));
         }
         org.libertaria.world.profiles_manager.ProfileOuterClass.Profile.Builder mainProfile = org.libertaria.world.profiles_manager.ProfileOuterClass.Profile.newBuilder()
@@ -710,22 +741,21 @@ public class IoPConnect implements ConnectionListener {
         for (ProfileInformation profileInformation : profileInformationList) {
             org.libertaria.world.profiles_manager.ProfileOuterClass.ProfileInfo.Builder profileInfoBuilder = org.libertaria.world.profiles_manager.ProfileOuterClass.ProfileInfo.newBuilder()
                     .setName(profileInformation.getName())
-                    .setPubKey(ByteString.copyFrom(CryptoBytes.fromHexToBytes(profileInformation.getHexPublicKey())))
-                    ;
-            if (profileInformation.getVersion()!=null){
+                    .setPubKey(ByteString.copyFrom(CryptoBytes.fromHexToBytes(profileInformation.getHexPublicKey())));
+            if (profileInformation.getVersion() != null) {
                 profileInfoBuilder.setVersion(ByteString.copyFrom(profileInformation.getVersion().toByteArray()));
             }
 
-            if (profileInformation.getHomeHost()!=null){
+            if (profileInformation.getHomeHost() != null) {
                 profileInfoBuilder.setHomeHost(profileInformation.getHomeHost());
             }
-            if (profileInformation.getType()!=null){
+            if (profileInformation.getType() != null) {
                 profileInfoBuilder.setType(profileInformation.getType());
             }
-            if (profileInformation.getExtraData()!=null){
+            if (profileInformation.getExtraData() != null) {
                 profileInfoBuilder.setExtraData(profile.getExtraData());
             }
-            if (profileInformation.getImg()!=null){
+            if (profileInformation.getImg() != null) {
                 profileInfoBuilder.setImg(ByteString.copyFrom(profile.getImg()));
             }
             remoteBackups.add(profileInfoBuilder.build());
@@ -754,12 +784,13 @@ public class IoPConnect implements ConnectionListener {
     /**
      * Todo: decrypt with the password this..
      * todo: remove the old profile and add the new one if this methos is called from the settings.
+     *
      * @param backupFile
      * @param password
      * @param platformSerializer
      * @return
      */
-    public ProfileRestored restoreFromBackup(File backupFile, String password, org.libertaria.world.global.PlatformSerializer platformSerializer){
+    public ProfileRestored restoreFromBackup(File backupFile, String password, org.libertaria.world.global.PlatformSerializer platformSerializer) {
         try {
             FileInputStream inputStream = new FileInputStream(backupFile);
             org.libertaria.world.profiles_manager.ProfileOuterClass.Wrapper wrapper = org.libertaria.world.profiles_manager.ProfileOuterClass.Wrapper.parseFrom(inputStream);
@@ -768,7 +799,7 @@ public class IoPConnect implements ConnectionListener {
             org.libertaria.world.profiles_manager.ProfileOuterClass.ProfileInfo mainProfileInfo = mainProfile.getProfileInfo();
             byte[] versionArray = mainProfileInfo.getVersion().toByteArray();
             Profile profile = new Profile(
-                    (versionArray!=null && versionArray.length==3)?Version.fromByteArray(versionArray):Version.newProtocolAcceptedVersion(),
+                    (versionArray != null && versionArray.length == 3) ? Version.fromByteArray(versionArray) : Version.newProtocolAcceptedVersion(),
                     mainProfileInfo.getName(),
                     mainProfileInfo.getType(),
                     mainProfileInfo.getExtraData(),
@@ -780,7 +811,7 @@ public class IoPConnect implements ConnectionListener {
                     )
             );
             List<ProfileInformation> list = new ArrayList<>();
-            for (int i=0;i<wrapper.getProfilesInfoCount();i++){
+            for (int i = 0; i < wrapper.getProfilesInfoCount(); i++) {
                 org.libertaria.world.profiles_manager.ProfileOuterClass.ProfileInfo profileInfo = wrapper.getProfilesInfo(i);
                 ProfileInformation profileInformation = new ProfileInformationImp(
                         Version.fromByteArray(profileInfo.getVersion().toByteArray()),
@@ -797,15 +828,15 @@ public class IoPConnect implements ConnectionListener {
                 );
             }
 
-            ProfileRestored profileRestored = new ProfileRestored(profile,list);
-            logger.info("Profile restored: "+profileRestored.toString());
+            ProfileRestored profileRestored = new ProfileRestored(profile, list);
+            logger.info("Profile restored: " + profileRestored.toString());
 
             // clean db
             pairingRequestsManager.truncate();
             profilesManager.truncate();
 
             // re start
-            profilesManager.saveAllProfiles(profile.getHexPublicKey(),profileRestored.getProfileInformationList());
+            profilesManager.saveAllProfiles(profile.getHexPublicKey(), profileRestored.getProfileInformationList());
 
             return profileRestored;
         } catch (IOException e) {
@@ -816,14 +847,15 @@ public class IoPConnect implements ConnectionListener {
 
     /**
      * Improve this for multiple profiles..
+     *
      * @param profPubKey
      * @return
      */
     public boolean isProfileBackupScheduled(String profPubKey) {
-        return createEmptyProfileServerConf().getBackupProfilePath()!=null;
+        return createEmptyProfileServerConf().getBackupProfilePath() != null;
     }
 
-    public static class ProfileRestored{
+    public static class ProfileRestored {
 
         private Profile profile;
         private List<ProfileInformation> profileInformationList;
@@ -857,7 +889,7 @@ public class IoPConnect implements ConnectionListener {
         for (Map.Entry<String, IoPProfileConnection> stringRedtoothProfileConnectionEntry : managers.entrySet()) {
             try {
                 stringRedtoothProfileConnectionEntry.getValue().stop();
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -865,7 +897,7 @@ public class IoPConnect implements ConnectionListener {
         for (Map.Entry<PsKey, IoPProfileConnection> psKeyIoPProfileConnectionEntry : remoteManagers.entrySet()) {
             try {
                 psKeyIoPProfileConnectionEntry.getValue().stop();
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

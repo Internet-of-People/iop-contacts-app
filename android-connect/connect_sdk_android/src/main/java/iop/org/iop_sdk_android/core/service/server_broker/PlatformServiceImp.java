@@ -8,8 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.net.LocalServerSocket;
-import android.net.LocalSocket;
 import android.net.NetworkInfo;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -44,10 +42,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -56,18 +51,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import iop.org.iop_sdk_android.core.crypto.CryptoWrapperAndroid;
+import iop.org.iop_sdk_android.core.modules.profile.ProfilesModuleImp;
+import iop.org.iop_sdk_android.core.service.ProfileServerConfigurationsImp;
+import iop.org.iop_sdk_android.core.service.SslContextFactory;
 import iop.org.iop_sdk_android.core.service.db.LocalProfilesDb;
 import iop.org.iop_sdk_android.core.service.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.service.db.SqliteProfilesDb;
-import iop.org.iop_sdk_android.core.service.ProfileServerConfigurationsImp;
-import iop.org.iop_sdk_android.core.service.SslContextFactory;
-import iop.org.iop_sdk_android.core.modules.profile.ProfilesModuleImp;
+import iop.org.iop_sdk_android.core.service.device_state.DeviceConnectionManager;
 import world.libertaria.shared.library.global.ModuleObject;
 import world.libertaria.shared.library.global.ModuleObjectWrapper;
 import world.libertaria.shared.library.global.ModuleParameter;
+import world.libertaria.shared.library.global.service.IPlatformService;
 import world.libertaria.shared.library.global.service.IntentServiceAction;
 import world.libertaria.shared.library.global.socket.LocalSocketSession;
-import world.libertaria.shared.library.global.service.IPlatformService;
 import world.libertaria.shared.library.global.socket.SessionHandler;
 
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PROFILE_CONNECTED;
@@ -76,12 +72,11 @@ import static world.libertaria.shared.library.global.client.IntentBroadcastConst
 
 /**
  * Created by furszy on 7/19/17.
- *
+ * <p>
  * Connect sdk broker pattern server side.
- *
  */
 
-public class PlatformServiceImp extends Service implements PlatformService,DeviceLocation {
+public class PlatformServiceImp extends Service implements PlatformService, DeviceLocation {
 
     private Logger logger = LoggerFactory.getLogger(PlatformServiceImp.class);
 
@@ -91,15 +86,23 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
     private LocalBroadcastManager localBroadcastManager;
 
     private ExecutorService executor;
-    /** Context */
+    /**
+     * Context
+     */
     private IoPConnectContext application;
-    /** Main library */
+    /**
+     * Main library
+     */
     private IoPConnect ioPConnect;
     private ServiceFactory serviceFactory;
-    /** Configurations impl */
+    /**
+     * Configurations impl
+     */
     private ProfileServerConfigurations configurationsPreferences;
     //private Profile profile;
-    /** Databases */
+    /**
+     * Databases
+     */
     private SqlitePairingRequestDb pairingRequestDb;
     private SqliteProfilesDb profilesDb;
     private LocalProfilesDao localProfilesDao;
@@ -109,8 +112,20 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
     private AtomicBoolean isInitialized = new AtomicBoolean(false);
 
     private final Set<BlockchainState.Impediment> impediments = EnumSet.noneOf(BlockchainState.Impediment.class);
-    /** Server Manager */
+    /**
+     * Server Manager
+     */
     private LocalServer localServer;
+
+    /**
+     * Device network connection
+     */
+    private DeviceConnectionManager deviceConnectionManager;
+    /**
+     * Device location
+     */
+    private GpsLocation gpsLocation;
+    private Boolean gpsEnabled;
 
     private final BroadcastReceiver connectivityReceiver = new BroadcastReceiver() {
         @Override
@@ -153,9 +168,11 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
 
         @Override
         public AppService buildOrGetService(String serviceName) {
-            return EnabledServicesFactory.buildService(serviceName,core.getModule(serviceName));
+            return EnabledServicesFactory.buildService(serviceName, core.getModule(serviceName));
         }
-    };
+    }
+
+    ;
 
 
     public ProfileServerConfigurations getConfPref() {
@@ -164,7 +181,7 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
 
     @Override
     public ProfilesModule getProfileModule() {
-        return core.getModule(EnabledServices.PROFILE_DATA.getName(),ProfilesModule.class);
+        return core.getModule(EnabledServices.PROFILE_DATA.getName(), ProfilesModule.class);
     }
 
     public SqliteProfilesDb getProfilesDb() {
@@ -187,7 +204,7 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
         initService();
     }
 
-    private void initService(){
+    private void initService() {
         try {
             if (isInitialized.compareAndSet(false, true)) {
                 localBroadcastManager = LocalBroadcastManager.getInstance(this);
@@ -200,13 +217,14 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                 pairingRequestDb = new SqlitePairingRequestDb(this);
                 profilesDb = new SqliteProfilesDb(this);
                 localProfilesDao = new LocalProfilesDb(this);
-                ioPConnect = new IoPConnect(application,new CryptoWrapperAndroid(),new SslContextFactory(this),localProfilesDao,profilesDb,pairingRequestDb,this);
+                deviceConnectionManager = new DeviceConnectionManager(this);
+                ioPConnect = new IoPConnect(application, new CryptoWrapperAndroid(), new SslContextFactory(this), localProfilesDao, profilesDb, pairingRequestDb, this, deviceConnectionManager);
                 // init core
                 ServiceFactoryImp serviceFactoryImp = new ServiceFactoryImp();
-                core = new Core(this,this,ioPConnect,serviceFactoryImp);
+                core = new Core(this, this, ioPConnect, serviceFactoryImp);
                 serviceFactoryImp.setCore(core);
                 serviceFactory = serviceFactoryImp;
-                ioPConnect.setEngineListener((ProfilesModuleImp)core.getModule(EnabledServices.PROFILE_DATA.getName()));
+                ioPConnect.setEngineListener((ProfilesModuleImp) core.getModule(EnabledServices.PROFILE_DATA.getName()));
                 ioPConnect.start();
 
                 try {
@@ -219,7 +237,7 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                 tryScheduleService();
 
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             isInitialized.set(false);
         }
@@ -229,7 +247,7 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
     /**
      * Try to solve some impediment if there is any.
      */
-    private void check(){
+    private void check() {
         try {
             if (configurationsPreferences.getBackgroundServiceEnable()) {
                 if (impediments.contains(BlockchainState.Impediment.NETWORK)) {
@@ -241,7 +259,7 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                 // todo: here i have to check if every profile on this device is connected to the network..
                 //ioPConnect.checkProfilesState();
                 // first check the existing profiles
-                final ProfilesModuleImp moduleImp = core.getModule(EnabledServices.PROFILE_DATA.getName(),ProfilesModuleImp.class);
+                final ProfilesModuleImp moduleImp = core.getModule(EnabledServices.PROFILE_DATA.getName(), ProfilesModuleImp.class);
                 for (final Profile localProfile : ioPConnect.getLocalProfiles().values()) {
                     if (!ioPConnect.isProfileConnectedOrConnecting(localProfile.getHexPublicKey())) {
                         final ConnectionFuture future = new ConnectionFuture();
@@ -251,15 +269,15 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                                 Profile profile = ioPConnect.getProfile(localProfile.getHexPublicKey());
                                 profile.setHomeHost(future.getProfServerData().getHost());
                                 profile.setHomeHostId(future.getProfServerData().getNetworkId());
-                                ioPConnect.updateProfile(profile,false,null);
+                                ioPConnect.updateProfile(profile, false, null);
                                 moduleImp.onCheckInCompleted(profile.getHexPublicKey());
                             }
 
                             @Override
                             public void onFail(int messageId, int status, String statusDetail) {
                                 Profile profile = ioPConnect.getProfile(localProfile.getHexPublicKey());
-                                moduleImp.onCheckInFail(profile,status,statusDetail);
-                                if (status==400) {
+                                moduleImp.onCheckInFail(profile, status, statusDetail);
+                                if (status == 400) {
                                     logger.info("Checking fail, detail " + statusDetail + ", trying to reconnect after 5 seconds");
                                 }
                             }
@@ -271,7 +289,7 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                         );
                     } else {
                         Intent intent = new Intent(ACTION_ON_PROFILE_CONNECTED);
-                        intent.putExtra(INTENT_EXTRA_PROF_KEY,localProfile.getHexPublicKey());
+                        intent.putExtra(INTENT_EXTRA_PROF_KEY, localProfile.getHexPublicKey());
                         localBroadcastManager.sendBroadcast(intent);
                         logger.info("check, profile connected or connecting. no actions");
                     }
@@ -287,12 +305,12 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                 } else {
                     logger.warn("### Trying to check with a null profile.");
                 }*/
-            }else {
+            } else {
                 logger.warn("### background service disabled");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("Exception on check",e);
+            logger.error("Exception on check", e);
         }
     }
 
@@ -304,7 +322,7 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         logger.info("onStartCommand");
-        if (intent!=null) {
+        if (intent != null) {
             String action = intent.getAction();
             if (action.equals(ACTION_SCHEDULE_SERVICE)) {
                 check();
@@ -312,7 +330,7 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                 // only check for now..
                 check();
             }
-        }else {
+        } else {
             //
             check();
         }
@@ -341,11 +359,11 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
      * Schedule service for later
      */
     private void tryScheduleService() {
-        boolean isSchedule = System.currentTimeMillis()<configurationsPreferences.getScheduleServiceTime();
+        boolean isSchedule = System.currentTimeMillis() < configurationsPreferences.getScheduleServiceTime();
 
-        if (!isSchedule){
+        if (!isSchedule) {
             logger.info("scheduling service");
-            AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
+            AlarmManager alarm = (AlarmManager) getSystemService(ALARM_SERVICE);
             long scheduleTime = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5); // 10 minutes from now
 
             Intent intent = new Intent(this, PlatformServiceImp.class);
@@ -362,7 +380,7 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                     // pending intent if you need to. Third is the intent you want to
                     // trigger. In this case I want to create an intent that will start my
                     // service. Lastly you can optionally pass flags.
-                    PendingIntent.getService(this, 0,intent , 0)
+                    PendingIntent.getService(this, 0, intent, 0)
             );
             // save
             configurationsPreferences.saveScheduleServiceTime(scheduleTime);
@@ -371,13 +389,13 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
 
     private SessionHandler sessionHandler = new SessionHandler() {
         @Override
-        public void onReceive(LocalSocketSession localSocketSession,ModuleObject.ModuleResponse response) {
-            logger.info("onReceive "+localSocketSession.toString());
+        public void onReceive(LocalSocketSession localSocketSession, ModuleObject.ModuleResponse response) {
+            logger.info("onReceive " + localSocketSession.toString());
         }
 
         @Override
-        public void sessionClosed(LocalSocketSession localSocketSession,String clientPk) {
-            logger.info("sessionClosed "+clientPk);
+        public void sessionClosed(LocalSocketSession localSocketSession, String clientPk) {
+            logger.info("sessionClosed " + clientPk);
         }
     };
 
@@ -390,21 +408,21 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
 
         @Override
         public ModuleObjectWrapper callMethod(String clientKey, String dataId, String serviceName, String method, ModuleParameter[] parameters) throws RemoteException {
-            logger.info("call service: "+serviceName+", method "+method);
+            logger.info("call service: " + serviceName + ", method " + method);
             // todo: security checks here..
             Serializable object = null;
             try {
-                object = moduleDataRequest(clientKey,dataId,serviceName,method,parameters);
+                object = moduleDataRequest(clientKey, dataId, serviceName, method, parameters);
                 ModuleObjectWrapper moduleObjectWrapper;
-                if (object instanceof Exception){
-                    moduleObjectWrapper = new ModuleObjectWrapper(dataId,(Exception) object);
-                }else {
-                    moduleObjectWrapper = new ModuleObjectWrapper(dataId,object);
+                if (object instanceof Exception) {
+                    moduleObjectWrapper = new ModuleObjectWrapper(dataId, (Exception) object);
+                } else {
+                    moduleObjectWrapper = new ModuleObjectWrapper(dataId, object);
                 }
                 return moduleObjectWrapper;
             } catch (Exception e) {
                 e.printStackTrace();
-                return new ModuleObjectWrapper(dataId,e);
+                return new ModuleObjectWrapper(dataId, e);
             }
         }
     };
@@ -414,17 +432,17 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
         private String clientId;
         private String requestId;
 
-        public MsgListener(String clientId,String requestId) {
+        public MsgListener(String clientId, String requestId) {
             this.clientId = clientId;
             this.requestId = requestId;
         }
 
         @Override
         public void onMessageReceive(int messageId, Object message) {
-            logger.info("abstract method onMessageReceive, "+message);
+            logger.info("abstract method onMessageReceive, " + message);
             // todo: send the response via socket if it's big or via broadcast if it's not
             try {
-                if (localServer.isClientConnected(clientId)){
+                if (localServer.isClientConnected(clientId)) {
                     ModuleObject.ModuleObjectWrapper moduleObjectWrapper =
                             ModuleObject.ModuleObjectWrapper.newBuilder()
                                     .setObj(
@@ -436,9 +454,9 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                             .setResponseType(ModuleObject.ResponseType.OBJ)
                             .setObj(moduleObjectWrapper)
                             .build();
-                    localServer.dispathMsg(clientId,requestId,messageId,response);
-                }else {
-                    logger.error("client is not connected anymore.. "+clientId);
+                    localServer.dispathMsg(clientId, requestId, messageId, response);
+                } else {
+                    logger.error("client is not connected anymore.. " + clientId);
                 }
             } catch (CantSendMessageException e) {
                 e.printStackTrace();
@@ -449,22 +467,22 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
 
         @Override
         public void onMsgFail(int messageId, int statusValue, String details) {
-            logger.info("abstract method onMsgFail, "+details);
+            logger.info("abstract method onMsgFail, " + details);
             // todo: send the response via socket if it's big or via broadcast if it's not
-            try{
-                if (localServer.isClientConnected(clientId)){
+            try {
+                if (localServer.isClientConnected(clientId)) {
                     ModuleObject.ModuleResponse response = ModuleObject.ModuleResponse.newBuilder()
                             .setId(requestId)
                             .setResponseType(ModuleObject.ResponseType.ERR)
                             .setErr(ByteString.copyFromUtf8(details))
                             .build();
-                    localServer.dispathMsg(clientId,requestId,messageId,response);
-                }else {
-                    logger.error("client is not connected anymore.. "+clientId);
+                    localServer.dispathMsg(clientId, requestId, messageId, response);
+                } else {
+                    logger.error("client is not connected anymore.. " + clientId);
                 }
             } catch (CantSendMessageException e) {
                 e.printStackTrace();
-            } catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -473,9 +491,11 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
         public String getMessageName() {
             return "abstract method listener";
         }
-    };
+    }
 
-    private Serializable moduleDataRequest(String clientKey, String dataId,final String serviceName, final String method, final ModuleParameter[] parameters) throws Exception {
+    ;
+
+    private Serializable moduleDataRequest(String clientKey, String dataId, final String serviceName, final String method, final ModuleParameter[] parameters) throws Exception {
         EnabledServices service = EnabledServices.getServiceByName(serviceName);
         Class clazz = service.getModuleClass();
         Module module = core.getModule(serviceName);
@@ -490,14 +510,14 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                 Object o = parameters[i].getObject();
                 Class paramType = parameters[i].getParameterType();
                 paramsTypes[i] = paramType;
-                if (paramType == ProfSerMsgListener.class){
-                    params[i] = new MsgListener(clientKey,dataId);
-                }else
+                if (paramType == ProfSerMsgListener.class) {
+                    params[i] = new MsgListener(clientKey, dataId);
+                } else
                     params[i] = o;
 
             }
         }
-        try{
+        try {
             if (paramsTypes == null) {
                 m = clazz.getDeclaredMethod(method, null);
                 returnedObject = m.invoke(module, null);
@@ -532,12 +552,12 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
                     logger.info("NOT FOUND module");
                 }
             }
-            if (m!=null){
-                if (!m.getReturnType().equals(Void.TYPE) && returnedObject == null){
+            if (m != null) {
+                if (!m.getReturnType().equals(Void.TYPE) && returnedObject == null) {
                     // nothing..
                 }
             }
-        }catch (NoSuchMethodException e) {
+        } catch (NoSuchMethodException e) {
             logger.info("NoSuchMethodException:" + method + " on class" + clazz.getName());
             e.printStackTrace();
         } catch (InvocationTargetException e) {
@@ -550,10 +570,10 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
             e.printStackTrace();
             return e;
         }
-        if (returnedObject==null) return null;
-        if (!(returnedObject instanceof Serializable)){
-            logger.warn("Error, Method: "+method+" doesn't return a Serializable object");
-            throw new Exception("Method doesn't return a Serializable object, service "+serviceName+" , method name: "+method);
+        if (returnedObject == null) return null;
+        if (!(returnedObject instanceof Serializable)) {
+            logger.warn("Error, Method: " + method + " doesn't return a Serializable object");
+            throw new Exception("Method doesn't return a Serializable object, service " + serviceName + " , method name: " + method);
         }
         return (Serializable) returnedObject;
     }
@@ -581,11 +601,12 @@ public class PlatformServiceImp extends Service implements PlatformService,Devic
 
     @Override
     public boolean isDeviceLocationEnabled() {
-        return false;
+        return gpsEnabled;
     }
 
     @Override
     public GpsLocation getDeviceLocation() {
-        return null;
+        return gpsLocation;
     }
+
 }
