@@ -26,6 +26,8 @@ Includes the platform of the Connect running on background.
 * 'connect_sdk_android_client'
 * 'connect_sdk_android_shared_library'
 
+The last two libraries are External App libraries.
+
 ### Connect Backend
 
 Pure java connection library with the Libertaria network.

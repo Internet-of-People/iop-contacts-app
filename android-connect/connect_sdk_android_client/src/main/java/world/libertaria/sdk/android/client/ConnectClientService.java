@@ -230,6 +230,10 @@ public class ConnectClientService extends Service {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            if (mPlatformServiceIsBound){
+                // notify app about the connection
+                connectApp.onConnectClientServiceBind();
+            }
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -238,6 +242,8 @@ public class ConnectClientService extends Service {
             iServerBrokerService = null;
             mPlatformServiceIsBound = false;
             logger.info("ISERVERBROKERSERVICE disconnected");
+            // notify app
+            connectApp.onConnectClientServiceUnbind();
         }
     };
 
