@@ -93,9 +93,11 @@ public class BaseActivity extends AppCompatActivity{
 
     protected void loadBasics(){
         app = App.getInstance();
-        pairingModule = app.getPairingModule();
-        chatModule = app.getChatModule();
-        profilesModule = app.getProfilesModule();
+        if (app.isConnectedToPlatform()) {
+            pairingModule = app.getPairingModule();
+            chatModule = app.getChatModule();
+            profilesModule = app.getProfilesModule();
+        }
         selectedProfPubKey = app.getSelectedProfilePubKey();
     }
 

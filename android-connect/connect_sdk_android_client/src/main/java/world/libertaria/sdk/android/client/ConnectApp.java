@@ -91,6 +91,10 @@ public class ConnectApp extends Application implements ConnectApplication {
                     broadcastManager.sendBroadcast(intent);
 
                     clientService = new WeakReference<ConnectClientService>(connectHelper.getClient());
+
+                    if (clientService.get().mPlatformServiceIsBound){
+                        onConnectClientServiceBind();
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -162,9 +166,8 @@ public class ConnectApp extends Application implements ConnectApplication {
     }
 
     protected final Module getModule(EnabledServices enabledService){
-        if (clientService!=null)
-            return clientService.get().getModule(enabledService);
-        return null;
+        if (clientService==null) throw new IllegalStateException("client service not connected");
+        return clientService.get().getModule(enabledService);
     }
 
     public final String getAppPackage(){
