@@ -116,11 +116,11 @@ public class App extends ConnectApp implements IoPConnectContext {
             log = LoggerFactory.getLogger(App.class);
             PackageManager manager = getPackageManager();
             info = manager.getPackageInfo(this.getPackageName(), 0);
-            try {
+            /*try {
                 Bugsee.launch(this, "990e689d-274f-46aa-9be7-43e52c7fa2f5");
             }catch (Exception e){
                 e.printStackTrace();
-            }
+            }*/
             CrashReporter.init(getCacheDir());
             appConf = new AppConf(getSharedPreferences(PREFS_NAME, 0));
             selectedProfilePubKey = appConf.getSelectedProfPubKey();

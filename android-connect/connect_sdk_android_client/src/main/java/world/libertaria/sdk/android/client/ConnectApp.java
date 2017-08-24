@@ -38,7 +38,7 @@ import static world.libertaria.shared.library.global.client.IntentBroadcastConst
 
 public class ConnectApp extends Application implements ConnectApplication {
 
-    private Logger logger = LoggerFactory.getLogger(ConnectApp.class);
+    private Logger logger;
 
     public static final String INTENT_ACTION_ON_SERVICE_CONNECTED = "service_connected";
 
@@ -46,7 +46,7 @@ public class ConnectApp extends Application implements ConnectApplication {
     protected LocalBroadcastManager broadcastManager;
     protected ActivityManager activityManager;
     private WeakReference<ConnectClientService> clientService;
-
+    private volatile boolean isClientServiceBound;
     private CopyOnWriteArrayList<ConnectListener> connectListeners;
 
     public interface ConnectListener{
@@ -60,6 +60,7 @@ public class ConnectApp extends Application implements ConnectApplication {
     public void onCreate() {
         super.onCreate();
         initLogging();
+        logger = LoggerFactory.getLogger(ConnectApp.class);
         activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         // This is just for now..
         int pid = android.os.Process.myPid();
@@ -86,9 +87,7 @@ public class ConnectApp extends Application implements ConnectApplication {
             @Override
             public void onConnected() {
                 try {
-                    // notify connection
-                    Intent intent = new Intent(ACTION_IOP_SERVICE_CONNECTED);
-                    broadcastManager.sendBroadcast(intent);
+                    isClientServiceBound = true;
 
                     clientService = new WeakReference<ConnectClientService>(connectHelper.getClient());
 
@@ -102,6 +101,7 @@ public class ConnectApp extends Application implements ConnectApplication {
 
             @Override
             public void onDisconnected() {
+                isClientServiceBound = false;
                 clientService.clear();
             }
         });
@@ -190,11 +190,18 @@ public class ConnectApp extends Application implements ConnectApplication {
      * Method to override reciving the bind notification
      */
     protected void onConnectClientServiceBind() {
-        // notify listeners
-        if (connectListeners!=null){
-            for (ConnectListener connectListener : connectListeners) {
-                connectListener.onPlatformConnected(this);
+        if (isClientServiceBound && clientService!=null && clientService.get()!=null && clientService.get().mPlatformServiceIsBound) {
+            // notify connection
+            Intent intent = new Intent(ACTION_IOP_SERVICE_CONNECTED);
+            broadcastManager.sendBroadcast(intent);
+            // notify listeners
+            if (connectListeners != null) {
+                for (ConnectListener connectListener : connectListeners) {
+                    connectListener.onPlatformConnected(this);
+                }
             }
+        }else {
+            logger.warn("onConnectClientServiceBind, isClientServiceBound: "+isClientServiceBound+", mPlatformServiceIsBound "+clientService.get().mPlatformServiceIsBound);
         }
     }
     /**
@@ -227,5 +234,9 @@ public class ConnectApp extends Application implements ConnectApplication {
         if (connectListeners!=null){
             connectListeners.remove(connectListener);
         }
+    }
+
+    public boolean isClientServiceBound() {
+        return isClientServiceBound;
     }
 }
