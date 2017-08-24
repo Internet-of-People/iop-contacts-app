@@ -73,4 +73,15 @@
     <string name="btn_connect">Connected</string>
     <string name="disconnected_text_message">This user has \n disconnected from you.</string>
     <string name="delete_contact">Delete contact</string>
+    <!-- Welcome -->
+    <string name="title_activity_welcome">Home Screen</string>
+    <string name="start">START</string>
+    <string name="skip">SKIP</string>
+    <string name="slide_1_desc">You can create \n your profile</string>
+    <string name="slide_2_desc">Get your friends \n QR code</string>
+    <string name="slide_3_desc">Send connection \n request</string>
+    <string name="slide_4_desc">Add new \n Contacts</string>
+    <string name="slide_5_desc">Use any IoP \n installed service</string>
+    <string name="play_again_desc">To see the welcome slider again, goto Settings -> apps -> welcome slider -> clear data</string>
+    <string name="play_again">Play Again</string>
 </resources>

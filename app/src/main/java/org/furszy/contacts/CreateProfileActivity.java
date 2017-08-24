@@ -22,6 +22,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import org.furszy.contacts.ui.home.HomeActivity;
+import org.furszy.contacts.ui.settings.SettingsActivity;
+import org.furszy.contacts.ui.welcome.WelcomeActivity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +91,7 @@ public class CreateProfileActivity extends BaseActivity {
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            Intent myIntent = new Intent(v.getContext(), HomeActivity.class);
+                                            Intent myIntent = new Intent(v.getContext(), WelcomeActivity.class);
                                             startActivity(myIntent);
                                             finish();
                                         }
