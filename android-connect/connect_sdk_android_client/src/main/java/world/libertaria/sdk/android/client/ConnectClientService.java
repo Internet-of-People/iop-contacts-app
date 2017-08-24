@@ -292,9 +292,9 @@ public class ConnectClientService extends Service {
                         }
                         break;
                     case ERR:
-                        logger.info("err arrived..");
+                        String detail = response.getErr().toStringUtf8();
+                        logger.info("err arrived.. " + detail);
                         if (waitingFutures.containsKey(id)) {
-                            String detail = response.getErr().toStringUtf8();
                             waitingFutures.get(id).onMsgFail(0,0,detail);
                         }
                         break;
