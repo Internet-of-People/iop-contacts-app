@@ -1,8 +1,20 @@
 package org.libertaria.world.profile_server.engine;
 
 import org.bitcoinj.core.Sha256Hash;
+import org.libertaria.world.profile_server.CantConnectException;
 import org.libertaria.world.profile_server.CantSendMessageException;
+import org.libertaria.world.profile_server.IoSession;
 import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.client.ProfNodeConnection;
+import org.libertaria.world.profile_server.client.ProfSerRequest;
+import org.libertaria.world.profile_server.client.ProfileServer;
+import org.libertaria.world.profile_server.client.PsSocketHandler;
+import org.libertaria.world.profile_server.engine.app_services.CallsListener;
+import org.libertaria.world.profile_server.engine.listeners.ConnectionListener;
+import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
+import org.libertaria.world.profile_server.engine.listeners.ProfSerPartSearchListener;
+import org.libertaria.world.profile_server.model.ProfServerData;
+import org.libertaria.world.profile_server.processors.MessageProcessor;
 import org.libertaria.world.profile_server.protocol.IopProfileServer;
 import org.libertaria.world.profile_server.engine.app_services.AppServiceMsg;
 import org.slf4j.Logger;
@@ -36,21 +48,21 @@ public class ProfSerEngine {
     /** Connection state */
     private ProfSerConnectionState profSerConnectionState;
     /**  Profile server */
-    private org.libertaria.world.profile_server.client.ProfileServer profileServer;
+    private ProfileServer profileServer;
     /** Server configuration data */
-    private org.libertaria.world.profile_server.model.ProfServerData profServerData;
+    private ProfServerData profServerData;
     /** Profile connected cached class */
-    private org.libertaria.world.profile_server.client.ProfNodeConnection profNodeConnection;
+    private ProfNodeConnection profNodeConnection;
     /** Crypto wrapper implementation */
     private org.libertaria.world.crypto.CryptoWrapper crypto;
     /** Internal server handler */
-    private org.libertaria.world.profile_server.client.PsSocketHandler handler;
+    private PsSocketHandler handler;
     /** Connection listeners */
-    private CopyOnWriteArrayList<org.libertaria.world.profile_server.engine.listeners.ConnectionListener> connectionListener = new CopyOnWriteArrayList<>();
+    private CopyOnWriteArrayList<ConnectionListener> connectionListener = new CopyOnWriteArrayList<>();
     /** Listener to receive incomingCallNotifications and incomingMessages from calls */
-    private org.libertaria.world.profile_server.engine.app_services.CallsListener callListener;
+    private CallsListener callListener;
     /** Messages listeners:  id -> listner */
-    private final ConcurrentMap<Integer, org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener> msgListeners = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Integer, ProfSerMsgListener> msgListeners = new ConcurrentHashMap<>();
     private final ConcurrentMap<String,SearchProfilesQuery> profilesQuery = new ConcurrentHashMap<>();
     /** Executor */
     private ExecutorService executor;
@@ -93,7 +105,7 @@ public class ProfSerEngine {
         this.callListener = callListener;
     }
 
-    public void addConnectionListener(org.libertaria.world.profile_server.engine.listeners.ConnectionListener listener){
+    public void addConnectionListener(ConnectionListener listener){
         this.connectionListener.add(listener);
     }
 
@@ -142,11 +154,11 @@ public class ProfSerEngine {
 
     }
 
-    private void addMsgListener(int msgId, org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener listener){
+    private void addMsgListener(int msgId, ProfSerMsgListener listener){
         msgListeners.put(msgId,listener);
     }
 
-    private void sendRequest(org.libertaria.world.profile_server.client.ProfSerRequest profSerRequest, org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener listener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
+    private void sendRequest(org.libertaria.world.profile_server.client.ProfSerRequest profSerRequest, ProfSerMsgListener listener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
         if (listener!=null)
             addMsgListener(profSerRequest.getMessageId(),listener);
         profSerRequest.send();
@@ -162,7 +174,7 @@ public class ProfSerEngine {
      * @return
      * @throws Exception
      */
-    public int requestRoleList(org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener listener) throws Exception {
+    public int requestRoleList(ProfSerMsgListener listener) throws Exception {
         LOG.info("requestRoleList");
         org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.listRolesRequest();
         sendRequest(request,listener);
@@ -175,7 +187,7 @@ public class ProfSerEngine {
      * @return
      * @throws Exception
      */
-    int startConversationNonCl(org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener listener) throws Exception{
+    int startConversationNonCl(ProfSerMsgListener listener) throws Exception{
         LOG.info("startConversationNonCl");
         org.libertaria.world.profile_server.client.ProfSerRequest profSerRequest = profileServer.startConversationNonCl(
                 profNodeConnection.getProfile().getPublicKey(),
@@ -195,7 +207,7 @@ public class ProfSerEngine {
      * @return
      * @throws Exception
      */
-    public int registerProfileRequest(org.libertaria.world.profile_server.model.Profile profile, org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener listener) throws Exception {
+    public int registerProfileRequest(org.libertaria.world.profile_server.model.Profile profile, ProfSerMsgListener listener) throws Exception {
         LOG.info("registerProfileRequest");
         org.libertaria.world.profile_server.client.ProfSerRequest profSerRequest = profileServer.registerHostRequest(
                 profile,
@@ -212,7 +224,7 @@ public class ProfSerEngine {
      * @return
      * @throws Exception
      */
-    public int startConversationCl(org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener listener) throws Exception {
+    public int startConversationCl(ProfSerMsgListener listener) throws Exception {
         org.libertaria.world.profile_server.client.ProfSerRequest profSerRequest = profileServer.startConversationCl(
                 profNodeConnection.getProfile().getPublicKey(),
                 profNodeConnection.getConnectionChallenge()
@@ -230,7 +242,7 @@ public class ProfSerEngine {
      * @return
      * @throws Exception
      */
-    public int checkinRequest(byte[] nodeChallenge, org.libertaria.world.profile_server.model.Profile profile, org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener listener) throws Exception {
+    public int checkinRequest(byte[] nodeChallenge, org.libertaria.world.profile_server.model.Profile profile, ProfSerMsgListener listener) throws Exception {
         LOG.info("check-in for pk: "+profile.getHexPublicKey());
         org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.checkIn(nodeChallenge, profile);
         sendRequest(request,listener);
@@ -242,7 +254,7 @@ public class ProfSerEngine {
      *
      * @param img -> Profile image in PNG or JPEG format, non-empty binary data, max 20,480 bytes long, or zero length binary data if the profile image is about to be erased.
      */
-    public int updateProfile(org.libertaria.world.global.Version version, String name, byte[] img, byte[] imgHash, int lat, int lon, String extraData, org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener listener){
+    public int updateProfile(org.libertaria.world.global.Version version, String name, byte[] img, byte[] imgHash, int lat, int lon, String extraData, ProfSerMsgListener listener){
         LOG.info("updateProfile, state: "+profSerConnectionState);
         int msgId = 0;
         if (profSerConnectionState == ProfSerConnectionState.CHECK_IN){
@@ -274,7 +286,7 @@ public class ProfSerEngine {
      * Store can profile
       * @return
      */
-    public int storeCanProfile(org.libertaria.world.profile_server.model.Profile profile, org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener listener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
+    public int storeCanProfile(org.libertaria.world.profile_server.model.Profile profile, ProfSerMsgListener listener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
         org.libertaria.world.profile_server.protocol.CanStoreMap canStoreMap = new org.libertaria.world.profile_server.protocol.CanStoreMap();
         // todo: complete this when after check the PS.
         canStoreMap.addValue("pubKey",profile.getPublicKey());
@@ -305,7 +317,7 @@ public class ProfSerEngine {
      * @param name
      * @param listener
      */
-    public void searchProfileByName(String name, org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener){
+    public void searchProfileByName(String name, ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener){
         try {
             org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.searchProfilesRequest(false,false,100,10000,null,name,null);
             sendRequest(request,listener);
@@ -316,7 +328,7 @@ public class ProfSerEngine {
         }
     }
 
-    public void searchProfileByNameAndType(String name,String type, org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener){
+    public void searchProfileByNameAndType(String name,String type, ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener){
         try {
             org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.searchProfilesRequest(false,false,100,10000,type,name,null);
             sendRequest(request,listener);
@@ -334,7 +346,7 @@ public class ProfSerEngine {
      * @param searchProfilesQuery
      * @param listener
      */
-    public void searchProfiles(SearchProfilesQuery searchProfilesQuery, org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener){
+    public void searchProfiles(SearchProfilesQuery searchProfilesQuery, ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener){
         try {
             cacheSearch(searchProfilesQuery);
             org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.searchProfilesRequest(
@@ -361,7 +373,7 @@ public class ProfSerEngine {
      * This method works after call searchProfile when the previous amount of result is less than the maxTotalRecordCount. Responding with a part of the entire search.
      *
      */
-    public void searchSubsequentProfiles(SearchProfilesQuery searchProfilesQuery, org.libertaria.world.profile_server.engine.listeners.ProfSerPartSearchListener<List<IopProfileServer.ProfileQueryInformation>> listener){
+    public void searchSubsequentProfiles(SearchProfilesQuery searchProfilesQuery, ProfSerPartSearchListener<List<IopProfileServer.ProfileQueryInformation>> listener){
         searchProfilesQuery.setRecordIndex(searchProfilesQuery.getRecordIndex()+1);
         updateCacheSearch(searchProfilesQuery);
         try{
@@ -384,7 +396,7 @@ public class ProfSerEngine {
      * @param includeApplicationServices
      * @param listener
      */
-    public void getProfileInformation(String pubKey,boolean includeProfileImage, boolean includeThumbnailImage, boolean includeApplicationServices, org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<ProfileInformation> listener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
+    public void getProfileInformation(String pubKey,boolean includeProfileImage, boolean includeThumbnailImage, boolean includeApplicationServices, ProfSerMsgListener<ProfileInformation> listener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
         // hash of the public key
         LOG.info("getProfileInformation "+pubKey);
         byte[] profileNetworkId = Sha256Hash.hash(org.libertaria.world.crypto.CryptoBytes.fromHexToBytes(pubKey));
@@ -411,7 +423,7 @@ public class ProfSerEngine {
      *  @param profilePubKey -> remote profile public key
      *  @param appService -> appService name
      */
-    public void callProfileAppService(String profilePubKey, String appService, org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener listener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
+    public void callProfileAppService(String profilePubKey, String appService, ProfSerMsgListener listener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
         byte[] profileNetworkId = Sha256Hash.hash(org.libertaria.world.crypto.CryptoBytes.fromHexToBytes(profilePubKey));
         org.libertaria.world.profile_server.client.ProfSerRequest profSerRequest = profileServer.callIdentityApplicationServiceRequest(profileNetworkId,appService);
         sendRequest(profSerRequest,listener);
@@ -439,19 +451,20 @@ public class ProfSerEngine {
      * 4)  Sender receive an ApplicationServiceSendMessageResponse
      *
      *
+     * @param callId
      * @param token
      * @param msg
      * @param listener
      * @throws org.libertaria.world.profile_server.CantConnectException
      * @throws CantSendMessageException
      */
-    public void sendAppServiceMsg(byte[] token, byte[] msg, org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> listener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
-        org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.appServiceSendMessageRequest(token,msg);
+    public void sendAppServiceMsg(String callId,byte[] token, byte[] msg, ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> listener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
+        ProfSerRequest request = profileServer.appServiceSendMessageRequest(callId,token,msg);
         sendRequest(request,listener);
     }
 
-    public void pingAppService(String token, org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> listener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
-        org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.ping(IopProfileServer.ServerRoleType.CL_APP_SERVICE,token);
+    public void pingAppService(String callId,String token, ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> listener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
+        ProfSerRequest request = profileServer.ping(IopProfileServer.ServerRoleType.CL_APP_SERVICE,callId,token);
         sendRequest(request,listener);
     }
 
@@ -461,8 +474,8 @@ public class ProfSerEngine {
      * @throws org.libertaria.world.profile_server.CantConnectException
      * @throws CantSendMessageException
      */
-    public void respondAppServiceReceiveMsg(String token,int msgToRespond) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
-        org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.appServiceReceiveMessageNotificationResponse(token,msgToRespond);
+    public void respondAppServiceReceiveMsg(String callId,String token,int msgToRespond) throws CantConnectException, CantSendMessageException {
+        ProfSerRequest request = profileServer.appServiceReceiveMessageNotificationResponse(callId,token,msgToRespond);
         request.send();
     }
 
@@ -485,12 +498,12 @@ public class ProfSerEngine {
      * @param applicationService
      * @return
      */
-    private int addApplicationServiceRequest(String applicationService, org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener profSerMsgListener){
+    private int addApplicationServiceRequest(String applicationService, ProfSerMsgListener profSerMsgListener){
         if (!profNodeConnection.isRegistered()) throw new InvalidStateException("profile is not registered in the server");
         if (!isClConnectionReady()) throw new IllegalStateException("connection is not ready to send messages yet");
         int msgId = 0;
         try {
-            org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.addApplicationService(applicationService);
+            ProfSerRequest request = profileServer.addApplicationService(applicationService);
             sendRequest(request,profSerMsgListener);
         } catch (CantSendMessageException e) {
             e.printStackTrace();
@@ -513,7 +526,7 @@ public class ProfSerEngine {
                     profile.getLatitude(),
                     profile.getLongitude(),
                     profile.getExtraData(),
-                    new org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener() {
+                    new ProfSerMsgListener() {
                         @Override
                         public void onMessageReceive(int messageId, Object message) {
                             // Nothing..
@@ -546,7 +559,7 @@ public class ProfSerEngine {
         return profSerConnectionState;
     }
 
-    public org.libertaria.world.profile_server.client.ProfNodeConnection getProfNodeConnection() {
+    public ProfNodeConnection getProfNodeConnection() {
         return profNodeConnection;
     }
 
@@ -568,8 +581,8 @@ public class ProfSerEngine {
         profileServer.closePort(port);
     }
 
-    public void closeChannel(String callToken) throws IOException {
-        profileServer.closeCallChannel(callToken);
+    public void closeChannelByUUID(String uuid) throws IOException {
+        profileServer.closeCallChannelByUUID(uuid);
     }
 
 
@@ -608,7 +621,7 @@ public class ProfSerEngine {
         }
     }
 
-    public CopyOnWriteArrayList<org.libertaria.world.profile_server.engine.listeners.ConnectionListener> getConnectionListeners() {
+    public CopyOnWriteArrayList<ConnectionListener> getConnectionListeners() {
         return connectionListener;
     }
 
@@ -632,7 +645,7 @@ public class ProfSerEngine {
 
     /** Messages processors  */
 
-    public class ProfileServerHandler implements org.libertaria.world.profile_server.client.PsSocketHandler<IopProfileServer.Message> {
+    public class ProfileServerHandler implements PsSocketHandler<IopProfileServer.Message> {
 
         private static final String TAG = "ProfileServerHandler";
 
@@ -699,11 +712,12 @@ public class ProfSerEngine {
         public void sessionClosed(org.libertaria.world.profile_server.IoSession session) throws Exception {
             LOG.info("sessionClosed: "+session.toString());
             // notify upper layers
-            for (org.libertaria.world.profile_server.engine.listeners.ConnectionListener listener : connectionListener) {
+            for (ConnectionListener listener : connectionListener) {
                 listener.onConnectionLost(
                         profNodeConnection.getProfile(),
                         profServerData.getHost(),
                         session.getPortType(),
+                        session.getId(),
                         session.getSessionTokenId()
                 );
             }
@@ -715,7 +729,7 @@ public class ProfSerEngine {
         }
 
         @Override
-        public void messageReceived(final org.libertaria.world.profile_server.IoSession session, final IopProfileServer.Message message) throws Exception {
+        public void messageReceived(final IoSession session, final IopProfileServer.Message message) throws Exception {
             executor.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -756,16 +770,16 @@ public class ProfSerEngine {
         }
 
         @Override
-        public void messageSent(org.libertaria.world.profile_server.IoSession session, IopProfileServer.Message message) throws Exception {
+        public void messageSent(IoSession session, IopProfileServer.Message message) throws Exception {
 
         }
 
         @Override
-        public void inputClosed(org.libertaria.world.profile_server.IoSession session) throws Exception {
+        public void inputClosed(IoSession session) throws Exception {
 
         }
 
-        private void dispatchRequest(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.Request request){
+        private void dispatchRequest(IoSession session, int messageId, IopProfileServer.Request request){
 
             switch (request.getConversationTypeCase()){
 
@@ -788,7 +802,7 @@ public class ProfSerEngine {
 
         }
 
-        private void dispatchRequest(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.ConversationRequest request){
+        private void dispatchRequest(IoSession session, int messageId, IopProfileServer.ConversationRequest request){
 
             switch (request.getRequestTypeCase()){
 
@@ -804,7 +818,7 @@ public class ProfSerEngine {
         }
 
 
-        private void dispatchRequest(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.SingleRequest request){
+        private void dispatchRequest(IoSession session, int messageId, IopProfileServer.SingleRequest request){
 
             switch (request.getRequestTypeCase()){
 
@@ -820,7 +834,7 @@ public class ProfSerEngine {
         }
 
 
-        private void dispatchResponse(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.Response response) throws Exception {
+        private void dispatchResponse(IoSession session, int messageId, IopProfileServer.Response response) throws Exception {
             switch (response.getConversationTypeCase()){
 
                 case CONVERSATIONRESPONSE:
@@ -889,7 +903,7 @@ public class ProfSerEngine {
             }
         }
 
-        private void dispatchSingleResponse(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.SingleResponse singleResponse){
+        private void dispatchSingleResponse(IoSession session, int messageId, IopProfileServer.SingleResponse singleResponse){
             switch (singleResponse.getResponseTypeCase()){
                 case PING:
                     processors.get(PING_PROCESSOR).execute(session, messageId,singleResponse.getPing());
@@ -915,7 +929,7 @@ public class ProfSerEngine {
 
         }
 
-        private void dispatchConversationResponse(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.ConversationResponse conversationResponse) throws Exception {
+        private void dispatchConversationResponse(IoSession session, int messageId, IopProfileServer.ConversationResponse conversationResponse) throws Exception {
             switch (conversationResponse.getResponseTypeCase()){
 
                 case START:
@@ -978,10 +992,10 @@ public class ProfSerEngine {
     }
 
 
-    private class PingProcessor implements org.libertaria.world.profile_server.processors.MessageProcessor<IopProfileServer.PingResponse> {
+    private class PingProcessor implements MessageProcessor<IopProfileServer.PingResponse> {
 
         @Override
-        public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.PingResponse message) {
+        public void execute(IoSession session, int messageId, IopProfileServer.PingResponse message) {
             LOG.info("PingProcessor execute..");
 
         }
@@ -990,7 +1004,7 @@ public class ProfSerEngine {
     /**
      * Process a list roles response message
      */
-    private class ListRolesProcessor implements org.libertaria.world.profile_server.processors.MessageProcessor<IopProfileServer.ListRolesResponse> {
+    private class ListRolesProcessor implements MessageProcessor<IopProfileServer.ListRolesResponse> {
 
 
         @Override
@@ -1004,7 +1018,7 @@ public class ProfSerEngine {
     /**
      * Process start conversation to non customer port response
      */
-    private class StartConversationNonClProcessor implements org.libertaria.world.profile_server.processors.MessageProcessor<IopProfileServer.StartConversationResponse> {
+    private class StartConversationNonClProcessor implements MessageProcessor<IopProfileServer.StartConversationResponse> {
 
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.StartConversationResponse message) {
@@ -1016,7 +1030,7 @@ public class ProfSerEngine {
     /**
      * Process Register hosting response
      */
-    private class HomeNodeRequestProcessor implements org.libertaria.world.profile_server.processors.MessageProcessor<IopProfileServer.RegisterHostingResponse> {
+    private class HomeNodeRequestProcessor implements MessageProcessor<IopProfileServer.RegisterHostingResponse> {
 
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.RegisterHostingResponse message) {
@@ -1028,7 +1042,7 @@ public class ProfSerEngine {
     /**
      * Process Start conversation with the customer port
      */
-    private class StartConversationClProcessor implements org.libertaria.world.profile_server.processors.MessageProcessor<IopProfileServer.StartConversationResponse> {
+    private class StartConversationClProcessor implements MessageProcessor<IopProfileServer.StartConversationResponse> {
 
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.StartConversationResponse message) {
@@ -1041,7 +1055,7 @@ public class ProfSerEngine {
     /**
      * Process the CheckIn message response
      */
-    private class CheckinConversationProcessor implements org.libertaria.world.profile_server.processors.MessageProcessor<IopProfileServer.CheckInResponse> {
+    private class CheckinConversationProcessor implements MessageProcessor<IopProfileServer.CheckInResponse> {
 
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.CheckInResponse message) {
@@ -1051,7 +1065,7 @@ public class ProfSerEngine {
     }
 
 
-    private class UpdateProfileConversationProcessor implements org.libertaria.world.profile_server.processors.MessageProcessor<IopProfileServer.UpdateProfileResponse> {
+    private class UpdateProfileConversationProcessor implements MessageProcessor<IopProfileServer.UpdateProfileResponse> {
 
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.UpdateProfileResponse message) {
@@ -1061,7 +1075,7 @@ public class ProfSerEngine {
         }
     }
 
-    private class ProfileSearchProcessor implements org.libertaria.world.profile_server.processors.MessageProcessor<IopProfileServer.ProfileSearchResponse> {
+    private class ProfileSearchProcessor implements MessageProcessor<IopProfileServer.ProfileSearchResponse> {
 
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.ProfileSearchResponse message) {
@@ -1078,7 +1092,7 @@ public class ProfSerEngine {
             }
             LOG.info(stringBuilder.toString());
 
-            ((org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener)msgListeners.get(messageId)).onMessageReceive(messageId,message.getProfilesList());
+            ((ProfSerMsgListener)msgListeners.get(messageId)).onMessageReceive(messageId,message.getProfilesList());
             msgListeners.remove(messageId);
 
         }
@@ -1095,16 +1109,16 @@ public class ProfSerEngine {
      *
      */
 
-    private class PartProfileSearchProcessor implements org.libertaria.world.profile_server.processors.MessageProcessor<IopProfileServer.ProfileSearchPartResponse> {
+    private class PartProfileSearchProcessor implements MessageProcessor<IopProfileServer.ProfileSearchPartResponse> {
 
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.ProfileSearchPartResponse message) {
             LOG.info("PartProfileSearchProcessor execute..");
-            ((org.libertaria.world.profile_server.engine.listeners.ProfSerPartSearchListener)msgListeners.get(messageId)).onMessageReceive(messageId,message.getProfilesList(),message.getRecordIndex(),message.getRecordCount());
+            ((ProfSerPartSearchListener)msgListeners.get(messageId)).onMessageReceive(messageId,message.getProfilesList(),message.getRecordIndex(),message.getRecordCount());
         }
     }
 
-    private class AddApplicationServiceProcessor implements org.libertaria.world.profile_server.processors.MessageProcessor<IopProfileServer.ApplicationServiceAddResponse> {
+    private class AddApplicationServiceProcessor implements MessageProcessor<IopProfileServer.ApplicationServiceAddResponse> {
 
 
         @Override
@@ -1116,7 +1130,7 @@ public class ProfSerEngine {
         }
     }
 
-    private class GetProfileInformationProcessor implements org.libertaria.world.profile_server.processors.MessageProcessor<IopProfileServer.GetProfileInformationResponse> {
+    private class GetProfileInformationProcessor implements MessageProcessor<IopProfileServer.GetProfileInformationResponse> {
 
 
         @Override
@@ -1128,7 +1142,7 @@ public class ProfSerEngine {
         }
     }
 
-    private class CallIdentityApplicationServiceProcessor implements org.libertaria.world.profile_server.processors.MessageProcessor<IopProfileServer.CallIdentityApplicationServiceResponse> {
+    private class CallIdentityApplicationServiceProcessor implements MessageProcessor<IopProfileServer.CallIdentityApplicationServiceResponse> {
 
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.CallIdentityApplicationServiceResponse message) {
@@ -1154,7 +1168,7 @@ public class ProfSerEngine {
      *                        was closed by the server for any reason and thus the token is no longer valid.
      *
      */
-    private class ApplicationServiceSendMessageProcessor implements org.libertaria.world.profile_server.processors.MessageProcessor<IopProfileServer.ApplicationServiceSendMessageResponse> {
+    private class ApplicationServiceSendMessageProcessor implements MessageProcessor<IopProfileServer.ApplicationServiceSendMessageResponse> {
 
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.ApplicationServiceSendMessageResponse message) {
@@ -1168,7 +1182,7 @@ public class ProfSerEngine {
         }
     }
 
-    private class IncomingCallNotificationProcessor implements org.libertaria.world.profile_server.processors.MessageProcessor<IopProfileServer.IncomingCallNotificationRequest> {
+    private class IncomingCallNotificationProcessor implements MessageProcessor<IopProfileServer.IncomingCallNotificationRequest> {
 
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.IncomingCallNotificationRequest message) {
@@ -1180,7 +1194,7 @@ public class ProfSerEngine {
         }
     }
 
-    private class ApplicationServiceReceiveMessageNotificationRequestProcessor implements org.libertaria.world.profile_server.processors.MessageProcessor<IopProfileServer.ApplicationServiceReceiveMessageNotificationRequest> {
+    private class ApplicationServiceReceiveMessageNotificationRequestProcessor implements MessageProcessor<IopProfileServer.ApplicationServiceReceiveMessageNotificationRequest> {
 
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.ApplicationServiceReceiveMessageNotificationRequest message) {
@@ -1193,7 +1207,7 @@ public class ProfSerEngine {
         }
     }
 
-    private class CanStoreDataProcessor implements org.libertaria.world.profile_server.processors.MessageProcessor<IopProfileServer.CanStoreDataResponse> {
+    private class CanStoreDataProcessor implements MessageProcessor<IopProfileServer.CanStoreDataResponse> {
 
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.CanStoreDataResponse message) {
@@ -1202,7 +1216,7 @@ public class ProfSerEngine {
         }
     }
 
-    private class CanPublishIpnsRecordProcessor implements org.libertaria.world.profile_server.processors.MessageProcessor<IopProfileServer.CanPublishIpnsRecordResponse> {
+    private class CanPublishIpnsRecordProcessor implements MessageProcessor<IopProfileServer.CanPublishIpnsRecordResponse> {
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.CanPublishIpnsRecordResponse message) {
             LOG.info("CanPublishIpnsRecordProcessor");
@@ -1211,7 +1225,7 @@ public class ProfSerEngine {
     }
 
     private void onMsgReceived(int messageId, Object message){
-        org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener profSerMsgListener = ((org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener)msgListeners.get(messageId));
+        ProfSerMsgListener profSerMsgListener = ((ProfSerMsgListener)msgListeners.get(messageId));
         if (profSerMsgListener!=null){
             profSerMsgListener.onMessageReceive(messageId,message);
             msgListeners.remove(messageId);

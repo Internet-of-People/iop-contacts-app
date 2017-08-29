@@ -105,7 +105,8 @@ public abstract class RecyclerFragment<T> extends Fragment {
     private void load() {
         swipeRefreshLayout.setRefreshing(true);
         initExecutor();
-        executor.execute(loadRunnable);
+        if (executor!=null)
+            executor.execute(loadRunnable);
     }
 
     public void refresh(){

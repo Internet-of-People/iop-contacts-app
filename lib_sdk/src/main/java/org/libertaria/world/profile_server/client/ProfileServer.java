@@ -31,7 +31,7 @@ public interface ProfileServer {
 
     ProfSerRequest ping(IopProfileServer.ServerRoleType portType) throws Exception;
 
-    ProfSerRequest ping(IopProfileServer.ServerRoleType portType, String token) throws org.libertaria.world.profile_server.CantConnectException,CantSendMessageException;
+    ProfSerRequest ping(IopProfileServer.ServerRoleType portType, String callId,String token) throws org.libertaria.world.profile_server.CantConnectException,CantSendMessageException;
 
     ProfSerRequest listRolesRequest() throws Exception;
 
@@ -82,19 +82,19 @@ public interface ProfileServer {
 
     ProfSerRequest callIdentityApplicationServiceRequest(byte[] profileNetworkId, String appService);
 
-    ProfSerRequest appServiceSendMessageRequest(byte[] token, byte[] msg);
+    ProfSerRequest appServiceSendMessageRequest(String callId,byte[] callToken, byte[] msg);
 
     // responses
 
     ProfSerRequest incomingCallNotificationResponse(int msgId);
 
-    ProfSerRequest appServiceReceiveMessageNotificationResponse(String token, int msgId);
+    ProfSerRequest appServiceReceiveMessageNotificationResponse(String callId,String token, int msgId);
 
     void addHandler(org.libertaria.world.profile_server.client.PsSocketHandler handler);
 
     void closePort(IopProfileServer.ServerRoleType portType) throws IOException;
 
-    void closeCallChannel(String callToken) throws IOException;
+    void closeCallChannelByUUID(String uuid) throws IOException;
 
     void shutdown() throws IOException;
 

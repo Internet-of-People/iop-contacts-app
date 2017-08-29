@@ -187,7 +187,7 @@ public class IoPConnect implements ConnectionListener {
     }
 
     @Override
-    public void onConnectionLost(final org.libertaria.world.profile_server.model.Profile localProfile, final String psHost, final IopProfileServer.ServerRoleType portType, final String tokenId) {
+    public void onConnectionLost(final Profile localProfile, final String psHost, final IopProfileServer.ServerRoleType portType,final String callId, final String tokenId) {
         if (deviceNetworkConnection.isConnected()) {
             if (managers.containsKey(localProfile.getHexPublicKey())) {
                 // The connection is one of the connections to the Home server
@@ -220,7 +220,7 @@ public class IoPConnect implements ConnectionListener {
                                 engineListener.onDisconnect(localProfile.getHexPublicKey());
                             } else {
                                 logger.warn("reconnection fail and the engine listener is null.. please check this..");
-                                reconnectionManager.scheduleReconnection(localProfile, psHost, portType, tokenId, IoPConnect.this);
+                                reconnectionManager.scheduleReconnection(localProfile, psHost, portType,callId,tokenId, IoPConnect.this);
                                 logger.info("Reconnection scheduled in: {} seconds", reconnectionManager.getCurrentWaitingTime());
                             }
                         }
@@ -233,7 +233,7 @@ public class IoPConnect implements ConnectionListener {
                         );
                     } catch (Exception e) {
                         e.printStackTrace();
-                        reconnectionManager.scheduleReconnection(localProfile, psHost, portType, tokenId, IoPConnect.this);
+                        reconnectionManager.scheduleReconnection(localProfile, psHost, portType,callId,tokenId, IoPConnect.this);
                         logger.info("Reconnection scheduled in: {} seconds", reconnectionManager.getCurrentWaitingTime());
                     }
                 }
@@ -242,7 +242,7 @@ public class IoPConnect implements ConnectionListener {
             /*
               If we are not connected to internet then let's retry in a while...
              */
-            reconnectionManager.scheduleReconnection(localProfile, psHost, portType, tokenId, IoPConnect.this);
+            reconnectionManager.scheduleReconnection(localProfile, psHost, portType,callId, tokenId, IoPConnect.this);
             logger.info("Reconnection scheduled in: {} seconds", reconnectionManager.getCurrentWaitingTime());
         }
     }

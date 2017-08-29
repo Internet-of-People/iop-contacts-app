@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -71,6 +72,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
     /** Open profile app service calls -> call token -> call in progress */
     private ConcurrentMap<String, CallProfileAppService> openCall = new ConcurrentHashMap<>();
     private ScheduledExecutorService scheduledExecutorService;
+
 
     public IoPProfileConnection(IoPConnectContext contextWrapper, Profile profile, ProfServerData psConnData, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, DeviceLocation deviceLocation){
         this.contextWrapper = contextWrapper;
@@ -291,7 +293,9 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
     public void callProfileAppService(final String remoteProfilePublicKey, final String appService, boolean tryWithoutGetInfo, final boolean encryptMsg, final ProfSerMsgListener<CallProfileAppService> profSerMsgListener) {
         logger.info("callProfileAppService from "+remoteProfilePublicKey+" using "+appService);
         ProfileInformation remoteProfInfo = new ProfileInformationImp(CryptoBytes.fromHexToBytes(remoteProfilePublicKey));
+        String callId = UUID.randomUUID().toString();
         final CallProfileAppService callProfileAppService = new CallProfileAppService(
+                callId,
                 appService,
                 profileCache,
                 remoteProfInfo,
@@ -479,8 +483,14 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
                     return;
                 }
             }
-
-            final CallProfileAppService callProfileAppService = new CallProfileAppService(message.getServiceName(), profileCache, remoteProfInfo,profSerEngine);
+            String callId = UUID.randomUUID().toString();
+            final CallProfileAppService callProfileAppService = new CallProfileAppService(
+                    callId,
+                    message.getServiceName(),
+                    profileCache,
+                    remoteProfInfo,
+                    profSerEngine
+            );
             callProfileAppService.setCallToken(message.getCalleeToken().toByteArray());
 
             boolean resp = profileCache.getAppService(message.getServiceName()).onPreCall(callProfileAppService);
@@ -504,7 +514,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
 
                     @Override
                     public void onMsgFail(int messageId, int statusValue, String details) {
-                        logger.info("setupCallAppServiceInitMessage init message fail, " + details);
+                        logger.warn("setupCallAppServiceInitMessage init message fail, " + details);
                     }
 
                     @Override
@@ -551,7 +561,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
                 profSerMsgListener.onMsgFail(messageId,status,statusDetail);
             }
         });
-        profSerEngine.sendAppServiceMsg(callProfileAppService.getCallToken(), null, initMsgFuture);
+        profSerEngine.sendAppServiceMsg(callProfileAppService.getId(),callProfileAppService.getCallToken(), null, initMsgFuture);
     }
 
     /**
@@ -589,10 +599,11 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
         //logger.info("Open calls "+Arrays.toString(openCall.values().toArray()));
         if (openCall.containsKey(message.getCallTokenId())){
             // launch notification
-            openCall.get(message.getCallTokenId()).onMessageReceived(message.getMsg());
+            CallProfileAppService call = openCall.get(message.getCallTokenId());
+            call.onMessageReceived(message.getMsg());
             // now report the message received to the counter party
             try {
-                profSerEngine.respondAppServiceReceiveMsg(message.getCallTokenId(),messageId);
+                profSerEngine.respondAppServiceReceiveMsg(call.getId(),message.getCallTokenId(),messageId);
             } catch (CantSendMessageException e) {
                 e.printStackTrace();
                 logger.warn("cant send responseAppServiceMsgReceived for msg id: "+message);
