@@ -33,24 +33,24 @@ public class ProfSerImp implements ProfileServer {
 
     private static final Logger logger = LoggerFactory.getLogger(ProfSerImp.class);
 
-    private org.libertaria.world.profile_server.client.ProfSerConnectionManager profSerConnectionManager;
+    private ProfSerConnectionManager profSerConnectionManager;
 
     private ProfServerData configurations;
 
 
-    public ProfSerImp(IoPConnectContext context, ProfServerData configurations, SslContextFactory sslContextFactory, org.libertaria.world.profile_server.client.PsSocketHandler<IopProfileServer.Message> handler) {
+    public ProfSerImp(IoPConnectContext context, ProfServerData configurations, SslContextFactory sslContextFactory, PsSocketHandler<IopProfileServer.Message> handler) {
         this.configurations = configurations;
-        profSerConnectionManager = new org.libertaria.world.profile_server.client.ProfSerConnectionManager(configurations.getHost(),sslContextFactory,handler);
+        profSerConnectionManager = new ProfSerConnectionManager(configurations.getHost(),sslContextFactory,handler);
     }
 
 
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest ping(IopProfileServer.ServerRoleType portType) throws CantConnectException,CantSendMessageException{
-        return ping(portType,null);
+    public ProfSerRequest ping(IopProfileServer.ServerRoleType portType) throws CantConnectException,CantSendMessageException{
+        return ping(portType,null,null);
     }
 
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest ping(IopProfileServer.ServerRoleType portType, String token) throws CantConnectException,CantSendMessageException {
+    public ProfSerRequest ping(IopProfileServer.ServerRoleType portType, String callId,String token) throws CantConnectException,CantSendMessageException {
         IopProfileServer.Message message = MessageFactory.buildPingRequestMessage(
                 ByteString.copyFromUtf8("hi").toByteArray(),
                 configurations.getProtocolVersion());
@@ -62,8 +62,8 @@ public class ProfSerImp implements ProfileServer {
             case PRIMARY:
                 return buildRequestToPrimaryPort(message);
             case CL_APP_SERVICE:
-                if (token==null) throw new IllegalArgumentException("token cannot be null on a appServicePortRequest");
-                return buildRequestToAppServicePort(token,message);
+                if (callId==null) throw new IllegalArgumentException("token cannot be null on a appServicePortRequest");
+                return buildRequestToAppServicePort(callId,token,message);
             case SR_NEIGHBOR:
                 throw new IllegalArgumentException("app service port not implemented");
             case UNRECOGNIZED:
@@ -76,19 +76,19 @@ public class ProfSerImp implements ProfileServer {
 
 
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest listRolesRequest() throws CantConnectException,CantSendMessageException {
+    public ProfSerRequest listRolesRequest() throws CantConnectException,CantSendMessageException {
         IopProfileServer.Message message = MessageFactory.buildServerListRolesRequestMessage(configurations.getProtocolVersion());
         return buildRequestToPrimaryPort(message);
     }
 
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest registerHostRequest(Signer signer, byte[] identityPk, String identityType) throws CantConnectException,CantSendMessageException {
+    public ProfSerRequest registerHostRequest(Signer signer, byte[] identityPk, String identityType) throws CantConnectException,CantSendMessageException {
         IopProfileServer.Message message = MessageFactory.buildRegisterHostRequest(identityPk,identityType,System.currentTimeMillis(),null,signer);
         return buildRequestToNonCustomerPort(message);
     }
 
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest startConversationNonCl(byte[] clientPk, byte[] challenge) throws CantConnectException,CantSendMessageException {
+    public ProfSerRequest startConversationNonCl(byte[] clientPk, byte[] challenge) throws CantConnectException,CantSendMessageException {
         logger.info("startConversationNonCl, clientPK bytes count: "+clientPk.length+", challenge bytes count: "+challenge.length);
         logger.info("clientPK: "+ Arrays.toString(clientPk));
         logger.info("challenge: "+ Arrays.toString(challenge));
@@ -98,24 +98,24 @@ public class ProfSerImp implements ProfileServer {
     }
 
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest startConversationNonCl(String clientPk, String challenge) throws CantConnectException,CantSendMessageException {
+    public ProfSerRequest startConversationNonCl(String clientPk, String challenge) throws CantConnectException,CantSendMessageException {
         return startConversationNonCl(ByteString.copyFromUtf8(clientPk).toByteArray(),ByteString.copyFromUtf8(challenge).toByteArray());
     }
 
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest startConversationCl(byte[] clientPk, byte[] challenge) throws CantConnectException,CantSendMessageException {
+    public ProfSerRequest startConversationCl(byte[] clientPk, byte[] challenge) throws CantConnectException,CantSendMessageException {
         IopProfileServer.Message message = MessageFactory.buildStartConversationRequest(clientPk,challenge,configurations.getProtocolVersion());
         logger.info("startConversationCl message id: "+message.getId());
         return buildRequestToCustomerPort(message);
     }
     // metodo rápido..
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest startConversationCl(String clientPk, String challenge) throws CantConnectException,CantSendMessageException{
+    public ProfSerRequest startConversationCl(String clientPk, String challenge) throws CantConnectException,CantSendMessageException{
        return startConversationCl(ByteString.copyFromUtf8(clientPk).toByteArray(),ByteString.copyFromUtf8(challenge).toByteArray());
     }
 
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest checkIn(byte[] nodeChallenge, Signer signer) throws CantConnectException,CantSendMessageException {
+    public ProfSerRequest checkIn(byte[] nodeChallenge, Signer signer) throws CantConnectException,CantSendMessageException {
         IopProfileServer.Message message = MessageFactory.buildCheckInRequest(nodeChallenge,signer);
         logger.info("checkIn message id: "+message.getId());
         return buildRequestToCustomerPort(message);
@@ -133,7 +133,7 @@ public class ProfSerImp implements ProfileServer {
      * @return
      */
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest updateProfileRequest(Signer signer, byte[] profilePublicKey, String profType, byte[] version, String name, byte[] img, byte[] imgHash, int latitude, int longitude, String extraData) {
+    public ProfSerRequest updateProfileRequest(Signer signer, byte[] profilePublicKey, String profType, byte[] version, String name, byte[] img, byte[] imgHash, int latitude, int longitude, String extraData) {
         final IopProfileServer.Message message = MessageFactory.buildUpdateProfileRequest(
                 signer,
                 profilePublicKey,
@@ -157,7 +157,7 @@ public class ProfSerImp implements ProfileServer {
     }*/
 
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest storeCanDataRequest(CanStoreMap canStoreMap) {
+    public ProfSerRequest storeCanDataRequest(CanStoreMap canStoreMap) {
         logger.info("storeCanDataRequest");
         IopProfileServer.Message message = MessageFactory.buildCanStoreDataRequest(configurations.getNetworkId(),canStoreMap);
 
@@ -165,13 +165,13 @@ public class ProfSerImp implements ProfileServer {
     }
 
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest searchProfilesRequest(boolean onlyHostedProfiles, boolean includeThumbnailImages, int maxResponseRecordCount, int maxTotalRecordCount, String profileType, String profileName, String extraData) throws CantConnectException, CantSendMessageException {
+    public ProfSerRequest searchProfilesRequest(boolean onlyHostedProfiles, boolean includeThumbnailImages, int maxResponseRecordCount, int maxTotalRecordCount, String profileType, String profileName, String extraData) throws CantConnectException, CantSendMessageException {
         logger.info("searchProfilesRequest");
         return searchProfilesRequest(onlyHostedProfiles,includeThumbnailImages,maxResponseRecordCount,maxTotalRecordCount,profileType,profileName,NO_LOCATION,NO_LOCATION,0,extraData);
     }
 
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest searchProfilesRequest(boolean onlyHostedProfiles, boolean includeThumbnailImages, int maxResponseRecordCount, int maxTotalRecordCount, String profileType, String profileName, int latitude, int longitude, int radius, String extraData) throws CantConnectException, CantSendMessageException {
+    public ProfSerRequest searchProfilesRequest(boolean onlyHostedProfiles, boolean includeThumbnailImages, int maxResponseRecordCount, int maxTotalRecordCount, String profileType, String profileName, int latitude, int longitude, int radius, String extraData) throws CantConnectException, CantSendMessageException {
         logger.info("searchProfilesRequest");
         IopProfileServer.Message message = MessageFactory.buildProfileSearchRequest(
                 onlyHostedProfiles,
@@ -189,28 +189,28 @@ public class ProfSerImp implements ProfileServer {
     }
 
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest searchProfilePartRequest(int recordIndex, int recordCount) throws CantConnectException, CantSendMessageException {
+    public ProfSerRequest searchProfilePartRequest(int recordIndex, int recordCount) throws CantConnectException, CantSendMessageException {
         logger.info("searchProfilePartRequest");
         IopProfileServer.Message msg = MessageFactory.buildSearcProfilePartRequest(recordIndex,recordCount);
         return buildRequestToCustomerPort(msg);
     }
 
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest addApplicationService(String applicationService) throws CantConnectException, CantSendMessageException {
+    public ProfSerRequest addApplicationService(String applicationService) throws CantConnectException, CantSendMessageException {
         logger.info("addApplicationService");
         IopProfileServer.Message message = MessageFactory.buildApplicationServiceAddRequest(applicationService);
         return buildRequestToCustomerPort(message);
     }
 
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest getProfileInformationRequest(byte[] profileNetworkId, boolean applicationServices, boolean thumbnail, boolean profileImage) throws CantConnectException, CantSendMessageException {
+    public ProfSerRequest getProfileInformationRequest(byte[] profileNetworkId, boolean applicationServices, boolean thumbnail, boolean profileImage) throws CantConnectException, CantSendMessageException {
         logger.info("getProfileInformationRequest");
         IopProfileServer.Message message = MessageFactory.buildGetIdentityInformationRequest(profileNetworkId,applicationServices,thumbnail,profileImage);
         return (configurations.isHome()) ? buildRequestToCustomerPort(message) : buildRequestToNonCustomerPort(message);
     }
 
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest callIdentityApplicationServiceRequest(byte[] profileNetworkId, String appService) {
+    public ProfSerRequest callIdentityApplicationServiceRequest(byte[] profileNetworkId, String appService) {
         logger.info("callIdentityApplicationServiceRequest");
         IopProfileServer.Message message = MessageFactory.buildCallIdentityApplicationServiceRequest(profileNetworkId,appService);
         return (configurations.isHome()) ? buildRequestToCustomerPort(message) : buildRequestToNonCustomerPort(message);
@@ -243,33 +243,33 @@ public class ProfSerImp implements ProfileServer {
      *
      *  Roles: clAppService
      *
-     * @param token
+     * @param callToken
      * @param msg
      * @return
      */
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest appServiceSendMessageRequest(byte[] token, byte[] msg) {
-        IopProfileServer.Message message = MessageFactory.buildApplicationServiceSendMessageRequest(token,msg);
+    public ProfSerRequest appServiceSendMessageRequest(String callId,byte[] callToken, byte[] msg) {
+        IopProfileServer.Message message = MessageFactory.buildApplicationServiceSendMessageRequest(callToken,msg);
         logger.info("appServiceSendMessageRequest, msg id: "+message.getId());
-        return buildRequestToAppServicePort(CryptoBytes.toHexString(token),message);
+        return buildRequestToAppServicePort(callId,CryptoBytes.toHexString(callToken),message);
     }
 
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest incomingCallNotificationResponse(int msgId) {
+    public ProfSerRequest incomingCallNotificationResponse(int msgId) {
         logger.info("incomingCallNotificationResponse");
         IopProfileServer.Message message = MessageFactory.buildIncomingCallNotificationResponse(msgId);
         return buildRequestToCustomerPort(message);
     }
 
     @Override
-    public org.libertaria.world.profile_server.client.ProfSerRequest appServiceReceiveMessageNotificationResponse(String token, int msgId) {
+    public ProfSerRequest appServiceReceiveMessageNotificationResponse(String callId,String token, int msgId) {
         logger.info("appServiceReceiveMessageNotificationResponse");
         IopProfileServer.Message message = MessageFactory.buildApplicationServiceReceiveMessageNotificationRequest(msgId);
-        return buildRequestToAppServicePort(token,message);
+        return buildRequestToAppServicePort(callId,token,message);
     }
 
     @Override
-    public void addHandler(org.libertaria.world.profile_server.client.PsSocketHandler handler) {
+    public void addHandler(PsSocketHandler handler) {
         profSerConnectionManager.setHandler(handler);
     }
 
@@ -279,8 +279,8 @@ public class ProfSerImp implements ProfileServer {
     }
 
     @Override
-    public void closeCallChannel(String callToken) throws IOException {
-        profSerConnectionManager.close(callToken);
+    public void closeCallChannelByUUID(String uuid) throws IOException {
+        profSerConnectionManager.close(uuid);
     }
 
     @Override
@@ -316,8 +316,8 @@ public class ProfSerImp implements ProfileServer {
         write(message,IopProfileServer.ServerRoleType.CL_CUSTOMER,configurations.getCustPort());
     }
 
-    public void writeToAppServicePort(String token,IopProfileServer.Message message) throws CantConnectException, CantSendMessageException{
-        write(message, IopProfileServer.ServerRoleType.CL_APP_SERVICE,configurations.getAppServicePort(),token);
+    public void writeToAppServicePort(String callId,String token,IopProfileServer.Message message) throws CantConnectException, CantSendMessageException{
+        write(message, IopProfileServer.ServerRoleType.CL_APP_SERVICE,configurations.getAppServicePort(),callId,token);
     }
 
     private void write(IopProfileServer.Message message, IopProfileServer.ServerRoleType serverRoleType,int port) throws CantConnectException, CantSendMessageException {
@@ -328,16 +328,17 @@ public class ProfSerImp implements ProfileServer {
         );
     }
 
-    private void write(IopProfileServer.Message message, IopProfileServer.ServerRoleType serverRoleType,int port,String token) throws CantConnectException, CantSendMessageException {
+    private void write(IopProfileServer.Message message, IopProfileServer.ServerRoleType serverRoleType,int port,String callId,String token) throws CantConnectException, CantSendMessageException {
         profSerConnectionManager.writeToAppServiceCall(
                 serverRoleType,
                 port,
                 message,
+                callId,
                 token
         );
     }
 
-    private org.libertaria.world.profile_server.client.ProfSerRequest buildRequestToPrimaryPort(final IopProfileServer.Message message){
+    private ProfSerRequest buildRequestToPrimaryPort(final IopProfileServer.Message message){
         return new ProfSerRequestImp(message.getId()) {
             @Override
             public void send() throws CantConnectException, CantSendMessageException {
@@ -346,7 +347,7 @@ public class ProfSerImp implements ProfileServer {
         };
     }
 
-    private org.libertaria.world.profile_server.client.ProfSerRequest buildRequestToNonCustomerPort(final IopProfileServer.Message message){
+    private ProfSerRequest buildRequestToNonCustomerPort(final IopProfileServer.Message message){
         return new ProfSerRequestImp(message.getId()) {
             @Override
             public void send() throws CantConnectException, CantSendMessageException {
@@ -355,7 +356,7 @@ public class ProfSerImp implements ProfileServer {
         };
     }
 
-    private org.libertaria.world.profile_server.client.ProfSerRequest buildRequestToCustomerPort(final IopProfileServer.Message message){
+    private ProfSerRequest buildRequestToCustomerPort(final IopProfileServer.Message message){
         return new ProfSerRequestImp(message.getId()) {
             @Override
             public void send() throws CantConnectException, CantSendMessageException {
@@ -364,11 +365,11 @@ public class ProfSerImp implements ProfileServer {
         };
     }
 
-    private org.libertaria.world.profile_server.client.ProfSerRequest buildRequestToAppServicePort(final String token, final IopProfileServer.Message message) {
+    private ProfSerRequest buildRequestToAppServicePort(final String callId,final String token, final IopProfileServer.Message message) {
         return new ProfSerRequestImp(message.getId()) {
             @Override
             public void send() throws CantConnectException, CantSendMessageException {
-                writeToAppServicePort(token,message);
+                writeToAppServicePort(callId,token,message);
             }
         };
     }

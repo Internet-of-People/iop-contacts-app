@@ -13,7 +13,10 @@ import java.net.Socket;
 
 public interface IoSession<M> {
 
+    /** Call session token */
     String getSessionTokenId();
+    /** Call session id */
+    String getId();
 
     void write(M message) throws Exception;
 
@@ -30,6 +33,5 @@ public interface IoSession<M> {
     boolean isReadSuspended();
 
     boolean isWriteSuspended();
-
 
 }

@@ -74,6 +74,8 @@ public class CallProfileAppService {
 
     }
 
+    /** Internal call id */
+    private String callId;
     /** App service used to connect both profiles  */
     private String appService;
     /** Local profile public key */
@@ -107,18 +109,19 @@ public class CallProfileAppService {
     private long lastMessageSent;
     private long lastMessageReceived;
 
-    public CallProfileAppService(String appService, Profile localProfile, ProfileInformation remoteProfile, ProfSerEngine profSerEngine, CryptoAlgo cryptoAlgo) {
-        this(appService,localProfile,remoteProfile,profSerEngine);
+    public CallProfileAppService(String callId,String appService, Profile localProfile, ProfileInformation remoteProfile, ProfSerEngine profSerEngine, CryptoAlgo cryptoAlgo) {
+        this(callId,appService,localProfile,remoteProfile,profSerEngine);
         this.cryptoAlgo = cryptoAlgo;
         this.isEncrypted = (cryptoAlgo != null);
         this.isCallCreator = true;
     }
 
-    public CallProfileAppService(String appService, Profile localProfile, ProfileInformation remoteProfile, ProfSerEngine profSerEngine) {
+    public CallProfileAppService(String callId,String appService, Profile localProfile, ProfileInformation remoteProfile, ProfSerEngine profSerEngine) {
         this.appService = appService;
         this.localProfile = localProfile;
         this.remoteProfile = remoteProfile;
         this.profSerEngine = profSerEngine;
+        this.callId = callId;
     }
 
     public void setStatus(Status status) {
@@ -225,6 +228,10 @@ public class CallProfileAppService {
         return callTokenHex;
     }
 
+    public String getId() {
+        return callId;
+    }
+
     /**
      *
      *
@@ -251,7 +258,7 @@ public class CallProfileAppService {
                 sendListener.onMsgFail(messageId,status,statusDetail);
             }
         });
-        profSerEngine.sendAppServiceMsg(callToken,msgBytes,msgListenerFuture);
+        profSerEngine.sendAppServiceMsg(callId,callToken,msgBytes,msgListenerFuture);
     }
 
     public void sendMsg(BaseMsg msg, final ProfSerMsgListener<Boolean> sendListener) throws Exception {
@@ -295,7 +302,7 @@ public class CallProfileAppService {
                 dispose();
             }
         });
-        profSerEngine.pingAppService(getCallTokenHex(), msgListenerFuture);
+        profSerEngine.pingAppService(callId,getCallTokenHex(), msgListenerFuture);
     }
 
     private void sendMsg(byte[] msg, final ProfSerMsgListener<Boolean> sendListener) throws CantConnectException, CantSendMessageException {
@@ -317,7 +324,7 @@ public class CallProfileAppService {
                         sendListener.onMsgFail(messageId, status, statusDetail);
                 }
             });
-            profSerEngine.sendAppServiceMsg(callToken, msg, msgListenerFuture);
+            profSerEngine.sendAppServiceMsg(callId,callToken, msg, msgListenerFuture);
         }catch (AppServiceCallNotAvailableException e){
             // intercept exception to destroy this call.
             sendListener.onMsgFail(0,400,"Call is not longer available");
@@ -371,15 +378,12 @@ public class CallProfileAppService {
      * Dispose the call channel
      */
     public void dispose() {
+        logger.info("disposing call: "+toString());
         try {
-            profSerEngine.closeChannel(
-                    (callTokenHex != null) ?
-                            callTokenHex
-                            :
-                            CryptoBytes.toHexString(callToken)
-            );
+            profSerEngine.closeChannelByUUID(callId);
         }catch (Exception e){
             // swallow..
+            e.printStackTrace();
         }
         try {
             // Notify upper layer about the disconnection.
@@ -395,20 +399,19 @@ public class CallProfileAppService {
         }
     }
 
+
     @Override
     public String toString() {
         return "CallProfileAppService{" +
                 "appService='" + appService + '\'' +
                 ", localProfile=" + localProfile +
                 ", remoteProfilePk='" + remoteProfile.getHexPublicKey() + '\'' +
-                ", callToken=" + Arrays.toString(callToken) +
+                ", callToken=" + ((callToken!=null)? Arrays.toString(callToken):"null") +
                 ", status=" + status +
                 ", errorStatus='" + errorStatus + '\'' +
                 ", isCallCreator=" + isCallCreator +
                 ", isEncrypted=" + isEncrypted +
                 ", cryptoAlgo=" + cryptoAlgo +
-                ", msgListener=" + msgListener +
-                ", profSerEngine=" + profSerEngine +
                 '}';
     }
 }
