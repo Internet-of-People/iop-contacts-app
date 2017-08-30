@@ -18,7 +18,7 @@ public class DeviceConnectionManager implements DeviceNetworkConnection {
 
     private Boolean connected;
     private ConnectionType connectionType;
-    private NetworkSignalStrength networkSignalStrength;
+    private DeviceStateListener deviceStateListener;
     private final Context context;
 
     public DeviceConnectionManager(Context context) {
@@ -40,7 +40,7 @@ public class DeviceConnectionManager implements DeviceNetworkConnection {
 
     @Override
     public NetworkSignalStrength getSignalStrength() {
-        return networkSignalStrength;
+        return deviceStateListener.getIopNetworkSignalStrength();
     }
 
     private void defineConnectionStatus() {
@@ -49,7 +49,6 @@ public class DeviceConnectionManager implements DeviceNetworkConnection {
         if (activeNetwork == null) {
             connected = false;
             connectionType = ConnectionType.NONE;
-            networkSignalStrength = NetworkSignalStrength.DISCONNECTED;
         } else {
             connected = activeNetwork.isConnectedOrConnecting();
             setConnectionType(activeNetwork);
@@ -96,7 +95,7 @@ public class DeviceConnectionManager implements DeviceNetworkConnection {
     }
 
     private void monitorSignalStrength() {
-        DeviceStateListener deviceStateListener = new DeviceStateListener();
+        deviceStateListener = new DeviceStateListener();
         TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         telephonyManager.listen(deviceStateListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
     }
