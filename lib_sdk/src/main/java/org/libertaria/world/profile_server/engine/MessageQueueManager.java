@@ -3,9 +3,11 @@ package org.libertaria.world.profile_server.engine;
 import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.profile_server.protocol.IopProfileServer;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -64,7 +66,7 @@ public interface MessageQueueManager {
      */
     Integer getResendAttemptLimit();
 
-    interface Message {
+    interface Message extends Serializable{
 
         UUID getMessageId();
 

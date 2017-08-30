@@ -108,8 +108,13 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
 
 
     private Message insertMessage(String callId, byte[] token, byte[] msg) {
+        Message message = new MessageImplementation(callId, token, msg, UUID.randomUUID(), 0, new Date());
+        if (messageQueue.contains(message)) {
+            message = messageQueue.get(messageQueue.indexOf(message)); //If it already exists we take the entry from the queue
+            failedToResend(message); //Then we notify that it's a resend failure
+            return message;
+        }
         SQLiteDatabase db = this.getWritableDatabase();
-        MessageImplementation message = new MessageImplementation(callId, token, msg, UUID.randomUUID(), 0, new Date());
         db.insert(MESSAGES_TABLE_NAME, null, buildContent(message));
         messageQueue.add(message);
         return message;

@@ -173,7 +173,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
     }
 
     private void checkMessageQueue() {
-        Queue<MessageQueueManager.Message> messageQueue = messageQueueManager.getMessageQueue();
+        List<MessageQueueManager.Message> messageQueue = messageQueueManager.getMessageQueue();
         for (MessageQueueManager.Message message : messageQueue) {
             try {
                 profSerEngine.sendAppServiceMsg(message.getCallId(), message.getToken(), message.getMsg(), messageQueueManager.buildDefaultQueueListener(message));

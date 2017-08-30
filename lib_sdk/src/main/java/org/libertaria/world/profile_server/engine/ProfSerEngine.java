@@ -494,12 +494,30 @@ public class ProfSerEngine {
         sendAppServiceMsg(callId, token, msg, listener, false);
     }
 
-    public void sendAppServiceMsg(String callId, byte[] token, byte[] msg, ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> listener, Boolean queueMessage) throws CantConnectException, CantSendMessageException {
-        if (queueMessage) {
-            MessageQueueManager.Message message = messageQueueManager.enqueueMessage(callId, token, msg);
-        }
+    public void sendAppServiceMsg(final String callId, final byte[] token, final byte[] msg, final ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> listener, Boolean queueMessage) throws CantConnectException, CantSendMessageException {
         ProfSerRequest request = profileServer.appServiceSendMessageRequest(callId, token, msg);
-        sendRequest(request, listener);
+        if (queueMessage) {
+            ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> wrapper = new ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse>() {
+                @Override
+                public void onMessageReceive(int messageId, IopProfileServer.ApplicationServiceSendMessageResponse message) {
+                    listener.onMessageReceive(messageId, message);
+                }
+
+                @Override
+                public void onMsgFail(int messageId, int statusValue, String details) {
+                    MessageQueueManager.Message message = messageQueueManager.enqueueMessage(callId, token, msg);
+                    listener.onMsgFail(messageId, statusValue, details);
+                }
+
+                @Override
+                public String getMessageName() {
+                    return listener.getMessageName();
+                }
+            };
+            sendRequest(request, wrapper);
+        } else {
+            sendRequest(request, listener);
+        }
     }
 
     public void pingAppService(String callId, String token, ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> listener) throws CantConnectException, CantSendMessageException {
