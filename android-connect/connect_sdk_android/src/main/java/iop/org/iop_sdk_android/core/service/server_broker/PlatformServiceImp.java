@@ -24,6 +24,7 @@ import org.libertaria.world.global.Module;
 import org.libertaria.world.global.utils.SerializationUtils;
 import org.libertaria.world.profile_server.CantSendMessageException;
 import org.libertaria.world.profile_server.ProfileServerConfigurations;
+import org.libertaria.world.profile_server.engine.MessageQueueManager;
 import org.libertaria.world.profile_server.engine.app_services.AppService;
 import org.libertaria.world.profile_server.engine.futures.BaseMsgFuture;
 import org.libertaria.world.profile_server.engine.futures.ConnectionFuture;
@@ -57,6 +58,7 @@ import iop.org.iop_sdk_android.core.service.SslContextFactory;
 import iop.org.iop_sdk_android.core.service.db.LocalProfilesDb;
 import iop.org.iop_sdk_android.core.service.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.service.db.SqliteProfilesDb;
+import iop.org.iop_sdk_android.core.service.db.message_queue.MessageQueueDb;
 import iop.org.iop_sdk_android.core.service.device_state.DeviceConnectionManager;
 import world.libertaria.shared.library.global.ModuleObject;
 import world.libertaria.shared.library.global.ModuleObjectWrapper;
@@ -116,6 +118,11 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
      * Server Manager
      */
     private LocalServer localServer;
+
+    /**
+     * Message Queue manager
+     */
+    private MessageQueueManager messageQueueManager;
 
     /**
      * Device network connection
@@ -218,7 +225,8 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
                 profilesDb = new SqliteProfilesDb(this);
                 localProfilesDao = new LocalProfilesDb(this);
                 deviceConnectionManager = new DeviceConnectionManager(this);
-                ioPConnect = new IoPConnect(application, new CryptoWrapperAndroid(), new SslContextFactory(this), localProfilesDao, profilesDb, pairingRequestDb, this, deviceConnectionManager);
+                messageQueueManager = new MessageQueueDb(this);
+                ioPConnect = new IoPConnect(application, new CryptoWrapperAndroid(), new SslContextFactory(this), localProfilesDao, profilesDb, pairingRequestDb, this, deviceConnectionManager, messageQueueManager);
                 // init core
                 ServiceFactoryImp serviceFactoryImp = new ServiceFactoryImp();
                 core = new Core(this, this, ioPConnect, serviceFactoryImp);

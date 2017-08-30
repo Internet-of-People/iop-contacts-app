@@ -16,6 +16,7 @@ import org.libertaria.world.profile_server.CantSendMessageException;
 import org.libertaria.world.profile_server.ProfileInformation;
 import org.libertaria.world.profile_server.ProfileServerConfigurations;
 import org.libertaria.world.profile_server.SslContextFactory;
+import org.libertaria.world.profile_server.engine.MessageQueueManager;
 import org.libertaria.world.profile_server.engine.app_services.AppService;
 import org.libertaria.world.profile_server.engine.app_services.CallProfileAppService;
 import org.libertaria.world.profile_server.engine.futures.BaseMsgFuture;
@@ -110,6 +111,7 @@ public class IoPConnect implements ConnectionListener {
     private SslContextFactory sslContextFactory;
     private EngineListener engineListener;
     private final ReconnectionManager reconnectionManager;
+    private final MessageQueueManager messageQueueManager;
 
     private class PsKey {
 
@@ -130,7 +132,15 @@ public class IoPConnect implements ConnectionListener {
         }
     }
 
-    public IoPConnect(IoPConnectContext contextWrapper, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, LocalProfilesDao localProfilesDao, ProfilesManager profilesManager, PairingRequestsManager pairingRequestsManager, DeviceLocation deviceLocation, DeviceNetworkConnection deviceNetworkConnection) {
+    public IoPConnect(IoPConnectContext contextWrapper,
+                      CryptoWrapper cryptoWrapper,
+                      SslContextFactory sslContextFactory,
+                      LocalProfilesDao localProfilesDao,
+                      ProfilesManager profilesManager,
+                      PairingRequestsManager pairingRequestsManager,
+                      DeviceLocation deviceLocation,
+                      DeviceNetworkConnection deviceNetworkConnection,
+                      MessageQueueManager messageQueueManager) {
         this.context = contextWrapper;
         this.cryptoWrapper = cryptoWrapper;
         this.sslContextFactory = sslContextFactory;
@@ -141,6 +151,7 @@ public class IoPConnect implements ConnectionListener {
         this.deviceLocation = deviceLocation;
         this.deviceNetworkConnection = deviceNetworkConnection;
         this.reconnectionManager = new ReconnectionManager();
+        this.messageQueueManager = messageQueueManager;
     }
 
     public void setEngineListener(EngineListener engineListener) {
@@ -175,7 +186,7 @@ public class IoPConnect implements ConnectionListener {
 
     @Override
     public void onHostingPlanReceived(String host, IopProfileServer.HostingPlanContract contract) {
-        org.libertaria.world.profile_server.ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
+        ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
         // todo: implement this for multi profiles..
         // for now i don't have to worry, i just have one profile.
         profileServerConfigurations.setProfileRegistered(host, CryptoBytes.toHexString(contract.getIdentityPublicKey().toByteArray()));
@@ -300,9 +311,9 @@ public class IoPConnect implements ConnectionListener {
                     this
             );
             String backupProfilePath = null;
-            if ((backupProfilePath = profileServerConfigurations.getBackupProfilePath()) != null)
+            if ((backupProfilePath = profileServerConfigurations.getBackupProfilePath()) != null) {
                 appService.setBackupProfile(backupProfilePath, profileServerConfigurations.getBackupPassword());
-
+            }
             profile.addApplicationService(
                     appService
             );
@@ -355,9 +366,9 @@ public class IoPConnect implements ConnectionListener {
                 future.setProfServerData(createEmptyProfileServerConf().getMainProfileServer());
                 connection.init(future, this);
             } else if (connection.isReady()) {
-                throw new IllegalStateException("Connection already initilized and running, profKey: " + profilePublicKey);
+                throw new IllegalStateException("Connection already initialized and running, profKey: " + profilePublicKey);
             } else {
-                throw new IllegalStateException("Connection already initilized and trying to check-in the profile, profKey: " + profilePublicKey);
+                throw new IllegalStateException("Connection already initialized and trying to check-in the profile, profKey: " + profilePublicKey);
             }
         } else {
             ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
@@ -455,7 +466,8 @@ public class IoPConnect implements ConnectionListener {
                 profConn,
                 cryptoWrapper,
                 sslContextFactory,
-                deviceLocation);
+                deviceLocation,
+                messageQueueManager);
         // map the profile connection with his public key
         managers.put(profile.getHexPublicKey(), ioPProfileConnection);
         return ioPProfileConnection;
@@ -477,7 +489,8 @@ public class IoPConnect implements ConnectionListener {
                 profConn,
                 cryptoWrapper,
                 sslContextFactory,
-                deviceLocation);
+                deviceLocation,
+                messageQueueManager);
         // map the profile connection with his public key
         remoteManagers.put(psKey, ioPProfileConnection);
         return ioPProfileConnection;

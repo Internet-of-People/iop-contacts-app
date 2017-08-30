@@ -8,9 +8,8 @@ import static org.libertaria.world.profile_server.protocol.IopShared.Status.ERRO
 
 /**
  * Created by mati on 16/05/17.
- *
+ * <p>
  * Clase encargada de manejar la primera conexión y devolver un objecto
- *
  */
 
 public class ProfSerConnectionEngine {
@@ -28,12 +27,12 @@ public class ProfSerConnectionEngine {
     /**
      * Main method to init the connection with the server.
      */
-    void engine(){
+    void engine() {
         try {
 
             LOG.info("Engine");
 
-            if (!profSerEngine.getProfNodeConnection().isRegistered()){
+            if (!profSerEngine.getProfNodeConnection().isRegistered()) {
 
                 if (profSerEngine.getProfSerConnectionState() == ProfSerConnectionState.NO_SERVER) {
                     // get the availables roles..
@@ -44,13 +43,13 @@ public class ProfSerConnectionEngine {
                 startConverNonClPort();
                 // Request home node request
                 requestHomeNodeRequest();
-            }else {
-                if (profSerEngine.getProfSerConnectionState()!= ProfSerConnectionState.START_CONVERSATION_CL) {
+            } else {
+                if (profSerEngine.getProfSerConnectionState() != ProfSerConnectionState.START_CONVERSATION_CL) {
                     profSerEngine.setProfSerConnectionState(ProfSerConnectionState.HAS_ROLE_LIST);
                 }
             }
 
-            if (profSerEngine.getProfNodeConnection().isRegistered()){
+            if (profSerEngine.getProfNodeConnection().isRegistered()) {
                 // Start conversation with customer port
                 startConverClPort();
             }
@@ -68,6 +67,7 @@ public class ProfSerConnectionEngine {
 
     /**
      * Request ports list
+     *
      * @throws Exception
      */
     private void requestRolesList() throws Exception {
@@ -77,9 +77,9 @@ public class ProfSerConnectionEngine {
                 throw new org.libertaria.world.profile_server.engine.InvalidStateException(profSerEngine.getProfSerConnectionState().toString(), ProfSerConnectionState.NO_SERVER.toString());
             profSerEngine.setProfSerConnectionState(ProfSerConnectionState.GETTING_ROLE_LIST);
             profSerEngine.requestRoleList(new ListRolesListener());
-        }catch (Exception e){
+        } catch (Exception e) {
             profSerEngine.setProfSerConnectionState(ProfSerConnectionState.CONNECTION_FAIL);
-            initFuture.onMsgFail(0,400,"Cant request roles list, "+e.getMessage());
+            initFuture.onMsgFail(0, 400, "Cant request roles list, " + e.getMessage());
             throw e;
         }
     }
@@ -98,9 +98,9 @@ public class ProfSerConnectionEngine {
                         new StartConverNonClListener()
                 );
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             profSerEngine.setProfSerConnectionState(ProfSerConnectionState.CONNECTION_FAIL);
-            initFuture.onMsgFail(0,400,"Cant start conversation on non customer port, "+e.getMessage());
+            initFuture.onMsgFail(0, 400, "Cant start conversation on non customer port, " + e.getMessage());
             throw e;
         }
     }
@@ -109,7 +109,7 @@ public class ProfSerConnectionEngine {
      * Request a home node request to the server
      */
     private void requestHomeNodeRequest() throws Exception {
-        if (profSerEngine.getProfSerConnectionState() == ProfSerConnectionState.START_CONVERSATION_NON_CL){
+        if (profSerEngine.getProfSerConnectionState() == ProfSerConnectionState.START_CONVERSATION_NON_CL) {
             LOG.info("requestHomeNodeRequest");
             profSerEngine.setProfSerConnectionState(ProfSerConnectionState.WAITING_HOME_NODE_REQUEST);
             try {
@@ -117,10 +117,10 @@ public class ProfSerConnectionEngine {
                         profSerEngine.getProfNodeConnection().getProfile(),
                         new HomeNodeRequestListener()
                 );
-                LOG.info("requestHomeNodeRequest message id: "+msgId);
-            } catch (Exception e){
+                LOG.info("requestHomeNodeRequest message id: " + msgId);
+            } catch (Exception e) {
                 profSerEngine.setProfSerConnectionState(ProfSerConnectionState.CONNECTION_FAIL);
-                initFuture.onMsgFail(0,400,"Cant request home node registration on non customer port, "+e.getMessage());
+                initFuture.onMsgFail(0, 400, "Cant request home node registration on non customer port, " + e.getMessage());
                 throw e;
             }
         }
@@ -136,9 +136,9 @@ public class ProfSerConnectionEngine {
                 profSerEngine.setProfSerConnectionState(ProfSerConnectionState.WAITING_START_CL);
                 profSerEngine.startConversationCl(new StartConversationClListener());
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             profSerEngine.setProfSerConnectionState(ProfSerConnectionState.CONNECTION_FAIL);
-            initFuture.onMsgFail(0,400,"Cant start conversation on customer port, "+e.getMessage());
+            initFuture.onMsgFail(0, 400, "Cant start conversation on customer port, " + e.getMessage());
             throw e;
         }
     }
@@ -147,7 +147,7 @@ public class ProfSerConnectionEngine {
     /**
      * Do the check in to the server
      */
-    private void requestCheckin() throws Exception{
+    private void requestCheckin() throws Exception {
         try {
             if (profSerEngine.getProfSerConnectionState() == ProfSerConnectionState.START_CONVERSATION_CL) {
                 // se le manda el challenge del nodo + la firma de dicho challenge en el campo de signature
@@ -156,9 +156,9 @@ public class ProfSerConnectionEngine {
                         profSerEngine.getProfNodeConnection().getProfile(),
                         new CheckinConversationListener());
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             profSerEngine.setProfSerConnectionState(ProfSerConnectionState.CONNECTION_FAIL);
-            initFuture.onMsgFail(0,400,"Cant request check in on customer port, "+e.getMessage());
+            initFuture.onMsgFail(0, 400, "Cant request check in on customer port, " + e.getMessage());
             throw e;
         }
     }
@@ -170,13 +170,13 @@ public class ProfSerConnectionEngine {
     private class ListRolesListener implements org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<IopProfileServer.ListRolesResponse> {
 
 
-        public void execute(int messageId,IopProfileServer.ListRolesResponse message) {
+        public void execute(int messageId, IopProfileServer.ListRolesResponse message) {
             LOG.info("ListRolesProcessor execute..");
             int cPort = 0;
             int nonClPort = 0;
             int appSerPort = 0;
             for (IopProfileServer.ServerRole serverRole : message.getRolesList()) {
-                switch (serverRole.getRole()){
+                switch (serverRole.getRole()) {
                     case CL_NON_CUSTOMER:
                         nonClPort = serverRole.getPort();
                         profSerEngine.getProfServerData().setNonCustPort(nonClPort);
@@ -200,28 +200,28 @@ public class ProfSerConnectionEngine {
             profSerEngine.setProfSerConnectionState(ProfSerConnectionState.HAS_ROLE_LIST);
             try {
                 profSerEngine.closePort(IopProfileServer.ServerRoleType.PRIMARY);
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             // notify ports
             for (org.libertaria.world.profile_server.engine.listeners.ConnectionListener connectionListener : profSerEngine.getConnectionListeners()) {
-                connectionListener.onPortsReceived(profSerEngine.getProfServerData().getHost(),nonClPort,cPort,appSerPort);
+                connectionListener.onPortsReceived(profSerEngine.getProfServerData().getHost(), nonClPort, cPort, appSerPort);
             }
 
 
-            LOG.info("ListRolesProcessor no cl port: "+ profSerEngine.getProfServerData().getNonCustPort());
+            LOG.info("ListRolesProcessor no cl port: " + profSerEngine.getProfServerData().getNonCustPort());
             engine();
         }
 
         @Override
         public void onMessageReceive(int messageId, IopProfileServer.ListRolesResponse message) {
-            execute(messageId,message);
+            execute(messageId, message);
         }
 
         @Override
         public void onMsgFail(int messageId, int statusValue, String details) {
-            LOG.info("ListRolesProcessor fail",messageId,statusValue,details);
-            initFuture.onMsgFail(messageId,statusValue,details);
+            LOG.info("ListRolesProcessor fail", messageId, statusValue, details);
+            initFuture.onMsgFail(messageId, statusValue, details);
         }
 
         @Override
@@ -237,30 +237,30 @@ public class ProfSerConnectionEngine {
     private class StartConverNonClListener implements org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<IopProfileServer.StartConversationResponse> {
 
 
-        public void execute(int messageId,IopProfileServer.StartConversationResponse message) {
+        public void execute(int messageId, IopProfileServer.StartConversationResponse message) {
             LOG.info("StartNonClProcessor execute..");
             //todo: ver todos los get que tiene esto, el challenge y demás...
             profSerEngine.setProfSerConnectionState(ProfSerConnectionState.START_CONVERSATION_NON_CL);
             // set the node challenge
             profSerEngine.getProfNodeConnection().setNodeChallenge(message.getChallenge().toByteArray());
             // if the host is not home finish the engine here and notify connection.
-            if (!profSerEngine.getProfNodeConnection().isHome()){
+            if (!profSerEngine.getProfNodeConnection().isHome()) {
                 for (org.libertaria.world.profile_server.engine.listeners.ConnectionListener connectionListener : profSerEngine.getConnectionListeners()) {
                     connectionListener.onNonClConnectionStablished(profSerEngine.getProfServerData().getHost());
                 }
-            }else
+            } else
                 engine();
         }
 
         @Override
         public void onMessageReceive(int messageId, IopProfileServer.StartConversationResponse message) {
-            execute(messageId,message);
+            execute(messageId, message);
         }
 
         @Override
         public void onMsgFail(int messageId, int statusValue, String details) {
-            LOG.info("StartConversationNonClProcessor fail",messageId,statusValue,details);
-            initFuture.onMsgFail(messageId,statusValue,details);
+            LOG.info("StartConversationNonClProcessor fail", messageId, statusValue, details);
+            initFuture.onMsgFail(messageId, statusValue, details);
         }
 
         @Override
@@ -275,7 +275,7 @@ public class ProfSerConnectionEngine {
      */
     private class HomeNodeRequestListener implements org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<IopProfileServer.RegisterHostingResponse> {
 
-        public void execute(int messageId,IopProfileServer.RegisterHostingResponse message) {
+        public void execute(int messageId, IopProfileServer.RegisterHostingResponse message) {
             LOG.info("HomeNodeRequestProcessor execute..");
 
             //todo: ver que parametros utilizar de este homeNodeResponse..
@@ -285,7 +285,7 @@ public class ProfSerConnectionEngine {
             // todo: Save this as the home PS.. maybe with a listener from the IoPConnect and not from the engine.
 
             for (org.libertaria.world.profile_server.engine.listeners.ConnectionListener connectionListener : profSerEngine.getConnectionListeners()) {
-                connectionListener.onHostingPlanReceived(profSerEngine.getProfServerData().getHost(),message.getContract());
+                connectionListener.onHostingPlanReceived(profSerEngine.getProfServerData().getHost(), message.getContract());
             }
             profSerEngine.getProfNodeConnection().setIsRegistered(true);
             profSerEngine.getProfNodeConnection().setNeedRegisterProfile(true);
@@ -295,18 +295,18 @@ public class ProfSerConnectionEngine {
 
         @Override
         public void onMessageReceive(int messageId, IopProfileServer.RegisterHostingResponse message) {
-            execute(messageId,message);
+            execute(messageId, message);
         }
 
         @Override
         public void onMsgFail(int messageId, int statusValue, String details) {
-            LOG.info("HomeNodeRequestListener fail",messageId,statusValue,details);
-            if (statusValue==ERROR_ALREADY_EXISTS.getNumber()){
+            LOG.info("HomeNodeRequestListener fail", messageId, statusValue, details);
+            if (statusValue == ERROR_ALREADY_EXISTS.getNumber()) {
                 // continue engine
                 profSerEngine.getProfNodeConnection().setIsRegistered(true);
                 profSerEngine.getProfNodeConnection().setNeedRegisterProfile(true);
                 engine();
-            }else {
+            } else {
                 initFuture.onMsgFail(messageId, statusValue, details);
             }
         }
@@ -323,7 +323,7 @@ public class ProfSerConnectionEngine {
      */
     private class StartConversationClListener implements org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<IopProfileServer.StartConversationResponse> {
 
-        public void execute(int messageId,IopProfileServer.StartConversationResponse message) {
+        public void execute(int messageId, IopProfileServer.StartConversationResponse message) {
             LOG.info("StartConversationClProcessor execute..");
             //todo: ver todos los get que tiene esto, el challenge y demás...
             // set the node challenge
@@ -334,13 +334,13 @@ public class ProfSerConnectionEngine {
 
         @Override
         public void onMessageReceive(int messageId, IopProfileServer.StartConversationResponse message) {
-            execute(messageId,message);
+            execute(messageId, message);
         }
 
         @Override
         public void onMsgFail(int messageId, int statusValue, String details) {
-            LOG.info("StartConversationClListener fail",messageId,statusValue,details);
-            initFuture.onMsgFail(messageId,statusValue,details);
+            LOG.info("StartConversationClListener fail", messageId, statusValue, details);
+            initFuture.onMsgFail(messageId, statusValue, details);
         }
 
         @Override
@@ -355,18 +355,18 @@ public class ProfSerConnectionEngine {
      */
     private class CheckinConversationListener implements org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<IopProfileServer.CheckInResponse> {
 
-        public void execute(int messageId,IopProfileServer.CheckInResponse message) {
+        public void execute(int messageId, IopProfileServer.CheckInResponse message) {
             LOG.info("CheckinProcessor execute..");
             profSerEngine.setProfSerConnectionState(ProfSerConnectionState.CHECK_IN);
             LOG.info("#### Check in completed!!  ####");
 
             // if the profile is just registered i have to initialize it
             //if (profSerEngine.getProfNodeConnection().isNeedRegisterProfile()){
-                profSerEngine.initProfile();
+            profSerEngine.initProfile();
             //}
             // notify check-in
-            if (initFuture!=null)
-                initFuture.onMessageReceive(messageId,true);
+            if (initFuture != null)
+                initFuture.onMessageReceive(messageId, true);
 
             // start the ping thread.
             profSerEngine.startPing(IopProfileServer.ServerRoleType.CL_CUSTOMER);
@@ -374,13 +374,13 @@ public class ProfSerConnectionEngine {
 
         @Override
         public void onMessageReceive(int messageId, IopProfileServer.CheckInResponse message) {
-            execute(messageId,message);
+            execute(messageId, message);
         }
 
         @Override
         public void onMsgFail(int messageId, int statusValue, String details) {
-            LOG.info("CheckinConversationListener fail",messageId,statusValue,details);
-            initFuture.onMsgFail(messageId,statusValue,details);
+            LOG.info("CheckinConversationListener fail", messageId, statusValue, details);
+            initFuture.onMsgFail(messageId, statusValue, details);
         }
 
         @Override
