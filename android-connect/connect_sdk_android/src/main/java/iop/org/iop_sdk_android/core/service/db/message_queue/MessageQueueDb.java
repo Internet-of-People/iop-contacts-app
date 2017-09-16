@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import org.libertaria.world.communication.ClientCommunication;
 import org.libertaria.world.profile_server.engine.MessageQueueManager;
 import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.profile_server.protocol.IopProfileServer;
@@ -45,12 +46,16 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
     public static final int MESSAGES_POS_COLUMN_TIMESTAMP = 5;
 
     private List<Message> messageQueue;
-    private final MessageQueueComparator DEFAULT_COMPARATOR = new MessageQueueComparator();
+
+    private static final MessageQueueComparator DEFAULT_COMPARATOR = new MessageQueueComparator();
     private static final Integer RESEND_ATTEMPT_LIMIT = 5;
 
-    public MessageQueueDb(Context context) {
+    private final ClientCommunication clientCommunication;
+
+    public MessageQueueDb(Context context, ClientCommunication clientCommunication) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         messageQueue = new ArrayList<>();
+        this.clientCommunication = clientCommunication;
     }
 
     @Override
@@ -171,7 +176,7 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
     }
 
 
-    private class MessageQueueComparator implements Comparator<Message> {
+    private static class MessageQueueComparator implements Comparator<Message> {
         @Override
         public int compare(Message o1, Message o2) {
             return o1.getTimestamp().compareTo(o2.getTimestamp());

@@ -1,6 +1,6 @@
 package iop.org.iop_sdk_android.core.wrappers;
 
-import org.libertaria.world.global.IntentWrapper;
+import org.libertaria.world.global.IntentMessage;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -10,11 +10,11 @@ import java.util.Map;
  * Created by mati on 26/12/16.
  */
 
-public class IntentWrapperAndroid implements IntentWrapper {
+public class IntentWrapperAndroid implements IntentMessage {
 
-    String action;
-    String packageName;
-    Map<String,Serializable> bundle;
+    private String action;
+    private String packageName;
+    private Map<String, Serializable> bundle;
 
     public IntentWrapperAndroid(String action) {
         this.action = action;

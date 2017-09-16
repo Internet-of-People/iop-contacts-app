@@ -1,9 +1,8 @@
 package iop.org.iop_sdk_android.core.service.server_broker;
 
-import android.content.Context;
-
 import org.libertaria.world.core.IoPConnect;
 import org.libertaria.world.global.Module;
+import org.libertaria.world.global.SystemContext;
 import org.libertaria.world.services.EnabledServices;
 import org.libertaria.world.services.ServiceFactory;
 
@@ -24,12 +23,12 @@ public class Core {
 
     private HashMap<EnabledServices,Module> modules = new HashMap<>();
 
-    private Context context;
+    private SystemContext context;
     private IoPConnect ioPConnect;
     private PlatformService ioPConnectService;
     private ServiceFactory serviceFactory;
 
-    public Core(Context context, PlatformService ioPConnectService, IoPConnect ioPConnect, ServiceFactory serviceFactory) {
+    public Core(SystemContext context, PlatformService ioPConnectService, IoPConnect ioPConnect, ServiceFactory serviceFactory) {
         this.ioPConnectService = ioPConnectService;
         this.context = context;
         this.ioPConnect = ioPConnect;

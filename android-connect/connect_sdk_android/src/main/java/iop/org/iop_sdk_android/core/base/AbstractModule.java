@@ -1,10 +1,9 @@
 package iop.org.iop_sdk_android.core.base;
 
-import android.content.Context;
-import android.content.Intent;
-
 import org.libertaria.world.core.IoPConnect;
+import org.libertaria.world.global.IntentMessage;
 import org.libertaria.world.global.Module;
+import org.libertaria.world.global.SystemContext;
 import org.libertaria.world.global.Version;
 import org.libertaria.world.profile_server.CantConnectException;
 import org.libertaria.world.profile_server.CantSendMessageException;
@@ -12,7 +11,6 @@ import org.libertaria.world.profile_server.ProfileInformation;
 import org.libertaria.world.profile_server.engine.app_services.AppService;
 import org.libertaria.world.profile_server.engine.app_services.BaseMsg;
 import org.libertaria.world.profile_server.engine.app_services.CallProfileAppService;
-import org.libertaria.world.profile_server.engine.app_services.MsgWrapper;
 import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.services.EnabledServices;
 import org.slf4j.Logger;
@@ -32,7 +30,7 @@ public abstract class AbstractModule implements Module {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractModule.class);
 
-    private WeakReference<Context> context;
+    private WeakReference<SystemContext> context;
 
     protected IoPConnect ioPConnect;
     /** AbstractModule version */
@@ -40,8 +38,8 @@ public abstract class AbstractModule implements Module {
     /** AbstractModule identifier */
     private EnabledServices service;
 
-    public AbstractModule(Context context,IoPConnect ioPConnect,Version version, EnabledServices service) {
-        this.context = new WeakReference<Context>(context);
+    public AbstractModule(SystemContext context, IoPConnect ioPConnect, Version version, EnabledServices service) {
+        this.context = new WeakReference<>(context);
         this.version = version;
         this.service = service;
         this.ioPConnect = ioPConnect;
@@ -63,11 +61,11 @@ public abstract class AbstractModule implements Module {
                 '}';
     }
 
-    protected void sendBroadcast(Intent intent){
-        context.get().sendBroadcast(intent);
+    protected void sendBroadcast(IntentMessage intent) {
+        context.get().sendLocalBroadcast(intent);
     }
 
-    protected Context getContext(){
+    protected SystemContext getContext() {
         return context.get();
     }
 

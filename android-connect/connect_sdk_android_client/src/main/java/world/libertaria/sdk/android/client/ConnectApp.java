@@ -20,7 +20,6 @@ import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.android.LogcatAppender;
@@ -89,7 +88,7 @@ public class ConnectApp extends Application implements ConnectApplication {
                 try {
                     isClientServiceBound = true;
 
-                    clientService = new WeakReference<ConnectClientService>(connectHelper.getClient());
+                    clientService = new WeakReference<>(connectHelper.getClient());
 
                     if (clientService.get().mPlatformServiceIsBound){
                         onConnectClientServiceBind();
@@ -201,7 +200,7 @@ public class ConnectApp extends Application implements ConnectApplication {
                 }
             }
         }else {
-            logger.warn("onConnectClientServiceBind, isClientServiceBound: "+isClientServiceBound+", mPlatformServiceIsBound "+clientService.get().mPlatformServiceIsBound);
+            logger.warn("onConnectClientServiceBind, isClientServiceBound: " + isClientServiceBound + ", mPlatformServiceIsBound " + (clientService != null ? clientService.get().toString() : null));
         }
     }
     /**

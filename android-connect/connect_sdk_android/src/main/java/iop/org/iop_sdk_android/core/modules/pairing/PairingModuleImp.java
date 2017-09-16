@@ -1,12 +1,11 @@
 package iop.org.iop_sdk_android.core.modules.pairing;
 
-import android.content.Context;
-
 import org.libertaria.world.core.IoPConnect;
 import org.libertaria.world.core.services.pairing.DisconnectMsg;
 import org.libertaria.world.core.services.pairing.PairingMsg;
 import org.libertaria.world.core.services.pairing.PairingMsgTypes;
 import org.libertaria.world.crypto.CryptoBytes;
+import org.libertaria.world.global.SystemContext;
 import org.libertaria.world.global.Version;
 import org.libertaria.world.profile_server.ProfileInformation;
 import org.libertaria.world.profile_server.engine.app_services.CallProfileAppService;
@@ -36,7 +35,7 @@ public class PairingModuleImp extends AbstractModule implements PairingModule {
 
     private PlatformService platformService;
 
-    public PairingModuleImp(Context context, PlatformService ioPConnectService, IoPConnect ioPConnect) {
+    public PairingModuleImp(SystemContext context, PlatformService ioPConnectService, IoPConnect ioPConnect) {
         super(context, ioPConnect, Version.newProtocolAcceptedVersion(), EnabledServices.PROFILE_PAIRING);
         this.platformService = ioPConnectService;
 

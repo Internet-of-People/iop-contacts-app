@@ -1,26 +1,35 @@
 package iop.org.iop_sdk_android.core.service.server_broker;
 
+import android.app.ActivityManager;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.widget.Toast;
 
 import com.google.protobuf.ByteString;
 
+import org.libertaria.world.communication.ClientCommunication;
 import org.libertaria.world.core.IoPConnect;
 import org.libertaria.world.core.IoPConnectContext;
+import org.libertaria.world.exceptions.CantStartException;
 import org.libertaria.world.global.DeviceLocation;
 import org.libertaria.world.global.GpsLocation;
+import org.libertaria.world.global.IntentMessage;
 import org.libertaria.world.global.Module;
+import org.libertaria.world.global.PackageInformation;
+import org.libertaria.world.global.SystemContext;
 import org.libertaria.world.global.utils.SerializationUtils;
 import org.libertaria.world.profile_server.CantSendMessageException;
 import org.libertaria.world.profile_server.ProfileServerConfigurations;
@@ -39,11 +48,16 @@ import org.libertaria.world.wallet.utils.BlockchainState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -60,6 +74,7 @@ import iop.org.iop_sdk_android.core.service.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.service.db.SqliteProfilesDb;
 import iop.org.iop_sdk_android.core.service.db.message_queue.MessageQueueDb;
 import iop.org.iop_sdk_android.core.service.device_state.DeviceConnectionManager;
+import iop.org.iop_sdk_android.core.wrappers.PackageInfoAndroid;
 import world.libertaria.shared.library.global.ModuleObject;
 import world.libertaria.shared.library.global.ModuleObjectWrapper;
 import world.libertaria.shared.library.global.ModuleParameter;
@@ -78,7 +93,7 @@ import static world.libertaria.shared.library.global.client.IntentBroadcastConst
  * Connect sdk broker pattern server side.
  */
 
-public class PlatformServiceImp extends Service implements PlatformService, DeviceLocation {
+public class PlatformServiceImp extends Service implements PlatformService, DeviceLocation, SystemContext {
 
     private Logger logger = LoggerFactory.getLogger(PlatformServiceImp.class);
 
@@ -117,7 +132,7 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
     /**
      * Server Manager
      */
-    private LocalServer localServer;
+    private ClientCommunication clientCommunication;
 
     /**
      * Message Queue manager
@@ -139,7 +154,7 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action)) {
-                final NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
+                final NetworkInfo networkInfo = intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
                 final boolean hasConnectivity = networkInfo.isConnected();
                 logger.info("network is {}, state {}/{}", hasConnectivity ? "up" : "down", networkInfo.getState(), networkInfo.getDetailedState());
                 if (hasConnectivity)
@@ -162,6 +177,83 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
         }
     };
 
+    @Override
+    public FileOutputStream openFileOutputPrivateMode(String name) throws FileNotFoundException {
+        return this.openFileOutput(name, MODE_PRIVATE);
+    }
+
+    @Override
+    public File getDirPrivateMode(String name) {
+        return this.getDir(name, MODE_PRIVATE);
+    }
+
+    @Override
+    public void startService(int service, String command, Object... args) {
+        Intent intent = new Intent();
+        this.startService(intent);
+    }
+
+    @Override
+    public void toast(String text) {
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public PackageInformation packageInformation() {
+        try {
+            return new PackageInfoAndroid(getPackageManager().getPackageInfo(getPackageName(), 0));
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public boolean isMemoryLow() {
+        ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
+        ActivityManager activityManager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        activityManager.getMemoryInfo(mi);
+        double percentAvail = mi.availMem / (double) mi.totalMem;
+
+        return percentAvail < 10;
+    }
+
+    @Override
+    public InputStream openAssestsStream(String name) throws IOException {
+        return getAssets().open(name);
+    }
+
+    @Override
+    public void sendLocalBroadcast(IntentMessage intentMessage) {
+        Intent intent = new Intent();
+        intent.setAction(intentMessage.getAction());
+        intent.setPackage(intentMessage.getPackageName());
+        for (Map.Entry<String, Serializable> entry : intentMessage.getBundle().entrySet()) {
+            intent.putExtra(entry.getKey(), entry.getValue());
+        }
+        super.sendBroadcast(intent);
+    }
+
+    @Override
+    public void showDialog(String id) {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setMessage(Integer.valueOf(id));
+        dialog.show();
+    }
+
+    @Override
+    public void showDialog(String showBlockchainOffDialog, String dialogText) {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setMessage(dialogText);
+        dialog.setMessage(showBlockchainOffDialog);
+        dialog.show();
+    }
+
+    @Override
+    public void stopBlockchainService() {
+        //TODO
+    }
+
     private class ServiceFactoryImp implements ServiceFactory {
 
         private Core core;
@@ -178,9 +270,6 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
             return EnabledServicesFactory.buildService(serviceName, core.getModule(serviceName));
         }
     }
-
-    ;
-
 
     public ProfileServerConfigurations getConfPref() {
         return configurationsPreferences;
@@ -225,7 +314,15 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
                 profilesDb = new SqliteProfilesDb(this);
                 localProfilesDao = new LocalProfilesDb(this);
                 deviceConnectionManager = new DeviceConnectionManager(this);
-                messageQueueManager = new MessageQueueDb(this);
+
+                try {
+                    clientCommunication = new LocalServer(this);
+                    clientCommunication.start();
+                } catch (CantStartException e) {
+                    e.printStackTrace();
+                }
+
+                messageQueueManager = new MessageQueueDb(this, clientCommunication);
                 ioPConnect = new IoPConnect(application, new CryptoWrapperAndroid(), new SslContextFactory(this), localProfilesDao, profilesDb, pairingRequestDb, this, deviceConnectionManager, messageQueueManager);
                 // init core
                 ServiceFactoryImp serviceFactoryImp = new ServiceFactoryImp();
@@ -235,12 +332,6 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
                 ioPConnect.setEngineListener((ProfilesModuleImp) core.getModule(EnabledServices.PROFILE_DATA.getName()));
                 ioPConnect.start();
 
-                try {
-                    localServer = new LocalServer(this);
-                    localServer.start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
 
                 tryScheduleService();
 
@@ -349,7 +440,7 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
     public void onDestroy() {
         logger.info("onDestroy");
         unregisterReceiver(connectivityReceiver);
-        localServer.shutdown();
+        clientCommunication.shutdown();
         core.clean();
         executor.shutdown();
         // this is because android bother with network operations on  main thread..
@@ -450,7 +541,7 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
             logger.info("abstract method onMessageReceive, " + message);
             // todo: send the response via socket if it's big or via broadcast if it's not
             try {
-                if (localServer.isClientConnected(clientId)) {
+                if (clientCommunication.isConnected(clientId)) {
                     ModuleObject.ModuleObjectWrapper moduleObjectWrapper =
                             ModuleObject.ModuleObjectWrapper.newBuilder()
                                     .setObj(
@@ -462,7 +553,7 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
                             .setResponseType(ModuleObject.ResponseType.OBJ)
                             .setObj(moduleObjectWrapper)
                             .build();
-                    localServer.dispathMsg(clientId, requestId, messageId, response);
+                    clientCommunication.dispatchMessage(clientId, response);
                 } else {
                     logger.error("client is not connected anymore.. " + clientId);
                 }
@@ -478,13 +569,13 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
             logger.info("abstract method onMsgFail, " + details);
             // todo: send the response via socket if it's big or via broadcast if it's not
             try {
-                if (localServer.isClientConnected(clientId)) {
+                if (clientCommunication.isConnected(clientId)) {
                     ModuleObject.ModuleResponse response = ModuleObject.ModuleResponse.newBuilder()
                             .setId(requestId)
                             .setResponseType(ModuleObject.ResponseType.ERR)
                             .setErr(ByteString.copyFromUtf8(details))
                             .build();
-                    localServer.dispathMsg(clientId, requestId, messageId, response);
+                    clientCommunication.dispatchMessage(clientId, response);
                 } else {
                     logger.error("client is not connected anymore.. " + clientId);
                 }

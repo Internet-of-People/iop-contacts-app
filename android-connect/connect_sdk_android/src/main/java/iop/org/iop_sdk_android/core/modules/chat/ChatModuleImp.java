@@ -1,9 +1,10 @@
 package iop.org.iop_sdk_android.core.modules.chat;
 
 import android.content.Context;
-import android.content.Intent;
 
 import org.libertaria.world.core.IoPConnect;
+import org.libertaria.world.global.IntentMessage;
+import org.libertaria.world.global.SystemContext;
 import org.libertaria.world.global.Version;
 import org.libertaria.world.profile_server.CantConnectException;
 import org.libertaria.world.profile_server.CantSendMessageException;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import iop.org.iop_sdk_android.core.base.AbstractModule;
 import iop.org.iop_sdk_android.core.base.ProfileNotSupportAppServiceException;
 import iop.org.iop_sdk_android.core.utils.EmptyListener;
+import iop.org.iop_sdk_android.core.wrappers.IntentWrapperAndroid;
 import world.libertaria.shared.library.services.chat.ChatIntentsConstants;
 
 import static world.libertaria.shared.library.services.chat.ChatIntentsConstants.EXTRA_INTENT_CHAT_MSG;
@@ -46,7 +48,7 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
 
     private Context context;
 
-    public ChatModuleImp(Context context,IoPConnect ioPConnect) {
+    public ChatModuleImp(SystemContext context, IoPConnect ioPConnect) {
         super(context,ioPConnect,Version.newProtocolAcceptedVersion(), EnabledServices.CHAT);
     }
 
@@ -138,31 +140,28 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
 
     @Override
     public void onChatConnected(Profile localProfile, String remoteProfilePubKey, boolean isLocalCreator) {
-        Intent intent = new Intent();
-        intent.setAction(ChatIntentsConstants.ACTION_ON_CHAT_CONNECTED);
-        intent.putExtra(EXTRA_INTENT_LOCAL_PROFILE,localProfile.getHexPublicKey());
-        intent.putExtra(EXTRA_INTENT_REMOTE_PROFILE,remoteProfilePubKey);
-        intent.putExtra(EXTRA_INTENT_IS_LOCAL_CREATOR,isLocalCreator);
-        getContext().sendBroadcast(intent);
+        IntentMessage intent = new IntentWrapperAndroid(ChatIntentsConstants.ACTION_ON_CHAT_CONNECTED);
+        intent.put(EXTRA_INTENT_LOCAL_PROFILE, localProfile.getHexPublicKey());
+        intent.put(EXTRA_INTENT_REMOTE_PROFILE, remoteProfilePubKey);
+        intent.put(EXTRA_INTENT_IS_LOCAL_CREATOR, isLocalCreator);
+        sendBroadcast(intent);
     }
 
     @Override
     public void onChatDisconnected(String remotePubKey,String reason) {
         logger.info("onChatDisconnected");
-        Intent intent = new Intent();
-        intent.setAction(ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED);
-        intent.putExtra(EXTRA_INTENT_REMOTE_PROFILE,remotePubKey);
-        intent.putExtra(EXTRA_INTENT_DETAIL,reason);
-        getContext().sendBroadcast(intent);
+        IntentMessage intent = new IntentWrapperAndroid(ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED);
+        intent.put(EXTRA_INTENT_REMOTE_PROFILE, remotePubKey);
+        intent.put(EXTRA_INTENT_DETAIL, reason);
+        sendBroadcast(intent);
     }
 
     @Override
     public void onMsgReceived(String remotePubKey, BaseMsg msg) {
-        Intent intent = new Intent();
-        intent.setAction(ChatIntentsConstants.ACTION_ON_CHAT_MSG_RECEIVED);
-        intent.putExtra(EXTRA_INTENT_REMOTE_PROFILE,remotePubKey);
-        intent.putExtra(EXTRA_INTENT_CHAT_MSG,msg);
-        getContext().sendBroadcast(intent);
+        IntentMessage intent = new IntentWrapperAndroid(ChatIntentsConstants.ACTION_ON_CHAT_MSG_RECEIVED);
+        intent.put(EXTRA_INTENT_REMOTE_PROFILE, remotePubKey);
+        intent.put(EXTRA_INTENT_CHAT_MSG, msg);
+        sendBroadcast(intent);
     }
 
     @Override
