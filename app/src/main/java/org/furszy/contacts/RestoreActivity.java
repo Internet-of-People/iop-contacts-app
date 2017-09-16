@@ -23,9 +23,11 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import org.furszy.contacts.ui.home.HomeActivity;
+import org.spongycastle.crypto.InvalidCipherTextException;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -51,7 +53,7 @@ public class RestoreActivity extends BaseActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
-        MenuItem menuItem = menu.add(0,OPTIONS_RESTORE,0,"Restore");
+        MenuItem menuItem = menu.add(0, OPTIONS_RESTORE, 0, "Restore");
         menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
         return super.onCreateOptionsMenu(menu);
@@ -59,11 +61,20 @@ public class RestoreActivity extends BaseActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId()==OPTIONS_RESTORE){
+        if (item.getItemId() == OPTIONS_RESTORE) {
             int selected = spinner_files.getSelectedItemPosition();
-            if (fileList!=null && !fileList.isEmpty()) {
-                profilesModule.restoreProfileFrom(fileList.get(selected), null);
-                Toast.makeText(this,"Restore profile from backup completed",Toast.LENGTH_LONG).show();
+            if (fileList != null && !fileList.isEmpty()) {
+                try {
+                    profilesModule.restoreProfileFrom(fileList.get(selected), null);
+                } catch (IOException e) {
+                    Toast.makeText(getApplicationContext(), R.string.restore_cant_open_file_message,
+                            Toast.LENGTH_LONG).show();
+                } catch (InvalidCipherTextException e) {
+                    //This shouldn't happen here as we are not sending any password.
+                    Toast.makeText(getApplicationContext(), R.string.restore_invalid_password_message,
+                            Toast.LENGTH_LONG).show();
+                }
+                Toast.makeText(this, "Restore profile from backup completed", Toast.LENGTH_LONG).show();
                 startActivity(new Intent(this, HomeActivity.class));
                 finish();
             }
@@ -87,7 +98,7 @@ public class RestoreActivity extends BaseActivity {
         showPassword.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
 
-                switch ( event.getAction() ) {
+                switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         txt_password.setInputType(InputType.TYPE_CLASS_TEXT);
                         break;
@@ -106,7 +117,7 @@ public class RestoreActivity extends BaseActivity {
         for (File file : fileList) {
             list.add(file.getName());
         }
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item,list){
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, list) {
             @Override
             public View getDropDownView(int position, View convertView, ViewGroup parent) {
                 CheckedTextView view = (CheckedTextView) super.getDropDownView(position, convertView, parent);
@@ -133,9 +144,9 @@ public class RestoreActivity extends BaseActivity {
     private List<File> listFiles() {
         List<File> fileList = new ArrayList<>();
         File backupDir = app.getBackupDir();
-        if (backupDir.isDirectory()){
+        if (backupDir.isDirectory()) {
             File[] fileArray = backupDir.listFiles();
-            if (fileArray!=null){
+            if (fileArray != null) {
                 for (File file : fileArray) {
                     if (PROFILE_FILE_FILTER.accept(file)) {
                         if (!fileList.contains(file))
@@ -154,8 +165,7 @@ public class RestoreActivity extends BaseActivity {
         // sort
         Collections.sort(fileList, new Comparator<File>() {
             @Override
-            public int compare(final File lhs, final File rhs)
-            {
+            public int compare(final File lhs, final File rhs) {
                 return lhs.getName().compareToIgnoreCase(rhs.getName());
             }
         });
@@ -165,8 +175,8 @@ public class RestoreActivity extends BaseActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode==REQUEST_FILE){
-            Log.i("APP","it's me!");
+        if (requestCode == REQUEST_FILE) {
+            Log.i("APP", "it's me!");
         }
     }
 
@@ -235,7 +245,7 @@ public class RestoreActivity extends BaseActivity {
     public static final FileFilter PROFILE_FILE_FILTER = new FileFilter() {
         @Override
         public boolean accept(File pathname) {
-            if (pathname.getAbsolutePath().contains("backup_iop_connect")){
+            if (pathname.getAbsolutePath().contains("backup_iop_connect")) {
                 return true;
             }
             return false;

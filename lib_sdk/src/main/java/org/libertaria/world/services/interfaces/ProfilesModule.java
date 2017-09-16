@@ -7,6 +7,7 @@ import org.libertaria.world.profile_server.ProfileInformation;
 import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
 import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.profile_server.model.Profile;
+import org.spongycastle.crypto.InvalidCipherTextException;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,5 +57,5 @@ public interface ProfilesModule extends Module {
 
     void getProfileInformation(String localProfilePubKey,String profPubKey, boolean getInfo, ProfSerMsgListener<ProfileInformation> profileFuture) throws CantConnectException, CantSendMessageException;
 
-    void restoreProfileFrom(File file, String password);
+    void restoreProfileFrom(File file, String password) throws IOException, InvalidCipherTextException;
 }
