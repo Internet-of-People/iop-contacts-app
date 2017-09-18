@@ -387,18 +387,6 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
         }
     }
 
-    private SessionHandler sessionHandler = new SessionHandler() {
-        @Override
-        public void onReceive(LocalSocketSession localSocketSession, ModuleObject.ModuleResponse response) {
-            logger.info("onReceive " + localSocketSession.toString());
-        }
-
-        @Override
-        public void sessionClosed(LocalSocketSession localSocketSession, String clientPk) {
-            logger.info("sessionClosed " + clientPk);
-        }
-    };
-
     private final IPlatformService.Stub mBinder = new IPlatformService.Stub() {
         @Override
         public String register() throws RemoteException {
