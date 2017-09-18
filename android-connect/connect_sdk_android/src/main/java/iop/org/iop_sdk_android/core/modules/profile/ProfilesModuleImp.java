@@ -1,6 +1,7 @@
 package iop.org.iop_sdk_android.core.modules.profile;
 
 import org.libertaria.world.core.IoPConnect;
+import org.libertaria.world.global.AbstractModule;
 import org.libertaria.world.global.IntentMessage;
 import org.libertaria.world.global.PlatformSerializer;
 import org.libertaria.world.global.SystemContext;
@@ -36,7 +37,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import iop.org.iop_sdk_android.core.base.AbstractModule;
 import iop.org.iop_sdk_android.core.utils.ImageUtils;
 import iop.org.iop_sdk_android.core.wrappers.IntentWrapperAndroid;
 import world.libertaria.shared.library.global.client.IntentBroadcastConstants;
@@ -88,7 +88,7 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
             IntentMessage intentMessage = new IntentWrapperAndroid(ACTION_ON_PAIR_RECEIVED);
             intentMessage.put(INTENT_EXTRA_PROF_KEY, requestedPubKey);
             intentMessage.put(INTENT_EXTRA_PROF_NAME, name);
-            sendBroadcast(intentMessage);
+            broadcastEvent(intentMessage);
         }
 
         @Override
@@ -96,13 +96,13 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
             IntentMessage intentMessage = new IntentWrapperAndroid(ACTION_ON_RESPONSE_PAIR_RECEIVED);
             intentMessage.put(INTENT_EXTRA_PROF_KEY, requesteePubKey);
             intentMessage.put(INTENT_EXTRA_PROF_NAME, responseDetail);
-            sendBroadcast(intentMessage);
+            broadcastEvent(intentMessage);
         }
 
         @Override
         public void onPairDisconnectReceived(String remotePubKey) {
             IntentMessage intentMessage = new IntentWrapperAndroid(ACTION_ON_PAIR_DISCONNECTED);
-            sendBroadcast(intentMessage);
+            broadcastEvent(intentMessage);
         }
     };
 
@@ -223,21 +223,21 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
     public void onCheckInCompleted(String localProfilePubKey) {
         IntentMessage intentMessage = new IntentWrapperAndroid(ACTION_ON_PROFILE_CONNECTED);
         intentMessage.put(INTENT_EXTRA_PROF_KEY, localProfilePubKey);
-        sendBroadcast(intentMessage);
+        broadcastEvent(intentMessage);
     }
 
     @Override
     public void onDisconnect(String localProfilePubKey) {
         IntentMessage intentMessage = new IntentWrapperAndroid(ACTION_ON_PROFILE_DISCONNECTED);
         intentMessage.put(INTENT_EXTRA_PROF_KEY, localProfilePubKey);
-        sendBroadcast(intentMessage);
+        broadcastEvent(intentMessage);
     }
 
     public void onCheckInFail(Profile profile, int status, String statusDetail) {
         logger.warn("on check in fail: " + statusDetail);
         IntentMessage intentMessage = new IntentWrapperAndroid(ACTION_ON_CHECK_IN_FAIL);
         intentMessage.put(INTENT_RESPONSE_DETAIL, statusDetail);
-        sendBroadcast(intentMessage);
+        broadcastEvent(intentMessage);
     }
 
     @Override
@@ -439,7 +439,7 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
 
     private void broadcastUpdateProfile() {
         IntentMessage intent = new IntentWrapperAndroid(IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT);
-        sendBroadcast(intent);
+        broadcastEvent(intent);
     }
 
     public PairingListener getPairingListener() {

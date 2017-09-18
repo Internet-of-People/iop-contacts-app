@@ -1,10 +1,7 @@
-package iop.org.iop_sdk_android.core.base;
+package org.libertaria.world.global;
 
 import org.libertaria.world.core.IoPConnect;
-import org.libertaria.world.global.IntentMessage;
-import org.libertaria.world.global.Module;
-import org.libertaria.world.global.SystemContext;
-import org.libertaria.world.global.Version;
+import org.libertaria.world.global.exceptions.ProfileNotSupportAppServiceException;
 import org.libertaria.world.profile_server.CantConnectException;
 import org.libertaria.world.profile_server.CantSendMessageException;
 import org.libertaria.world.profile_server.ProfileInformation;
@@ -61,7 +58,7 @@ public abstract class AbstractModule implements Module {
                 '}';
     }
 
-    protected void sendBroadcast(IntentMessage intent) {
+    protected void broadcastEvent(IntentMessage intent) {
         context.get().sendLocalBroadcast(intent);
     }
 

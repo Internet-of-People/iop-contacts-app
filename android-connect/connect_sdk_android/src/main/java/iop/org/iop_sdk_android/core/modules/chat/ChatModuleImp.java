@@ -3,9 +3,11 @@ package iop.org.iop_sdk_android.core.modules.chat;
 import android.content.Context;
 
 import org.libertaria.world.core.IoPConnect;
+import org.libertaria.world.global.AbstractModule;
 import org.libertaria.world.global.IntentMessage;
 import org.libertaria.world.global.SystemContext;
 import org.libertaria.world.global.Version;
+import org.libertaria.world.global.exceptions.ProfileNotSupportAppServiceException;
 import org.libertaria.world.profile_server.CantConnectException;
 import org.libertaria.world.profile_server.CantSendMessageException;
 import org.libertaria.world.profile_server.ProfileInformation;
@@ -26,8 +28,6 @@ import org.libertaria.world.services.chat.msg.ChatRefuseMsg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iop.org.iop_sdk_android.core.base.AbstractModule;
-import iop.org.iop_sdk_android.core.base.ProfileNotSupportAppServiceException;
 import iop.org.iop_sdk_android.core.utils.EmptyListener;
 import iop.org.iop_sdk_android.core.wrappers.IntentWrapperAndroid;
 import world.libertaria.shared.library.services.chat.ChatIntentsConstants;
@@ -144,7 +144,7 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
         intent.put(EXTRA_INTENT_LOCAL_PROFILE, localProfile.getHexPublicKey());
         intent.put(EXTRA_INTENT_REMOTE_PROFILE, remoteProfilePubKey);
         intent.put(EXTRA_INTENT_IS_LOCAL_CREATOR, isLocalCreator);
-        sendBroadcast(intent);
+        broadcastEvent(intent);
     }
 
     @Override
@@ -153,7 +153,7 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
         IntentMessage intent = new IntentWrapperAndroid(ChatIntentsConstants.ACTION_ON_CHAT_DISCONNECTED);
         intent.put(EXTRA_INTENT_REMOTE_PROFILE, remotePubKey);
         intent.put(EXTRA_INTENT_DETAIL, reason);
-        sendBroadcast(intent);
+        broadcastEvent(intent);
     }
 
     @Override
@@ -161,7 +161,7 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
         IntentMessage intent = new IntentWrapperAndroid(ChatIntentsConstants.ACTION_ON_CHAT_MSG_RECEIVED);
         intent.put(EXTRA_INTENT_REMOTE_PROFILE, remotePubKey);
         intent.put(EXTRA_INTENT_CHAT_MSG, msg);
-        sendBroadcast(intent);
+        broadcastEvent(intent);
     }
 
     @Override

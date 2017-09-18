@@ -5,6 +5,7 @@ import org.libertaria.world.core.services.pairing.DisconnectMsg;
 import org.libertaria.world.core.services.pairing.PairingMsg;
 import org.libertaria.world.core.services.pairing.PairingMsgTypes;
 import org.libertaria.world.crypto.CryptoBytes;
+import org.libertaria.world.global.AbstractModule;
 import org.libertaria.world.global.SystemContext;
 import org.libertaria.world.global.Version;
 import org.libertaria.world.profile_server.ProfileInformation;
@@ -22,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import iop.org.iop_sdk_android.core.base.AbstractModule;
 import iop.org.iop_sdk_android.core.service.server_broker.PlatformService;
 
 /**
