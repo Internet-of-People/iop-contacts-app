@@ -32,6 +32,7 @@ import iop.org.iop_sdk_android.core.utils.EmptyListener;
 import iop.org.iop_sdk_android.core.wrappers.IntentWrapperAndroid;
 import world.libertaria.shared.library.services.chat.ChatIntentsConstants;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static world.libertaria.shared.library.services.chat.ChatIntentsConstants.EXTRA_INTENT_CHAT_MSG;
 import static world.libertaria.shared.library.services.chat.ChatIntentsConstants.EXTRA_INTENT_DETAIL;
 import static world.libertaria.shared.library.services.chat.ChatIntentsConstants.EXTRA_INTENT_IS_LOCAL_CREATOR;
@@ -104,10 +105,9 @@ public class ChatModuleImp extends AbstractModule implements ChatModule,ChatMsgL
     public void sendMsgToChat(String localProfilePubKey, ProfileInformation remoteProfileInformation, String msg, ProfSerMsgListener<Boolean> msgListener) throws Exception {
         CallProfileAppService callProfileAppService = null;
         try {
-            ChatMsg chatMsg = new ChatMsg(msg);
             callProfileAppService = getCall(localProfilePubKey,remoteProfileInformation.getHexPublicKey());
             if (callProfileAppService==null) throw new ChatCallClosedException("Chat connection is not longer available",remoteProfileInformation);
-            callProfileAppService.sendMsg(chatMsg, msgListener);
+            callProfileAppService.sendMsg(new ChatMsg(msg), msgListener);
         }catch (AppServiceCallNotAvailableException e){
             e.printStackTrace();
             throw new ChatCallClosedException("Chat call not longer available",remoteProfileInformation);

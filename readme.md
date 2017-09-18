@@ -32,6 +32,12 @@ The last two libraries are External App libraries.
 
 Pure java connection library with the Libertaria network.
 
+##### If you want to use your PS instead of the testing server you have to:
+
+* Change the server IP -> AppConstants TEST_PROFILE_SERVER_HOST
+* Change the SSL certificate -> Class SslContextFactory.
+
+
 #### Modules:
 
 * 'lib_sdk'

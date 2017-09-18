@@ -143,7 +143,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
                 checkMessageQueue();
                 checkCalls();
             }
-        }, 30, CALL_IDLE_CHECK_TIME, TimeUnit.SECONDS);
+        }, CALL_IDLE_CHECK_TIME, CALL_IDLE_CHECK_TIME, TimeUnit.SECONDS);
     }
 
     public void init(ConnectionListener connectionListener) throws Exception {
