@@ -8,13 +8,15 @@ public class PairingMsg extends org.libertaria.world.profile_server.engine.app_s
 
     private String name;
     private String senderHost;
+    private int pairingRequestId;
 
     public PairingMsg() {
     }
 
-    public PairingMsg(String name,String senderHost) {
+    public PairingMsg(String name, String senderHost, int pairingRequestId) {
         this.name = name;
         this.senderHost = senderHost;
+        this.pairingRequestId = pairingRequestId;
     }
 
     public String getName() {
@@ -41,5 +43,7 @@ public class PairingMsg extends org.libertaria.world.profile_server.engine.app_s
         return PairingMsgTypes.PAIR_REQUEST.getType();
     }
 
-
+    public int getPairingRequestId() {
+        return pairingRequestId;
+    }
 }

@@ -59,7 +59,7 @@ public abstract class AbstractModule implements Module {
     }
 
     protected void broadcastEvent(IntentMessage intent) {
-        context.get().sendLocalBroadcast(intent);
+        context.get().broadcastPlatformEvent(intent);
     }
 
     protected SystemContext getContext() {
@@ -144,7 +144,7 @@ public abstract class AbstractModule implements Module {
             public void onMessageReceive(int messageId, CallProfileAppService call) {
                 try {
                     logger.info("prepareCallAndSend sucess");
-                    call.sendMsg(msg,readyListener);
+                    call.sendMsg(msg,readyListener, true);
                 } catch (Exception e) {
                     logger.info("prepareCallAndSend msg fail, "+e.getMessage());
                     if (readyListener!=null)

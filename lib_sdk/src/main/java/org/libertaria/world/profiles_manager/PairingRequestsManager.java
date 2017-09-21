@@ -16,6 +16,8 @@ public interface PairingRequestsManager {
 
     PairingRequest getPairingRequest(String senderPubKey, String remotePubkey);
 
+    PairingRequest getPairingRequest(int pairingRequestId);
+
     List<PairingRequest> pairingRequests(String senderPubKey);
 
     List<PairingRequest> openPairingRequests(String senderPubKey);

@@ -261,17 +261,27 @@ public class CallProfileAppService {
         profSerEngine.sendAppServiceMsg(callId,callToken,msgBytes,msgListenerFuture);
     }
 
+    public void sendMsg(BaseMsg msg, final ProfSerMsgListener<Boolean> sendListener, boolean enqueueMessage) throws Exception {
+        MsgWrapper msgWrapper = new MsgWrapper(msg,msg.getType());
+        wrapAndSend(msgWrapper,sendListener, enqueueMessage);
+    }
+
     public void sendMsg(BaseMsg msg, final ProfSerMsgListener<Boolean> sendListener) throws Exception {
         MsgWrapper msgWrapper = new MsgWrapper(msg,msg.getType());
-        wrapAndSend(msgWrapper,sendListener);
+        wrapAndSend(msgWrapper,sendListener, false);
+    }
+
+    public void sendMsg(String type,final ProfSerMsgListener<Boolean> sendListener, boolean enqueueMessage) throws Exception {
+        MsgWrapper msgWrapper = new MsgWrapper(null,type);
+        wrapAndSend(msgWrapper,sendListener, enqueueMessage);
     }
 
     public void sendMsg(String type,final ProfSerMsgListener<Boolean> sendListener) throws Exception {
         MsgWrapper msgWrapper = new MsgWrapper(null,type);
-        wrapAndSend(msgWrapper,sendListener);
+        wrapAndSend(msgWrapper,sendListener, false);
     }
 
-    private void wrapAndSend(MsgWrapper msgWrapper, final ProfSerMsgListener<Boolean> sendListener) throws Exception {
+    private void wrapAndSend(MsgWrapper msgWrapper, final ProfSerMsgListener<Boolean> sendListener, boolean enqueueMessage) throws Exception {
         byte[] msgTemp = msgWrapper.encode();
         if (isEncrypted && !msgWrapper.getMsgType().equals(BasicCallMessages.CRYPTO.getType())){
             if (cryptoAlgo!=null){
@@ -282,7 +292,7 @@ public class CallProfileAppService {
                 throw new CantSendMessageException("msg encryption, crypto algo not setted");
             }
         }
-        sendMsg(msgTemp,sendListener);
+        sendMsg(msgTemp,sendListener, enqueueMessage);
         lastMessageSent = System.currentTimeMillis();
     }
 
@@ -305,7 +315,7 @@ public class CallProfileAppService {
         profSerEngine.pingAppService(callId,getCallTokenHex(), msgListenerFuture);
     }
 
-    private void sendMsg(byte[] msg, final ProfSerMsgListener<Boolean> sendListener) throws CantConnectException, CantSendMessageException {
+    private void sendMsg(byte[] msg, final ProfSerMsgListener<Boolean> sendListener, boolean enqueueMessage) throws CantConnectException, CantSendMessageException {
         if (this.status!=CALL_AS_ESTABLISH) throw new IllegalStateException("Call is not ready to send messages");
         try {
             MsgListenerFuture<IopProfileServer.ApplicationServiceSendMessageResponse> msgListenerFuture = new MsgListenerFuture<>();
@@ -324,7 +334,7 @@ public class CallProfileAppService {
                         sendListener.onMsgFail(messageId, status, statusDetail);
                 }
             });
-            profSerEngine.sendAppServiceMsg(callId,callToken, msg, msgListenerFuture);
+            profSerEngine.sendAppServiceMsg(callId,callToken, msg, msgListenerFuture, enqueueMessage);
         }catch (AppServiceCallNotAvailableException e){
             // intercept exception to destroy this call.
             sendListener.onMsgFail(0,400,"Call is not longer available");

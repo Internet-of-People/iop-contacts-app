@@ -6,25 +6,34 @@ import org.libertaria.world.profile_server.protocol.IopProfileServer;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-import java.util.Queue;
-import java.util.Set;
 import java.util.UUID;
 
 /**
  * Created by Víctor Mars (https://github.com/Yayotron) on 29/8/2017.
+ * <p>
+ * This interface manages the queue of message. All the responses from this interface
+ * comes through events. If you are interested in listen the responses you should add a listener
+ * for the events exposed on this interface: {@link MessageQueueManager#EVENT_MESSAGE_FAILED},
+ * {@link MessageQueueManager#EVENT_MESSAGE_SUCCESSFUL} and {@link MessageQueueManager#EVENT_MESSAGE_ENQUEUED}.
+ *
  */
 
 public interface MessageQueueManager {
 
+    String EVENT_MESSAGE_ENQUEUED = "message_enqueued";
+    String EVENT_MESSAGE_FAILED = "message_failed";
+    String EVENT_MESSAGE_SUCCESSFUL = "message_success";
+
     /**
-     * Put a message into the queue which will try to resend it periodically.
+     * Put a message into the queue which will try to resend it periodically. This method
+     * immediately raises a {@link MessageQueueManager#EVENT_MESSAGE_ENQUEUED} event
+     * which includes a {@link Message}.
      *
      * @param callId {@link String} containing the ID of the call associated with this message.
      * @param token  {@link Byte[]} containing the token of this message.
      * @param msg    {@link Byte[]} containing the content of this message.
-     * @return {@link UUID} that represents this message on the queue.
      */
-    Message enqueueMessage(String callId, byte[] token, byte[] msg);
+    void enqueueMessage(String callId, byte[] token, byte[] msg);
 
     /**
      * Retrieves the queue of messages. Note that it's responsibility of the implementation
@@ -66,7 +75,14 @@ public interface MessageQueueManager {
      */
     Integer getResendAttemptLimit();
 
-    interface Message extends Serializable{
+    /**
+     * Updates the maximum number of attempts to resend any message on the queue.
+     *
+     * @param integer resend attempt limit.
+     */
+    void setResendAttemptLimit(Integer integer);
+
+    interface Message extends Serializable {
 
         UUID getMessageId();
 

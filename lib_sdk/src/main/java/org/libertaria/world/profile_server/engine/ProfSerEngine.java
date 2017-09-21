@@ -505,7 +505,7 @@ public class ProfSerEngine {
 
                 @Override
                 public void onMsgFail(int messageId, int statusValue, String details) {
-                    MessageQueueManager.Message message = messageQueueManager.enqueueMessage(callId, token, msg);
+                    messageQueueManager.enqueueMessage(callId, token, msg);
                     listener.onMsgFail(messageId, statusValue, details);
                 }
 

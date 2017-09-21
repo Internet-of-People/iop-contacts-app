@@ -7,7 +7,7 @@ import world.libertaria.shared.library.global.ModuleParameter;
 
 interface IPlatformService {
 
-    String register();
+    String register(in String applicationName);
 
     ModuleObjectWrapper callMethod(
                 in String clientKey,

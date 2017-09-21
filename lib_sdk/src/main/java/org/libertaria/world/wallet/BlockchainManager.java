@@ -100,7 +100,7 @@ public class BlockchainManager {
                 if (!blockChainFileExists && earliestKeyCreationTime > 0 && conf.getNetworkParams() instanceof MainNetParams) {
                     try {
                         final Stopwatch watch = Stopwatch.createStarted();
-                        final InputStream checkpointsInputStream =  context.openAssestsStream(conf.getCheckpointFilename());// getAssets().open(conf.getCheckpointFilename());//  WalletConstants.Files.CHECKPOINTS_FILENAME);
+                        final InputStream checkpointsInputStream =  context.openAssetsStream(conf.getCheckpointFilename());// getAssets().open(conf.getCheckpointFilename());//  WalletConstants.Files.CHECKPOINTS_FILENAME);
                         CheckpointManager.checkpoint(conf.getNetworkParams(), checkpointsInputStream, blockStore, earliestKeyCreationTime);
                         watch.stop();
                         LOG.info("checkpoints loaded from '{}', took {}", conf.getCheckpointFilename(), watch);

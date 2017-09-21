@@ -91,7 +91,7 @@ public class WalletManager {
     private void initMnemonicCode() {
         try {
             final Stopwatch watch = Stopwatch.createStarted();
-            MnemonicCode.INSTANCE = new MnemonicCode(context.openAssestsStream(walletConfiguration.getMnemonicFilename()),null);
+            MnemonicCode.INSTANCE = new MnemonicCode(context.openAssetsStream(walletConfiguration.getMnemonicFilename()),null);
             watch.stop();
             LOG.info("BIP39 wordlist loaded from: '{}', took {}", walletConfiguration.getMnemonicFilename(), watch);
         }
@@ -345,7 +345,7 @@ public class WalletManager {
 //        final IntentMessage intentWrapper = new IntentWrapperAndroid(WalletConstants.ACTION_WALLET_REFERENCE_CHANGED);
 //        intentWrapper.setPackage(context.getPackageName());
 //
-//        context.sendLocalBroadcast(intentWrapper);
+//        context.broadcastPlatformEvent(intentWrapper);
 
     }
 

@@ -105,7 +105,7 @@ public class PairingModuleImp extends AbstractModule implements PairingModule {
             remoteProfileInformationDb.setPairStatus(ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE);
             platformService.getProfilesDb().updateProfile(localProfilePubKey, remoteProfileInformationDb);
         }
-        PairingMsg pairingMsg = new PairingMsg(pairingRequest.getSenderName(), pairingRequest.getSenderPsHost());
+        PairingMsg pairingMsg = new PairingMsg(pairingRequest.getSenderName(), pairingRequest.getSenderPsHost(), pairingRequestId);
         final ProfileInformation finalRemoteProfileInformationDb = remoteProfileInformationDb;
         prepareCallAndSend(localProfilePubKey, remoteProfileInformationDb, pairingMsg, new ProfSerMsgListener<Boolean>() {
             @Override
@@ -179,7 +179,7 @@ public class PairingModuleImp extends AbstractModule implements PairingModule {
                         public String getMessageName() {
                             return "Pair acceptance";
                         }
-                    });
+                    }, true);
                 } catch (Exception e) {
                     logger.info("Error sending pair accept " + e.getMessage());
                     profSerMsgListener.onMsgFail(0, 0, e.getMessage());
@@ -197,6 +197,16 @@ public class PairingModuleImp extends AbstractModule implements PairingModule {
                 return "acceptPairingRequest";
             }
         });
+    }
+
+    @Override
+    public PairingRequest getPairingRequest(int pairingRequestId) {
+        return platformService.getPairingRequestsDb().getPairingRequest(pairingRequestId);
+    }
+
+    @Override
+    public void cancelPairingRequest(int pairingRequestId) {
+        cancelPairingRequest(getPairingRequest(pairingRequestId));
     }
 
     @Override

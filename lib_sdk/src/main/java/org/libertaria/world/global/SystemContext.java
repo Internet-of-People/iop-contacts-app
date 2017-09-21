@@ -34,11 +34,11 @@ public interface SystemContext {
 
     boolean isMemoryLow();
 
-    InputStream openAssestsStream(String name) throws IOException;
+    InputStream openAssetsStream(String name) throws IOException;
 
     String getPackageName();
 
-    void sendLocalBroadcast(IntentMessage intentMessage);
+    void broadcastPlatformEvent(IntentMessage intentMessage);
 
     void showDialog(String id);
 

@@ -6,7 +6,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import org.libertaria.world.communication.ClientCommunication;
+import org.libertaria.world.global.IntentMessage;
+import org.libertaria.world.global.SystemContext;
 import org.libertaria.world.profile_server.engine.MessageQueueManager;
 import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.profile_server.protocol.IopProfileServer;
@@ -18,6 +19,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+
+import iop.org.iop_sdk_android.core.wrappers.IntentWrapperAndroid;
 
 /**
  * Created by furszy on 5/25/17.
@@ -48,14 +51,14 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
     private List<Message> messageQueue;
 
     private static final MessageQueueComparator DEFAULT_COMPARATOR = new MessageQueueComparator();
-    private static final Integer RESEND_ATTEMPT_LIMIT = 5;
+    private static Integer resendAttemptLimit = 5;
 
-    private final ClientCommunication clientCommunication;
+    private final SystemContext systemContext;
 
-    public MessageQueueDb(Context context, ClientCommunication clientCommunication) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    public MessageQueueDb(SystemContext systemContext) {
+        super((Context) systemContext, DATABASE_NAME, null, DATABASE_VERSION);
         messageQueue = new ArrayList<>();
-        this.clientCommunication = clientCommunication;
+        this.systemContext = systemContext;
     }
 
     @Override
@@ -79,8 +82,12 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
     }
 
     @Override
-    public Message enqueueMessage(String callId, byte[] token, byte[] msg) {
-        return insertMessage(callId, token, msg);
+    public void enqueueMessage(String callId, byte[] token, byte[] msg) {
+        Message message = insertMessage(callId, token, msg);
+        IntentMessage eventMessage = new IntentWrapperAndroid(EVENT_MESSAGE_ENQUEUED);
+        eventMessage.put(EVENT_MESSAGE_ENQUEUED, message);
+        systemContext.broadcastPlatformEvent(eventMessage);
+        removeFromQueue(message);
     }
 
     @Override
@@ -102,13 +109,21 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
     public void failedToResend(Message message) {
         increaseResendAttempt(message);
         if (message.getCurrentResendingAttempts() >= getResendAttemptLimit()) {
+            IntentMessage eventMessage = new IntentWrapperAndroid(EVENT_MESSAGE_FAILED);
+            eventMessage.put(EVENT_MESSAGE_FAILED, message);
+            systemContext.broadcastPlatformEvent(eventMessage);
             removeFromQueue(message);
         }
     }
 
     @Override
     public Integer getResendAttemptLimit() {
-        return RESEND_ATTEMPT_LIMIT;
+        return resendAttemptLimit;
+    }
+
+    @Override
+    public void setResendAttemptLimit(Integer integer) {
+        resendAttemptLimit = integer;
     }
 
 
@@ -203,6 +218,9 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
 
         @Override
         public void onMessageReceive(int messageId, IopProfileServer.ApplicationServiceSendMessageResponse message) {
+            IntentMessage eventMessage = new IntentWrapperAndroid(EVENT_MESSAGE_SUCCESSFUL);
+            eventMessage.put(EVENT_MESSAGE_SUCCESSFUL, message);
+            systemContext.broadcastPlatformEvent(eventMessage);
             removeFromQueue(messageInQueue);
         }
     }

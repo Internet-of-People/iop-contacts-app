@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
@@ -29,6 +30,8 @@ import org.libertaria.world.global.GpsLocation;
 import org.libertaria.world.global.IntentMessage;
 import org.libertaria.world.global.Module;
 import org.libertaria.world.global.PackageInformation;
+import org.libertaria.world.global.PlatformEventListener;
+import org.libertaria.world.global.PlatformEventManager;
 import org.libertaria.world.global.SystemContext;
 import org.libertaria.world.global.utils.SerializationUtils;
 import org.libertaria.world.profile_server.CantSendMessageException;
@@ -56,7 +59,10 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -74,14 +80,13 @@ import iop.org.iop_sdk_android.core.service.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.service.db.SqliteProfilesDb;
 import iop.org.iop_sdk_android.core.service.db.message_queue.MessageQueueDb;
 import iop.org.iop_sdk_android.core.service.device_state.DeviceConnectionManager;
+import iop.org.iop_sdk_android.core.wrappers.IntentWrapperAndroid;
 import iop.org.iop_sdk_android.core.wrappers.PackageInfoAndroid;
 import world.libertaria.shared.library.global.ModuleObject;
 import world.libertaria.shared.library.global.ModuleObjectWrapper;
 import world.libertaria.shared.library.global.ModuleParameter;
 import world.libertaria.shared.library.global.service.IPlatformService;
 import world.libertaria.shared.library.global.service.IntentServiceAction;
-import world.libertaria.shared.library.global.socket.LocalSocketSession;
-import world.libertaria.shared.library.global.socket.SessionHandler;
 
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PROFILE_CONNECTED;
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
@@ -93,12 +98,14 @@ import static world.libertaria.shared.library.global.client.IntentBroadcastConst
  * Connect sdk broker pattern server side.
  */
 
-public class PlatformServiceImp extends Service implements PlatformService, DeviceLocation, SystemContext {
+public class PlatformServiceImp extends Service implements PlatformService, DeviceLocation, SystemContext, PlatformEventManager {
 
-    private Logger logger = LoggerFactory.getLogger(PlatformServiceImp.class);
-
+    //VARIABLE DECLARATION
+    //CONSTANTS
     private static final String ACTION_SCHEDULE_SERVICE = "schedule_service";
     public static final String ACTION_BOOT_SERVICE = "boot_service";
+    //PRIVATE
+    private Logger logger = LoggerFactory.getLogger(PlatformServiceImp.class);
 
     private LocalBroadcastManager localBroadcastManager;
 
@@ -133,6 +140,7 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
      * Server Manager
      */
     private ClientCommunication clientCommunication;
+    private Map<String, UUID> connectedClients;
 
     /**
      * Message Queue manager
@@ -148,35 +156,119 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
      */
     private GpsLocation gpsLocation;
     private Boolean gpsEnabled;
+    private List<PlatformEventListener> registeredListeners;
 
-    private final BroadcastReceiver connectivityReceiver = new BroadcastReceiver() {
+    {
+        registeredListeners = new ArrayList<>();
+        registeredListeners.add(new ConnectivityEventListener());
+    }
+
+    private final IPlatformService.Stub mBinder = new IPlatformService.Stub() {
         @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action)) {
-                final NetworkInfo networkInfo = intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
-                final boolean hasConnectivity = networkInfo.isConnected();
-                logger.info("network is {}, state {}/{}", hasConnectivity ? "up" : "down", networkInfo.getState(), networkInfo.getDetailedState());
-                if (hasConnectivity)
-                    impediments.remove(BlockchainState.Impediment.NETWORK);
-                else {
-                    impediments.add(BlockchainState.Impediment.NETWORK);
+        public String register(String applicationName) throws RemoteException {
+            final UUID clientKey = UUID.randomUUID();
+            connectedClients.put(applicationName, clientKey);
+            return clientKey.toString();
+        }
+
+        @Override
+        public ModuleObjectWrapper callMethod(String clientKey, String dataId, String serviceName, String method, ModuleParameter[] parameters) throws RemoteException {
+            logger.info("call service: " + serviceName + ", method " + method);
+            // todo: security checks here..
+            Serializable object = null;
+            try {
+                object = moduleDataRequest(clientKey, dataId, serviceName, method, parameters);
+                ModuleObjectWrapper moduleObjectWrapper;
+                if (object instanceof Exception) {
+                    moduleObjectWrapper = new ModuleObjectWrapper(dataId, (Exception) object);
+                } else {
+                    moduleObjectWrapper = new ModuleObjectWrapper(dataId, object);
                 }
-                check();
-            } else if (Intent.ACTION_DEVICE_STORAGE_LOW.equals(action)) {
-                logger.info("device storage low");
-                impediments.add(BlockchainState.Impediment.STORAGE);
-                // todo: control this on the future
-                //check();
-            } else if (Intent.ACTION_DEVICE_STORAGE_OK.equals(action)) {
-                logger.info("device storage ok");
-                impediments.remove(BlockchainState.Impediment.STORAGE);
-                // todo: control this on the future
-                //check();
+                return moduleObjectWrapper;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new ModuleObjectWrapper(dataId, e);
             }
         }
     };
 
+    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            IntentMessage intentMessage = new IntentWrapperAndroid(intent.getAction());
+            intentMessage.setPackage(intent.getPackage());
+            Bundle bundle = intent.getExtras();
+            if (bundle != null) {
+                for (String key : bundle.keySet()) {
+                    Object value = bundle.get(key);
+                    intentMessage.put(key, value);
+                }
+            }
+            for (PlatformEventListener eventListener : registeredListeners) {
+                eventListener.onReceive(PlatformServiceImp.this, intentMessage);
+            }
+        }
+    };
+
+    //CONSTRUCTORS AND INITIALIZERS
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        logger.info("onCreate");
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        intentFilter.addAction(Intent.ACTION_DEVICE_STORAGE_LOW);
+        intentFilter.addAction(Intent.ACTION_DEVICE_STORAGE_OK);
+        registerReceiver(broadcastReceiver, intentFilter); // implicitly init PeerGroup
+        initService();
+    }
+
+    private void initService() {
+        try {
+            if (isInitialized.compareAndSet(false, true)) {
+                localBroadcastManager = LocalBroadcastManager.getInstance(this);
+                application = (IoPConnectContext) getApplication();
+                executor = Executors.newFixedThreadPool(3);
+                configurationsPreferences = new ProfileServerConfigurationsImp(this, getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME, 0));
+                //KeyEd25519 keyEd25519 = (KeyEd25519) configurationsPreferences.getUserKeys();
+                //if (keyEd25519 != null)
+                //    profile = configurationsPreferences.getProfile();
+                pairingRequestDb = new SqlitePairingRequestDb(this);
+                profilesDb = new SqliteProfilesDb(this);
+                localProfilesDao = new LocalProfilesDb(this);
+                deviceConnectionManager = new DeviceConnectionManager(this);
+
+                connectedClients = new HashMap<>();
+                try {
+                    clientCommunication = new LocalServer(this);
+                    clientCommunication.start();
+                } catch (CantStartException e) {
+                    e.printStackTrace();
+                }
+
+                messageQueueManager = new MessageQueueDb(this);
+                ioPConnect = new IoPConnect(application, new CryptoWrapperAndroid(), new SslContextFactory(this), localProfilesDao, profilesDb, pairingRequestDb, this, deviceConnectionManager, messageQueueManager);
+                // init core
+                ServiceFactoryImp serviceFactoryImp = new ServiceFactoryImp();
+                core = new Core(this, this, ioPConnect, serviceFactoryImp);
+                serviceFactoryImp.setCore(core);
+                serviceFactory = serviceFactoryImp;
+                ioPConnect.setEngineListener((ProfilesModuleImp) core.getModule(EnabledServices.PROFILE_DATA.getName()));
+                ioPConnect.start();
+
+
+                tryScheduleService();
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            isInitialized.set(false);
+        }
+    }
+
+
+    //PUBLIC METHODS
     @Override
     public FileOutputStream openFileOutputPrivateMode(String name) throws FileNotFoundException {
         return this.openFileOutput(name, MODE_PRIVATE);
@@ -219,12 +311,12 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
     }
 
     @Override
-    public InputStream openAssestsStream(String name) throws IOException {
+    public InputStream openAssetsStream(String name) throws IOException {
         return getAssets().open(name);
     }
 
     @Override
-    public void sendLocalBroadcast(IntentMessage intentMessage) {
+    public void broadcastPlatformEvent(IntentMessage intentMessage) {
         Intent intent = new Intent();
         intent.setAction(intentMessage.getAction());
         intent.setPackage(intentMessage.getPackageName());
@@ -254,94 +346,76 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
         //TODO
     }
 
-    private class ServiceFactoryImp implements ServiceFactory {
-
-        private Core core;
-
-        public ServiceFactoryImp() {
-        }
-
-        public void setCore(Core core) {
-            this.core = core;
-        }
-
-        @Override
-        public AppService buildOrGetService(String serviceName) {
-            return EnabledServicesFactory.buildService(serviceName, core.getModule(serviceName));
-        }
-    }
-
-    public ProfileServerConfigurations getConfPref() {
-        return configurationsPreferences;
+    @Override
+    public void registerEventListener(PlatformEventListener eventListener) {
+        registeredListeners.add(eventListener);
     }
 
     @Override
-    public ProfilesModule getProfileModule() {
-        return core.getModule(EnabledServices.PROFILE_DATA.getName(), ProfilesModule.class);
-    }
-
-    public SqliteProfilesDb getProfilesDb() {
-        return profilesDb;
-    }
-
-    public SqlitePairingRequestDb getPairingRequestsDb() {
-        return pairingRequestDb;
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        logger.info("onStartCommand");
+        if (intent != null) {
+            String action = intent.getAction();
+            if (action.equals(ACTION_SCHEDULE_SERVICE)) {
+                check();
+            } else if (action.equals(ACTION_BOOT_SERVICE)) {
+                // only check for now..
+                check();
+            }
+        } else {
+            //
+            check();
+        }
+        return START_STICKY;
     }
 
     @Override
-    public void onCreate() {
-        super.onCreate();
-        logger.info("onCreate");
-        final IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        intentFilter.addAction(Intent.ACTION_DEVICE_STORAGE_LOW);
-        intentFilter.addAction(Intent.ACTION_DEVICE_STORAGE_OK);
-        registerReceiver(connectivityReceiver, intentFilter); // implicitly init PeerGroup
-        initService();
+    public void onDestroy() {
+        logger.info("onDestroy");
+        unregisterReceiver(broadcastReceiver);
+        clientCommunication.shutdown();
+        core.clean();
+        executor.shutdown();
+        // this is because android bother with network operations on  main thread..
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ioPConnect.stop();
+            }
+        });
+
+        super.onDestroy();
     }
 
-    private void initService() {
+
+    public void connect(final String pubKey) throws Exception {
+        ProfilesModule module = core.getModule(EnabledServices.PROFILE_DATA.getName(), ProfilesModule.class);
+        module.connect(pubKey);
+    }
+
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        logger.info("onBind:" + intent.getAction());
+        IBinder iBinder = null;
         try {
-            if (isInitialized.compareAndSet(false, true)) {
-                localBroadcastManager = LocalBroadcastManager.getInstance(this);
-                application = (IoPConnectContext) getApplication();
-                executor = Executors.newFixedThreadPool(3);
-                configurationsPreferences = new ProfileServerConfigurationsImp(this, getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME, 0));
-                //KeyEd25519 keyEd25519 = (KeyEd25519) configurationsPreferences.getUserKeys();
-                //if (keyEd25519 != null)
-                //    profile = configurationsPreferences.getProfile();
-                pairingRequestDb = new SqlitePairingRequestDb(this);
-                profilesDb = new SqliteProfilesDb(this);
-                localProfilesDao = new LocalProfilesDb(this);
-                deviceConnectionManager = new DeviceConnectionManager(this);
-
-                try {
-                    clientCommunication = new LocalServer(this);
-                    clientCommunication.start();
-                } catch (CantStartException e) {
-                    e.printStackTrace();
-                }
-
-                messageQueueManager = new MessageQueueDb(this, clientCommunication);
-                ioPConnect = new IoPConnect(application, new CryptoWrapperAndroid(), new SslContextFactory(this), localProfilesDao, profilesDb, pairingRequestDb, this, deviceConnectionManager, messageQueueManager);
-                // init core
-                ServiceFactoryImp serviceFactoryImp = new ServiceFactoryImp();
-                core = new Core(this, this, ioPConnect, serviceFactoryImp);
-                serviceFactoryImp.setCore(core);
-                serviceFactory = serviceFactoryImp;
-                ioPConnect.setEngineListener((ProfilesModuleImp) core.getModule(EnabledServices.PROFILE_DATA.getName()));
-                ioPConnect.start();
-
-
-                tryScheduleService();
+            switch (intent.getAction()) {
+                case IntentServiceAction.ACTION_BIND_AIDL:
+                    iBinder = mBinder;
+                    break;
+                default:
+                    logger.info("onBind default");
+                    break;
 
             }
         } catch (Exception e) {
             e.printStackTrace();
-            isInitialized.set(false);
         }
+        return iBinder;
     }
 
+    //PRIVATE METHODS
 
     /**
      * Try to solve some impediment if there is any.
@@ -398,7 +472,7 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
                         connect(profile.getHexPublicKey());
                     } else {
                         Intent intent = new Intent(ACTION_ON_PROFILE_CONNECTED);
-                        localBroadcastManager.sendBroadcast(intent);
+                        localBroadcastManager.broadcastEvent(intent);
                         logger.info("check, profile connected or connecting. no actions");
                     }
                 } else {
@@ -411,47 +485,6 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
             e.printStackTrace();
             logger.error("Exception on check", e);
         }
-    }
-
-    public void connect(final String pubKey) throws Exception {
-        ProfilesModule module = core.getModule(EnabledServices.PROFILE_DATA.getName(), ProfilesModule.class);
-        module.connect(pubKey);
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        logger.info("onStartCommand");
-        if (intent != null) {
-            String action = intent.getAction();
-            if (action.equals(ACTION_SCHEDULE_SERVICE)) {
-                check();
-            } else if (action.equals(ACTION_BOOT_SERVICE)) {
-                // only check for now..
-                check();
-            }
-        } else {
-            //
-            check();
-        }
-        return START_STICKY;
-    }
-
-    @Override
-    public void onDestroy() {
-        logger.info("onDestroy");
-        unregisterReceiver(connectivityReceiver);
-        clientCommunication.shutdown();
-        core.clean();
-        executor.shutdown();
-        // this is because android bother with network operations on  main thread..
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                ioPConnect.stop();
-            }
-        });
-
-        super.onDestroy();
     }
 
     /**
@@ -485,102 +518,6 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
             configurationsPreferences.saveScheduleServiceTime(scheduleTime);
         }
     }
-
-    private final IPlatformService.Stub mBinder = new IPlatformService.Stub() {
-        @Override
-        public String register() throws RemoteException {
-            final String clientKey = UUID.randomUUID().toString();
-            return clientKey;
-        }
-
-        @Override
-        public ModuleObjectWrapper callMethod(String clientKey, String dataId, String serviceName, String method, ModuleParameter[] parameters) throws RemoteException {
-            logger.info("call service: " + serviceName + ", method " + method);
-            // todo: security checks here..
-            Serializable object = null;
-            try {
-                object = moduleDataRequest(clientKey, dataId, serviceName, method, parameters);
-                ModuleObjectWrapper moduleObjectWrapper;
-                if (object instanceof Exception) {
-                    moduleObjectWrapper = new ModuleObjectWrapper(dataId, (Exception) object);
-                } else {
-                    moduleObjectWrapper = new ModuleObjectWrapper(dataId, object);
-                }
-                return moduleObjectWrapper;
-            } catch (Exception e) {
-                e.printStackTrace();
-                return new ModuleObjectWrapper(dataId, e);
-            }
-        }
-    };
-
-    private class MsgListener implements ProfSerMsgListener {
-
-        private String clientId;
-        private String requestId;
-
-        public MsgListener(String clientId, String requestId) {
-            this.clientId = clientId;
-            this.requestId = requestId;
-        }
-
-        @Override
-        public void onMessageReceive(int messageId, Object message) {
-            logger.info("abstract method onMessageReceive, " + message);
-            // todo: send the response via socket if it's big or via broadcast if it's not
-            try {
-                if (clientCommunication.isConnected(clientId)) {
-                    ModuleObject.ModuleObjectWrapper moduleObjectWrapper =
-                            ModuleObject.ModuleObjectWrapper.newBuilder()
-                                    .setObj(
-                                            ByteString.copyFrom(SerializationUtils.serialize(message))
-                                    )
-                                    .build();
-                    ModuleObject.ModuleResponse response = ModuleObject.ModuleResponse.newBuilder()
-                            .setId(requestId)
-                            .setResponseType(ModuleObject.ResponseType.OBJ)
-                            .setObj(moduleObjectWrapper)
-                            .build();
-                    clientCommunication.dispatchMessage(clientId, response);
-                } else {
-                    logger.error("client is not connected anymore.. " + clientId);
-                }
-            } catch (CantSendMessageException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        @Override
-        public void onMsgFail(int messageId, int statusValue, String details) {
-            logger.info("abstract method onMsgFail, " + details);
-            // todo: send the response via socket if it's big or via broadcast if it's not
-            try {
-                if (clientCommunication.isConnected(clientId)) {
-                    ModuleObject.ModuleResponse response = ModuleObject.ModuleResponse.newBuilder()
-                            .setId(requestId)
-                            .setResponseType(ModuleObject.ResponseType.ERR)
-                            .setErr(ByteString.copyFromUtf8(details))
-                            .build();
-                    clientCommunication.dispatchMessage(clientId, response);
-                } else {
-                    logger.error("client is not connected anymore.. " + clientId);
-                }
-            } catch (CantSendMessageException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        @Override
-        public String getMessageName() {
-            return "abstract method listener";
-        }
-    }
-
-    ;
 
     private Serializable moduleDataRequest(String clientKey, String dataId, final String serviceName, final String method, final ModuleParameter[] parameters) throws Exception {
         EnabledServices service = EnabledServices.getServiceByName(serviceName);
@@ -665,25 +602,28 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
         return (Serializable) returnedObject;
     }
 
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        logger.info("onBind:" + intent.getAction());
-        IBinder iBinder = null;
-        try {
-            switch (intent.getAction()) {
-                case IntentServiceAction.ACTION_BIND_AIDL:
-                    iBinder = mBinder;
-                    break;
-                default:
-                    logger.info("onBind defautl");
-                    break;
+    //GETTERS AND SETTERS
+    public ProfileServerConfigurations getConfPref() {
+        return configurationsPreferences;
+    }
 
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return iBinder;
+    @Override
+    public ProfilesModule getProfileModule() {
+        return core.getModule(EnabledServices.PROFILE_DATA.getName(), ProfilesModule.class);
+    }
+
+    public SqliteProfilesDb getProfilesDb() {
+        return profilesDb;
+    }
+
+    public SqlitePairingRequestDb getPairingRequestsDb() {
+        return pairingRequestDb;
+    }
+
+
+    @Override
+    public GpsLocation getDeviceLocation() {
+        return gpsLocation;
     }
 
     @Override
@@ -691,9 +631,118 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
         return gpsEnabled;
     }
 
-    @Override
-    public GpsLocation getDeviceLocation() {
-        return gpsLocation;
+
+    //INNER CLASSES
+    private class ServiceFactoryImp implements ServiceFactory {
+
+        private Core core;
+
+        public ServiceFactoryImp() {
+        }
+
+        public void setCore(Core core) {
+            this.core = core;
+        }
+
+        @Override
+        public AppService buildOrGetService(String serviceName) {
+            return EnabledServicesFactory.buildService(serviceName, core.getModule(serviceName));
+        }
     }
 
+    private class MsgListener implements ProfSerMsgListener {
+
+        private String clientId;
+        private String requestId;
+
+        public MsgListener(String clientId, String requestId) {
+            this.clientId = clientId;
+            this.requestId = requestId;
+        }
+
+        @Override
+        public void onMessageReceive(int messageId, Object message) {
+            logger.info("abstract method onMessageReceive, " + message);
+            // todo: send the response via socket if it's big or via broadcast if it's not
+            try {
+                if (clientCommunication.isConnected(clientId)) {
+                    ModuleObject.ModuleObjectWrapper moduleObjectWrapper =
+                            ModuleObject.ModuleObjectWrapper.newBuilder()
+                                    .setObj(
+                                            ByteString.copyFrom(SerializationUtils.serialize(message))
+                                    )
+                                    .build();
+                    ModuleObject.ModuleResponse response = ModuleObject.ModuleResponse.newBuilder()
+                            .setId(requestId)
+                            .setResponseType(ModuleObject.ResponseType.OBJ)
+                            .setObj(moduleObjectWrapper)
+                            .build();
+                    clientCommunication.dispatchMessage(clientId, response);
+                } else {
+                    logger.error("client is not connected anymore.. " + clientId);
+                }
+            } catch (CantSendMessageException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onMsgFail(int messageId, int statusValue, String details) {
+            logger.info("abstract method onMsgFail, " + details);
+            // todo: send the response via socket if it's big or via broadcast if it's not
+            try {
+                if (clientCommunication.isConnected(clientId)) {
+                    ModuleObject.ModuleResponse response = ModuleObject.ModuleResponse.newBuilder()
+                            .setId(requestId)
+                            .setResponseType(ModuleObject.ResponseType.ERR)
+                            .setErr(ByteString.copyFromUtf8(details))
+                            .build();
+                    clientCommunication.dispatchMessage(clientId, response);
+                } else {
+                    logger.error("client is not connected anymore.. " + clientId);
+                }
+            } catch (CantSendMessageException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public String getMessageName() {
+            return "abstract method listener";
+        }
+    }
+
+    private class ConnectivityEventListener implements PlatformEventListener {
+
+        @Override
+        public void onReceive(SystemContext systemContext, IntentMessage intentMessage) {
+            final String action = intentMessage.getAction();
+            if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action)) {
+                ConnectivityManager connectivityManager = (ConnectivityManager) PlatformServiceImp.this.getSystemService(Context.CONNECTIVITY_SERVICE);
+                final NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+                final boolean hasConnectivity = networkInfo.isConnected();
+                logger.info("network is {}, state {}/{}", hasConnectivity ? "up" : "down", networkInfo.getState(), networkInfo.getDetailedState());
+                if (hasConnectivity)
+                    impediments.remove(BlockchainState.Impediment.NETWORK);
+                else {
+                    impediments.add(BlockchainState.Impediment.NETWORK);
+                }
+                check();
+            } else if (Intent.ACTION_DEVICE_STORAGE_LOW.equals(action)) {
+                logger.info("device storage low");
+                impediments.add(BlockchainState.Impediment.STORAGE);
+                // todo: control this on the future
+                //check();
+            } else if (Intent.ACTION_DEVICE_STORAGE_OK.equals(action)) {
+                logger.info("device storage ok");
+                impediments.remove(BlockchainState.Impediment.STORAGE);
+                // todo: control this on the future
+                //check();
+            }
+        }
+    }
 }
