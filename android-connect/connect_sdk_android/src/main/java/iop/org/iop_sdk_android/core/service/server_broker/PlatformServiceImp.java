@@ -201,7 +201,9 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
             if (bundle != null) {
                 for (String key : bundle.keySet()) {
                     Object value = bundle.get(key);
-                    intentMessage.put(key, value);
+                    if (value instanceof Serializable) {
+                        intentMessage.put(key, value);
+                    }
                 }
             }
             for (PlatformEventListener eventListener : registeredListeners) {

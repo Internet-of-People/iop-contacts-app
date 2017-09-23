@@ -42,6 +42,7 @@ public class IntentWrapperAndroid implements IntentMessage {
         bundle.put(key, (Serializable) o);
     }
 
+    @Override
     public Map<String, Serializable> getBundle() {
         return bundle;
     }
