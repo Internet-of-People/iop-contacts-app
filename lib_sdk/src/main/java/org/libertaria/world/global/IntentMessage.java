@@ -7,7 +7,7 @@ import java.util.Map;
  * Created by mati on 25/12/16.
  */
 
-public interface IntentWrapper {
+public interface IntentMessage {
 
     void setPackage(String packageName);
 

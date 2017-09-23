@@ -20,7 +20,7 @@ import org.bitcoinj.wallet.WalletProtobufSerializer;
 import org.bitcoinj.wallet.WalletTransaction;
 import org.bitcoinj.wallet.listeners.WalletCoinsReceivedEventListener;
 import org.libertaria.world.crypto.Crypto;
-import org.libertaria.world.global.ContextWrapper;
+import org.libertaria.world.global.SystemContext;
 import org.libertaria.world.wallet.exceptions.InsuficientBalanceException;
 import org.libertaria.world.wallet.utils.WalletUtils;
 import org.slf4j.Logger;
@@ -61,11 +61,11 @@ public class WalletManager {
 
     private org.libertaria.world.wallet.WalletPreferenceConfigurations walletConfiguration;
 
-    private ContextWrapper context;
+    private SystemContext context;
 
     private WalletManagerListener listener;
 
-    public WalletManager(ContextWrapper context, org.libertaria.world.wallet.WalletPreferenceConfigurations walletConfiguration, WalletManagerListener listener) {
+    public WalletManager(SystemContext context, org.libertaria.world.wallet.WalletPreferenceConfigurations walletConfiguration, WalletManagerListener listener) {
         this.walletConfiguration = walletConfiguration;
         this.context = context;
         this.listener = listener;
@@ -91,7 +91,7 @@ public class WalletManager {
     private void initMnemonicCode() {
         try {
             final Stopwatch watch = Stopwatch.createStarted();
-            MnemonicCode.INSTANCE = new MnemonicCode(context.openAssestsStream(walletConfiguration.getMnemonicFilename()),null);
+            MnemonicCode.INSTANCE = new MnemonicCode(context.openAssetsStream(walletConfiguration.getMnemonicFilename()),null);
             watch.stop();
             LOG.info("BIP39 wordlist loaded from: '{}', took {}", walletConfiguration.getMnemonicFilename(), watch);
         }
@@ -342,10 +342,10 @@ public class WalletManager {
         afterLoadWallet();
 
         // todo: Nadie estaba escuchando esto.. Tengo que ver que deberia hacer despues
-//        final IntentWrapper intentWrapper = new IntentWrapperAndroid(WalletConstants.ACTION_WALLET_REFERENCE_CHANGED);
+//        final IntentMessage intentWrapper = new IntentWrapperAndroid(WalletConstants.ACTION_WALLET_REFERENCE_CHANGED);
 //        intentWrapper.setPackage(context.getPackageName());
 //
-//        context.sendLocalBroadcast(intentWrapper);
+//        context.broadcastPlatformEvent(intentWrapper);
 
     }
 

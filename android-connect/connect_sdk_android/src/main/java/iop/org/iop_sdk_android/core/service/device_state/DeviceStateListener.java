@@ -74,4 +74,8 @@ class DeviceStateListener extends PhoneStateListener {
                 break;
         }
     }
+
+    NetworkSignalStrength getIopNetworkSignalStrength() {
+        return iopNetworkSignalStrength;
+    }
 }

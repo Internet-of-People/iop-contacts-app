@@ -12,7 +12,7 @@ import java.io.InputStream;
  * Created by mati on 12/11/16.
  */
 
-public interface ContextWrapper {
+public interface SystemContext {
 
     FileOutputStream openFileOutputPrivateMode(String name) throws FileNotFoundException;
 
@@ -30,23 +30,21 @@ public interface ContextWrapper {
 
     void toast(String text);
 
-    PackageInfoWrapper packageInfoWrapper();
+    PackageInformation packageInformation();
 
     boolean isMemoryLow();
 
-    InputStream openAssestsStream(String name) throws IOException;
+    InputStream openAssetsStream(String name) throws IOException;
 
     String getPackageName();
 
-
-    void sendLocalBroadcast(IntentWrapper intentWrapper);
+    void broadcastPlatformEvent(IntentMessage intentMessage);
 
     void showDialog(String id);
 
     void showDialog(String showBlockchainOffDialog, String dialogText);
 
     String[] fileList();
-
 
     void stopBlockchainService();
 }

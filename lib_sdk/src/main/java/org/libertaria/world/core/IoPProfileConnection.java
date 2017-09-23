@@ -9,6 +9,7 @@ import org.libertaria.world.profile_server.CantConnectException;
 import org.libertaria.world.profile_server.CantSendMessageException;
 import org.libertaria.world.profile_server.ProfileInformation;
 import org.libertaria.world.profile_server.SslContextFactory;
+import org.libertaria.world.profile_server.engine.MessageQueueManager;
 import org.libertaria.world.profile_server.engine.ProfSerEngine;
 import org.libertaria.world.profile_server.engine.SearchProfilesQuery;
 import org.libertaria.world.profile_server.engine.app_services.AppService;
@@ -30,9 +31,9 @@ import org.libertaria.world.profile_server.protocol.IopProfileServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -43,44 +44,73 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Created by mati on 08/05/17.
- *
+ * <p>
  * Core class to manage a single profile connection to the IoP network.
- *
  */
 
 public class IoPProfileConnection implements CallsListener, CallProfileAppService.CallStateListener {
 
     private static final Logger logger = LoggerFactory.getLogger(IoPProfileConnection.class);
 
-    /** Check call agent */
+    /**
+     * Check call agent
+     */
     private static final long CALL_IDLE_CHECK_TIME = 30;
 
-    /** Context wrapper */
+    /**
+     * Context wrapper
+     */
     private IoPConnectContext contextWrapper;
-    /** Profile cached */
+    /**
+     * Profile cached
+     */
     private Profile profileCache;
-    /** PS */
+    /**
+     * PS
+     */
     private ProfServerData psConnData;
-    /** profile server engine */
+    /**
+     * profile server engine
+     */
     private ProfSerEngine profSerEngine;
-    /** Crypto implmentation dependent on the platform */
+    /**
+     * Crypto implmentation dependent on the platform
+     */
     private CryptoWrapper cryptoWrapper;
-    /** Ssl context factory */
+    /**
+     * Ssl context factory
+     */
     private SslContextFactory sslContextFactory;
-    /** Location helper dependent on the platform */
+    /**
+     * Location helper dependent on the platform
+     */
     private DeviceLocation deviceLocation;
-    /** Open profile app service calls -> call token -> call in progress */
+    /**
+     * {@link org.libertaria.world.profile_server.engine.MessageQueueManager}
+     */
+    private final MessageQueueManager messageQueueManager;
+
+    /**
+     * Open profile app service calls -> call token -> call in progress
+     */
     private ConcurrentMap<String, CallProfileAppService> openCall = new ConcurrentHashMap<>();
     private ScheduledExecutorService scheduledExecutorService;
 
 
-    public IoPProfileConnection(IoPConnectContext contextWrapper, Profile profile, ProfServerData psConnData, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, DeviceLocation deviceLocation){
+    public IoPProfileConnection(IoPConnectContext contextWrapper,
+                                Profile profile,
+                                ProfServerData psConnData,
+                                CryptoWrapper cryptoWrapper,
+                                SslContextFactory sslContextFactory,
+                                DeviceLocation deviceLocation,
+                                MessageQueueManager messageQueueManager) {
         this.contextWrapper = contextWrapper;
         this.cryptoWrapper = cryptoWrapper;
         this.sslContextFactory = sslContextFactory;
         this.psConnData = psConnData;
         this.profileCache = profile;
         this.deviceLocation = deviceLocation;
+        this.messageQueueManager = messageQueueManager;
     }
 
     /**
@@ -89,19 +119,19 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
      * @throws Exception
      */
     public void init(final MsgListenerFuture<Boolean> initFuture, ConnectionListener connectionListener) throws ExecutionException, InterruptedException {
-        initProfileServer(psConnData,connectionListener);
+        initProfileServer(psConnData, connectionListener);
         MsgListenerFuture<Boolean> initWrapper = new MsgListenerFuture<>();
         initWrapper.setListener(new BaseMsgFuture.Listener<Boolean>() {
             @Override
             public void onAction(int messageId, Boolean object) {
                 // not that this is initialized, init the app services
                 registerApplicationServices();
-                initFuture.onMessageReceive(messageId,object);
+                initFuture.onMessageReceive(messageId, object);
             }
 
             @Override
             public void onFail(int messageId, int status, String statusDetail) {
-                initFuture.onMsgFail(messageId,status,statusDetail);
+                initFuture.onMsgFail(messageId, status, statusDetail);
             }
         });
         profSerEngine.start(initWrapper);
@@ -110,32 +140,47 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
         scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
+                checkMessageQueue();
                 checkCalls();
             }
         }, CALL_IDLE_CHECK_TIME, CALL_IDLE_CHECK_TIME, TimeUnit.SECONDS);
     }
 
     public void init(ConnectionListener connectionListener) throws Exception {
-        init(null,connectionListener);
+        init(null, connectionListener);
     }
 
     /**
      * Initialize the profile server
+     *
      * @throws Exception
      */
     private void initProfileServer(ProfServerData profServerData, ConnectionListener connectionListener) {
-        if (profServerData.getHost()!=null) {
+        if (profServerData.getHost() != null) {
             profSerEngine = new ProfSerEngine(
                     contextWrapper,
                     profServerData,
                     profileCache,
                     cryptoWrapper,
-                    sslContextFactory
+                    sslContextFactory,
+                    messageQueueManager
             );
             profSerEngine.setCallListener(this);
             profSerEngine.addConnectionListener(connectionListener);
-        }else {
+        } else {
             throw new IllegalStateException("Profile server not found, please set one first using LOC");
+        }
+    }
+
+    private void checkMessageQueue() {
+        List<MessageQueueManager.Message> messageQueue = messageQueueManager.getMessageQueue();
+        for (MessageQueueManager.Message message : messageQueue) {
+            try {
+                profSerEngine.sendAppServiceMsg(message.getCallId(), message.getToken(), message.getMsg(), messageQueueManager.buildDefaultQueueListener(message));
+            } catch (CantConnectException | CantSendMessageException e) {
+                //If something bad happen we inform it to the queue manager to take some action about it.
+                messageQueueManager.failedToResend(message);
+            }
         }
     }
 
@@ -164,9 +209,9 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
         scheduledExecutorService.shutdownNow();
         // shutdown calls
         for (Map.Entry<String, CallProfileAppService> stringCallProfileAppServiceEntry : openCall.entrySet()) {
-            try{
+            try {
                 stringCallProfileAppServiceEntry.getValue().dispose();
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -187,27 +232,27 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
 
 
     public void searchProfileByName(String name, ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener) {
-        profSerEngine.searchProfileByName(name,listener);
+        profSerEngine.searchProfileByName(name, listener);
     }
 
     public SearchMessageFuture<List<IopProfileServer.ProfileQueryInformation>> searchProfiles(SearchProfilesQuery searchProfilesQuery) {
         SearchMessageFuture<List<IopProfileServer.ProfileQueryInformation>> future = new SearchMessageFuture<>(searchProfilesQuery);
-        profSerEngine.searchProfiles(searchProfilesQuery,future);
+        profSerEngine.searchProfiles(searchProfilesQuery, future);
         return future;
     }
 
     public SubsequentSearchMsgListenerFuture<List<IopProfileServer.ProfileQueryInformation>> searchSubsequentProfiles(SearchProfilesQuery searchProfilesQuery) {
         SubsequentSearchMsgListenerFuture future = new SubsequentSearchMsgListenerFuture(searchProfilesQuery);
-        profSerEngine.searchSubsequentProfiles(searchProfilesQuery,future);
+        profSerEngine.searchSubsequentProfiles(searchProfilesQuery, future);
         return future;
     }
 
     public int updateProfile(Version version, String name, byte[] img, int latitude, int longitude, String extraData, ProfSerMsgListener<Boolean> msgListener) {
-        if (name!=null)
+        if (name != null)
             profileCache.setName(name);
-        if (version!=null)
+        if (version != null)
             profileCache.setVersion(version);
-        if (img!=null)
+        if (img != null)
             profileCache.setImg(img);
         return profSerEngine.updateProfile(
                 version,
@@ -221,8 +266,8 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
         );
     }
 
-    public int updateProfile(String name, byte[] img, String extraData, ProfSerMsgListener msgListener){
-        return updateProfile(profileCache.getVersion(),name,img,0,0,extraData,msgListener);
+    public int updateProfile(String name, byte[] img, String extraData, ProfSerMsgListener msgListener) {
+        return updateProfile(profileCache.getVersion(), name, img, 0, 0, extraData, msgListener);
     }
 
     public Profile getProfile() {
@@ -231,6 +276,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
 
     /**
      * Method to check if the library is ready to use
+     *
      * @return
      */
     public boolean isReady() {
@@ -239,6 +285,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
 
     /**
      * Method to check if the library is trying to stablish a connection with the node
+     *
      * @return
      */
     public boolean isConnecting() {
@@ -247,6 +294,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
 
     /**
      * Method to check if the library fail on the connection
+     *
      * @return
      */
     public boolean hasFail() {
@@ -255,6 +303,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
 
     /**
      * Add more application services to an active profile
+     *
      * @param appService
      * @param appService
      */
@@ -265,22 +314,19 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
 
 
     /**
-     *
-     *
-     *
      * @param publicKey
      * @param msgProfFuture
      */
     public void getProfileInformation(String publicKey, MsgListenerFuture msgProfFuture) throws CantConnectException, CantSendMessageException {
-        getProfileInformation(publicKey,false,false,false,msgProfFuture);
+        getProfileInformation(publicKey, false, false, false, msgProfFuture);
     }
 
     public void getProfileInformation(String publicKey, boolean includeApplicationServices, ProfSerMsgListener msgProfFuture) throws CantConnectException, CantSendMessageException {
-        getProfileInformation(publicKey,false,false,includeApplicationServices,msgProfFuture);
+        getProfileInformation(publicKey, false, false, includeApplicationServices, msgProfFuture);
     }
 
-    public void getProfileInformation(String publicKey, boolean includeProfileImage , boolean includeThumbnailImage, boolean includeApplicationServices, ProfSerMsgListener msgProfFuture) throws CantConnectException, CantSendMessageException {
-        profSerEngine.getProfileInformation(publicKey,includeProfileImage,includeThumbnailImage,includeApplicationServices,msgProfFuture);
+    public void getProfileInformation(String publicKey, boolean includeProfileImage, boolean includeThumbnailImage, boolean includeApplicationServices, ProfSerMsgListener msgProfFuture) throws CantConnectException, CantSendMessageException {
+        profSerEngine.getProfileInformation(publicKey, includeProfileImage, includeThumbnailImage, includeApplicationServices, msgProfFuture);
     }
 
     /**
@@ -288,10 +334,10 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
      *
      * @param remoteProfilePublicKey
      * @param appService
-     * @param tryWithoutGetInfo -> if the redtooth knows the profile data there is no necesity to get the data again.
+     * @param tryWithoutGetInfo      -> if the redtooth knows the profile data there is no necesity to get the data again.
      */
     public void callProfileAppService(final String remoteProfilePublicKey, final String appService, boolean tryWithoutGetInfo, final boolean encryptMsg, final ProfSerMsgListener<CallProfileAppService> profSerMsgListener) {
-        logger.info("callProfileAppService from "+remoteProfilePublicKey+" using "+appService);
+        logger.info("callProfileAppService from " + remoteProfilePublicKey + " using " + appService);
         ProfileInformation remoteProfInfo = new ProfileInformationImp(CryptoBytes.fromHexToBytes(remoteProfilePublicKey));
         String callId = UUID.randomUUID().toString();
         final CallProfileAppService callProfileAppService = new CallProfileAppService(
@@ -300,7 +346,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
                 profileCache,
                 remoteProfInfo,
                 profSerEngine,
-                (encryptMsg)?new BoxAlgo():null
+                (encryptMsg) ? new BoxAlgo() : null
         );
         // wrap call
         profileCache.getAppService(appService).wrapCall(callProfileAppService);
@@ -364,16 +410,16 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
                             remoteProfile.setType(protocProfile.getType());
                             remoteProfile.setName(protocProfile.getName());
                             // call profile
-                            callProfileAppService(callProfileAppService,profSerMsgListener);
+                            callProfileAppService(callProfileAppService, profSerMsgListener);
                         } catch (CantSendMessageException e) {
                             e.printStackTrace();
-                            notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+                            notifyCallError(callProfileAppService, profSerMsgListener, messageId, CallProfileAppService.Status.CALL_FAIL, e.getMessage());
                         } catch (CantConnectException e) {
                             e.printStackTrace();
-                            notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+                            notifyCallError(callProfileAppService, profSerMsgListener, messageId, CallProfileAppService.Status.CALL_FAIL, e.getMessage());
                         } catch (CallProfileAppServiceException e) {
                             e.printStackTrace();
-                            notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+                            notifyCallError(callProfileAppService, profSerMsgListener, messageId, CallProfileAppService.Status.CALL_FAIL, e.getMessage());
                         }
                     }
 
@@ -381,31 +427,30 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
                     public void onFail(int messageId, int status, String statusDetail) {
                         // todo: launch notification..
                         logger.info("callProfileAppService getProfileInformation fail");
-                        notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,statusDetail);
+                        notifyCallError(callProfileAppService, profSerMsgListener, messageId, CallProfileAppService.Status.CALL_FAIL, statusDetail);
 
                     }
                 });
                 getProfileInformation(remoteProfilePublicKey, true, getProfileInformationFuture);
-            }else {
-                callProfileAppService(callProfileAppService,profSerMsgListener);
+            } else {
+                callProfileAppService(callProfileAppService, profSerMsgListener);
             }
         } catch (CantSendMessageException e) {
             e.printStackTrace();
-            notifyCallError(callProfileAppService,profSerMsgListener,0, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+            notifyCallError(callProfileAppService, profSerMsgListener, 0, CallProfileAppService.Status.CALL_FAIL, e.getMessage());
         } catch (CantConnectException e) {
             e.printStackTrace();
-            notifyCallError(callProfileAppService,profSerMsgListener,0, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+            notifyCallError(callProfileAppService, profSerMsgListener, 0, CallProfileAppService.Status.CALL_FAIL, e.getMessage());
         } catch (CallProfileAppServiceException e) {
             e.printStackTrace();
-            notifyCallError(callProfileAppService,profSerMsgListener,0, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
-        } catch (Exception e){
+            notifyCallError(callProfileAppService, profSerMsgListener, 0, CallProfileAppService.Status.CALL_FAIL, e.getMessage());
+        } catch (Exception e) {
             e.printStackTrace();
-            notifyCallError(callProfileAppService,profSerMsgListener,0, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+            notifyCallError(callProfileAppService, profSerMsgListener, 0, CallProfileAppService.Status.CALL_FAIL, e.getMessage());
         }
     }
 
     /**
-     *
      * @param callProfileAppService
      * @throws CantConnectException
      * @throws CantSendMessageException
@@ -417,10 +462,10 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
         for (CallProfileAppService call : openCall.values()) {
             if (call.getAppService().equals(callProfileAppService.getAppService())
                     &&
-                    call.getRemoteProfile().getHexPublicKey().equals(callProfileAppService.getRemotePubKey())){
+                    call.getRemoteProfile().getHexPublicKey().equals(callProfileAppService.getRemotePubKey())) {
                 // if the call don't answer this call intention.
                 logger.info("callProfileAppService, call already exist. blocking this request");
-                profSerMsgListener.onMsgFail(0,400,"Call already exists");
+                profSerMsgListener.onMsgFail(0, 400, "Call already exists");
                 throw new CallProfileAppServiceException("Call already exists");
             }
         }
@@ -434,33 +479,34 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
                 try {
                     callProfileAppService.setCallToken(appServiceResponse.getCallerToken().toByteArray());
                     String callToken = CryptoBytes.toHexString(appServiceResponse.getCallerToken().toByteArray());
-                    logger.info("Adding call, token: "+callToken);
+                    logger.info("Adding call, token: " + callToken);
                     callProfileAppService.addCallStateListener(IoPProfileConnection.this);
-                    openCall.put(callToken,callProfileAppService);
+                    openCall.put(callToken, callProfileAppService);
                     // setup call app service
-                    setupCallAppServiceInitMessage(callProfileAppService,true,profSerMsgListener);
+                    setupCallAppServiceInitMessage(callProfileAppService, true, profSerMsgListener);
                 } catch (CantSendMessageException e) {
                     e.printStackTrace();
-                    notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+                    notifyCallError(callProfileAppService, profSerMsgListener, messageId, CallProfileAppService.Status.CALL_FAIL, e.getMessage());
                 } catch (CantConnectException e) {
                     e.printStackTrace();
-                    notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,e.getMessage());
+                    notifyCallError(callProfileAppService, profSerMsgListener, messageId, CallProfileAppService.Status.CALL_FAIL, e.getMessage());
                 }
             }
+
             @Override
             public void onFail(int messageId, int status, String statusDetail) {
-                logger.info("callProfileAppService rejected, "+statusDetail);
-                notifyCallError(callProfileAppService,profSerMsgListener,messageId, CallProfileAppService.Status.CALL_FAIL,statusDetail);
+                logger.info("callProfileAppService rejected, " + statusDetail);
+                notifyCallError(callProfileAppService, profSerMsgListener, messageId, CallProfileAppService.Status.CALL_FAIL, statusDetail);
             }
         });
         profSerEngine.callProfileAppService(callProfileAppService.getRemotePubKey(), callProfileAppService.getAppService(), callProfileFuture);
     }
 
-    private void notifyCallError(CallProfileAppService callProfileAppService, ProfSerMsgListener<CallProfileAppService> listener, int msgId, CallProfileAppService.Status status, String errorStatus){
+    private void notifyCallError(CallProfileAppService callProfileAppService, ProfSerMsgListener<CallProfileAppService> listener, int msgId, CallProfileAppService.Status status, String errorStatus) {
         callProfileAppService.setStatus(status);
         callProfileAppService.setErrorStatus(errorStatus);
         callProfileAppService.dispose();
-        listener.onMessageReceive(msgId,callProfileAppService);
+        listener.onMessageReceive(msgId, callProfileAppService);
     }
 
 
@@ -477,7 +523,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
             for (CallProfileAppService callProfileAppService : openCall.values()) {
                 if (callProfileAppService.getAppService().equals(message.getServiceName())
                         &&
-                        callProfileAppService.getRemoteProfile().getHexPublicKey().equals(remoteProfInfo.getHexPublicKey())){
+                        callProfileAppService.getRemoteProfile().getHexPublicKey().equals(remoteProfInfo.getHexPublicKey())) {
                     // if the call don't answer this call intention.
                     logger.info("incomingCallNotification, call already exist. don't answering call intention");
                     return;
@@ -522,7 +568,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
                         return "setupCallAppServiceInitMessage";
                     }
                 });
-            }else {
+            } else {
                 // call not accepted
                 logger.info("call not accepted for the AppService");
                 callProfileAppService.dispose();
@@ -534,7 +580,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
         }
     }
 
-    private void setupCallAppServiceInitMessage(final CallProfileAppService callProfileAppService, final boolean isRequester , final ProfSerMsgListener<CallProfileAppService> profSerMsgListener) throws CantConnectException, CantSendMessageException {
+    private void setupCallAppServiceInitMessage(final CallProfileAppService callProfileAppService, final boolean isRequester, final ProfSerMsgListener<CallProfileAppService> profSerMsgListener) throws CantConnectException, CantSendMessageException {
         callProfileAppService.setStatus(CallProfileAppService.Status.PENDING_INIT_MESSAGE);
         // send init message to setup the call
         final MsgListenerFuture<IopProfileServer.ApplicationServiceSendMessageResponse> initMsgFuture = new MsgListenerFuture<>();
@@ -552,16 +598,17 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
                 } catch (Exception e) {
                     e.printStackTrace();
                     logger.error("callProfileAppService crypto message fail");
-                    profSerMsgListener.onMsgFail(messageId,400,e.getMessage());
+                    profSerMsgListener.onMsgFail(messageId, 400, e.getMessage());
                 }
             }
+
             @Override
             public void onFail(int messageId, int status, String statusDetail) {
-                logger.info("callProfileAppService init message fail, "+statusDetail);
-                profSerMsgListener.onMsgFail(messageId,status,statusDetail);
+                logger.info("callProfileAppService init message fail, " + statusDetail);
+                profSerMsgListener.onMsgFail(messageId, status, statusDetail);
             }
         });
-        profSerEngine.sendAppServiceMsg(callProfileAppService.getId(),callProfileAppService.getCallToken(), null, initMsgFuture);
+        profSerEngine.sendAppServiceMsg(callProfileAppService.getId(), callProfileAppService.getCallToken(), null, initMsgFuture);
     }
 
     /**
@@ -579,11 +626,11 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
 
             @Override
             public void onFail(int messageId, int status, String statusDetail) {
-                logger.info("callProfileAppService crypto message fail, "+statusDetail);
-                profSerMsgListener.onMsgFail(messageId,status,statusDetail);
+                logger.info("callProfileAppService crypto message fail, " + statusDetail);
+                profSerMsgListener.onMsgFail(messageId, status, statusDetail);
             }
         });
-        callProfileAppService.sendMsg(cryptoMsg,cryptoFuture);
+        callProfileAppService.sendMsg(cryptoMsg, cryptoFuture);
     }
 
     @Override
@@ -597,28 +644,28 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
         // todo: por alguna razon llega un mensaje para una llamada la cual no tiene listener asociado.. esto no deberia pasar.
         //logger.info("Open calls keys: "+Arrays.toString(openCall.keySet().toArray()));
         //logger.info("Open calls "+Arrays.toString(openCall.values().toArray()));
-        if (openCall.containsKey(message.getCallTokenId())){
+        if (openCall.containsKey(message.getCallTokenId())) {
             // launch notification
             CallProfileAppService call = openCall.get(message.getCallTokenId());
             call.onMessageReceived(message.getMsg());
             // now report the message received to the counter party
             try {
-                profSerEngine.respondAppServiceReceiveMsg(call.getId(),message.getCallTokenId(),messageId);
+                profSerEngine.respondAppServiceReceiveMsg(call.getId(), message.getCallTokenId(), messageId);
             } catch (CantSendMessageException e) {
                 e.printStackTrace();
-                logger.warn("cant send responseAppServiceMsgReceived for msg id: "+message);
+                logger.warn("cant send responseAppServiceMsgReceived for msg id: " + message);
             } catch (CantConnectException e) {
-                logger.warn("cant connect and send responseAppServiceMsgReceived for msg id: "+message);
+                logger.warn("cant connect and send responseAppServiceMsgReceived for msg id: " + message);
                 e.printStackTrace();
             }
-        }else {
-            logger.warn("incomingAppServiceMessage -> openCall not found",message);
+        } else {
+            logger.warn("incomingAppServiceMessage -> openCall not found", message);
         }
     }
 
-    public CallProfileAppService getActiveAppCallService(String remoteProfileKey){
+    public CallProfileAppService getActiveAppCallService(String remoteProfileKey) {
         for (CallProfileAppService callProfileAppService : openCall.values()) {
-            if (callProfileAppService.getRemotePubKey().equals(remoteProfileKey)){
+            if (callProfileAppService.getRemotePubKey().equals(remoteProfileKey)) {
                 return callProfileAppService;
             }
         }
@@ -629,7 +676,7 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
     public void onCallFinished(CallProfileAppService callProfileAppService) {
         try {
             openCall.remove(CryptoBytes.toHexString(callProfileAppService.getCallToken()));
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

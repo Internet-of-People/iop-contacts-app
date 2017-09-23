@@ -2,13 +2,13 @@ package iop.org.iop_sdk_android.core.wrappers;
 
 import android.content.pm.PackageInfo;
 
-import org.libertaria.world.global.PackageInfoWrapper;
+import org.libertaria.world.global.PackageInformation;
 
 /**
  * Created by mati on 26/12/16.
  */
 
-public class PackageInfoAndroid implements PackageInfoWrapper {
+public class PackageInfoAndroid implements PackageInformation {
 
     private PackageInfo packageInfo;
 

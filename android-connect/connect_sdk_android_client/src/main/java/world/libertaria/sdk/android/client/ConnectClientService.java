@@ -219,7 +219,7 @@ public class ConnectClientService extends Service {
             logger.info("Attached.");
             logger.info("Registering client");
             try {
-                String clientId = iServerBrokerService.register();
+                String clientId = iServerBrokerService.register(className.getClassName());
                 //running socket receiver
                 localConnection = new LocalConnection(clientId,sessionHandler);
                 localConnection.start();

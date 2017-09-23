@@ -17,6 +17,10 @@ public interface PairingModule extends Module {
 
     void acceptPairingProfile(PairingRequest pairingRequest, ProfSerMsgListener<Boolean> profSerMsgListener) throws Exception;
 
+    PairingRequest getPairingRequest(int pairingRequestId);
+
+    void cancelPairingRequest(int pairingRequestId);
+
     void cancelPairingRequest(PairingRequest pairingRequest);
 
     void disconectPairingProfile(String localProfilePubKey, ProfileInformation remoteProfile, boolean needsToBeNotified, final ProfSerMsgListener<Boolean> listener);

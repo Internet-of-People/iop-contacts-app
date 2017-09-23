@@ -24,6 +24,7 @@ import org.bitcoinj.store.BlockStore;
 import org.bitcoinj.store.BlockStoreException;
 import org.bitcoinj.store.SPVBlockStore;
 import org.bitcoinj.wallet.Wallet;
+import org.libertaria.world.global.SystemContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +56,7 @@ public class BlockchainManager {
     public final String USER_AGENT;
 
     // system
-    private org.libertaria.world.global.ContextWrapper context;
+    private SystemContext context;
 
     // wallet files..
     private WalletManager walletManager;
@@ -69,10 +70,10 @@ public class BlockchainManager {
     private List<BlockchainManagerListener> blockchainManagerListeners;
 
 
-    public BlockchainManager(org.libertaria.world.global.ContextWrapper contextWrapper, WalletManager walletManager, WalletPreferenceConfigurations conf) {
+    public BlockchainManager(SystemContext systemContext, WalletManager walletManager, WalletPreferenceConfigurations conf) {
         this.walletManager = walletManager;
         this.conf = conf;
-        this.context = contextWrapper;
+        this.context = systemContext;
         this.USER_AGENT = context.getPackageName()+"_AGENT";
     }
 
@@ -99,7 +100,7 @@ public class BlockchainManager {
                 if (!blockChainFileExists && earliestKeyCreationTime > 0 && conf.getNetworkParams() instanceof MainNetParams) {
                     try {
                         final Stopwatch watch = Stopwatch.createStarted();
-                        final InputStream checkpointsInputStream =  context.openAssestsStream(conf.getCheckpointFilename());// getAssets().open(conf.getCheckpointFilename());//  WalletConstants.Files.CHECKPOINTS_FILENAME);
+                        final InputStream checkpointsInputStream =  context.openAssetsStream(conf.getCheckpointFilename());// getAssets().open(conf.getCheckpointFilename());//  WalletConstants.Files.CHECKPOINTS_FILENAME);
                         CheckpointManager.checkpoint(conf.getNetworkParams(), checkpointsInputStream, blockStore, earliestKeyCreationTime);
                         watch.stop();
                         LOG.info("checkpoints loaded from '{}', took {}", conf.getCheckpointFilename(), watch);
@@ -224,13 +225,13 @@ public class BlockchainManager {
                 if (walletLastBlockSeenHeight != -1 && walletLastBlockSeenHeight != bestChainHeight) {
                     final String message = "wallet/blockchain out of sync: " + walletLastBlockSeenHeight + "/" + bestChainHeight;
                     LOG.error(message);
-//                CrashReporter.saveBackgroundTrace(new RuntimeException(message), application.packageInfoWrapper());
+//                CrashReporter.saveBackgroundTrace(new RuntimeException(message), application.packageInformation());
                 }
                 LOG.info("starting peergroup");
                 peerGroup = new PeerGroup(conf.getNetworkParams(), blockChain);
                 peerGroup.setDownloadTxDependencies(0); // recursive implementation causes StackOverflowError
                 peerGroup.addWallet(wallet);
-                peerGroup.setUserAgent(USER_AGENT, context.packageInfoWrapper().getVersionName());
+                peerGroup.setUserAgent(USER_AGENT, context.packageInformation().getVersionName());
                 peerGroup.addConnectedEventListener(peerConnectivityListener);
                 peerGroup.addDisconnectedEventListener(peerDisconnectedEventListener);
 

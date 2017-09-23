@@ -1,4 +1,4 @@
-package iop.org.iop_sdk_android.core.base;
+package org.libertaria.world.global.exceptions;
 
 import org.libertaria.world.services.EnabledServices;
 

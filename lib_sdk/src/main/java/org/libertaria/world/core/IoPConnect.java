@@ -1,11 +1,16 @@
 package org.libertaria.world.core;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
+import com.google.common.io.CharStreams;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.libertaria.world.connection.DeviceNetworkConnection;
 import org.libertaria.world.connection.ReconnectionManager;
 import org.libertaria.world.core.exceptions.ProfileNotConectedException;
 import org.libertaria.world.core.services.pairing.PairingAppService;
+import org.libertaria.world.crypto.Crypto;
 import org.libertaria.world.crypto.CryptoBytes;
 import org.libertaria.world.crypto.CryptoWrapper;
 import org.libertaria.world.global.DeviceLocation;
@@ -16,6 +21,7 @@ import org.libertaria.world.profile_server.CantSendMessageException;
 import org.libertaria.world.profile_server.ProfileInformation;
 import org.libertaria.world.profile_server.ProfileServerConfigurations;
 import org.libertaria.world.profile_server.SslContextFactory;
+import org.libertaria.world.profile_server.engine.MessageQueueManager;
 import org.libertaria.world.profile_server.engine.app_services.AppService;
 import org.libertaria.world.profile_server.engine.app_services.CallProfileAppService;
 import org.libertaria.world.profile_server.engine.futures.BaseMsgFuture;
@@ -31,16 +37,21 @@ import org.libertaria.world.profile_server.model.Profile;
 import org.libertaria.world.profile_server.protocol.IopProfileServer;
 import org.libertaria.world.profiles_manager.LocalProfilesDao;
 import org.libertaria.world.profiles_manager.PairingRequestsManager;
+import org.libertaria.world.profiles_manager.ProfileOuterClass;
 import org.libertaria.world.profiles_manager.ProfilesManager;
 import org.libertaria.world.services.EnabledServices;
+import org.libertaria.world.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.spongycastle.crypto.InvalidCipherTextException;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -110,6 +121,7 @@ public class IoPConnect implements ConnectionListener {
     private SslContextFactory sslContextFactory;
     private EngineListener engineListener;
     private final ReconnectionManager reconnectionManager;
+    private final MessageQueueManager messageQueueManager;
 
     private class PsKey {
 
@@ -130,7 +142,15 @@ public class IoPConnect implements ConnectionListener {
         }
     }
 
-    public IoPConnect(IoPConnectContext contextWrapper, CryptoWrapper cryptoWrapper, SslContextFactory sslContextFactory, LocalProfilesDao localProfilesDao, ProfilesManager profilesManager, PairingRequestsManager pairingRequestsManager, DeviceLocation deviceLocation, DeviceNetworkConnection deviceNetworkConnection) {
+    public IoPConnect(IoPConnectContext contextWrapper,
+                      CryptoWrapper cryptoWrapper,
+                      SslContextFactory sslContextFactory,
+                      LocalProfilesDao localProfilesDao,
+                      ProfilesManager profilesManager,
+                      PairingRequestsManager pairingRequestsManager,
+                      DeviceLocation deviceLocation,
+                      DeviceNetworkConnection deviceNetworkConnection,
+                      MessageQueueManager messageQueueManager) {
         this.context = contextWrapper;
         this.cryptoWrapper = cryptoWrapper;
         this.sslContextFactory = sslContextFactory;
@@ -141,6 +161,7 @@ public class IoPConnect implements ConnectionListener {
         this.deviceLocation = deviceLocation;
         this.deviceNetworkConnection = deviceNetworkConnection;
         this.reconnectionManager = new ReconnectionManager();
+        this.messageQueueManager = messageQueueManager;
     }
 
     public void setEngineListener(EngineListener engineListener) {
@@ -175,7 +196,7 @@ public class IoPConnect implements ConnectionListener {
 
     @Override
     public void onHostingPlanReceived(String host, IopProfileServer.HostingPlanContract contract) {
-        org.libertaria.world.profile_server.ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
+        ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
         // todo: implement this for multi profiles..
         // for now i don't have to worry, i just have one profile.
         profileServerConfigurations.setProfileRegistered(host, CryptoBytes.toHexString(contract.getIdentityPublicKey().toByteArray()));
@@ -187,7 +208,7 @@ public class IoPConnect implements ConnectionListener {
     }
 
     @Override
-    public void onConnectionLost(final Profile localProfile, final String psHost, final IopProfileServer.ServerRoleType portType,final String callId, final String tokenId) {
+    public void onConnectionLost(final Profile localProfile, final String psHost, final IopProfileServer.ServerRoleType portType, final String callId, final String tokenId) {
         if (deviceNetworkConnection.isConnected()) {
             if (managers.containsKey(localProfile.getHexPublicKey())) {
                 // The connection is one of the connections to the Home server
@@ -220,7 +241,7 @@ public class IoPConnect implements ConnectionListener {
                                 engineListener.onDisconnect(localProfile.getHexPublicKey());
                             } else {
                                 logger.warn("reconnection fail and the engine listener is null.. please check this..");
-                                reconnectionManager.scheduleReconnection(localProfile, psHost, portType,callId,tokenId, IoPConnect.this);
+                                reconnectionManager.scheduleReconnection(localProfile, psHost, portType, callId, tokenId, IoPConnect.this);
                                 logger.info("Reconnection scheduled in: {} seconds", reconnectionManager.getCurrentWaitingTime());
                             }
                         }
@@ -233,7 +254,7 @@ public class IoPConnect implements ConnectionListener {
                         );
                     } catch (Exception e) {
                         e.printStackTrace();
-                        reconnectionManager.scheduleReconnection(localProfile, psHost, portType,callId,tokenId, IoPConnect.this);
+                        reconnectionManager.scheduleReconnection(localProfile, psHost, portType, callId, tokenId, IoPConnect.this);
                         logger.info("Reconnection scheduled in: {} seconds", reconnectionManager.getCurrentWaitingTime());
                     }
                 }
@@ -242,7 +263,7 @@ public class IoPConnect implements ConnectionListener {
             /*
               If we are not connected to internet then let's retry in a while...
              */
-            reconnectionManager.scheduleReconnection(localProfile, psHost, portType,callId, tokenId, IoPConnect.this);
+            reconnectionManager.scheduleReconnection(localProfile, psHost, portType, callId, tokenId, IoPConnect.this);
             logger.info("Reconnection scheduled in: {} seconds", reconnectionManager.getCurrentWaitingTime());
         }
     }
@@ -300,9 +321,9 @@ public class IoPConnect implements ConnectionListener {
                     this
             );
             String backupProfilePath = null;
-            if ((backupProfilePath = profileServerConfigurations.getBackupProfilePath()) != null)
+            if ((backupProfilePath = profileServerConfigurations.getBackupProfilePath()) != null) {
                 appService.setBackupProfile(backupProfilePath, profileServerConfigurations.getBackupPassword());
-
+            }
             profile.addApplicationService(
                     appService
             );
@@ -355,9 +376,9 @@ public class IoPConnect implements ConnectionListener {
                 future.setProfServerData(createEmptyProfileServerConf().getMainProfileServer());
                 connection.init(future, this);
             } else if (connection.isReady()) {
-                throw new IllegalStateException("Connection already initilized and running, profKey: " + profilePublicKey);
+                throw new IllegalStateException("Connection already initialized and running, profKey: " + profilePublicKey);
             } else {
-                throw new IllegalStateException("Connection already initilized and trying to check-in the profile, profKey: " + profilePublicKey);
+                throw new IllegalStateException("Connection already initialized and trying to check-in the profile, profKey: " + profilePublicKey);
             }
         } else {
             ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
@@ -455,7 +476,8 @@ public class IoPConnect implements ConnectionListener {
                 profConn,
                 cryptoWrapper,
                 sslContextFactory,
-                deviceLocation);
+                deviceLocation,
+                messageQueueManager);
         // map the profile connection with his public key
         managers.put(profile.getHexPublicKey(), ioPProfileConnection);
         return ioPProfileConnection;
@@ -477,7 +499,8 @@ public class IoPConnect implements ConnectionListener {
                 profConn,
                 cryptoWrapper,
                 sslContextFactory,
-                deviceLocation);
+                deviceLocation,
+                messageQueueManager);
         // map the profile connection with his public key
         remoteManagers.put(psKey, ioPProfileConnection);
         return ioPProfileConnection;
@@ -718,7 +741,7 @@ public class IoPConnect implements ConnectionListener {
         externalFile.createNewFile();
         // The file is going to be built in this way:
         // First the main profile
-        org.libertaria.world.profiles_manager.ProfileOuterClass.ProfileInfo.Builder mainInfo = org.libertaria.world.profiles_manager.ProfileOuterClass.ProfileInfo.newBuilder()
+        ProfileOuterClass.ProfileInfo.Builder mainInfo = ProfileOuterClass.ProfileInfo.newBuilder()
                 .setVersion(ByteString.copyFrom(profile.getVersion().toByteArray()))
                 .setName(profile.getName())
                 .setType(profile.getType())
@@ -767,7 +790,9 @@ public class IoPConnect implements ConnectionListener {
                 .build();
 
         byte[] writeBuffer = wrapper.toByteArray();
-        // todo: encrypt this with the password..
+        if (!Strings.isNullOrEmpty(password)) {
+            writeBuffer = Crypto.encrypt(writeBuffer, password.toCharArray()).getBytes();
+        }
 
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(externalFile);
@@ -782,7 +807,6 @@ public class IoPConnect implements ConnectionListener {
     }
 
     /**
-     * Todo: decrypt with the password this..
      * todo: remove the old profile and add the new one if this methos is called from the settings.
      *
      * @param backupFile
@@ -790,11 +814,14 @@ public class IoPConnect implements ConnectionListener {
      * @param platformSerializer
      * @return
      */
-    public ProfileRestored restoreFromBackup(File backupFile, String password, org.libertaria.world.global.PlatformSerializer platformSerializer) {
-        try {
-            FileInputStream inputStream = new FileInputStream(backupFile);
-            org.libertaria.world.profiles_manager.ProfileOuterClass.Wrapper wrapper = org.libertaria.world.profiles_manager.ProfileOuterClass.Wrapper.parseFrom(inputStream);
-            inputStream.close();
+    public ProfileRestored restoreFromBackup(File backupFile, String password, org.libertaria.world.global.PlatformSerializer platformSerializer) throws InvalidCipherTextException {
+        try (FileInputStream inputStream = new FileInputStream(backupFile)) {
+            String fileContent = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
+            byte[] byteResults = fileContent.getBytes();
+            if (!Strings.isNullOrEmpty(password)) {
+                byteResults = Crypto.decryptBytes(fileContent, password.toCharArray());
+            }
+            org.libertaria.world.profiles_manager.ProfileOuterClass.Wrapper wrapper = org.libertaria.world.profiles_manager.ProfileOuterClass.Wrapper.parseFrom(byteResults);
             org.libertaria.world.profiles_manager.ProfileOuterClass.Profile mainProfile = wrapper.getProfile();
             org.libertaria.world.profiles_manager.ProfileOuterClass.ProfileInfo mainProfileInfo = mainProfile.getProfileInfo();
             byte[] versionArray = mainProfileInfo.getVersion().toByteArray();
@@ -840,7 +867,9 @@ public class IoPConnect implements ConnectionListener {
 
             return profileRestored;
         } catch (IOException e) {
-            e.printStackTrace();
+            if(e.getCause().getClass().equals(InvalidCipherTextException.class)){
+                throw (InvalidCipherTextException) e.getCause();
+            }
         }
         return null;
     }

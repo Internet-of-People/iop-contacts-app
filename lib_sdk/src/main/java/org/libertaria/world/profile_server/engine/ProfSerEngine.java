@@ -1,10 +1,13 @@
 package org.libertaria.world.profile_server.engine;
 
 import org.bitcoinj.core.Sha256Hash;
+import org.libertaria.world.core.IoPConnectContext;
+import org.libertaria.world.crypto.CryptoWrapper;
 import org.libertaria.world.profile_server.CantConnectException;
 import org.libertaria.world.profile_server.CantSendMessageException;
 import org.libertaria.world.profile_server.IoSession;
 import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.SslContextFactory;
 import org.libertaria.world.profile_server.client.ProfNodeConnection;
 import org.libertaria.world.profile_server.client.ProfSerRequest;
 import org.libertaria.world.profile_server.client.ProfileServer;
@@ -14,6 +17,7 @@ import org.libertaria.world.profile_server.engine.listeners.ConnectionListener;
 import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.profile_server.engine.listeners.ProfSerPartSearchListener;
 import org.libertaria.world.profile_server.model.ProfServerData;
+import org.libertaria.world.profile_server.model.Profile;
 import org.libertaria.world.profile_server.processors.MessageProcessor;
 import org.libertaria.world.profile_server.protocol.IopProfileServer;
 import org.libertaria.world.profile_server.engine.app_services.AppServiceMsg;
@@ -35,52 +39,79 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Created by mati on 05/02/17.
- *
- *
+ * <p>
+ * <p>
  * Esta clase va a ser el engine de conexión con el profile server, abstrayendo a los usuarios de su conexión.
- *
+ * <p>
  * Por ahora el servidor solo acepta un actor por conexión por lo cual deberia tener el profile acá o armar una lista de profiles para un futuro..
- *
  */
 public class ProfSerEngine {
 
     private Logger LOG = LoggerFactory.getLogger(ProfSerEngine.class);
-    /** Connection state */
+    /**
+     * Connection state
+     */
     private ProfSerConnectionState profSerConnectionState;
-    /**  Profile server */
+    /**
+     * Profile server
+     */
     private ProfileServer profileServer;
-    /** Server configuration data */
+    /**
+     * Server configuration data
+     */
     private ProfServerData profServerData;
-    /** Profile connected cached class */
+    /**
+     * Profile connected cached class
+     */
     private ProfNodeConnection profNodeConnection;
-    /** Crypto wrapper implementation */
-    private org.libertaria.world.crypto.CryptoWrapper crypto;
-    /** Internal server handler */
+    /**
+     * Crypto wrapper implementation
+     */
+    private CryptoWrapper crypto;
+    /**
+     * Internal server handler
+     */
     private PsSocketHandler handler;
-    /** Connection listeners */
+    /**
+     * Connection listeners
+     */
     private CopyOnWriteArrayList<ConnectionListener> connectionListener = new CopyOnWriteArrayList<>();
-    /** Listener to receive incomingCallNotifications and incomingMessages from calls */
+    /**
+     * Listener to receive incomingCallNotifications and incomingMessages from calls
+     */
     private CallsListener callListener;
-    /** Messages listeners:  id -> listner */
+    /**
+     * Messages listeners:  id -> listner
+     */
     private final ConcurrentMap<Integer, ProfSerMsgListener> msgListeners = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String,SearchProfilesQuery> profilesQuery = new ConcurrentHashMap<>();
-    /** Executor */
+    private final ConcurrentMap<String, SearchProfilesQuery> profilesQuery = new ConcurrentHashMap<>();
+    /**
+     * Executor
+     */
     private ExecutorService executor;
-    /** Ping executor */
-    private Map<IopProfileServer.ServerRoleType,ScheduledExecutorService> pingExecutors;
+    /**
+     * Ping executor
+     */
+    private Map<IopProfileServer.ServerRoleType, ScheduledExecutorService> pingExecutors;
+
+    private MessageQueueManager messageQueueManager;
 
     /**
-     *
      * @param contextWrapper
-     * @param profServerData -> server data
-     * @param profile -> profile data
+     * @param profServerData    -> server data
+     * @param profile           -> profile data
      * @param crypto
      * @param sslContextFactory
      */
-    public ProfSerEngine(org.libertaria.world.core.IoPConnectContext contextWrapper, org.libertaria.world.profile_server.model.ProfServerData profServerData, org.libertaria.world.profile_server.model.Profile profile, org.libertaria.world.crypto.CryptoWrapper crypto, org.libertaria.world.profile_server.SslContextFactory sslContextFactory) {
+    public ProfSerEngine(IoPConnectContext contextWrapper,
+                         ProfServerData profServerData,
+                         Profile profile,
+                         CryptoWrapper crypto,
+                         SslContextFactory sslContextFactory,
+                         MessageQueueManager messageQueueManager) {
         this.profServerData = profServerData;
         this.crypto = crypto;
-        this.profSerConnectionState= ProfSerConnectionState.NO_SERVER;
+        this.profSerConnectionState = ProfSerConnectionState.NO_SERVER;
         this.profNodeConnection = new org.libertaria.world.profile_server.client.ProfNodeConnection(
                 profile,
                 profServerData.isRegistered(),
@@ -88,16 +119,18 @@ public class ProfSerEngine {
                 randomChallenge()
         );
         handler = new ProfileServerHandler();
-        this.profileServer = new org.libertaria.world.profile_server.client.ProfSerImp(contextWrapper,profServerData,sslContextFactory,handler);
+        this.profileServer = new org.libertaria.world.profile_server.client.ProfSerImp(contextWrapper, profServerData, sslContextFactory, handler);
+        this.messageQueueManager = messageQueueManager;
     }
 
     /**
      * Creates a random challenge for the connection.
+     *
      * @return
      */
-    private byte[] randomChallenge(){
+    private byte[] randomChallenge() {
         byte[] connChallenge = new byte[32];
-        crypto.random(connChallenge,32);
+        crypto.random(connChallenge, 32);
         return connChallenge;
     }
 
@@ -105,16 +138,18 @@ public class ProfSerEngine {
         this.callListener = callListener;
     }
 
-    public void addConnectionListener(ConnectionListener listener){
+    public void addConnectionListener(ConnectionListener listener) {
         this.connectionListener.add(listener);
     }
 
     /**
      * Start
+     *
      * @param initFuture
      */
-    public void start(final org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<Boolean> initFuture){
-        if (getProfSerConnectionState()!= ProfSerConnectionState.NO_SERVER) throw new IllegalStateException("Start already called");
+    public void start(final org.libertaria.world.profile_server.engine.futures.MsgListenerFuture<Boolean> initFuture) {
+        if (getProfSerConnectionState() != ProfSerConnectionState.NO_SERVER)
+            throw new IllegalStateException("Start already called");
         executor = Executors.newFixedThreadPool(3);
         executor.submit(new Runnable() {
             @Override
@@ -122,9 +157,9 @@ public class ProfSerEngine {
                 try {
                     ProfSerConnectionEngine connectionEngine = new ProfSerConnectionEngine(ProfSerEngine.this, initFuture);
                     connectionEngine.engine();
-                }catch (Exception e){
-                    LOG.error("Connection engine fail",e);
-                    initFuture.onMsgFail(0,400,e.getMessage());
+                } catch (Exception e) {
+                    LOG.error("Connection engine fail", e);
+                    initFuture.onMsgFail(0, 400, e.getMessage());
                 }
             }
         });
@@ -133,17 +168,17 @@ public class ProfSerEngine {
     /**
      * Stop
      */
-    public void stop(){
+    public void stop() {
         executor.shutdown();
         executor = null;
         try {
-            if (pingExecutors!=null) {
+            if (pingExecutors != null) {
                 for (ScheduledExecutorService service : pingExecutors.values()) {
                     service.shutdownNow();
                 }
                 pingExecutors.clear();
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         try {
@@ -154,13 +189,13 @@ public class ProfSerEngine {
 
     }
 
-    private void addMsgListener(int msgId, ProfSerMsgListener listener){
-        msgListeners.put(msgId,listener);
+    private void addMsgListener(int msgId, ProfSerMsgListener listener) {
+        msgListeners.put(msgId, listener);
     }
 
-    private void sendRequest(org.libertaria.world.profile_server.client.ProfSerRequest profSerRequest, ProfSerMsgListener listener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
-        if (listener!=null)
-            addMsgListener(profSerRequest.getMessageId(),listener);
+    private void sendRequest(org.libertaria.world.profile_server.client.ProfSerRequest profSerRequest, ProfSerMsgListener listener) throws CantConnectException, CantSendMessageException {
+        if (listener != null)
+            addMsgListener(profSerRequest.getMessageId(), listener);
         profSerRequest.send();
     }
 
@@ -170,6 +205,7 @@ public class ProfSerEngine {
 
     /**
      * Request the list of ports available
+     *
      * @param listener
      * @return
      * @throws Exception
@@ -177,29 +213,28 @@ public class ProfSerEngine {
     public int requestRoleList(ProfSerMsgListener listener) throws Exception {
         LOG.info("requestRoleList");
         org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.listRolesRequest();
-        sendRequest(request,listener);
+        sendRequest(request, listener);
         return request.getMessageId();
     }
 
     /**
-     *
      * @param listener
      * @return
      * @throws Exception
      */
-    int startConversationNonCl(ProfSerMsgListener listener) throws Exception{
+    int startConversationNonCl(ProfSerMsgListener listener) throws Exception {
         LOG.info("startConversationNonCl");
         org.libertaria.world.profile_server.client.ProfSerRequest profSerRequest = profileServer.startConversationNonCl(
                 profNodeConnection.getProfile().getPublicKey(),
                 profNodeConnection.getConnectionChallenge()
         );
-        sendRequest(profSerRequest,listener);
+        sendRequest(profSerRequest, listener);
         return profSerRequest.getMessageId();
     }
 
     /**
      * Register the profile on the server
-     *
+     * <p>
      * Need to stablish a non customer connection first
      *
      * @param profile
@@ -207,19 +242,18 @@ public class ProfSerEngine {
      * @return
      * @throws Exception
      */
-    public int registerProfileRequest(org.libertaria.world.profile_server.model.Profile profile, ProfSerMsgListener listener) throws Exception {
+    public int registerProfileRequest(Profile profile, ProfSerMsgListener listener) throws Exception {
         LOG.info("registerProfileRequest");
         org.libertaria.world.profile_server.client.ProfSerRequest profSerRequest = profileServer.registerHostRequest(
                 profile,
                 profile.getPublicKey(),
                 profile.getType()
         );
-        sendRequest(profSerRequest,listener);
+        sendRequest(profSerRequest, listener);
         return profSerRequest.getMessageId();
     }
 
     /**
-     *
      * @param listener
      * @return
      * @throws Exception
@@ -229,7 +263,7 @@ public class ProfSerEngine {
                 profNodeConnection.getProfile().getPublicKey(),
                 profNodeConnection.getConnectionChallenge()
         );
-        sendRequest(profSerRequest,listener);
+        sendRequest(profSerRequest, listener);
         return profSerRequest.getMessageId();
     }
 
@@ -242,10 +276,10 @@ public class ProfSerEngine {
      * @return
      * @throws Exception
      */
-    public int checkinRequest(byte[] nodeChallenge, org.libertaria.world.profile_server.model.Profile profile, ProfSerMsgListener listener) throws Exception {
-        LOG.info("check-in for pk: "+profile.getHexPublicKey());
+    public int checkinRequest(byte[] nodeChallenge, Profile profile, ProfSerMsgListener listener) throws Exception {
+        LOG.info("check-in for pk: " + profile.getHexPublicKey());
         org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.checkIn(nodeChallenge, profile);
-        sendRequest(request,listener);
+        sendRequest(request, listener);
         return request.getMessageId();
     }
 
@@ -254,11 +288,11 @@ public class ProfSerEngine {
      *
      * @param img -> Profile image in PNG or JPEG format, non-empty binary data, max 20,480 bytes long, or zero length binary data if the profile image is about to be erased.
      */
-    public int updateProfile(org.libertaria.world.global.Version version, String name, byte[] img, byte[] imgHash, int lat, int lon, String extraData, ProfSerMsgListener listener){
-        LOG.info("updateProfile, state: "+profSerConnectionState);
+    public int updateProfile(org.libertaria.world.global.Version version, String name, byte[] img, byte[] imgHash, int lat, int lon, String extraData, ProfSerMsgListener listener) {
+        LOG.info("updateProfile, state: " + profSerConnectionState);
         int msgId = 0;
-        if (profSerConnectionState == ProfSerConnectionState.CHECK_IN){
-            try{
+        if (profSerConnectionState == ProfSerConnectionState.CHECK_IN) {
+            try {
                 org.libertaria.world.profile_server.client.ProfSerRequest profSerRequest = profileServer.updateProfileRequest(
                         profNodeConnection.getProfile(),
                         profNodeConnection.getProfile().getPublicKey(),
@@ -272,11 +306,11 @@ public class ProfSerEngine {
                         extraData
                 );
                 msgId = profSerRequest.getMessageId();
-                sendRequest(profSerRequest,listener);
-            }catch (Exception e){
-                LOG.error("updateProfileException",e);
+                sendRequest(profSerRequest, listener);
+            } catch (Exception e) {
+                LOG.error("updateProfileException", e);
             }
-        }else {
+        } else {
             throw new IllegalStateException("Profile server not ready to use.");
         }
         return msgId;
@@ -284,14 +318,15 @@ public class ProfSerEngine {
 
     /**
      * Store can profile
-      * @return
+     *
+     * @return
      */
-    public int storeCanProfile(org.libertaria.world.profile_server.model.Profile profile, ProfSerMsgListener listener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
+    public int storeCanProfile(Profile profile, ProfSerMsgListener listener) throws CantConnectException, CantSendMessageException {
         org.libertaria.world.profile_server.protocol.CanStoreMap canStoreMap = new org.libertaria.world.profile_server.protocol.CanStoreMap();
         // todo: complete this when after check the PS.
-        canStoreMap.addValue("pubKey",profile.getPublicKey());
+        canStoreMap.addValue("pubKey", profile.getPublicKey());
         org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.storeCanDataRequest(canStoreMap);
-        sendRequest(request,listener);
+        sendRequest(request, listener);
         return request.getMessageId();
     }
 
@@ -302,37 +337,38 @@ public class ProfSerEngine {
      * @param appService
      * @return
      */
-    public int addApplicationService(org.libertaria.world.profile_server.engine.app_services.AppService appService){
-        LOG.info("addApplicationService, "+appService);
+    public int addApplicationService(org.libertaria.world.profile_server.engine.app_services.AppService appService) {
+        LOG.info("addApplicationService, " + appService);
         profNodeConnection.getProfile().addApplicationService(appService);
         // If the connection is stablished sent the message, if not the profile is going to be registered once the register engine finishes.
-        if (profSerConnectionState== ProfSerConnectionState.CHECK_IN)
-            return addApplicationServiceRequest(appService.getName(),appService);
+        if (profSerConnectionState == ProfSerConnectionState.CHECK_IN)
+            return addApplicationServiceRequest(appService.getName(), appService);
         else
             return 0;
     }
 
     /**
      * //todo: hace falta dividir la lectura de la escritura.
+     *
      * @param name
      * @param listener
      */
-    public void searchProfileByName(String name, ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener){
+    public void searchProfileByName(String name, ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener) {
         try {
-            org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.searchProfilesRequest(false,false,100,10000,null,name,null);
-            sendRequest(request,listener);
-        } catch (org.libertaria.world.profile_server.CantConnectException e) {
+            org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.searchProfilesRequest(false, false, 100, 10000, null, name, null);
+            sendRequest(request, listener);
+        } catch (CantConnectException e) {
             e.printStackTrace();
         } catch (CantSendMessageException e) {
             e.printStackTrace();
         }
     }
 
-    public void searchProfileByNameAndType(String name,String type, ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener){
+    public void searchProfileByNameAndType(String name, String type, ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener) {
         try {
-            org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.searchProfilesRequest(false,false,100,10000,type,name,null);
-            sendRequest(request,listener);
-        } catch (org.libertaria.world.profile_server.CantConnectException e) {
+            org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.searchProfilesRequest(false, false, 100, 10000, type, name, null);
+            sendRequest(request, listener);
+        } catch (CantConnectException e) {
             e.printStackTrace();
         } catch (CantSendMessageException e) {
             e.printStackTrace();
@@ -346,7 +382,7 @@ public class ProfSerEngine {
      * @param searchProfilesQuery
      * @param listener
      */
-    public void searchProfiles(SearchProfilesQuery searchProfilesQuery, ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener){
+    public void searchProfiles(SearchProfilesQuery searchProfilesQuery, ProfSerMsgListener<List<IopProfileServer.ProfileQueryInformation>> listener) {
         try {
             cacheSearch(searchProfilesQuery);
             org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.searchProfilesRequest(
@@ -361,8 +397,8 @@ public class ProfSerEngine {
                     searchProfilesQuery.getRadius(),
                     searchProfilesQuery.getExtraData()
             );
-            sendRequest(request,listener);
-        } catch (org.libertaria.world.profile_server.CantConnectException e) {
+            sendRequest(request, listener);
+        } catch (CantConnectException e) {
             e.printStackTrace();
         } catch (CantSendMessageException e) {
             e.printStackTrace();
@@ -371,23 +407,21 @@ public class ProfSerEngine {
 
     /**
      * This method works after call searchProfile when the previous amount of result is less than the maxTotalRecordCount. Responding with a part of the entire search.
-     *
      */
-    public void searchSubsequentProfiles(SearchProfilesQuery searchProfilesQuery, ProfSerPartSearchListener<List<IopProfileServer.ProfileQueryInformation>> listener){
-        searchProfilesQuery.setRecordIndex(searchProfilesQuery.getRecordIndex()+1);
+    public void searchSubsequentProfiles(SearchProfilesQuery searchProfilesQuery, ProfSerPartSearchListener<List<IopProfileServer.ProfileQueryInformation>> listener) {
+        searchProfilesQuery.setRecordIndex(searchProfilesQuery.getRecordIndex() + 1);
         updateCacheSearch(searchProfilesQuery);
-        try{
-            org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.searchProfilePartRequest(searchProfilesQuery.getRecordIndex(),searchProfilesQuery.getRecordCount());
-            sendRequest(request,listener);
+        try {
+            org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.searchProfilePartRequest(searchProfilesQuery.getRecordIndex(), searchProfilesQuery.getRecordCount());
+            sendRequest(request, listener);
         } catch (CantSendMessageException e) {
             e.printStackTrace();
-        } catch (org.libertaria.world.profile_server.CantConnectException e) {
+        } catch (CantConnectException e) {
             e.printStackTrace();
         }
     }
 
     /**
-     *
      * Request a single profile hosted on the server
      *
      * @param pubKey
@@ -396,99 +430,121 @@ public class ProfSerEngine {
      * @param includeApplicationServices
      * @param listener
      */
-    public void getProfileInformation(String pubKey,boolean includeProfileImage, boolean includeThumbnailImage, boolean includeApplicationServices, ProfSerMsgListener<ProfileInformation> listener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
+    public void getProfileInformation(String pubKey, boolean includeProfileImage, boolean includeThumbnailImage, boolean includeApplicationServices, ProfSerMsgListener<ProfileInformation> listener) throws CantConnectException, CantSendMessageException {
         // hash of the public key
-        LOG.info("getProfileInformation "+pubKey);
+        LOG.info("getProfileInformation " + pubKey);
         byte[] profileNetworkId = Sha256Hash.hash(org.libertaria.world.crypto.CryptoBytes.fromHexToBytes(pubKey));
-        org.libertaria.world.profile_server.client.ProfSerRequest profSerRequest = profileServer.getProfileInformationRequest(profileNetworkId,includeApplicationServices,includeThumbnailImage,includeProfileImage);
-        sendRequest(profSerRequest,listener);
+        org.libertaria.world.profile_server.client.ProfSerRequest profSerRequest = profileServer.getProfileInformationRequest(profileNetworkId, includeApplicationServices, includeThumbnailImage, includeProfileImage);
+        sendRequest(profSerRequest, listener);
     }
 
     /**
-     *  Request to establish a bridged connection between a requestor (the caller) and an identity (the callee)
-     *  hosted on the profile server via one of its supported application service. The callee has to be online,
-     *  otherwise the request will fail.
+     * Request to establish a bridged connection between a requestor (the caller) and an identity (the callee)
+     * hosted on the profile server via one of its supported application service. The callee has to be online,
+     * otherwise the request will fail.
+     * <p>
+     * The profile server informs the callee about the incoming call and issues a token pair (caller's and
+     * callee's tokens) to identify the caller and the callee on the Application Service Interface. The callee's
+     * token is sent to the callee with the information about the incoming call. If the callee wants to accept
+     * the call, the profile server informs the caller and sends it the caller's token. Both clients are then
+     * expected to establish new connections to the profile server's Application Service Interface and use their
+     * tokens to send a message to the other client.
+     * <p>
+     * Roles: clNonCustomer, clCustomer
+     * <p>
+     * Conversation status: Verified
      *
-     *  The profile server informs the callee about the incoming call and issues a token pair (caller's and
-     *  callee's tokens) to identify the caller and the callee on the Application Service Interface. The callee's
-     *  token is sent to the callee with the information about the incoming call. If the callee wants to accept
-     *  the call, the profile server informs the caller and sends it the caller's token. Both clients are then
-     *  expected to establish new connections to the profile server's Application Service Interface and use their
-     *  tokens to send a message to the other client.
-     *
-     *  Roles: clNonCustomer, clCustomer
-     *
-     *  Conversation status: Verified
-     *
-     *  @param profilePubKey -> remote profile public key
-     *  @param appService -> appService name
+     * @param profilePubKey -> remote profile public key
+     * @param appService    -> appService name
      */
-    public void callProfileAppService(String profilePubKey, String appService, ProfSerMsgListener listener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
+    public void callProfileAppService(String profilePubKey, String appService, ProfSerMsgListener listener) throws CantConnectException, CantSendMessageException {
         byte[] profileNetworkId = Sha256Hash.hash(org.libertaria.world.crypto.CryptoBytes.fromHexToBytes(profilePubKey));
-        org.libertaria.world.profile_server.client.ProfSerRequest profSerRequest = profileServer.callIdentityApplicationServiceRequest(profileNetworkId,appService);
-        sendRequest(profSerRequest,listener);
+        org.libertaria.world.profile_server.client.ProfSerRequest profSerRequest = profileServer.callIdentityApplicationServiceRequest(profileNetworkId, appService);
+        sendRequest(profSerRequest, listener);
     }
 
     /**
      * Accept an incoming call
      *
      * @param msgId
-     * @throws org.libertaria.world.profile_server.CantConnectException
+     * @throws CantConnectException
      * @throws CantSendMessageException
      */
-    public void acceptCall(int msgId) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
+    public void acceptCall(int msgId) throws CantConnectException, CantSendMessageException {
         org.libertaria.world.profile_server.client.ProfSerRequest request = profileServer.incomingCallNotificationResponse(msgId);
         request.send();
     }
 
     /**
-     *
      * The msg flow is:
-     *
+     * <p>
      * 1)  Sender send ApplicationServiceSendMessageRequest and wait for ApplicationServiceSendMessageResponse confirmation (channel setup opening a new socket)
      * 2)  Server send to receiver a ApplicationServiceReceiveMessageNotificationRequest
      * 3)  Receiver signs and response with a ApplicationServiceReceiveMessageNotificationResponse
      * 4)  Sender receive an ApplicationServiceSendMessageResponse
      *
-     *
      * @param callId
      * @param token
      * @param msg
      * @param listener
-     * @throws org.libertaria.world.profile_server.CantConnectException
+     * @throws CantConnectException
      * @throws CantSendMessageException
      */
-    public void sendAppServiceMsg(String callId,byte[] token, byte[] msg, ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> listener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
-        ProfSerRequest request = profileServer.appServiceSendMessageRequest(callId,token,msg);
-        sendRequest(request,listener);
+    public void sendAppServiceMsg(String callId, byte[] token, byte[] msg, ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> listener) throws CantConnectException, CantSendMessageException {
+        sendAppServiceMsg(callId, token, msg, listener, false);
     }
 
-    public void pingAppService(String callId,String token, ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> listener) throws org.libertaria.world.profile_server.CantConnectException, CantSendMessageException {
-        ProfSerRequest request = profileServer.ping(IopProfileServer.ServerRoleType.CL_APP_SERVICE,callId,token);
-        sendRequest(request,listener);
+    public void sendAppServiceMsg(final String callId, final byte[] token, final byte[] msg, final ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> listener, Boolean queueMessage) throws CantConnectException, CantSendMessageException {
+        ProfSerRequest request = profileServer.appServiceSendMessageRequest(callId, token, msg);
+        if (queueMessage) {
+            ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> wrapper = new ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse>() {
+                @Override
+                public void onMessageReceive(int messageId, IopProfileServer.ApplicationServiceSendMessageResponse message) {
+                    listener.onMessageReceive(messageId, message);
+                }
+
+                @Override
+                public void onMsgFail(int messageId, int statusValue, String details) {
+                    messageQueueManager.enqueueMessage(callId, token, msg);
+                    listener.onMsgFail(messageId, statusValue, details);
+                }
+
+                @Override
+                public String getMessageName() {
+                    return listener.getMessageName();
+                }
+            };
+            sendRequest(request, wrapper);
+        } else {
+            sendRequest(request, listener);
+        }
+    }
+
+    public void pingAppService(String callId, String token, ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> listener) throws CantConnectException, CantSendMessageException {
+        ProfSerRequest request = profileServer.ping(IopProfileServer.ServerRoleType.CL_APP_SERVICE, callId, token);
+        sendRequest(request, listener);
     }
 
     /**
-     *
      * @param msgToRespond
-     * @throws org.libertaria.world.profile_server.CantConnectException
+     * @throws CantConnectException
      * @throws CantSendMessageException
      */
-    public void respondAppServiceReceiveMsg(String callId,String token,int msgToRespond) throws CantConnectException, CantSendMessageException {
-        ProfSerRequest request = profileServer.appServiceReceiveMessageNotificationResponse(callId,token,msgToRespond);
+    public void respondAppServiceReceiveMsg(String callId, String token, int msgToRespond) throws CantConnectException, CantSendMessageException {
+        ProfSerRequest request = profileServer.appServiceReceiveMessageNotificationResponse(callId, token, msgToRespond);
         request.send();
     }
 
-    private void cacheSearch(SearchProfilesQuery searchProfilesQuery){
+    private void cacheSearch(SearchProfilesQuery searchProfilesQuery) {
         String id = UUID.randomUUID().toString();
         searchProfilesQuery.setId(id);
-        profilesQuery.put(id,searchProfilesQuery);
+        profilesQuery.put(id, searchProfilesQuery);
     }
 
-    private void updateCacheSearch(SearchProfilesQuery searchProfilesQuery){
-        if (profilesQuery.containsKey(searchProfilesQuery.getId())){
+    private void updateCacheSearch(SearchProfilesQuery searchProfilesQuery) {
+        if (profilesQuery.containsKey(searchProfilesQuery.getId())) {
             profilesQuery.remove(searchProfilesQuery.getId());
-            profilesQuery.put(searchProfilesQuery.getId(),searchProfilesQuery);
+            profilesQuery.put(searchProfilesQuery.getId(), searchProfilesQuery);
         }
     }
 
@@ -498,25 +554,27 @@ public class ProfSerEngine {
      * @param applicationService
      * @return
      */
-    private int addApplicationServiceRequest(String applicationService, ProfSerMsgListener profSerMsgListener){
-        if (!profNodeConnection.isRegistered()) throw new InvalidStateException("profile is not registered in the server");
-        if (!isClConnectionReady()) throw new IllegalStateException("connection is not ready to send messages yet");
+    private int addApplicationServiceRequest(String applicationService, ProfSerMsgListener profSerMsgListener) {
+        if (!profNodeConnection.isRegistered())
+            throw new InvalidStateException("profile is not registered in the server");
+        if (!isClConnectionReady())
+            throw new IllegalStateException("connection is not ready to send messages yet");
         int msgId = 0;
         try {
             ProfSerRequest request = profileServer.addApplicationService(applicationService);
-            sendRequest(request,profSerMsgListener);
+            sendRequest(request, profSerMsgListener);
         } catch (CantSendMessageException e) {
             e.printStackTrace();
-        } catch (org.libertaria.world.profile_server.CantConnectException e) {
+        } catch (CantConnectException e) {
             e.printStackTrace();
         }
         return msgId;
     }
 
 
-    void initProfile(){
+    void initProfile() {
         try {
-            final org.libertaria.world.profile_server.model.Profile profile = profNodeConnection.getProfile();
+            final Profile profile = profNodeConnection.getProfile();
             // update data
             int msgId = updateProfile(
                     profile.getVersion(),
@@ -535,7 +593,7 @@ public class ProfSerEngine {
 
                         @Override
                         public void onMsgFail(int messageId, int statusValue, String details) {
-                            LOG.error("update profile fail, detail: "+details);
+                            LOG.error("update profile fail, detail: " + details);
                         }
 
                         @Override
@@ -544,13 +602,13 @@ public class ProfSerEngine {
                         }
                     }
             );
-            if (!profNodeConnection.getProfile().getApplicationServices().isEmpty()){
+            if (!profNodeConnection.getProfile().getApplicationServices().isEmpty()) {
                 for (org.libertaria.world.profile_server.engine.app_services.AppService appService : profNodeConnection.getProfile().getApplicationServices().values()) {
-                    addApplicationServiceRequest(appService.getName(),appService);
+                    addApplicationServiceRequest(appService.getName(), appService);
                 }
             }
             profNodeConnection.setNeedRegisterProfile(false);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -567,12 +625,13 @@ public class ProfSerEngine {
         this.profSerConnectionState = profSerConnection;
     }
 
-    public org.libertaria.world.profile_server.model.ProfServerData getProfServerData() {
+    public ProfServerData getProfServerData() {
         return profServerData;
     }
 
     /**
      * Close a specific port
+     *
      * @param port
      * @throws IOException
      */
@@ -587,11 +646,12 @@ public class ProfSerEngine {
 
 
     public void startPing(final IopProfileServer.ServerRoleType portType) {
-        LOG.info("startPing on port: "+portType);
-        if (pingExecutors==null){
+        LOG.info("startPing on port: " + portType);
+        if (pingExecutors == null) {
             pingExecutors = new HashMap<>();
         }
-        if (pingExecutors.containsKey(portType)) throw new IllegalStateException("Ping agent already initilized for: "+portType);
+        if (pingExecutors.containsKey(portType))
+            throw new IllegalStateException("Ping agent already initilized for: " + portType);
         final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         service.scheduleAtFixedRate(new Runnable() {
             @Override
@@ -600,23 +660,23 @@ public class ProfSerEngine {
                     LOG.info("sending ping");
                     profileServer.ping(portType).send();
 
-                }catch (CantSendMessageException e){
+                } catch (CantSendMessageException e) {
                     e.printStackTrace();
                     service.shutdownNow();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-        },10,15, TimeUnit.SECONDS);
-        pingExecutors.put(portType,service);
+        }, 10, 15, TimeUnit.SECONDS);
+        pingExecutors.put(portType, service);
     }
 
-    public void stopPing(final IopProfileServer.ServerRoleType portType){
+    public void stopPing(final IopProfileServer.ServerRoleType portType) {
         try {
-            LOG.info("stop ping for: "+portType);
+            LOG.info("stop ping for: " + portType);
             ScheduledExecutorService executor = pingExecutors.get(portType);
             executor.shutdownNow();
-        }catch (Exception e){
+        } catch (Exception e) {
             // nothing..
         }
     }
@@ -629,8 +689,8 @@ public class ProfSerEngine {
         return profSerConnectionState == ProfSerConnectionState.CONNECTION_FAIL;
     }
 
-    public boolean isClConnectionConnecting(){
-        return profSerConnectionState!= ProfSerConnectionState.CONNECTION_FAIL && profSerConnectionState!= ProfSerConnectionState.CHECK_IN;
+    public boolean isClConnectionConnecting() {
+        return profSerConnectionState != ProfSerConnectionState.CONNECTION_FAIL && profSerConnectionState != ProfSerConnectionState.CHECK_IN;
     }
 
     /**
@@ -643,7 +703,9 @@ public class ProfSerEngine {
     }
 
 
-    /** Messages processors  */
+    /**
+     * Messages processors
+     */
 
     public class ProfileServerHandler implements PsSocketHandler<IopProfileServer.Message> {
 
@@ -676,26 +738,26 @@ public class ProfSerEngine {
 
         public ProfileServerHandler() {
             processors = new HashMap<>();
-            processors.put(PING_PROCESSOR,new PingProcessor());
-            processors.put(LIST_ROLES_PROCESSOR,new ListRolesProcessor());
-            processors.put(START_CONVERSATION_NON_CL_PROCESSOR,new StartConversationNonClProcessor());
-            processors.put(HOME_NODE_REQUEST_PROCESSOR,new HomeNodeRequestProcessor());
-            processors.put(HOME_START_CONVERSATION_CL_PROCESSOR,new StartConversationClProcessor());
-            processors.put(HOME_CHECK_IN_PROCESSOR,new CheckinConversationProcessor());
-            processors.put(HOME_UPDATE_PROFILE_PROCESSOR,new UpdateProfileConversationProcessor());
-            processors.put(HOME_PROFILE_SEARCH_PROCESSOR,new ProfileSearchProcessor());
-            processors.put(HOME_ADD_APPLICATION_SERVICE_PROCESSOR,new AddApplicationServiceProcessor());
-            processors.put(HOME_PART_PROFILE_SEARCH_PROCESSOR,new PartProfileSearchProcessor());
-            processors.put(GET_PROFILE_INFORMATION_PROCESSOR,new GetProfileInformationProcessor());
-            processors.put(CALL_PROFILE_APP_SERVICE_PROCESSOR,new CallIdentityApplicationServiceProcessor());
+            processors.put(PING_PROCESSOR, new PingProcessor());
+            processors.put(LIST_ROLES_PROCESSOR, new ListRolesProcessor());
+            processors.put(START_CONVERSATION_NON_CL_PROCESSOR, new StartConversationNonClProcessor());
+            processors.put(HOME_NODE_REQUEST_PROCESSOR, new HomeNodeRequestProcessor());
+            processors.put(HOME_START_CONVERSATION_CL_PROCESSOR, new StartConversationClProcessor());
+            processors.put(HOME_CHECK_IN_PROCESSOR, new CheckinConversationProcessor());
+            processors.put(HOME_UPDATE_PROFILE_PROCESSOR, new UpdateProfileConversationProcessor());
+            processors.put(HOME_PROFILE_SEARCH_PROCESSOR, new ProfileSearchProcessor());
+            processors.put(HOME_ADD_APPLICATION_SERVICE_PROCESSOR, new AddApplicationServiceProcessor());
+            processors.put(HOME_PART_PROFILE_SEARCH_PROCESSOR, new PartProfileSearchProcessor());
+            processors.put(GET_PROFILE_INFORMATION_PROCESSOR, new GetProfileInformationProcessor());
+            processors.put(CALL_PROFILE_APP_SERVICE_PROCESSOR, new CallIdentityApplicationServiceProcessor());
             processors.put(APP_SERVICE_SEND_MESSAGE_PROCESSOR, new ApplicationServiceSendMessageProcessor());
-            processors.put(CAN_STORE_DATA_PROCESSOR,new CanStoreDataProcessor());
-            processors.put(CAN_PUBLISH_IPNS_RECORD_PROCESSOR,new CanPublishIpnsRecordProcessor());
+            processors.put(CAN_STORE_DATA_PROCESSOR, new CanStoreDataProcessor());
+            processors.put(CAN_PUBLISH_IPNS_RECORD_PROCESSOR, new CanPublishIpnsRecordProcessor());
 
 
             // requests
             processors.put(INCOMING_CALL_NOTIFICATION, new IncomingCallNotificationProcessor());
-            processors.put(INCOMING_APP_SERVICE_MSG_NOTIFICATION,new ApplicationServiceReceiveMessageNotificationRequestProcessor());
+            processors.put(INCOMING_APP_SERVICE_MSG_NOTIFICATION, new ApplicationServiceReceiveMessageNotificationRequestProcessor());
         }
 
         @Override
@@ -710,7 +772,7 @@ public class ProfSerEngine {
 
         @Override
         public void sessionClosed(org.libertaria.world.profile_server.IoSession session) throws Exception {
-            LOG.info("sessionClosed: "+session.toString());
+            LOG.info("sessionClosed: " + session.toString());
             // notify upper layers
             for (ConnectionListener listener : connectionListener) {
                 listener.onConnectionLost(
@@ -736,9 +798,9 @@ public class ProfSerEngine {
                     try {
                         switch (message.getMessageTypeCase()) {
                             case REQUEST:
-                                try{
-                                    dispatchRequest(session,message.getId(),message.getRequest());
-                                }catch (Exception e){
+                                try {
+                                    dispatchRequest(session, message.getId(), message.getRequest());
+                                } catch (Exception e) {
                                     LOG.info("Request, Message id fail: " + message.getId());
                                     e.printStackTrace();
                                 }
@@ -753,10 +815,10 @@ public class ProfSerEngine {
                                 }
                                 break;
                             default:
-                                throw new IllegalArgumentException("message type not correspond to nothing, "+message);
+                                throw new IllegalArgumentException("message type not correspond to nothing, " + message);
                         }
 
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
@@ -779,35 +841,35 @@ public class ProfSerEngine {
 
         }
 
-        private void dispatchRequest(IoSession session, int messageId, IopProfileServer.Request request){
+        private void dispatchRequest(IoSession session, int messageId, IopProfileServer.Request request) {
 
-            switch (request.getConversationTypeCase()){
+            switch (request.getConversationTypeCase()) {
 
                 case SINGLEREQUEST:
-                    LOG.info("single request: with msg id: "+messageId);
-                    dispatchRequest(session,messageId,request.getSingleRequest());
+                    LOG.info("single request: with msg id: " + messageId);
+                    dispatchRequest(session, messageId, request.getSingleRequest());
                     break;
                 case CONVERSATIONREQUEST:
-                    LOG.info("conversation request arrived: with msg id: "+messageId);
-                    dispatchRequest(session,messageId,request.getConversationRequest());
+                    LOG.info("conversation request arrived: with msg id: " + messageId);
+                    dispatchRequest(session, messageId, request.getConversationRequest());
                     break;
                 case CONVERSATIONTYPE_NOT_SET:
-                    LOG.error("request: with msg id: "+messageId+" "+request.toString());
+                    LOG.error("request: with msg id: " + messageId + " " + request.toString());
                     break;
                 default:
-                    LOG.error("request: with msg id: "+messageId+" "+request.toString());
+                    LOG.error("request: with msg id: " + messageId + " " + request.toString());
                     break;
 
             }
 
         }
 
-        private void dispatchRequest(IoSession session, int messageId, IopProfileServer.ConversationRequest request){
+        private void dispatchRequest(IoSession session, int messageId, IopProfileServer.ConversationRequest request) {
 
-            switch (request.getRequestTypeCase()){
+            switch (request.getRequestTypeCase()) {
 
                 case INCOMINGCALLNOTIFICATION:
-                    processors.get(INCOMING_CALL_NOTIFICATION).execute(session, messageId,request.getIncomingCallNotification());
+                    processors.get(INCOMING_CALL_NOTIFICATION).execute(session, messageId, request.getIncomingCallNotification());
                     break;
                 default:
                     LOG.error("Request not implemented");
@@ -818,12 +880,12 @@ public class ProfSerEngine {
         }
 
 
-        private void dispatchRequest(IoSession session, int messageId, IopProfileServer.SingleRequest request){
+        private void dispatchRequest(IoSession session, int messageId, IopProfileServer.SingleRequest request) {
 
-            switch (request.getRequestTypeCase()){
+            switch (request.getRequestTypeCase()) {
 
                 case APPLICATIONSERVICERECEIVEMESSAGENOTIFICATION:
-                    processors.get(INCOMING_APP_SERVICE_MSG_NOTIFICATION).execute(session,messageId,request.getApplicationServiceReceiveMessageNotification());
+                    processors.get(INCOMING_APP_SERVICE_MSG_NOTIFICATION).execute(session, messageId, request.getApplicationServiceReceiveMessageNotification());
                     break;
                 default:
                     LOG.error("Request not implemented");
@@ -835,91 +897,91 @@ public class ProfSerEngine {
 
 
         private void dispatchResponse(IoSession session, int messageId, IopProfileServer.Response response) throws Exception {
-            switch (response.getConversationTypeCase()){
+            switch (response.getConversationTypeCase()) {
 
                 case CONVERSATIONRESPONSE:
-                    dispatchConversationResponse(session,messageId,response.getConversationResponse());
+                    dispatchConversationResponse(session, messageId, response.getConversationResponse());
                     break;
                 case SINGLERESPONSE:
-                    dispatchSingleResponse(session,messageId,response.getSingleResponse());
+                    dispatchSingleResponse(session, messageId, response.getSingleResponse());
                     break;
 
                 case CONVERSATIONTYPE_NOT_SET:
                     org.libertaria.world.profile_server.protocol.IopShared.Status status = response.getStatus();
-                    switch (status){
+                    switch (status) {
                         // this happen when the connection is active and i send a startConversation or something else that i have to see..
                         case ERROR_BAD_CONVERSATION_STATUS:
-                            LOG.info("Message id: "+messageId+", response: "+response.toString()+", engine state: "+profSerConnectionState.toString());
+                            LOG.info("Message id: " + messageId + ", response: " + response.toString() + ", engine state: " + profSerConnectionState.toString());
 //                            profSerConnectionState = START_CONVERSATION_NON_CL;
                             break;
                         // this happen whe the identity already exist or when the cl and non-cl port are the same in the StartConversation message
                         case ERROR_ALREADY_EXISTS:
-                            LOG.info("response: "+response.toString());
+                            LOG.info("response: " + response.toString());
                             // todo: for some reason this is happening... fix me please
                             if (profSerConnectionState == ProfSerConnectionState.WAITING_START_CL)
                                 profSerConnectionState = ProfSerConnectionState.START_CONVERSATION_CL;
                             else profSerConnectionState = ProfSerConnectionState.HOME_NODE_REQUEST;
                             profNodeConnection.setIsRegistered(true);
-                            msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),"ERROR_ALREADY_EXISTS, profile already exist on the server to request the home node request");
+                            msgListeners.get(messageId).onMsgFail(messageId, response.getStatusValue(), "ERROR_ALREADY_EXISTS, profile already exist on the server to request the home node request");
                             break;
                         case ERROR_INVALID_SIGNATURE:
-                            LOG.error("response to msg id: "+messageId+" "+response.toString());
+                            LOG.error("response to msg id: " + messageId + " " + response.toString());
 
                             break;
 
                         case ERROR_NOT_AVAILABLE:
-                            LOG.error("response: to msg id: "+messageId+" ERROR_NOT_AVAILABLE");
-                            msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),"remote profile not available");
+                            LOG.error("response: to msg id: " + messageId + " ERROR_NOT_AVAILABLE");
+                            msgListeners.get(messageId).onMsgFail(messageId, response.getStatusValue(), "remote profile not available");
                             break;
                         case ERROR_NOT_FOUND:
-                            LOG.error("response: to msg id: "+messageId+" ERROR_NOT_FOUND");
-                            msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),"remote profile not found");
+                            LOG.error("response: to msg id: " + messageId + " ERROR_NOT_FOUND");
+                            msgListeners.get(messageId).onMsgFail(messageId, response.getStatusValue(), "remote profile not found");
                             break;
                         case ERROR_INVALID_VALUE:
-                            LOG.error("response: to msg id: "+messageId+" ERROR_INVALID_VALUE, "+response.getDetails());
-                            msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),response.getDetails());
+                            LOG.error("response: to msg id: " + messageId + " ERROR_INVALID_VALUE, " + response.getDetails());
+                            msgListeners.get(messageId).onMsgFail(messageId, response.getStatusValue(), response.getDetails());
                             break;
                         case ERROR_UNINITIALIZED:
-                            LOG.error("response: to msg id: "+messageId+" ERROR_UNINITIALIZED, "+response.getDetails());
-                            msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),response.getDetails());
+                            LOG.error("response: to msg id: " + messageId + " ERROR_UNINITIALIZED, " + response.getDetails());
+                            msgListeners.get(messageId).onMsgFail(messageId, response.getStatusValue(), response.getDetails());
                             break;
                         case ERROR_UNAUTHORIZED:
-                            LOG.error("response: to msg id: "+messageId+" ERROR_UNAUTHORIZED, "+response.getDetails());
-                            msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),response.getDetails());
+                            LOG.error("response: to msg id: " + messageId + " ERROR_UNAUTHORIZED, " + response.getDetails());
+                            msgListeners.get(messageId).onMsgFail(messageId, response.getStatusValue(), response.getDetails());
                             break;
                         case ERROR_PROTOCOL_VIOLATION:
                             // this should not happen..
-                            LOG.error("response: to msg id: "+messageId+" ERROR_PROTOCOL_VIOLATION, "+response.getDetails());
-                            LOG.error("Closing session for bad protocol: "+session.toString());
+                            LOG.error("response: to msg id: " + messageId + " ERROR_PROTOCOL_VIOLATION, " + response.getDetails());
+                            LOG.error("Closing session for bad protocol: " + session.toString());
                             session.closeNow();
                             break;
                         default:
-                            LOG.error("response: to msg id: "+messageId+" "+response.toString());
-                            msgListeners.get(messageId).onMsgFail(messageId,response.getStatusValue(),response.getDetails());
-                            throw new Exception("response with CONVERSATIONTYPE_NOT_SET, response: "+response.toString()+", message id: "+messageId);
+                            LOG.error("response: to msg id: " + messageId + " " + response.toString());
+                            msgListeners.get(messageId).onMsgFail(messageId, response.getStatusValue(), response.getDetails());
+                            throw new Exception("response with CONVERSATIONTYPE_NOT_SET, response: " + response.toString() + ", message id: " + messageId);
                     }
                     break;
 
             }
         }
 
-        private void dispatchSingleResponse(IoSession session, int messageId, IopProfileServer.SingleResponse singleResponse){
-            switch (singleResponse.getResponseTypeCase()){
+        private void dispatchSingleResponse(IoSession session, int messageId, IopProfileServer.SingleResponse singleResponse) {
+            switch (singleResponse.getResponseTypeCase()) {
                 case PING:
-                    processors.get(PING_PROCESSOR).execute(session, messageId,singleResponse.getPing());
+                    processors.get(PING_PROCESSOR).execute(session, messageId, singleResponse.getPing());
                     break;
                 case LISTROLES:
                     LOG.info("ListRoles received");
-                    processors.get(LIST_ROLES_PROCESSOR).execute(session, messageId,singleResponse.getListRoles());
+                    processors.get(LIST_ROLES_PROCESSOR).execute(session, messageId, singleResponse.getListRoles());
                     break;
                 case GETPROFILEINFORMATION:
                     LOG.info("getProfileInformation received");
-                    processors.get(GET_PROFILE_INFORMATION_PROCESSOR).execute(session, messageId,singleResponse.getGetProfileInformation());
+                    processors.get(GET_PROFILE_INFORMATION_PROCESSOR).execute(session, messageId, singleResponse.getGetProfileInformation());
                     break;
 
                 case APPLICATIONSERVICESENDMESSAGE:
                     LOG.info("appServiceSendMessageResponse received");
-                    processors.get(APP_SERVICE_SEND_MESSAGE_PROCESSOR).execute(session, messageId,singleResponse.getApplicationServiceSendMessage());
+                    processors.get(APP_SERVICE_SEND_MESSAGE_PROCESSOR).execute(session, messageId, singleResponse.getApplicationServiceSendMessage());
                     break;
 
                 default:
@@ -930,53 +992,55 @@ public class ProfSerEngine {
         }
 
         private void dispatchConversationResponse(IoSession session, int messageId, IopProfileServer.ConversationResponse conversationResponse) throws Exception {
-            switch (conversationResponse.getResponseTypeCase()){
+            switch (conversationResponse.getResponseTypeCase()) {
 
                 case START:
-                    LOG.info("init conversation received in port: "+session.getPortType());
+                    LOG.info("init conversation received in port: " + session.getPortType());
                     // saving the challenge signed..
                     byte[] signedChallenge = conversationResponse.getSignature().toByteArray();
                     profNodeConnection.setSignedConnectionChallenge(signedChallenge);
-                    LOG.info("challenge signed: "+ org.libertaria.world.crypto.CryptoBytes.toHexString(signedChallenge));
+                    LOG.info("challenge signed: " + org.libertaria.world.crypto.CryptoBytes.toHexString(signedChallenge));
 
-                    if (profSerConnectionState== ProfSerConnectionState.WAITING_START_NON_CL) processors.get(START_CONVERSATION_NON_CL_PROCESSOR).execute(session, messageId,conversationResponse.getStart());
-                    else processors.get(HOME_START_CONVERSATION_CL_PROCESSOR).execute(session, messageId,conversationResponse.getStart());
+                    if (profSerConnectionState == ProfSerConnectionState.WAITING_START_NON_CL)
+                        processors.get(START_CONVERSATION_NON_CL_PROCESSOR).execute(session, messageId, conversationResponse.getStart());
+                    else
+                        processors.get(HOME_START_CONVERSATION_CL_PROCESSOR).execute(session, messageId, conversationResponse.getStart());
                     break;
                 case REGISTERHOSTING:
-                    LOG.info("home node response received in port: "+session.getPortType());
-                    processors.get(HOME_NODE_REQUEST_PROCESSOR).execute(session, messageId,conversationResponse.getRegisterHosting());
+                    LOG.info("home node response received in port: " + session.getPortType());
+                    processors.get(HOME_NODE_REQUEST_PROCESSOR).execute(session, messageId, conversationResponse.getRegisterHosting());
                     break;
                 case CHECKIN:
                     LOG.info("check in response ");
-                    processors.get(HOME_CHECK_IN_PROCESSOR).execute(session, messageId,conversationResponse.getCheckIn());
+                    processors.get(HOME_CHECK_IN_PROCESSOR).execute(session, messageId, conversationResponse.getCheckIn());
                     break;
                 case UPDATEPROFILE:
-                    if (verifyIdentity(conversationResponse.getSignature().toByteArray(),conversationResponse.toByteArray())) {
-                        processors.get(HOME_UPDATE_PROFILE_PROCESSOR).execute(session, messageId,conversationResponse.getUpdateProfile());
-                    }else {
+                    if (verifyIdentity(conversationResponse.getSignature().toByteArray(), conversationResponse.toByteArray())) {
+                        processors.get(HOME_UPDATE_PROFILE_PROCESSOR).execute(session, messageId, conversationResponse.getUpdateProfile());
+                    } else {
                         throw new Exception("El nodo no es quien dice, acá tengo que desconectar todo");
                     }
                     break;
                 case PROFILESEARCH:
                     LOG.info("profile search response ");
-                    processors.get(HOME_PROFILE_SEARCH_PROCESSOR).execute(session, messageId,conversationResponse.getProfileSearch());
+                    processors.get(HOME_PROFILE_SEARCH_PROCESSOR).execute(session, messageId, conversationResponse.getProfileSearch());
                     break;
                 case PROFILESEARCHPART:
-                    processors.get(HOME_PART_PROFILE_SEARCH_PROCESSOR).execute(session, messageId,conversationResponse.getProfileSearchPart());
+                    processors.get(HOME_PART_PROFILE_SEARCH_PROCESSOR).execute(session, messageId, conversationResponse.getProfileSearchPart());
                     break;
                 case APPLICATIONSERVICEADD:
                     LOG.info("add application service");
-                    processors.get(HOME_ADD_APPLICATION_SERVICE_PROCESSOR).execute(session, messageId,conversationResponse.getApplicationServiceAdd());
+                    processors.get(HOME_ADD_APPLICATION_SERVICE_PROCESSOR).execute(session, messageId, conversationResponse.getApplicationServiceAdd());
                     break;
                 case CALLIDENTITYAPPLICATIONSERVICE:
                     LOG.info("call identity application service");
-                    processors.get(CALL_PROFILE_APP_SERVICE_PROCESSOR).execute(session, messageId,conversationResponse.getCallIdentityApplicationService());
+                    processors.get(CALL_PROFILE_APP_SERVICE_PROCESSOR).execute(session, messageId, conversationResponse.getCallIdentityApplicationService());
                     break;
                 case CANSTOREDATA:
-                    processors.get(CAN_STORE_DATA_PROCESSOR).execute(session, messageId,conversationResponse.getCanStoreData());
+                    processors.get(CAN_STORE_DATA_PROCESSOR).execute(session, messageId, conversationResponse.getCanStoreData());
                     break;
                 case CANPUBLISHIPNSRECORD:
-                    processors.get(CAN_PUBLISH_IPNS_RECORD_PROCESSOR).execute(session, messageId,conversationResponse.getCanPublishIpnsRecord());
+                    processors.get(CAN_PUBLISH_IPNS_RECORD_PROCESSOR).execute(session, messageId, conversationResponse.getCanPublishIpnsRecord());
                     break;
                 default:
                     LOG.info("algo llegó y no lo estoy controlando..");
@@ -985,7 +1049,7 @@ public class ProfSerEngine {
 
         }
 
-        private boolean verifyIdentity(byte[] signature,byte[] message) {
+        private boolean verifyIdentity(byte[] signature, byte[] message) {
             //KeyEd25519.verify(signature,message,profile.getNodePubKey());
             return true;
         }
@@ -1010,7 +1074,7 @@ public class ProfSerEngine {
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.ListRolesResponse message) {
             LOG.info("ListRolesProcessor execute..");
-            onMsgReceived(messageId,message);
+            onMsgReceived(messageId, message);
         }
     }
 
@@ -1023,7 +1087,7 @@ public class ProfSerEngine {
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.StartConversationResponse message) {
             LOG.info("StartNonClProcessor execute..");
-            onMsgReceived(messageId,message);
+            onMsgReceived(messageId, message);
         }
     }
 
@@ -1034,8 +1098,8 @@ public class ProfSerEngine {
 
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.RegisterHostingResponse message) {
-            LOG.info("HomeNodeRequestProcessor execute.. "+ org.libertaria.world.crypto.CryptoBytes.toHexString(message.getContract().getIdentityPublicKey().toByteArray()));
-            onMsgReceived(messageId,message);
+            LOG.info("HomeNodeRequestProcessor execute.. " + org.libertaria.world.crypto.CryptoBytes.toHexString(message.getContract().getIdentityPublicKey().toByteArray()));
+            onMsgReceived(messageId, message);
         }
     }
 
@@ -1047,7 +1111,7 @@ public class ProfSerEngine {
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.StartConversationResponse message) {
             LOG.info("StartConversationClProcessor execute..");
-            onMsgReceived(messageId,message);
+            onMsgReceived(messageId, message);
         }
     }
 
@@ -1060,7 +1124,7 @@ public class ProfSerEngine {
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.CheckInResponse message) {
             LOG.info("CheckinProcessor execute..");
-            onMsgReceived(messageId,message);
+            onMsgReceived(messageId, message);
         }
     }
 
@@ -1071,7 +1135,7 @@ public class ProfSerEngine {
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.UpdateProfileResponse message) {
             LOG.info("UpdateProfileProcessor execute..");
             LOG.info("UpdateProfileProcessor update works..");
-            onMsgReceived(messageId,true);
+            onMsgReceived(messageId, true);
         }
     }
 
@@ -1080,33 +1144,31 @@ public class ProfSerEngine {
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.ProfileSearchResponse message) {
             LOG.info("ProfileSearchProcessor execute..");
-            LOG.info("Profile search count: "+message.getProfilesCount());
+            LOG.info("Profile search count: " + message.getProfilesCount());
             StringBuilder stringBuilder = new StringBuilder();
             for (IopProfileServer.ProfileQueryInformation profileQueryInformation : message.getProfilesList()) {
                 IopProfileServer.SignedProfileInformation signedProfileInformation = profileQueryInformation.getSignedProfile();
                 stringBuilder
-                        .append("PK: "+signedProfileInformation.getProfile().getPublicKey().toStringUtf8())
+                        .append("PK: " + signedProfileInformation.getProfile().getPublicKey().toStringUtf8())
                         .append("\n")
-                        .append("Name: "+signedProfileInformation.getProfile().getName())
+                        .append("Name: " + signedProfileInformation.getProfile().getName())
                         .append("\n");
             }
             LOG.info(stringBuilder.toString());
 
-            ((ProfSerMsgListener)msgListeners.get(messageId)).onMessageReceive(messageId,message.getProfilesList());
+            ((ProfSerMsgListener) msgListeners.get(messageId)).onMessageReceive(messageId, message.getProfilesList());
             msgListeners.remove(messageId);
 
         }
     }
 
     /**
-     *
      * Specific Error Responses:
      * ERROR_NOT_AVAILABLE - No cached search results are available. Either the client did not send ProfileSearchRequest previously
-                              in this session, or its results have expired already.
+     * in this session, or its results have expired already.
      * ERROR_INVALID_VALUE
      * Response.details == "recordIndex" - 'ProfileSearchRequest.recordIndex' is not a valid index of the result.
      * Response.details == "recordCount" - 'ProfileSearchRequest.recordCount' is not a valid number of results to obtain in combination with 'ProfileSearchRequest.recordIndex'.
-     *
      */
 
     private class PartProfileSearchProcessor implements MessageProcessor<IopProfileServer.ProfileSearchPartResponse> {
@@ -1114,7 +1176,7 @@ public class ProfSerEngine {
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.ProfileSearchPartResponse message) {
             LOG.info("PartProfileSearchProcessor execute..");
-            ((ProfSerPartSearchListener)msgListeners.get(messageId)).onMessageReceive(messageId,message.getProfilesList(),message.getRecordIndex(),message.getRecordCount());
+            ((ProfSerPartSearchListener) msgListeners.get(messageId)).onMessageReceive(messageId, message.getProfilesList(), message.getRecordIndex(), message.getRecordCount());
         }
     }
 
@@ -1125,7 +1187,7 @@ public class ProfSerEngine {
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.ApplicationServiceAddResponse message) {
             LOG.info("AddApplicationServiceProcessor");
             // todo: acá deberia chequear si fueron listados bien los applicationServices..
-            onMsgReceived(messageId,message);
+            onMsgReceived(messageId, message);
 
         }
     }
@@ -1137,7 +1199,7 @@ public class ProfSerEngine {
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.GetProfileInformationResponse message) {
             LOG.info("AddApplicationServiceProcessor");
             // todo: acá deberia chequear si fueron listados bien los applicationServices..
-            onMsgReceived(messageId,message);
+            onMsgReceived(messageId, message);
 
         }
     }
@@ -1148,25 +1210,23 @@ public class ProfSerEngine {
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.CallIdentityApplicationServiceResponse message) {
             LOG.info("CallIdentityApplicationServiceProcessor");
             // todo: ver qué tengo que chequear acá
-            onMsgReceived(messageId,message);
+            onMsgReceived(messageId, message);
         }
     }
 
 
     /**
-     *
-     *  A response to ApplicationServiceSendMessageRequest. This is sent by the profile server to the client to
-     *  confirm that it sent the message to the other client and the other client confirmed its arrival.
-     *
-     *  If the connection to one of the clients is terminated, the profile server closes the connection to the
-     *  other client.
-     *
-     *  Specific Error Responses:
-     *    * ERROR_NOT_FOUND - 'ApplicationServiceSendMessageRequest.token' is not a valid token. This can have many causes.
-     *                        The token itself can have invalid format, or no such token was ever issued by the server.
-     *                        However, it can also be the case that the token was valid in the past but the call channel
-     *                        was closed by the server for any reason and thus the token is no longer valid.
-     *
+     * A response to ApplicationServiceSendMessageRequest. This is sent by the profile server to the client to
+     * confirm that it sent the message to the other client and the other client confirmed its arrival.
+     * <p>
+     * If the connection to one of the clients is terminated, the profile server closes the connection to the
+     * other client.
+     * <p>
+     * Specific Error Responses:
+     * * ERROR_NOT_FOUND - 'ApplicationServiceSendMessageRequest.token' is not a valid token. This can have many causes.
+     * The token itself can have invalid format, or no such token was ever issued by the server.
+     * However, it can also be the case that the token was valid in the past but the call channel
+     * was closed by the server for any reason and thus the token is no longer valid.
      */
     private class ApplicationServiceSendMessageProcessor implements MessageProcessor<IopProfileServer.ApplicationServiceSendMessageResponse> {
 
@@ -1176,7 +1236,7 @@ public class ProfSerEngine {
             // todo: ver qué tengo que chequear acá
             try {
                 onMsgReceived(messageId, message);
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -1187,8 +1247,8 @@ public class ProfSerEngine {
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.IncomingCallNotificationRequest message) {
             LOG.info("IncomingCallNotificationProcessor");
-            if (callListener!=null)
-                callListener.incomingCallNotification(messageId,message);
+            if (callListener != null)
+                callListener.incomingCallNotification(messageId, message);
             else
                 LOG.error("IncomingCall arrive and no listener setted.");
         }
@@ -1198,10 +1258,10 @@ public class ProfSerEngine {
 
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.ApplicationServiceReceiveMessageNotificationRequest message) {
-            LOG.info("ApplicationServiceReceiveMessageNotificationRequestProcessor, "+session.toString());
-            if (callListener!=null) {
-                callListener.incomingAppServiceMessage(messageId, AppServiceMsg.wrap(session.getSessionTokenId(),message));
-            }else
+            LOG.info("ApplicationServiceReceiveMessageNotificationRequestProcessor, " + session.toString());
+            if (callListener != null) {
+                callListener.incomingAppServiceMessage(messageId, AppServiceMsg.wrap(session.getSessionTokenId(), message));
+            } else
                 LOG.error("IncomingCall arrive and no listener setted.");
 
         }
@@ -1212,7 +1272,7 @@ public class ProfSerEngine {
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.CanStoreDataResponse message) {
             LOG.info("CanStoreDataProcessor");
-            onMsgReceived(messageId,message);
+            onMsgReceived(messageId, message);
         }
     }
 
@@ -1220,20 +1280,20 @@ public class ProfSerEngine {
         @Override
         public void execute(org.libertaria.world.profile_server.IoSession session, int messageId, IopProfileServer.CanPublishIpnsRecordResponse message) {
             LOG.info("CanPublishIpnsRecordProcessor");
-            onMsgReceived(messageId,message);
+            onMsgReceived(messageId, message);
         }
     }
 
-    private void onMsgReceived(int messageId, Object message){
-        ProfSerMsgListener profSerMsgListener = ((ProfSerMsgListener)msgListeners.get(messageId));
-        if (profSerMsgListener!=null){
-            profSerMsgListener.onMessageReceive(messageId,message);
+    private void onMsgReceived(int messageId, Object message) {
+        ProfSerMsgListener profSerMsgListener = ((ProfSerMsgListener) msgListeners.get(messageId));
+        if (profSerMsgListener != null) {
+            profSerMsgListener.onMessageReceive(messageId, message);
             msgListeners.remove(messageId);
-        }else{
-            throw new IllegalStateException("No msg listener for message with id: "+messageId+", "+message);
+        } else {
+            throw new IllegalStateException("No msg listener for message with id: " + messageId + ", " + message);
         }
 
     }
 
-    
+
 }

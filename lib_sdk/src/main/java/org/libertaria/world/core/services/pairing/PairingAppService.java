@@ -125,7 +125,7 @@ public class PairingAppService extends org.libertaria.world.profile_server.engin
                                     // if the profile is already a connection or if i'm waiting for his approvance
                                     if(dbProfile.getPairStatus() == org.libertaria.world.profile_server.imp.ProfileInformationImp.PairStatus.PAIRED || dbProfile.getPairStatus() == org.libertaria.world.profile_server.imp.ProfileInformationImp.PairStatus.WAITING_FOR_RESPONSE){
                                         // answer with an ok paired!
-                                        callProfileAppService.sendMsg(PairingMsgTypes.PAIR_ACCEPT.getType(), null); // no need of a future here..
+                                        callProfileAppService.sendMsg(PairingMsgTypes.PAIR_ACCEPT.getType(), null, true); // no need of a future here..
                                     }
                                 }else {
                                     long profileSaved = profilesManager.saveProfile(
