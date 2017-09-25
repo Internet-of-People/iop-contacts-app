@@ -4,7 +4,6 @@ import android.app.Notification;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
@@ -53,8 +52,6 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.sendPairingReceiver = new SendPairingReceiver();
-        registerReceiver(sendPairingReceiver, new IntentFilter(MessageQueueManager.EVENT_MESSAGE_SUCCESSFUL));
-        registerReceiver(sendPairingReceiver, new IntentFilter(MessageQueueManager.EVENT_MESSAGE_FAILED));
     }
 
     @Override

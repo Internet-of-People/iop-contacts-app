@@ -23,7 +23,7 @@ public interface PairingModule extends Module {
 
     void cancelPairingRequest(PairingRequest pairingRequest);
 
-    void disconectPairingProfile(String localProfilePubKey, ProfileInformation remoteProfile, boolean needsToBeNotified, final ProfSerMsgListener<Boolean> listener);
+    void disconnectPairingProfile(String localProfilePubKey, ProfileInformation remoteProfile, boolean needsToBeNotified, final ProfSerMsgListener<Boolean> listener);
 
     List<PairingRequest> getPairingRequests(String localProfPubKey);
 }

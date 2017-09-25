@@ -9,7 +9,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,19 +19,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.libertaria.world.crypto.CryptoBytes;
-import org.libertaria.world.global.DeviceLocation;
-import org.libertaria.world.global.GpsLocation;
 import org.libertaria.world.profile_server.CantConnectException;
 import org.libertaria.world.profile_server.CantSendMessageException;
 import org.libertaria.world.profile_server.ProfileInformation;
-import org.libertaria.world.profile_server.client.AppServiceCallNotAvailableException;
 import org.libertaria.world.profile_server.engine.futures.BaseMsgFuture;
 import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
-import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.profile_server.imp.ProfileInformationImp;
-import org.libertaria.world.services.chat.ChatCallAlreadyOpenException;
-import org.furszy.contacts.ui.chat.ChatActivity;
-import org.furszy.contacts.ui.chat.WaitingChatActivity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +37,6 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PAIR_DISCONNECTED;
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT;
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
-import static org.furszy.contacts.ui.chat.WaitingChatActivity.REMOTE_PROFILE_PUB_KEY;
 import static world.libertaria.shared.library.services.chat.ChatIntentsConstants.ACTION_OPEN_CHAT_APP;
 import static world.libertaria.shared.library.services.chat.ChatIntentsConstants.EXTRA_INTENT_LOCAL_PROFILE;
 import static world.libertaria.shared.library.services.chat.ChatIntentsConstants.EXTRA_INTENT_REMOTE_PROFILE;
@@ -272,9 +263,9 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                     }
                 });
                 if (profileInformation.getPairStatus().equals(ProfileInformationImp.PairStatus.DISCONNECTED)) {
-                    pairingModule.disconectPairingProfile(selectedProfPubKey,profileInformation,false,readyListener);
+                    pairingModule.disconnectPairingProfile(selectedProfPubKey, profileInformation, false, readyListener);
                 } else {
-                    pairingModule.disconectPairingProfile(selectedProfPubKey, profileInformation, true, readyListener);
+                    pairingModule.disconnectPairingProfile(selectedProfPubKey, profileInformation, true, readyListener);
                 }
             }
         });
