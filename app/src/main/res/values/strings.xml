@@ -53,6 +53,7 @@
     <string name="lorem_impsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
     <string name="pairing_success">Pairing request sent!</string>
     <string name="pairing_fail">Pairing request fail.\n%s</string>
+    <string name="pairing_trying">Trying to send the pair request.\n%s</string>
     <string name="pairing_yourself">You cannot add yourself as contact</string>
     <string name="backup_completed_message">Backup completed, check your download\'s folder</string>
     <string name="restore_completed_message">You have restored your profile successfully</string>
