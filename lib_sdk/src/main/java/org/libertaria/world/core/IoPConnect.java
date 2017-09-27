@@ -23,6 +23,7 @@ import org.libertaria.world.profile_server.ProfileServerConfigurations;
 import org.libertaria.world.profile_server.SslContextFactory;
 import org.libertaria.world.profile_server.engine.MessageQueueManager;
 import org.libertaria.world.profile_server.engine.app_services.AppService;
+import org.libertaria.world.profile_server.engine.app_services.BaseMsg;
 import org.libertaria.world.profile_server.engine.app_services.CallProfileAppService;
 import org.libertaria.world.profile_server.engine.futures.BaseMsgFuture;
 import org.libertaria.world.profile_server.engine.futures.ConnectionFuture;
@@ -477,7 +478,9 @@ public class IoPConnect implements ConnectionListener {
                 cryptoWrapper,
                 sslContextFactory,
                 deviceLocation,
-                messageQueueManager);
+                messageQueueManager,
+                this,
+                profilesManager);
         // map the profile connection with his public key
         managers.put(profile.getHexPublicKey(), ioPProfileConnection);
         return ioPProfileConnection;
@@ -500,7 +503,9 @@ public class IoPConnect implements ConnectionListener {
                 cryptoWrapper,
                 sslContextFactory,
                 deviceLocation,
-                messageQueueManager);
+                messageQueueManager,
+                this,
+                profilesManager);
         // map the profile connection with his public key
         remoteManagers.put(psKey, ioPProfileConnection);
         return ioPProfileConnection;
@@ -573,21 +578,36 @@ public class IoPConnect implements ConnectionListener {
         }
     }
 
-    /**
-     * Call app profile service
-     *
-     * @param serviceName
-     * @param localProfilePubKey
-     * @param remoteProfile
-     * @param tryUpdateRemoteServices -> param to update the profile information first and then request the call.
-     * @param readyListener
-     */
     public void callService(
-            String serviceName,
+            final String serviceName,
             final String localProfilePubKey,
             final ProfileInformation remoteProfile,
             final boolean tryUpdateRemoteServices,
-            final ProfSerMsgListener<CallProfileAppService> readyListener) {
+            final ProfSerMsgListener<CallProfileAppService> readyListener,
+            final BaseMsg baseMsg,
+            final boolean enqueueMessage) {
+        final ProfSerMsgListener<CallProfileAppService> newListener;
+        if (enqueueMessage) {
+            newListener = new ProfSerMsgListener<CallProfileAppService>() {
+                @Override
+                public void onMessageReceive(int messageId, CallProfileAppService message) {
+                    readyListener.onMessageReceive(messageId, message);
+                }
+
+                @Override
+                public void onMsgFail(int messageId, int statusValue, String details) {
+                    messageQueueManager.enqueueMessage(serviceName, localProfilePubKey, remoteProfile.getHexPublicKey(), baseMsg, tryUpdateRemoteServices);
+                    readyListener.onMsgFail(messageId, statusValue, details);
+                }
+
+                @Override
+                public String getMessageName() {
+                    return readyListener.getMessageName();
+                }
+            };
+        } else {
+            newListener = readyListener;
+        }
         logger.info("RunService, remote: " + remoteProfile.getHexPublicKey());
         try {
             if (!localProfiles.containsKey(localProfilePubKey))
@@ -602,7 +622,7 @@ public class IoPConnect implements ConnectionListener {
             CallProfileAppService activeCall = connection.getActiveAppCallService(remoteProfile.getHexPublicKey());
             if (activeCall != null) {
                 // call is active
-                readyListener.onMessageReceive(0, activeCall);
+                newListener.onMessageReceive(0, activeCall);
             } else {
                 // first the call
                 MsgListenerFuture<CallProfileAppService> callListener = new MsgListenerFuture<>();
@@ -624,29 +644,57 @@ public class IoPConnect implements ConnectionListener {
                                 appService.onCallConnected(localProfile, remoteProfile, call.isCallCreator());
 
                                 // notify upper layers
-                                readyListener.onMessageReceive(messageId, call);
+                                newListener.onMessageReceive(messageId, call);
                             } else {
                                 logger.info("call fail with status: " + call.getStatus() + ", error: " + call.getErrorStatus());
-                                readyListener.onMsgFail(messageId, 0, call.getStatus().toString() + " " + call.getErrorStatus());
+                                newListener.onMsgFail(messageId, 0, call.getStatus().toString() + " " + call.getErrorStatus());
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
-                            readyListener.onMsgFail(messageId, 400, e.getMessage());
+                            newListener.onMsgFail(messageId, 400, e.getMessage());
                         }
                     }
 
                     @Override
                     public void onFail(int messageId, int status, String statusDetail) {
                         logger.info("call fail, remote: " + statusDetail);
-                        readyListener.onMsgFail(messageId, status, statusDetail);
+                        newListener.onMsgFail(messageId, status, statusDetail);
                     }
                 });
                 connection.callProfileAppService(remoteProfile.getHexPublicKey(), serviceName, false, true, callListener);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            readyListener.onMsgFail(0, 400, e.getMessage());
+            newListener.onMsgFail(0, 400, e.getMessage());
         }
+    }
+
+    public void callService(
+            final String serviceName,
+            final String localProfilePubKey,
+            final ProfileInformation remoteProfile,
+            final boolean tryUpdateRemoteServices,
+            final ProfSerMsgListener<CallProfileAppService> readyListener,
+            final boolean enqueueMessage) {
+        callService(serviceName, localProfilePubKey, remoteProfile, tryUpdateRemoteServices, readyListener, null, enqueueMessage);
+    }
+
+    /**
+     * Call app profile service
+     *
+     * @param serviceName
+     * @param localProfilePubKey
+     * @param remoteProfile
+     * @param tryUpdateRemoteServices -> param to update the profile information first and then request the call.
+     * @param readyListener
+     */
+    public void callService(
+            String serviceName,
+            final String localProfilePubKey,
+            final ProfileInformation remoteProfile,
+            final boolean tryUpdateRemoteServices,
+            final ProfSerMsgListener<CallProfileAppService> readyListener) {
+        callService(serviceName, localProfilePubKey, remoteProfile, tryUpdateRemoteServices, readyListener, false);
     }
 
     private ProfileServerConfigurations createEmptyProfileServerConf() {
@@ -867,7 +915,7 @@ public class IoPConnect implements ConnectionListener {
 
             return profileRestored;
         } catch (IOException e) {
-            if(e.getCause().getClass().equals(InvalidCipherTextException.class)){
+            if (e.getCause().getClass().equals(InvalidCipherTextException.class)) {
                 throw (InvalidCipherTextException) e.getCause();
             }
         }

@@ -117,9 +117,9 @@ public class PairingModuleImp extends AbstractModule implements PairingModule {
             @Override
             public void onMsgFail(int messageId, int statusValue, String details) {
                 // rollback pairing request:
-                logger.info("fail pairing request: " + details);
-                platformService.getProfilesDb().deleteProfileByPubKey(localProfilePubKey, remotePubKeyStr);
-                platformService.getPairingRequestsDb().delete(pairingRequest.getId());
+//                logger.info("fail pairing request: " + details);
+//                platformService.getProfilesDb().deleteProfileByPubKey(localProfilePubKey, remotePubKeyStr);
+//                platformService.getPairingRequestsDb().delete(pairingRequest.getId());
                 listener.onMsgFail(messageId, statusValue, details);
             }
 
@@ -127,7 +127,7 @@ public class PairingModuleImp extends AbstractModule implements PairingModule {
             public String getMessageName() {
                 return null;
             }
-        });
+        }, true);
     }
 
     @Override
@@ -196,7 +196,7 @@ public class PairingModuleImp extends AbstractModule implements PairingModule {
             public String getMessageName() {
                 return "acceptPairingRequest";
             }
-        });
+        }, true);
     }
 
     @Override

@@ -9,8 +9,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import org.libertaria.world.global.IntentMessage;
 import org.libertaria.world.global.SystemContext;
 import org.libertaria.world.profile_server.engine.MessageQueueManager;
+import org.libertaria.world.profile_server.engine.app_services.BaseMsg;
 import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
-import org.libertaria.world.profile_server.protocol.IopProfileServer;
 import org.spongycastle.util.encoders.Base64;
 
 import java.util.ArrayList;
@@ -34,24 +34,31 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
     public static final String DATABASE_NAME = "message_queue";
 
     public static final String MESSAGES_TABLE_NAME = "messages";
+
     public static final String MESSAGES_COLUMN_ID = "message_id";
-    public static final String MESSAGES_COLUMN_CALL_ID = "call_id";
-    public static final String MESSAGES_COLUMN_TOKEN = "token";
+    public static final String MESSAGES_COLUMN_SERVICE_NAME = "service_name";
+    public static final String MESSAGES_COLUMN_LOCAL_PROFILE = "local_profile";
+    public static final String MESSAGES_COLUMN_REMOTE_PROFILE = "remote_profile";
     public static final String MESSAGES_COLUMN_MSG = "msg";
+    public static final String MESSAGES_COLUMN_MSG_TYPE = "msg_type";
+    public static final String MESSAGES_COLUMN_TRY_SEND_REMOTE = "try_send_remote";
     public static final String MESSAGES_COLUMN_RESEND_ATTEMPTS = "resend_attempts";
     public static final String MESSAGES_COLUMN_TIMESTAMP = "timestamp";
 
     public static final int MESSAGES_POS_COLUMN_ID = 0;
-    public static final int MESSAGES_POS_COLUMN_CALL_ID = 1;
-    public static final int MESSAGES_POS_COLUMN_TOKEN = 2;
-    public static final int MESSAGES_POS_COLUMN_MSG = 3;
-    public static final int MESSAGES_POS_COLUMN_RESEND_ATTEMPTS = 4;
-    public static final int MESSAGES_POS_COLUMN_TIMESTAMP = 5;
+    public static final int MESSAGES_POS_COLUMN_SERVICE_NAME = 1;
+    public static final int MESSAGES_POS_COLUMN_LOCAL_PROFILE = 2;
+    public static final int MESSAGES_POS_COLUMN_REMOTE_PROFILE = 3;
+    public static final int MESSAGES_POS_COLUMN_MSG = 4;
+    public static final int MESSAGES_POS_COLUMN_MSG_TYPE = 5;
+    public static final int MESSAGES_POS_COLUMN_TRY_SEND_REMOTE = 6;
+    public static final int MESSAGES_POS_COLUMN_RESEND_ATTEMPTS = 7;
+    public static final int MESSAGES_POS_COLUMN_TIMESTAMP = 8;
 
     private List<Message> messageQueue;
 
     private static final MessageQueueComparator DEFAULT_COMPARATOR = new MessageQueueComparator();
-    private static Integer resendAttemptLimit = 5;
+    private static Integer resendAttemptLimit = 3;
 
     private final SystemContext systemContext;
 
@@ -67,10 +74,13 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
                 "CREATE TABLE " + MESSAGES_TABLE_NAME +
                         "(" +
                         MESSAGES_COLUMN_ID + " TEXT PRIMARY KEY, " +
-                        MESSAGES_COLUMN_CALL_ID + " TEXT, " +
-                        MESSAGES_COLUMN_TOKEN + " TEXT, " +
+                        MESSAGES_COLUMN_SERVICE_NAME + " TEXT, " +
+                        MESSAGES_COLUMN_LOCAL_PROFILE + " TEXT, " +
+                        MESSAGES_COLUMN_REMOTE_PROFILE + " TEXT, " +
                         MESSAGES_COLUMN_MSG + " TEXT, " +
-                        MESSAGES_COLUMN_RESEND_ATTEMPTS + " INTEGER," +
+                        MESSAGES_COLUMN_MSG_TYPE + " TEXT, " +
+                        MESSAGES_COLUMN_TRY_SEND_REMOTE + " TEXT, " +
+                        MESSAGES_COLUMN_RESEND_ATTEMPTS + " INTEGER, " +
                         MESSAGES_COLUMN_TIMESTAMP + " LONG)"
         );
     }
@@ -82,12 +92,15 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
     }
 
     @Override
-    public void enqueueMessage(String callId, byte[] token, byte[] msg) {
-        Message message = insertMessage(callId, token, msg);
-        IntentMessage eventMessage = new IntentWrapperAndroid(EVENT_MESSAGE_ENQUEUED);
-        eventMessage.put(EVENT_MESSAGE_ENQUEUED, message);
-        systemContext.broadcastPlatformEvent(eventMessage);
-        removeFromQueue(message);
+    public void enqueueMessage(String serviceName, String localProfile, String remoteProfile, BaseMsg messageToSend, boolean tryUpdateRemoteServices) {
+        try {
+            Message message = insertMessage(serviceName, localProfile, remoteProfile, messageToSend, tryUpdateRemoteServices);
+            IntentMessage eventMessage = new IntentWrapperAndroid(EVENT_MESSAGE_ENQUEUED);
+            eventMessage.put(EVENT_MESSAGE_ENQUEUED, message);
+            systemContext.broadcastPlatformEvent(eventMessage);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -101,18 +114,27 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
     }
 
     @Override
-    public ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> buildDefaultQueueListener(Message message) {
+    public void notifyMessageSent(Message messageSent) {
+        IntentMessage eventMessage = new IntentWrapperAndroid(EVENT_MESSAGE_SUCCESSFUL);
+        eventMessage.put(messageSent.getMessageId().toString(), messageSent);
+        systemContext.broadcastPlatformEvent(eventMessage);
+        removeFromQueue(messageSent);
+    }
+
+    @Override
+    public ProfSerMsgListener<Boolean> buildDefaultQueueListener(Message message) {
         return new MessageListener(message);
     }
 
     @Override
     public void failedToResend(Message message) {
-        increaseResendAttempt(message);
+        try {
+            increaseResendAttempt(message);
+        } catch (Exception e) {
+            notifyFailMessage(message);
+        }
         if (message.getCurrentResendingAttempts() >= getResendAttemptLimit()) {
-            IntentMessage eventMessage = new IntentWrapperAndroid(EVENT_MESSAGE_FAILED);
-            eventMessage.put(EVENT_MESSAGE_FAILED, message);
-            systemContext.broadcastPlatformEvent(eventMessage);
-            removeFromQueue(message);
+            notifyFailMessage(message);
         }
     }
 
@@ -126,9 +148,15 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
         resendAttemptLimit = integer;
     }
 
+    private void notifyFailMessage(Message message) {
+        IntentMessage eventMessage = new IntentWrapperAndroid(EVENT_MESSAGE_FAILED);
+        eventMessage.put(EVENT_MESSAGE_FAILED, message);
+        systemContext.broadcastPlatformEvent(eventMessage);
+        removeFromQueue(message);
+    }
 
-    private Message insertMessage(String callId, byte[] token, byte[] msg) {
-        Message message = new MessageImplementation(callId, token, msg, UUID.randomUUID(), 0, new Date());
+    private Message insertMessage(String serviceName, String localProfile, String remoteProfile, BaseMsg messageToSend, boolean tryUpdateRemoteServices) {
+        Message message = new MessageImplementation(serviceName, localProfile, remoteProfile, tryUpdateRemoteServices, messageToSend);
         if (messageQueue.contains(message)) {
             message = messageQueue.get(messageQueue.indexOf(message)); //If it already exists we take the entry from the queue
             failedToResend(message); //Then we notify that it's a resend failure
@@ -147,7 +175,11 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
             Cursor res = db.rawQuery("SELECT * FROM " + MESSAGES_TABLE_NAME + " ORDER BY " + MESSAGES_COLUMN_TIMESTAMP, null);
             if (res.moveToFirst()) {
                 do {
-                    messageQueue.add(buildFrom(res));
+                    try {
+                        messageQueue.add(buildFrom(res));
+                    } catch (Exception e) {
+                        e.printStackTrace(); //Let's ignore only this record...
+                    }
                 } while (res.moveToNext());
             }
         }
@@ -163,7 +195,7 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
         return rowsRemoved > 0;
     }
 
-    private void increaseResendAttempt(Message message) {
+    private void increaseResendAttempt(Message message) throws Exception {
         message.increaseResendAttempt();
         SQLiteDatabase db = this.getReadableDatabase();
         db.update(MESSAGES_TABLE_NAME, buildContent(message), MESSAGES_COLUMN_ID + "= ?", new String[]{message.getMessageId().toString()});
@@ -171,9 +203,18 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
 
     private ContentValues buildContent(Message message) {
         ContentValues contentValues = new ContentValues();
-        contentValues.put(MESSAGES_COLUMN_CALL_ID, message.getCallId());
-        contentValues.put(MESSAGES_COLUMN_TOKEN, Base64.encode(message.getToken()));
-        contentValues.put(MESSAGES_COLUMN_MSG, Base64.encode(message.getMsg()));
+        contentValues.put(MESSAGES_COLUMN_LOCAL_PROFILE, message.getLocalProfilePubKey());
+        contentValues.put(MESSAGES_COLUMN_REMOTE_PROFILE, message.getRemoteProfileKey());
+        if (message.getMessage() != null) {
+            try {
+                contentValues.put(MESSAGES_COLUMN_MSG, Base64.encode(message.getMessage().encode()));
+                contentValues.put(MESSAGES_COLUMN_MSG_TYPE, message.getMessage().getType());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        contentValues.put(MESSAGES_COLUMN_SERVICE_NAME, message.getServiceName());
+        contentValues.put(MESSAGES_COLUMN_TRY_SEND_REMOTE, String.valueOf(message.tryUpdateRemoteServices()));
         contentValues.put(MESSAGES_COLUMN_RESEND_ATTEMPTS, message.getCurrentResendingAttempts());
         contentValues.put(MESSAGES_COLUMN_ID, message.getMessageId().toString());
         contentValues.put(MESSAGES_COLUMN_TIMESTAMP, message.getTimestamp().getTime());
@@ -182,12 +223,15 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
 
     private Message buildFrom(Cursor cursor) {
         UUID messageId = UUID.fromString(cursor.getString(MESSAGES_POS_COLUMN_ID));
-        String callId = cursor.getString(MESSAGES_POS_COLUMN_CALL_ID);
-        byte[] token = Base64.decode(cursor.getString(MESSAGES_POS_COLUMN_TOKEN));
-        byte[] msg = Base64.decode(cursor.getString(MESSAGES_POS_COLUMN_MSG));
+        String localProfile = cursor.getString(MESSAGES_POS_COLUMN_LOCAL_PROFILE);
+        String remoteProfile = cursor.getString(MESSAGES_POS_COLUMN_REMOTE_PROFILE);
+        String serviceName = cursor.getString(MESSAGES_POS_COLUMN_SERVICE_NAME);
+        byte[] message = Base64.decode(cursor.getString(MESSAGES_POS_COLUMN_MSG));
+        String messageType = cursor.getString(MESSAGES_POS_COLUMN_MSG_TYPE);
+        boolean trySendRemote = Boolean.valueOf(cursor.getString(MESSAGES_POS_COLUMN_TRY_SEND_REMOTE));
         Integer resendAttempts = cursor.getInt(MESSAGES_POS_COLUMN_RESEND_ATTEMPTS);
         Date timestamp = new Date(cursor.getLong(MESSAGES_POS_COLUMN_TIMESTAMP));
-        return new MessageImplementation(callId, token, msg, messageId, resendAttempts, timestamp);
+        return new MessageImplementation(serviceName, localProfile, remoteProfile, trySendRemote, messageId, message, messageType, resendAttempts, timestamp);
     }
 
 
@@ -198,7 +242,7 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
         }
     }
 
-    private class MessageListener implements ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> {
+    private class MessageListener implements ProfSerMsgListener<Boolean> {
 
         private final Message messageInQueue;
 
@@ -217,11 +261,8 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
         }
 
         @Override
-        public void onMessageReceive(int messageId, IopProfileServer.ApplicationServiceSendMessageResponse message) {
-            IntentMessage eventMessage = new IntentWrapperAndroid(EVENT_MESSAGE_SUCCESSFUL);
-            eventMessage.put(EVENT_MESSAGE_SUCCESSFUL, message);
-            systemContext.broadcastPlatformEvent(eventMessage);
-            removeFromQueue(messageInQueue);
+        public void onMessageReceive(int messageId, Boolean message) {
+            notifyMessageSent(messageInQueue);
         }
     }
 }

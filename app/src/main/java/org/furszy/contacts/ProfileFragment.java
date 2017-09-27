@@ -36,9 +36,9 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
+import org.furszy.contacts.app_base.BaseAppFragment;
 import org.libertaria.world.profile_server.ProfileInformation;
 import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
-import org.furszy.contacts.app_base.BaseAppFragment;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -58,7 +58,7 @@ import static android.app.Activity.RESULT_OK;
  * Created by mati on 16/04/17.
  */
 
-public class ProfileFragment extends BaseAppFragment implements View.OnClickListener{
+public class ProfileFragment extends BaseAppFragment implements View.OnClickListener {
 
 
     private static final String TAG = "ProfileActivity";
@@ -92,9 +92,9 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
     private BroadcastReceiver connectionReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(App.INTENT_ACTION_PROFILE_CONNECTED)){
+            if (intent.getAction().equals(App.INTENT_ACTION_PROFILE_CONNECTED)) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(getActivity(),"Profile connected",Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "Profile connected", Toast.LENGTH_LONG).show();
             }
         }
     };
@@ -103,19 +103,19 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        super.onCreateView(inflater,container,savedInstanceState);
+        super.onCreateView(inflater, container, savedInstanceState);
 
         checkPermissions();
 
         getActivity().setTitle("Edit Profile");
 
-        root = inflater.inflate(R.layout.profile_main,container);
+        root = inflater.inflate(R.layout.profile_main, container);
 
         isRegistered = profilesModule.isProfileRegistered(selectedProfilePubKey);
 
         imgProfile = (CircleImageView) root.findViewById(R.id.profile_image);
         txt_name = (EditText) root.findViewById(R.id.txt_name);
-        txt_name.setFilters(new InputFilter[]{filter,new InputFilter.LengthFilter(14)});
+        txt_name.setFilters(new InputFilter[]{filter, new InputFilter.LengthFilter(14)});
         progressBar = (ProgressBar) root.findViewById(R.id.progressBar);
         loading_img = (ProgressBar) root.findViewById(R.id.loading_img);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.BLUE, PorterDuff.Mode.MULTIPLY);
@@ -151,17 +151,17 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
 
         btn_create.setOnClickListener(this);
 
-        if (isRegistered){
+        if (isRegistered) {
             changeScreenState(DONE_SCREEN_STATE);
-        }else {
+        } else {
             changeScreenState(UPDATE_SCREEN_STATE);
         }
 
         try {
             File imgFile = null;// module.getUserImageFile();
-            if (imgFile!=null && imgFile.exists())
+            if (imgFile != null && imgFile.exists())
                 Picasso.with(getActivity()).load(imgFile).into(imgProfile);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -170,9 +170,9 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
         return root;
     }
 
-    private void changeScreenState(int state){
+    private void changeScreenState(int state) {
         screenState = state;
-        switch (state){
+        switch (state) {
             case DONE_SCREEN_STATE:
                 btn_create.setText("Back");
                 break;
@@ -187,10 +187,10 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
     @Override
     public void onResume() {
         super.onResume();
-        if (executor==null)
+        if (executor == null)
             executor = Executors.newSingleThreadExecutor();
         // init profile
-        if (profilesModule!=null) {
+        if (profilesModule != null) {
             profile = profilesModule.getProfile(selectedProfilePubKey);
             if (profile != null) {
                 txt_name.setText(profile.getName());
@@ -204,18 +204,18 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
     @Override
     public void onStop() {
         super.onStop();
-        if (executor!=null){
+        if (executor != null) {
             executor.shutdownNow();
             executor = null;
         }
-        try{
+        try {
             ((BaseActivity) getActivity()).localBroadcastManager.unregisterReceiver(connectionReceiver);
-        }catch (Exception e){
+        } catch (Exception e) {
             // nothing..
         }
     }
 
-    private void init(){
+    private void init() {
 
         txt_name.addTextChangedListener(new TextWatcher() {
             @Override
@@ -231,9 +231,9 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
             @Override
             public void afterTextChanged(Editable s) {
                 String name = s.toString();
-                if (name.length()>3 ){
+                if (name.length() > 3) {
                     changeScreenState(UPDATE_SCREEN_STATE);
-                }else {
+                } else {
                     changeScreenState(DONE_SCREEN_STATE);
                 }
             }
@@ -245,17 +245,16 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
      *
      * @param runnable
      */
-    private void execute(Runnable runnable){
-        if (executor==null)
+    private void execute(Runnable runnable) {
+        if (executor == null)
             executor = Executors.newSingleThreadExecutor();
         executor.execute(runnable);
     }
 
 
     private void buildFailDialog(String message) {
-        Toast.makeText(getActivity(),message,Toast.LENGTH_LONG).show();
+        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
     }
-
 
 
     @Override
@@ -266,8 +265,8 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
             loading_img.setVisibility(View.VISIBLE);
 
             Uri selectedImage = data.getData();
-            String[] filePathColumn = { MediaStore.Images.Media.DATA };
-            Cursor cursor = getActivity().getContentResolver().query(selectedImage,filePathColumn, null, null, null);
+            String[] filePathColumn = {MediaStore.Images.Media.DATA};
+            Cursor cursor = getActivity().getContentResolver().query(selectedImage, filePathColumn, null, null, null);
             cursor.moveToFirst();
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
             final String picturePath = cursor.getString(columnIndex);
@@ -276,8 +275,8 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
             // scale image
             //imgProfile.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 1024, 1024, false));
 
-            if( ContextCompat.checkSelfPermission(getActivity(),
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ) {
+            if (ContextCompat.checkSelfPermission(getActivity(),
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
                         Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
@@ -312,9 +311,9 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
                     int outWidth = 0;
                     int outHeight = 0;
                     try {
-                        if(origWidth > destWidth){
+                        if (origWidth > destWidth) {
                             // picture is wider than we want it, we calculate its target height
-                            if(origWidth > origHeight){
+                            if (origWidth > origHeight) {
                                 outWidth = destWidth;
                                 outHeight = (origHeight * destWidth) / origWidth;
                             } else {
@@ -328,7 +327,7 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
                             Bitmap b2 = Bitmap.createScaledBitmap(bitmap, outWidth, outHeight, false);
                             out = new ByteArrayOutputStream();
                             bitmap = b2;
-                            b2.compress(Bitmap.CompressFormat.JPEG,70 , out);
+                            b2.compress(Bitmap.CompressFormat.JPEG, 70, out);
                             Log.i(TAG, "Scale Width " + b2.getWidth());
                             Log.i(TAG, "Scale Height " + b2.getHeight());
                         } else {
@@ -340,9 +339,9 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
                         profImgData = out.toByteArray();
 
 
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
-                    }finally {
+                    } finally {
                         try {
                             if (out != null) {
                                 out.close();
@@ -357,7 +356,7 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Log.i("ProfileFragment","setting bitmap profile");
+                            Log.i("ProfileFragment", "setting bitmap profile");
                             //imgProfile.setImageBitmap(Bitmap.createScaledBitmap(finalBitmap, 1024, 1024, false));
                             imgProfile.setImageBitmap(finalBitmap);
                             loading_img.setVisibility(View.INVISIBLE);
@@ -367,16 +366,16 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
             });
 
 
-            if (isRegistered){
+            if (isRegistered) {
                 btn_create.setText("Save");
                 screenState = UPDATE_SCREEN_STATE;
             }
         }
     }
 
-    private Bitmap compressImageArrayIntoBitmap(byte[] array){
+    private Bitmap compressImageArrayIntoBitmap(byte[] array) {
         try {
-            File file = new File(getActivity().getCacheDir(),"compressed_image");
+            File file = new File(getActivity().getCacheDir(), "compressed_image");
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             fileOutputStream.write(array);
             fileOutputStream.close();
@@ -406,14 +405,14 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
         return bitmap;
     }
 
-    private void updateProfile(){
+    private void updateProfile() {
         final String name = txt_name.getText().toString();
         if (!name.equals("")) {
             progressBar.setVisibility(View.VISIBLE);
             final boolean isIdentityCreated = profilesModule.isIdentityCreated(selectedProfilePubKey);
-            if (!isIdentityCreated){
+            if (!isIdentityCreated) {
                 IntentFilter intentFilter = new IntentFilter(App.INTENT_ACTION_PROFILE_CONNECTED);
-                ((BaseActivity)getActivity()).localBroadcastManager.registerReceiver(connectionReceiver,intentFilter);
+                ((BaseActivity) getActivity()).localBroadcastManager.registerReceiver(connectionReceiver, intentFilter);
             }
             execute(new Runnable() {
                 @Override
@@ -428,12 +427,12 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
                                 profImgData,
                                 listenerFuture);
                         listenerFuture.get();
-                        res = listenerFuture.getStatusDetail()==null;
-                        if (!res){
-                            detail = "Fail, error: "+listenerFuture.getStatusDetail();
+                        res = listenerFuture.getStatusDetail() == null;
+                        if (!res) {
+                            detail = "Fail, error: " + listenerFuture.getStatusDetail();
                         }
                     } catch (Exception e) {
-                        Log.e(TAG," exception updating the profile\n" +e.getMessage());
+                        Log.e(TAG, " exception updating the profile\n" + e.getMessage());
                         detail = "Cant update profile, send report please";
                     }
                     final String finalDetail = detail;
@@ -441,7 +440,7 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (getActivity()!=null) {
+                            if (getActivity() != null) {
                                 if (!finalRes) {
                                     progressBar.setVisibility(View.GONE);
                                     Toast.makeText(getActivity(), finalDetail, Toast.LENGTH_LONG).show();
@@ -463,8 +462,8 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        if (id == R.id.btn_create){
-            switch (screenState){
+        if (id == R.id.btn_create) {
+            switch (screenState) {
                 case DONE_SCREEN_STATE:
                     getActivity().onBackPressed();
                     break;
@@ -476,11 +475,11 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
     }
 
 
-      private void checkPermissions() {
-                // Assume thisActivity is the current activity
-                if (Build.VERSION.SDK_INT > 22) {
+    private void checkPermissions() {
+        // Assume thisActivity is the current activity
+        if (Build.VERSION.SDK_INT > 22) {
 
-                    int permissionCheck = ContextCompat.checkSelfPermission(getActivity(),
+            int permissionCheck = ContextCompat.checkSelfPermission(getActivity(),
                     Manifest.permission.READ_EXTERNAL_STORAGE);
 
             // Here, thisActivity is the current activity
@@ -537,13 +536,12 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
             // permissions this app might request
         }
     }
+
     public InputFilter filter = new InputFilter() {
         @Override
         public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-            for (int i = start; i < end; ++i)
-            {
-                if (!Pattern.compile("[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890]*").matcher(String.valueOf(source.charAt(i))).matches())
-                {
+            for (int i = start; i < end; ++i) {
+                if (!Pattern.compile("[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890]*").matcher(String.valueOf(source.charAt(i))).matches()) {
                     return "";
                 }
             }
