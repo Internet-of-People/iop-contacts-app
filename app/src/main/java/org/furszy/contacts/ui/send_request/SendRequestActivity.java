@@ -137,7 +137,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                                             @Override
                                             public void run() {
                                                 Log.i(TAG, "trying to send the pairing request, " + statusDetail);
-                                                Snackbar.make(v, getString(R.string.pairing_trying, statusDetail), Snackbar.LENGTH_LONG).show();
+                                                Snackbar.make(v, getString(R.string.pairing_trying), Snackbar.LENGTH_LONG).show();
                                                 //Toast.makeText(SendRequestActivity.this,statusDetail,Toast.LENGTH_LONG).show();
                                                 progressBar.setVisibility(View.INVISIBLE);
                                                 enableSendBtn();
@@ -213,14 +213,17 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
     private class SendPairingReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            MessageQueueManager.Message message = (MessageQueueManager.Message) intent.getExtras().get(MessageQueueManager.EVENT_MESSAGE_FAILED);
-            if (message == null) {
-                return;
-            }
-            PairingMsg pairingMsg = new PairingMsg();
+            PairingMsg pairingMsg;
             switch (intent.getAction()) {
                 case MessageQueueManager.EVENT_MESSAGE_SUCCESSFUL: {
                     try {
+                        MessageQueueManager.Message message = (MessageQueueManager.Message) intent.getExtras().get(MessageQueueManager.EVENT_MESSAGE_SUCCESSFUL);
+                        if (message == null) {
+                            return;
+                        }
+                        if (!(message.getMessage() instanceof PairingMsg)) {
+                            return;
+                        }
                         pairingMsg = (PairingMsg) message.getMessage();
                         PairingRequest pairingRequest = pairingModule.getPairingRequest(pairingMsg.getPairingRequestId());
                         Notification not = new Notification.Builder(context)
@@ -236,6 +239,13 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                 }
                 break;
                 case MessageQueueManager.EVENT_MESSAGE_FAILED: {
+                    MessageQueueManager.Message message = (MessageQueueManager.Message) intent.getExtras().get(MessageQueueManager.EVENT_MESSAGE_FAILED);
+                    if (message == null) {
+                        return;
+                    }
+                    if (!(message.getMessage() instanceof PairingMsg)) {
+                        return;
+                    }
                     try {
                         pairingMsg = (PairingMsg) message.getMessage();
                         PairingRequest pairingRequest = pairingModule.getPairingRequest(pairingMsg.getPairingRequestId());

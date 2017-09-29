@@ -729,8 +729,11 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
             if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action)) {
                 ConnectivityManager connectivityManager = (ConnectivityManager) PlatformServiceImp.this.getSystemService(Context.CONNECTIVITY_SERVICE);
                 final NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-                final boolean hasConnectivity = networkInfo.isConnected();
-                logger.info("network is {}, state {}/{}", hasConnectivity ? "up" : "down", networkInfo.getState(), networkInfo.getDetailedState());
+                boolean hasConnectivity = false;
+                if (networkInfo != null) {
+                    hasConnectivity = networkInfo.isConnected();
+                    logger.info("network is {}, state {}/{}", hasConnectivity ? "up" : "down", networkInfo.getState(), networkInfo.getDetailedState());
+                }
                 if (hasConnectivity)
                     impediments.remove(BlockchainState.Impediment.NETWORK);
                 else {
