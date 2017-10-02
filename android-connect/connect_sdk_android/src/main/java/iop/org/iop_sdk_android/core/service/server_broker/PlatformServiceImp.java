@@ -456,14 +456,24 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
                                 moduleImp.onCheckInFail(profile, status, statusDetail);
                                 if (status == 400) {
                                     logger.info("Checking fail, detail " + statusDetail + ", trying to reconnect after 5 seconds");
+                                    Executors.newSingleThreadScheduledExecutor().schedule(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            check();
+                                        }
+                                    }, 5, TimeUnit.SECONDS);
                                 }
                             }
                         });
-                        ioPConnect.connectProfile(
-                                localProfile.getHexPublicKey(),
-                                null,
-                                future
-                        );
+                        try {
+                            ioPConnect.connectProfile(
+                                    localProfile.getHexPublicKey(),
+                                    null,
+                                    future
+                            );
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     } else {
                         Intent intent = new Intent(ACTION_ON_PROFILE_CONNECTED);
                         intent.putExtra(INTENT_EXTRA_PROF_KEY, localProfile.getHexPublicKey());

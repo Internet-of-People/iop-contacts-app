@@ -3,13 +3,13 @@ package org.libertaria.world.services.chat;
 import org.libertaria.world.profile_server.ProfileInformation;
 import org.libertaria.world.profile_server.engine.app_services.AppService;
 import org.libertaria.world.profile_server.engine.app_services.CallProfileAppService;
+import org.libertaria.world.profile_server.engine.app_services.MessageWrapper;
 import org.libertaria.world.profile_server.model.Profile;
 import org.libertaria.world.services.EnabledServices;
 import org.libertaria.world.services.chat.msg.ChatMsgTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -40,7 +40,7 @@ public class ChatAppService extends AppService {
         callProfileAppService.setCallIdleTime(TimeUnit.MINUTES.toMillis(1));
         callProfileAppService.setMsgListener(new org.libertaria.world.profile_server.engine.app_services.CallProfileAppService.CallMessagesListener() {
             @Override
-            public void onMessage(org.libertaria.world.profile_server.engine.app_services.MsgWrapper msg) {
+            public void onMessage(MessageWrapper msg) {
                 if (msg.getMsg().getType().equals(ChatMsgTypes.CHAT_REFUSED.name())){
                     // clean the connection here
                     callProfileAppService.dispose();

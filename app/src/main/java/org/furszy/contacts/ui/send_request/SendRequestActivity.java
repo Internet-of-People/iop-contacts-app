@@ -22,7 +22,7 @@ import android.widget.Toast;
 import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.R;
 import org.furszy.contacts.scanner.ScanActivity;
-import org.libertaria.world.core.services.pairing.PairingMsg;
+import org.libertaria.world.core.services.pairing.PairRequestMessage;
 import org.libertaria.world.crypto.CryptoBytes;
 import org.libertaria.world.profile_server.ProfileInformation;
 import org.libertaria.world.profile_server.engine.MessageQueueManager;
@@ -213,7 +213,7 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
     private class SendPairingReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            PairingMsg pairingMsg;
+            PairRequestMessage pairRequestMessage;
             switch (intent.getAction()) {
                 case MessageQueueManager.EVENT_MESSAGE_SUCCESSFUL: {
                     try {
@@ -221,11 +221,11 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                         if (message == null) {
                             return;
                         }
-                        if (!(message.getMessage() instanceof PairingMsg)) {
+                        if (!(message.getMessage() instanceof PairRequestMessage)) {
                             return;
                         }
-                        pairingMsg = (PairingMsg) message.getMessage();
-                        PairingRequest pairingRequest = pairingModule.getPairingRequest(pairingMsg.getPairingRequestId());
+                        pairRequestMessage = (PairRequestMessage) message.getMessage();
+                        PairingRequest pairingRequest = pairingModule.getPairingRequest(pairRequestMessage.getPairingRequestId());
                         Notification not = new Notification.Builder(context)
                                 .setContentTitle("Pairing request accepted!")
                                 .setContentText("Your pairing request with " + pairingRequest.getRemoteName() + " has been accepted!")
@@ -243,13 +243,13 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                     if (message == null) {
                         return;
                     }
-                    if (!(message.getMessage() instanceof PairingMsg)) {
+                    if (!(message.getMessage() instanceof PairRequestMessage)) {
                         return;
                     }
                     try {
-                        pairingMsg = (PairingMsg) message.getMessage();
-                        PairingRequest pairingRequest = pairingModule.getPairingRequest(pairingMsg.getPairingRequestId());
-                        pairingModule.cancelPairingRequest(pairingRequest);
+                        pairRequestMessage = (PairRequestMessage) message.getMessage();
+                        PairingRequest pairingRequest = pairingModule.getPairingRequest(pairRequestMessage.getPairingRequestId());
+                        pairingModule.cancelPairingRequest(pairingRequest, false);
                         Notification not = new Notification.Builder(context)
                                 .setContentTitle("Pairing request couldn't be sent.")
                                 .setContentText("Your pairing request with " + pairingRequest.getRemoteName() + " couldn't be sent.")

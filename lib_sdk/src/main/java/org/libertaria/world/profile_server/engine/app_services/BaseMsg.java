@@ -18,5 +18,9 @@ public abstract class BaseMsg<T> implements Serializable{
         throw new MethodNotSupportedException("method not implemented");
     }
 
+    public MessageWrapper buildMessageWrapper(){
+        return new MessageWrapper(this, getType());
+    }
+
     public abstract String getType();
 }

@@ -207,7 +207,7 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
         contentValues.put(MESSAGES_COLUMN_REMOTE_PROFILE, message.getRemoteProfileKey());
         if (message.getMessage() != null) {
             try {
-                contentValues.put(MESSAGES_COLUMN_MSG, Base64.encode(message.getMessage().encode()));
+                contentValues.put(MESSAGES_COLUMN_MSG, Base64.toBase64String(message.getMessage().encode()));
                 contentValues.put(MESSAGES_COLUMN_MSG_TYPE, message.getMessage().getType());
             } catch (Exception e) {
                 e.printStackTrace();

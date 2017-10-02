@@ -7,19 +7,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import org.furszy.contacts.R;
 import org.furszy.contacts.app_base.BaseAppRecyclerFragment;
+import org.furszy.contacts.ui.home.HomeActivity;
 import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.profiles_manager.PairingRequest;
-import org.furszy.contacts.R;
-import tech.furszy.ui.lib.base.adapter.BaseAdapter;
-import tech.furszy.ui.lib.base.RecyclerFragment;
-import org.furszy.contacts.ui.home.HomeActivity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import tech.furszy.ui.lib.base.adapter.BaseAdapter;
 
 public class RequestsFragment extends BaseAppRecyclerFragment<PairingRequest> {
 
@@ -129,7 +129,7 @@ public class RequestsFragment extends BaseAppRecyclerFragment<PairingRequest> {
 
             @Override
             public void onCancelRequest(PairingRequest pairingRequest) {
-                pairingModule.cancelPairingRequest(pairingRequest);
+                pairingModule.cancelPairingRequest(pairingRequest, true);
                 Toast.makeText(getActivity(),"Connection cancelled..",Toast.LENGTH_SHORT).show();
                 refresh();
             }

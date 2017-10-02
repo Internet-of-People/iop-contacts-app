@@ -1,5 +1,6 @@
 package org.libertaria.world.profiles_manager;
 
+import org.libertaria.world.core.services.pairing.PairingMessageType;
 import org.libertaria.world.global.DbObject;
 
 import java.io.Serializable;
@@ -19,19 +20,19 @@ public class PairingRequest implements DbObject,Serializable {
     private String remotePsHost;
     private String remoteName;
     private long timestamp;
-    private org.libertaria.world.core.services.pairing.PairingMsgTypes status;
+    private PairingMessageType status;
     // Extra info
     private org.libertaria.world.profile_server.imp.ProfileInformationImp.PairStatus pairStatus;
 
     public static PairingRequest buildPairingRequest(String senderPubKey, String remotePubKey, String remoteServerId, String senderName, String senderPsHost, String remoteName , org.libertaria.world.profile_server.imp.ProfileInformationImp.PairStatus pairStatus){
-        return new PairingRequest(senderPubKey,remotePubKey,remoteServerId,null,senderName,System.currentTimeMillis(), org.libertaria.world.core.services.pairing.PairingMsgTypes.PAIR_REQUEST,senderPsHost, remoteName ,pairStatus);
+        return new PairingRequest(senderPubKey,remotePubKey,remoteServerId,null,senderName,System.currentTimeMillis(), PairingMessageType.PAIR_REQUEST,senderPsHost, remoteName ,pairStatus);
     }
 
     public static PairingRequest buildPairingRequestFromHost(String senderPubKey, String remotePubKey, String remotePsHost, String senderName, String senderPsHost, String remoteName, org.libertaria.world.profile_server.imp.ProfileInformationImp.PairStatus pairStatus){
-        return new PairingRequest(senderPubKey,remotePubKey,null,remotePsHost,senderName,System.currentTimeMillis(), org.libertaria.world.core.services.pairing.PairingMsgTypes.PAIR_REQUEST,senderPsHost,remoteName,pairStatus);
+        return new PairingRequest(senderPubKey,remotePubKey,null,remotePsHost,senderName,System.currentTimeMillis(), PairingMessageType.PAIR_REQUEST,senderPsHost,remoteName,pairStatus);
     }
 
-    public PairingRequest(int id, String senderPubKey, String remotePubKey, String remoteServerId, String remotePsHost, String senderName, long timestamp, org.libertaria.world.core.services.pairing.PairingMsgTypes status, String senderPsHost, String remoteName, org.libertaria.world.profile_server.imp.ProfileInformationImp.PairStatus pairStatus) {
+    public PairingRequest(int id, String senderPubKey, String remotePubKey, String remoteServerId, String remotePsHost, String senderName, long timestamp, PairingMessageType status, String senderPsHost, String remoteName, org.libertaria.world.profile_server.imp.ProfileInformationImp.PairStatus pairStatus) {
         this.id = id;
         this.senderPubKey = senderPubKey;
         this.remotePubKey = remotePubKey;
@@ -45,7 +46,7 @@ public class PairingRequest implements DbObject,Serializable {
         this.remoteName = remoteName;
     }
 
-    private PairingRequest(String senderPubKey, String remotePubKey, String remoteServerId, String remotePsHost, String senderName, long timestamp, org.libertaria.world.core.services.pairing.PairingMsgTypes status, String senderPsHost, String remoteName , org.libertaria.world.profile_server.imp.ProfileInformationImp.PairStatus pairStatus) {
+    private PairingRequest(String senderPubKey, String remotePubKey, String remoteServerId, String remotePsHost, String senderName, long timestamp, PairingMessageType status, String senderPsHost, String remoteName , org.libertaria.world.profile_server.imp.ProfileInformationImp.PairStatus pairStatus) {
         this.senderPubKey = senderPubKey;
         this.remotePubKey = remotePubKey;
         this.remoteServerId = remoteServerId;
@@ -82,11 +83,11 @@ public class PairingRequest implements DbObject,Serializable {
         return id;
     }
 
-    public org.libertaria.world.core.services.pairing.PairingMsgTypes getStatus() {
+    public PairingMessageType getStatus() {
         return status;
     }
 
-    public void setStatus(org.libertaria.world.core.services.pairing.PairingMsgTypes status) {
+    public void setStatus(PairingMessageType status) {
         this.status = status;
     }
 

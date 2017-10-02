@@ -240,11 +240,10 @@ public class IoPConnect implements ConnectionListener {
                             logger.info("Main home host reconnected fail");
                             if (engineListener != null) {
                                 engineListener.onDisconnect(localProfile.getHexPublicKey());
-                            } else {
-                                logger.warn("reconnection fail and the engine listener is null.. please check this..");
-                                reconnectionManager.scheduleReconnection(localProfile, psHost, portType, callId, tokenId, IoPConnect.this);
-                                logger.info("Reconnection scheduled in: {} seconds", reconnectionManager.getCurrentWaitingTime());
                             }
+                            logger.warn("reconnection fail and the engine listener is null.. please check this..");
+                            reconnectionManager.scheduleReconnection(localProfile, psHost, portType, callId, tokenId, IoPConnect.this);
+                            logger.info("Reconnection scheduled in: {} seconds", reconnectionManager.getCurrentWaitingTime());
                         }
                     });
                     try {

@@ -126,7 +126,7 @@ public abstract class AbstractModule implements Module {
     protected void prepareCall(String localProfilePubKey, String remoteProfPubKey, ProfSerMsgListener<CallProfileAppService> readyListener, boolean useQueue) {
         ProfileInformation remoteProfileInformation = ioPConnect.getKnownProfile(localProfilePubKey, remoteProfPubKey);
         if (remoteProfileInformation == null)
-            throw new IllegalArgumentException("remote profile not exist");
+            return;
         prepareCall(localProfilePubKey, remoteProfileInformation, readyListener, useQueue);
     }
 
@@ -206,4 +206,35 @@ public abstract class AbstractModule implements Module {
         }, msg, useQueue);
     }
 
+    protected void prepareCallAndSend(String localProfilePubKey, String remotePublicKey, final BaseMsg msg, final ProfSerMsgListener<Boolean> readyListener, boolean useQueue) {
+        logger.info("prepareCallAndSend");
+        ProfileInformation remoteProfileInformation = ioPConnect.getKnownProfile(localProfilePubKey, remotePublicKey);
+        if (remoteProfileInformation == null)
+            return;
+        ioPConnect.callService(service.getName(), localProfilePubKey, remoteProfileInformation, true, new ProfSerMsgListener<CallProfileAppService>() {
+            @Override
+            public void onMessageReceive(int messageId, CallProfileAppService call) {
+                try {
+                    logger.info("prepareCallAndSend sucess");
+                    call.sendMsg(msg, readyListener, true);
+                } catch (Exception e) {
+                    logger.info("prepareCallAndSend msg fail, " + e.getMessage());
+                    if (readyListener != null)
+                        readyListener.onMsgFail(messageId, 0, e.getMessage());
+                }
+            }
+
+            @Override
+            public void onMsgFail(int messageId, int statusValue, String details) {
+                logger.info("prepareCallAndSend msg fail, " + details);
+                if (readyListener != null)
+                    readyListener.onMsgFail(messageId, statusValue, details);
+            }
+
+            @Override
+            public String getMessageName() {
+                return "prepareCallAndSend";
+            }
+        }, msg, useQueue);
+    }
 }
