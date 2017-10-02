@@ -10,6 +10,7 @@ import static org.libertaria.world.profile_server.protocol.IopShared.Status.ERRO
  * Created by mati on 16/05/17.
  * <p>
  * Clase encargada de manejar la primera conexión y devolver un objecto
+ *
  */
 
 public class ProfSerConnectionEngine {
@@ -26,6 +27,41 @@ public class ProfSerConnectionEngine {
 
     /**
      * Main method to init the connection with the server.
+     *
+     * The flow is the following:
+     *
+     * 1) Just for the first time (second time the profile is already registered and this starts on point 2):
+     *
+     *              RequestRoles
+     *  client ------------------------------------> Server
+     *                              AvailableRoles
+     *  client <-----------------------------------  Server
+     *              StartConversationNonCustomer
+     *  client ------------------------------------>  Server
+     *                         StartConverResponse
+     *  client <-----------------------------------  Server
+     *              RequestHomeNode
+     *  client ----------------------------------->  Server
+     *                         HomeNodeResponse
+     *  client <-----------------------------------  Server
+     *
+     *
+     *  ## After this the profile is registered on the PS.
+     *
+     *  2) Check-in flow
+     *
+     *              StartConversationCustomer
+     *  client ------------------------------------> Server
+     *                          StartConverResponse
+     *  client <------------------------------------ Server
+     *              RequestCheckIn
+     *  client ------------------------------------> Server
+     *                          CheckInResponse
+     *  client <------------------------------------ Server
+     *
+     *
+     *  ## After this the profile is ready to send messages and be found by other profiles in the network.
+     *
      */
     void engine() {
         try {
