@@ -801,15 +801,15 @@ public class IoPConnect implements ConnectionListener {
         if (profile.getImg() != null) {
             mainInfo.setImg(ByteString.copyFrom(profile.getImg()));
         }
-        org.libertaria.world.profiles_manager.ProfileOuterClass.Profile.Builder mainProfile = org.libertaria.world.profiles_manager.ProfileOuterClass.Profile.newBuilder()
+       ProfileOuterClass.Profile.Builder mainProfile = org.libertaria.world.profiles_manager.ProfileOuterClass.Profile.newBuilder()
                 .setProfileInfo(mainInfo)
                 .setPrivKey(ByteString.copyFrom(profile.getPrivKey()));
 
         // Then connections
-        List<org.libertaria.world.profiles_manager.ProfileOuterClass.ProfileInfo> remoteBackups = new ArrayList<>();
+        List<ProfileOuterClass.ProfileInfo> remoteBackups = new ArrayList<>();
         List<ProfileInformation> profileInformationList = profilesManager.listAll(profile.getHexPublicKey());
         for (ProfileInformation profileInformation : profileInformationList) {
-            org.libertaria.world.profiles_manager.ProfileOuterClass.ProfileInfo.Builder profileInfoBuilder = org.libertaria.world.profiles_manager.ProfileOuterClass.ProfileInfo.newBuilder()
+            ProfileOuterClass.ProfileInfo.Builder profileInfoBuilder = org.libertaria.world.profiles_manager.ProfileOuterClass.ProfileInfo.newBuilder()
                     .setName(profileInformation.getName())
                     .setPubKey(ByteString.copyFrom(CryptoBytes.fromHexToBytes(profileInformation.getHexPublicKey())));
             if (profileInformation.getVersion() != null) {

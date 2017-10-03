@@ -53,8 +53,27 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.sendPairingReceiver = new SendPairingReceiver();
-        registerReceiver(sendPairingReceiver, new IntentFilter(MessageQueueManager.EVENT_MESSAGE_SUCCESSFUL));
-        registerReceiver(sendPairingReceiver, new IntentFilter(MessageQueueManager.EVENT_MESSAGE_FAILED));
+        localBroadcastManager.registerReceiver(sendPairingReceiver, new IntentFilter(MessageQueueManager.EVENT_MESSAGE_SUCCESSFUL));
+        localBroadcastManager.registerReceiver(sendPairingReceiver, new IntentFilter(MessageQueueManager.EVENT_MESSAGE_FAILED));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        localBroadcastManager.registerReceiver(sendPairingReceiver, new IntentFilter(MessageQueueManager.EVENT_MESSAGE_SUCCESSFUL));
+        localBroadcastManager.registerReceiver(sendPairingReceiver, new IntentFilter(MessageQueueManager.EVENT_MESSAGE_FAILED));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        localBroadcastManager.unregisterReceiver(sendPairingReceiver);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        localBroadcastManager.unregisterReceiver(sendPairingReceiver);
     }
 
     @Override

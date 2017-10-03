@@ -250,7 +250,7 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
         try {
             logger.info("Trying to update profile..");
 
-            if (img.length > 20480) {
+            if (img != null && img.length > 20480) {
                 img = ImageUtils.compressJpeg(img, 20480);
             }
 

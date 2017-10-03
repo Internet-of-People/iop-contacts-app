@@ -16,8 +16,10 @@
     <string name="restore_profile">Restore Profile</string>
     <string name="backup_profile">Backup Profile</string>
     <string name="select_file">Select File</string>
+    <string name="select_backup_file">Select file to restore…</string>
     <string name="add_name">Write your name</string>
     <string name="restore_message">Select a backup file of your profile\nfrom your storage</string>
+    <string name="no_backup_message">You don\'t have any backup available.</string>
     <string name="security">Security</string>
     <string name="send_request">Send Request</string>
     <string name="request_message">Paste the URI here to add a contact</string>
