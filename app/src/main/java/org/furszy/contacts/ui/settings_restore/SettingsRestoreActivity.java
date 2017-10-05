@@ -167,6 +167,7 @@ public class SettingsRestoreActivity extends BaseActivity {
     }
 
     private List<File> listFiles() {
+        fileList.clear();
         File backupDir = app.getBackupDir();
         if (backupDir.isDirectory()) {
             File[] fileArray = backupDir.listFiles();
@@ -178,9 +179,11 @@ public class SettingsRestoreActivity extends BaseActivity {
                 }
             }
         }
+
         for (final String filename : fileList())
-            if (filename.startsWith("backup_iop_connect"))
+            if (filename.startsWith("backup_iop_connect")) {
                 fileList.add(new File(getFilesDir(), filename));
+            }
 
         // sort
         Collections.sort(fileList, new Comparator<File>() {

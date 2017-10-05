@@ -1,6 +1,7 @@
 package iop.org.iop_sdk_android.core.modules.profile;
 
 import org.libertaria.world.core.IoPConnect;
+import org.libertaria.world.core.exceptions.ConnectionAlreadyInitializedException;
 import org.libertaria.world.global.AbstractModule;
 import org.libertaria.world.global.IntentMessage;
 import org.libertaria.world.global.PlatformSerializer;
@@ -424,7 +425,11 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
                 Profile profile = profileRestored.getProfile();
                 // connect
                 registerProfile(profile);
-                connect(profile.getHexPublicKey());
+                try {
+                    connect(profile.getHexPublicKey());
+                } catch (ConnectionAlreadyInitializedException e) {
+                    //Ok we already have it
+                }
                 logger.info("restore profile completed");
             } catch (InvalidCipherTextException ipbe) {
                 logger.warn("Error while retrieving the profile!", ipbe);

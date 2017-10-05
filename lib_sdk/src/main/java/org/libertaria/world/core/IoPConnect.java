@@ -8,6 +8,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.libertaria.world.connection.DeviceNetworkConnection;
 import org.libertaria.world.connection.ReconnectionManager;
+import org.libertaria.world.core.exceptions.ConnectionAlreadyInitializedException;
 import org.libertaria.world.core.exceptions.ProfileNotConectedException;
 import org.libertaria.world.core.services.pairing.PairingAppService;
 import org.libertaria.world.crypto.Crypto;
@@ -376,9 +377,9 @@ public class IoPConnect implements ConnectionListener {
                 future.setProfServerData(createEmptyProfileServerConf().getMainProfileServer());
                 connection.init(future, this);
             } else if (connection.isReady()) {
-                throw new IllegalStateException("Connection already initialized and running, profKey: " + profilePublicKey);
+                throw new ConnectionAlreadyInitializedException("Connection already initialized and running, profKey: " + profilePublicKey);
             } else {
-                throw new IllegalStateException("Connection already initialized and trying to check-in the profile, profKey: " + profilePublicKey);
+                throw new ConnectionAlreadyInitializedException("Connection already initialized and trying to check-in the profile, profKey: " + profilePublicKey);
             }
         } else {
             ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
@@ -801,7 +802,7 @@ public class IoPConnect implements ConnectionListener {
         if (profile.getImg() != null) {
             mainInfo.setImg(ByteString.copyFrom(profile.getImg()));
         }
-       ProfileOuterClass.Profile.Builder mainProfile = org.libertaria.world.profiles_manager.ProfileOuterClass.Profile.newBuilder()
+        ProfileOuterClass.Profile.Builder mainProfile = org.libertaria.world.profiles_manager.ProfileOuterClass.Profile.newBuilder()
                 .setProfileInfo(mainInfo)
                 .setPrivKey(ByteString.copyFrom(profile.getPrivKey()));
 
@@ -850,7 +851,7 @@ public class IoPConnect implements ConnectionListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        logger.info("backup succed");
+        logger.info("backup succeed");
     }
 
     /**
