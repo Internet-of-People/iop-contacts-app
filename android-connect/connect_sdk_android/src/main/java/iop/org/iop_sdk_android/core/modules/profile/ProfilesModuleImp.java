@@ -255,6 +255,9 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
                 img = ImageUtils.compressJpeg(img, 20480);
             }
 
+            System.out.println(msgListener);
+
+
             ioPConnect.updateProfile(
                     pubKey,
                     name,
@@ -265,16 +268,20 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
                     new ProfSerMsgListener<Boolean>() {
                         @Override
                         public void onMessageReceive(int messageId, Boolean message) {
-                            msgListener.onMessageReceive(messageId, message);
+                            if (msgListener != null) {
+                                msgListener.onMessageReceive(messageId, message);
+                            }
                         }
 
                         @Override
                         public void onMsgFail(int messageId, int statusValue, String details) {
-                            if (details.equals("profile.version")) {
-                                // add version correction
-                                msgListener.onMsgFail(messageId, statusValue, details);
-                            } else {
-                                msgListener.onMsgFail(messageId, statusValue, details);
+                            if (msgListener != null) {
+                                if (details.equals("profile.version")) {
+                                    // add version correction
+                                    msgListener.onMsgFail(messageId, statusValue, details);
+                                } else {
+                                    msgListener.onMsgFail(messageId, statusValue, details);
+                                }
                             }
                         }
 

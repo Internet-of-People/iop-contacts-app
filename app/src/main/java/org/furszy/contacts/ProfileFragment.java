@@ -420,7 +420,7 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
                     boolean res = false;
                     String detail = null;
                     try {
-                        MsgListenerFuture<Boolean> listenerFuture = new MsgListenerFuture();
+                        MsgListenerFuture<Boolean> listenerFuture = new MsgListenerFuture<>();
                         profilesModule.updateProfile(
                                 selectedProfilePubKey,
                                 name,
