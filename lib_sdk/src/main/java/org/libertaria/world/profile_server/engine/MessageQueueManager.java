@@ -1,5 +1,7 @@
 package org.libertaria.world.profile_server.engine;
 
+import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.engine.app_services.BaseMsg;
 import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.profile_server.protocol.IopProfileServer;
 
@@ -15,7 +17,6 @@ import java.util.UUID;
  * comes through events. If you are interested in listen the responses you should add a listener
  * for the events exposed on this interface: {@link MessageQueueManager#EVENT_MESSAGE_FAILED},
  * {@link MessageQueueManager#EVENT_MESSAGE_SUCCESSFUL} and {@link MessageQueueManager#EVENT_MESSAGE_ENQUEUED}.
- *
  */
 
 public interface MessageQueueManager {
@@ -29,11 +30,12 @@ public interface MessageQueueManager {
      * immediately raises a {@link MessageQueueManager#EVENT_MESSAGE_ENQUEUED} event
      * which includes a {@link Message}.
      *
-     * @param callId {@link String} containing the ID of the call associated with this message.
-     * @param token  {@link Byte[]} containing the token of this message.
-     * @param msg    {@link Byte[]} containing the content of this message.
      */
-    void enqueueMessage(String callId, byte[] token, byte[] msg);
+    void enqueueMessage(String serviceName,
+    String localProfile,
+    String remoteProfile,
+    BaseMsg message,
+    boolean tryUpdateRemoteServices);
 
     /**
      * Retrieves the queue of messages. Note that it's responsibility of the implementation
@@ -51,13 +53,15 @@ public interface MessageQueueManager {
      */
     Boolean removeFromQueue(Message messageToRemove);
 
+
+    void notifyMessageSent(Message messageSent);
     /**
      * Retrieves the default version of the queue manager's listener.
      *
      * @param message the message associated with this listener.
      * @return
      */
-    ProfSerMsgListener<IopProfileServer.ApplicationServiceSendMessageResponse> buildDefaultQueueListener(final Message message);
+    ProfSerMsgListener<Boolean> buildDefaultQueueListener(final Message message);
 
     /**
      * Calling this method means that, somehow, we failed when trying to resend that message.
@@ -86,11 +90,15 @@ public interface MessageQueueManager {
 
         UUID getMessageId();
 
-        String getCallId();
+        String getServiceName();
 
-        byte[] getToken();
+        String getLocalProfilePubKey();
 
-        byte[] getMsg();
+        String getRemoteProfileKey();
+
+        BaseMsg getMessage();
+
+        boolean tryUpdateRemoteServices();
 
         Integer getCurrentResendingAttempts();
 

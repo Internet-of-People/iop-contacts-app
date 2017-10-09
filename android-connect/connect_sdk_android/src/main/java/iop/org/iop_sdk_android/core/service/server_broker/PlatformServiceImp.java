@@ -1,5 +1,6 @@
 package iop.org.iop_sdk_android.core.service.server_broker;
 
+import android.Manifest;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
@@ -16,6 +17,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
 
@@ -454,14 +456,24 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
                                 moduleImp.onCheckInFail(profile, status, statusDetail);
                                 if (status == 400) {
                                     logger.info("Checking fail, detail " + statusDetail + ", trying to reconnect after 5 seconds");
+                                    Executors.newSingleThreadScheduledExecutor().schedule(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            check();
+                                        }
+                                    }, 5, TimeUnit.SECONDS);
                                 }
                             }
                         });
-                        ioPConnect.connectProfile(
-                                localProfile.getHexPublicKey(),
-                                null,
-                                future
-                        );
+                        try {
+                            ioPConnect.connectProfile(
+                                    localProfile.getHexPublicKey(),
+                                    null,
+                                    future
+                            );
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     } else {
                         Intent intent = new Intent(ACTION_ON_PROFILE_CONNECTED);
                         intent.putExtra(INTENT_EXTRA_PROF_KEY, localProfile.getHexPublicKey());
@@ -630,7 +642,8 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
 
     @Override
     public boolean isDeviceLocationEnabled() {
-        return gpsEnabled;
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
 
@@ -726,8 +739,11 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
             if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action)) {
                 ConnectivityManager connectivityManager = (ConnectivityManager) PlatformServiceImp.this.getSystemService(Context.CONNECTIVITY_SERVICE);
                 final NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-                final boolean hasConnectivity = networkInfo.isConnected();
-                logger.info("network is {}, state {}/{}", hasConnectivity ? "up" : "down", networkInfo.getState(), networkInfo.getDetailedState());
+                boolean hasConnectivity = false;
+                if (networkInfo != null) {
+                    hasConnectivity = networkInfo.isConnected();
+                    logger.info("network is {}, state {}/{}", hasConnectivity ? "up" : "down", networkInfo.getState(), networkInfo.getDetailedState());
+                }
                 if (hasConnectivity)
                     impediments.remove(BlockchainState.Impediment.NETWORK);
                 else {

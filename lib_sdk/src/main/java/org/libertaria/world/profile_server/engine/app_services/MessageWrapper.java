@@ -9,12 +9,12 @@ import java.io.Serializable;
  * Created by furszy on 6/5/17.
  */
 
-public class MsgWrapper implements Serializable {
+public class MessageWrapper implements Serializable {
 
     private BaseMsg msg;
     private String msgType;
 
-    public MsgWrapper(BaseMsg msg, String msgType) {
+    public MessageWrapper(BaseMsg msg, String msgType) {
         this.msg = msg;
         this.msgType = msgType;
     }
@@ -31,7 +31,7 @@ public class MsgWrapper implements Serializable {
         return SerializationUtils.serialize(this);
     }
 
-    public static MsgWrapper decode(byte[] data) throws IOException, ClassNotFoundException {
-        return SerializationUtils.deserialize(data,MsgWrapper.class);
+    public static MessageWrapper decode(byte[] data) throws IOException, ClassNotFoundException {
+        return SerializationUtils.deserialize(data,MessageWrapper.class);
     }
 }

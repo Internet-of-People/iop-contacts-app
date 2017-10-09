@@ -62,7 +62,8 @@
             android:paddingRight="10dip"
             android:textColor="@color/mainText"
             android:textColorHint="@color/hintInput"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:maxLength="32"/>
 
         <ImageButton
             android:id="@+id/showPassword"

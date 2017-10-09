@@ -128,7 +128,7 @@ public class ConnectClientService extends Service {
                     Object arg = args[i];
                     ModuleParameter moduleObjectWrapper;
                     if (arg instanceof ProfSerMsgListener){
-                        // this is because listeners are not supported, the framework accepts one listeners per module method.
+                        // this is because listeners are not supported, the framework accepts one listener per module method.
                         moduleObjectWrapper = new ModuleParameter(null,parametersTypes[i]);
                         methodListener = (ProfSerMsgListener) arg;
                     }else

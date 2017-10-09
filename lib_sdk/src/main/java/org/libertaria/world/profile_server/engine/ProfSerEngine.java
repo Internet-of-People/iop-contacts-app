@@ -156,7 +156,9 @@ public class ProfSerEngine {
             public void run() {
                 try {
                     ProfSerConnectionEngine connectionEngine = new ProfSerConnectionEngine(ProfSerEngine.this, initFuture);
-                    connectionEngine.engine();
+                    if(!connectionEngine.engine()){
+                        throw new CantConnectException("Failed initializing the connection engine.");
+                    }
                 } catch (Exception e) {
                     LOG.error("Connection engine fail", e);
                     initFuture.onMsgFail(0, 400, e.getMessage());
@@ -505,7 +507,6 @@ public class ProfSerEngine {
 
                 @Override
                 public void onMsgFail(int messageId, int statusValue, String details) {
-                    messageQueueManager.enqueueMessage(callId, token, msg);
                     listener.onMsgFail(messageId, statusValue, details);
                 }
 

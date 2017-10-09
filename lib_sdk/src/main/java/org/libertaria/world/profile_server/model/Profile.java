@@ -17,20 +17,28 @@ import java.util.Set;
  * Created by mati on 06/02/17.
  */
 
-public class Profile implements Signer,ProfileBase,DbObject {
+public class Profile implements Signer, ProfileBase, DbObject {
 
     // internal sdk fields
     private long id;
 
     // specific fields
-    /** 3 bytes version */
+    /**
+     * 3 bytes version
+     */
     private Version version;
-    /** Max 64 bytes long. */
+    /**
+     * Max 64 bytes long.
+     */
     private String name;
-    /** Max 64 bytes long */
+    /**
+     * Max 64 bytes long
+     */
     private String type;
     private byte[] img;
-    /** SHA-256 hash of the image */
+    /**
+     * SHA-256 hash of the image
+     */
     private byte[] imgHash;
     private byte[] thumbnailImg;
     private byte[] thumbnailImgHash;
@@ -40,22 +48,29 @@ public class Profile implements Signer,ProfileBase,DbObject {
 
     private String homeHost;
     private byte[] homeHostId;
-    /** Hash map of name-service of available AppServices */
+    /**
+     * Hash map of name-service of available AppServices
+     */
     private HashMap<String, AppService> applicationServices = new HashMap<>();
-    /** Available app services to load.. */
+    /**
+     * Available app services to load..
+     */
     private Set<String> appServices = new HashSet();
 
-    /** Key del profile */
+    /**
+     * Key del profile
+     */
     private KeyEd25519 keyEd25519;
 
 
-    public Profile(){};
+    public Profile() {
+    }
 
     public Profile(Version version, String name, byte[] img, int latitude, int longitude, String extraData) {
         this.version = version;
         this.name = name;
         this.img = img;
-        if (imgHash!=null)
+        if (imgHash != null)
             this.imgHash = Sha256Hash.hash(img);
         this.latitude = latitude;
         this.longitude = longitude;
@@ -69,7 +84,7 @@ public class Profile implements Signer,ProfileBase,DbObject {
         this.type = type;
         this.extraData = extraData;
         this.img = img;
-        if (imgHash!=null)
+        if (imgHash != null)
             this.imgHash = Sha256Hash.hash(img);
         this.homeHost = homeHost;
         this.keyEd25519 = keyEd25519;
@@ -86,7 +101,7 @@ public class Profile implements Signer,ProfileBase,DbObject {
 
     public void setImg(byte[] img) {
         this.img = img;
-        if (imgHash!=null)
+        if (imgHash != null)
             this.imgHash = Sha256Hash.hash(img);
     }
 
@@ -155,8 +170,8 @@ public class Profile implements Signer,ProfileBase,DbObject {
         this.type = type;
     }
 
-    public void addApplicationService(AppService service){
-        applicationServices.put(service.getName(),service);
+    public void addApplicationService(AppService service) {
+        applicationServices.put(service.getName(), service);
         appServices.add(service.getName());
     }
 
@@ -186,12 +201,12 @@ public class Profile implements Signer,ProfileBase,DbObject {
 
     @Override
     public byte[] sign(byte[] message) {
-        return keyEd25519.sign(message,keyEd25519.getExpandedPrivateKey());
+        return keyEd25519.sign(message, keyEd25519.getExpandedPrivateKey());
     }
 
     @Override
-    public boolean verify(byte[] signature,byte[] message) {
-        return keyEd25519.verify(signature,message,keyEd25519.getPublicKey());
+    public boolean verify(byte[] signature, byte[] message) {
+        return keyEd25519.verify(signature, message, keyEd25519.getPublicKey());
     }
 
 
@@ -199,11 +214,11 @@ public class Profile implements Signer,ProfileBase,DbObject {
         return applicationServices;
     }
 
-    public <T extends AppService> T getAppService(String name, Class<T> clazz){
+    public <T extends AppService> T getAppService(String name, Class<T> clazz) {
         return (T) applicationServices.get(name);
     }
 
-    public AppService getAppService(String name){
+    public AppService getAppService(String name) {
         return applicationServices.get(name);
     }
 
@@ -223,7 +238,7 @@ public class Profile implements Signer,ProfileBase,DbObject {
         return thumbnailImg;
     }
 
-    public void addAllServices(Set<String> appServices){
+    public void addAllServices(Set<String> appServices) {
         this.appServices.addAll(appServices);
     }
 
@@ -238,12 +253,10 @@ public class Profile implements Signer,ProfileBase,DbObject {
                 ", version=" + version.toString() +
                 ", name='" + name + '\'' +
                 ", type='" + type + '\'' +
-                ", img=" + Arrays.toString(img) +
                 ", latitude=" + latitude +
                 ", longitude=" + longitude +
                 ", extraData='" + extraData + '\'' +
                 ", homeHost='" + homeHost + '\'' +
-                ", homeHostId=" + Arrays.toString(homeHostId) +
                 ", applicationServices=" + applicationServices +
                 ", keyEd25519=" + keyEd25519 +
                 '}';

@@ -1,6 +1,7 @@
 package iop.org.iop_sdk_android.core.modules.profile;
 
 import org.libertaria.world.core.IoPConnect;
+import org.libertaria.world.core.exceptions.ConnectionAlreadyInitializedException;
 import org.libertaria.world.global.AbstractModule;
 import org.libertaria.world.global.IntentMessage;
 import org.libertaria.world.global.PlatformSerializer;
@@ -250,9 +251,12 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
         try {
             logger.info("Trying to update profile..");
 
-            if (img.length > 20480) {
+            if (img != null && img.length > 20480) {
                 img = ImageUtils.compressJpeg(img, 20480);
             }
+
+            System.out.println(msgListener);
+
 
             ioPConnect.updateProfile(
                     pubKey,
@@ -264,16 +268,20 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
                     new ProfSerMsgListener<Boolean>() {
                         @Override
                         public void onMessageReceive(int messageId, Boolean message) {
-                            msgListener.onMessageReceive(messageId, message);
+                            if (msgListener != null) {
+                                msgListener.onMessageReceive(messageId, message);
+                            }
                         }
 
                         @Override
                         public void onMsgFail(int messageId, int statusValue, String details) {
-                            if (details.equals("profile.version")) {
-                                // add version correction
-                                msgListener.onMsgFail(messageId, statusValue, details);
-                            } else {
-                                msgListener.onMsgFail(messageId, statusValue, details);
+                            if (msgListener != null) {
+                                if (details.equals("profile.version")) {
+                                    // add version correction
+                                    msgListener.onMsgFail(messageId, statusValue, details);
+                                } else {
+                                    msgListener.onMsgFail(messageId, statusValue, details);
+                                }
                             }
                         }
 
@@ -424,7 +432,11 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
                 Profile profile = profileRestored.getProfile();
                 // connect
                 registerProfile(profile);
-                connect(profile.getHexPublicKey());
+                try {
+                    connect(profile.getHexPublicKey());
+                } catch (ConnectionAlreadyInitializedException e) {
+                    //Ok we already have it
+                }
                 logger.info("restore profile completed");
             } catch (InvalidCipherTextException ipbe) {
                 logger.warn("Error while retrieving the profile!", ipbe);

@@ -26,7 +26,7 @@ public class ProfileInformationImp implements Serializable, org.libertaria.world
         WAITING_FOR_MY_RESPONSE;
     }
 
-    private Version version;
+    private Version version = Version.newProtocolAcceptedVersion();
     private byte[] pubKey;
     private String name;
     private String type;

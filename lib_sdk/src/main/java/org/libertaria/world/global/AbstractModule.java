@@ -19,7 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created by furszy on 7/19/17.
- *
+ * <p>
  * Base module class
  */
 
@@ -30,9 +30,13 @@ public abstract class AbstractModule implements Module {
     private WeakReference<SystemContext> context;
 
     protected IoPConnect ioPConnect;
-    /** AbstractModule version */
+    /**
+     * AbstractModule version
+     */
     private Version version;
-    /** AbstractModule identifier */
+    /**
+     * AbstractModule identifier
+     */
     private EnabledServices service;
 
     public AbstractModule(SystemContext context, IoPConnect ioPConnect, Version version, EnabledServices service) {
@@ -69,7 +73,7 @@ public abstract class AbstractModule implements Module {
     /**
      * Method to override
      */
-    public void onDestroy(){
+    public void onDestroy() {
 
     }
 
@@ -81,15 +85,17 @@ public abstract class AbstractModule implements Module {
      * @return
      */
     protected CallProfileAppService getCall(String localProfilePubKey, String remoteProfilePubKey) throws ProfileNotSupportAppServiceException {
-        checkNotNull(remoteProfilePubKey,"Remote profile pubKey must not be null");
-        checkNotNull(localProfilePubKey,"Local profile pubKey must not be null");
-        if (remoteProfilePubKey.equals(localProfilePubKey)) throw new IllegalArgumentException("local profile pub key is the same than the remote profile pub key");
-        AppService appService = ioPConnect.getProfileAppService(localProfilePubKey,service);
-        if (appService==null) throw new ProfileNotSupportAppServiceException(localProfilePubKey,service);
-        if(appService.hasOpenCall(remoteProfilePubKey)){
+        checkNotNull(remoteProfilePubKey, "Remote profile pubKey must not be null");
+        checkNotNull(localProfilePubKey, "Local profile pubKey must not be null");
+        if (remoteProfilePubKey.equals(localProfilePubKey))
+            throw new IllegalArgumentException("local profile pub key is the same than the remote profile pub key");
+        AppService appService = ioPConnect.getProfileAppService(localProfilePubKey, service);
+        if (appService == null)
+            throw new ProfileNotSupportAppServiceException(localProfilePubKey, service);
+        if (appService.hasOpenCall(remoteProfilePubKey)) {
             // chat app service call already open, check if it stablish or it's done
             CallProfileAppService call = appService.getOpenCall(remoteProfilePubKey);
-            if (call!=null && !call.isDone() && !call.isFail()){
+            if (call != null && !call.isDone() && !call.isFail()) {
                 // call is open
                 // ping it
                 try {
@@ -100,16 +106,16 @@ public abstract class AbstractModule implements Module {
                     e.printStackTrace();
                 }
                 call.dispose();
-                appService.removeCall(call,"call done but not closed..");
-            }else {
+                appService.removeCall(call, "call done but not closed..");
+            } else {
                 // this should not happen but i will check that
                 // the call is not open but the object still active.. i have to close it
                 try {
-                    if (call!=null) {
+                    if (call != null) {
                         call.dispose();
-                        appService.removeCall(call,"call open and done/fail without reason..");
+                        appService.removeCall(call, "call open and done/fail without reason..");
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -117,17 +123,22 @@ public abstract class AbstractModule implements Module {
         return null;
     }
 
-    protected void prepareCall(String localProfilePubKey, String remoteProfPubKey, ProfSerMsgListener<CallProfileAppService> readyListener){
-        ProfileInformation remoteProfileInformation = ioPConnect.getKnownProfile(localProfilePubKey,remoteProfPubKey);
-        if (remoteProfileInformation==null) throw new IllegalArgumentException("remote profile not exist");
-        prepareCall(localProfilePubKey,remoteProfileInformation,readyListener);
+    protected void prepareCall(String localProfilePubKey, String remoteProfPubKey, ProfSerMsgListener<CallProfileAppService> readyListener, boolean useQueue) {
+        ProfileInformation remoteProfileInformation = ioPConnect.getKnownProfile(localProfilePubKey, remoteProfPubKey);
+        if (remoteProfileInformation == null)
+            return;
+        prepareCall(localProfilePubKey, remoteProfileInformation, readyListener, useQueue);
     }
 
-    protected void prepareCall(String localProfilePubKey, ProfileInformation remoteProfileInformation, ProfSerMsgListener<CallProfileAppService> readyListener){
-        if (remoteProfileInformation.getHexPublicKey().equals(localProfilePubKey)) throw new IllegalArgumentException("local profile pub key is the same than the remote profile pub key");
-        ioPConnect.callService(service.getName(), localProfilePubKey, remoteProfileInformation, true, readyListener);
+    protected void prepareCall(String localProfilePubKey, ProfileInformation remoteProfileInformation, ProfSerMsgListener<CallProfileAppService> readyListener) {
+        prepareCall(localProfilePubKey, remoteProfileInformation, readyListener, false);
     }
 
+    protected void prepareCall(String localProfilePubKey, ProfileInformation remoteProfileInformation, ProfSerMsgListener<CallProfileAppService> readyListener, boolean useQueue) {
+        if (remoteProfileInformation.getHexPublicKey().equals(localProfilePubKey))
+            throw new IllegalArgumentException("local profile pub key is the same than the remote profile pub key");
+        ioPConnect.callService(service.getName(), localProfilePubKey, remoteProfileInformation, true, readyListener, useQueue);
+    }
 
     /**
      * Send a single msg on a single call
@@ -137,33 +148,93 @@ public abstract class AbstractModule implements Module {
      * @param msg
      * @param readyListener
      */
-    protected void prepareCallAndSend(String localProfilePubKey, ProfileInformation remoteProfileInformation, final BaseMsg msg, final ProfSerMsgListener<Boolean> readyListener){
+    protected void prepareCallAndSend(String localProfilePubKey, ProfileInformation remoteProfileInformation, final BaseMsg msg, final ProfSerMsgListener<Boolean> readyListener) {
         logger.info("prepareCallAndSend");
         ioPConnect.callService(service.getName(), localProfilePubKey, remoteProfileInformation, true, new ProfSerMsgListener<CallProfileAppService>() {
             @Override
             public void onMessageReceive(int messageId, CallProfileAppService call) {
                 try {
                     logger.info("prepareCallAndSend sucess");
-                    call.sendMsg(msg,readyListener, true);
+                    call.sendMsg(msg, readyListener, true);
                 } catch (Exception e) {
-                    logger.info("prepareCallAndSend msg fail, "+e.getMessage());
-                    if (readyListener!=null)
-                        readyListener.onMsgFail(messageId,0,e.getMessage());
+                    logger.info("prepareCallAndSend msg fail, " + e.getMessage());
+                    if (readyListener != null)
+                        readyListener.onMsgFail(messageId, 0, e.getMessage());
                 }
             }
 
             @Override
             public void onMsgFail(int messageId, int statusValue, String details) {
-                logger.info("prepareCallAndSend msg fail, "+details);
-                if (readyListener!=null)
-                    readyListener.onMsgFail(messageId,statusValue,details);
+                logger.info("prepareCallAndSend msg fail, " + details);
+                if (readyListener != null)
+                    readyListener.onMsgFail(messageId, statusValue, details);
             }
 
             @Override
             public String getMessageName() {
                 return "prepareCallAndSend";
             }
-        });
+        }, msg, false);
     }
 
+    protected void prepareCallAndSend(String localProfilePubKey, ProfileInformation remoteProfileInformation, final BaseMsg msg, final ProfSerMsgListener<Boolean> readyListener, boolean useQueue) {
+        logger.info("prepareCallAndSend");
+        ioPConnect.callService(service.getName(), localProfilePubKey, remoteProfileInformation, true, new ProfSerMsgListener<CallProfileAppService>() {
+            @Override
+            public void onMessageReceive(int messageId, CallProfileAppService call) {
+                try {
+                    logger.info("prepareCallAndSend sucess");
+                    call.sendMsg(msg, readyListener, true);
+                } catch (Exception e) {
+                    logger.info("prepareCallAndSend msg fail, " + e.getMessage());
+                    if (readyListener != null)
+                        readyListener.onMsgFail(messageId, 0, e.getMessage());
+                }
+            }
+
+            @Override
+            public void onMsgFail(int messageId, int statusValue, String details) {
+                logger.info("prepareCallAndSend msg fail, " + details);
+                if (readyListener != null)
+                    readyListener.onMsgFail(messageId, statusValue, details);
+            }
+
+            @Override
+            public String getMessageName() {
+                return "prepareCallAndSend";
+            }
+        }, msg, useQueue);
+    }
+
+    protected void prepareCallAndSend(String localProfilePubKey, String remotePublicKey, final BaseMsg msg, final ProfSerMsgListener<Boolean> readyListener, boolean useQueue) {
+        logger.info("prepareCallAndSend");
+        ProfileInformation remoteProfileInformation = ioPConnect.getKnownProfile(localProfilePubKey, remotePublicKey);
+        if (remoteProfileInformation == null)
+            return;
+        ioPConnect.callService(service.getName(), localProfilePubKey, remoteProfileInformation, true, new ProfSerMsgListener<CallProfileAppService>() {
+            @Override
+            public void onMessageReceive(int messageId, CallProfileAppService call) {
+                try {
+                    logger.info("prepareCallAndSend sucess");
+                    call.sendMsg(msg, readyListener, true);
+                } catch (Exception e) {
+                    logger.info("prepareCallAndSend msg fail, " + e.getMessage());
+                    if (readyListener != null)
+                        readyListener.onMsgFail(messageId, 0, e.getMessage());
+                }
+            }
+
+            @Override
+            public void onMsgFail(int messageId, int statusValue, String details) {
+                logger.info("prepareCallAndSend msg fail, " + details);
+                if (readyListener != null)
+                    readyListener.onMsgFail(messageId, statusValue, details);
+            }
+
+            @Override
+            public String getMessageName() {
+                return "prepareCallAndSend";
+            }
+        }, msg, useQueue);
+    }
 }

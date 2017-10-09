@@ -16,8 +16,10 @@
     <string name="restore_profile">Restore Profile</string>
     <string name="backup_profile">Backup Profile</string>
     <string name="select_file">Select File</string>
+    <string name="select_backup_file">Select file to restore…</string>
     <string name="add_name">Write your name</string>
     <string name="restore_message">Select a backup file of your profile\nfrom your storage</string>
+    <string name="no_backup_message">You don\'t have any backup available.</string>
     <string name="security">Security</string>
     <string name="send_request">Send Request</string>
     <string name="request_message">Paste the URI here to add a contact</string>
@@ -53,6 +55,7 @@
     <string name="lorem_impsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
     <string name="pairing_success">Pairing request sent!</string>
     <string name="pairing_fail">Pairing request fail.\n%s</string>
+    <string name="pairing_trying">Trying to send the pair request.\n%s</string>
     <string name="pairing_yourself">You cannot add yourself as contact</string>
     <string name="backup_completed_message">Backup completed, check your download\'s folder</string>
     <string name="restore_completed_message">You have restored your profile successfully</string>

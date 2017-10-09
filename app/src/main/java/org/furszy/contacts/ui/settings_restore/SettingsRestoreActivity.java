@@ -19,6 +19,7 @@ import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.furszy.contacts.BaseActivity;
@@ -45,6 +46,7 @@ public class SettingsRestoreActivity extends BaseActivity {
     private ArrayAdapter<String> adapter;
     EditText txt_password;
     ImageButton showPassword;
+    TextView restoreView;
 
 
     @Override
@@ -108,6 +110,20 @@ public class SettingsRestoreActivity extends BaseActivity {
         checkPermissions();
         //Set Password
         txt_password = (EditText) root.findViewById(R.id.password);
+        spinner_files = (Spinner) root.findViewById(R.id.spinner_files);
+        fileList = listFiles();
+        List<String> list = new ArrayList<>();
+        for (File file : fileList) {
+            list.add(file.getName());
+        }
+        if (list.isEmpty()) {
+            //If no backup were found then we set the message and return the method.
+            txt_password.setVisibility(View.GONE);
+            restoreView = (TextView) findViewById(R.id.restoreMessage);
+            restoreView.setText(R.string.no_backup_message);
+            spinner_files.setPrompt("No backup files found");
+            return;
+        }
 
         showPassword = (ImageButton) findViewById(R.id.showPassword);
         showPassword.setOnTouchListener(new View.OnTouchListener() {
@@ -126,12 +142,6 @@ public class SettingsRestoreActivity extends BaseActivity {
         });
 
         //Open File Folder
-        spinner_files = (Spinner) root.findViewById(R.id.spinner_files);
-        fileList = listFiles();
-        List<String> list = new ArrayList<>();
-        for (File file : fileList) {
-            list.add(file.getName());
-        }
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, list) {
             @Override
             public View getDropDownView(int position, View convertView, ViewGroup parent) {
@@ -157,6 +167,7 @@ public class SettingsRestoreActivity extends BaseActivity {
     }
 
     private List<File> listFiles() {
+        fileList.clear();
         File backupDir = app.getBackupDir();
         if (backupDir.isDirectory()) {
             File[] fileArray = backupDir.listFiles();
@@ -168,9 +179,11 @@ public class SettingsRestoreActivity extends BaseActivity {
                 }
             }
         }
+
         for (final String filename : fileList())
-            if (filename.startsWith("backup_iop_connect"))
+            if (filename.startsWith("backup_iop_connect")) {
                 fileList.add(new File(getFilesDir(), filename));
+            }
 
         // sort
         Collections.sort(fileList, new Comparator<File>() {

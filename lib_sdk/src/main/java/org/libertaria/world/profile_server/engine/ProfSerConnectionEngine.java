@@ -1,5 +1,6 @@
 package org.libertaria.world.profile_server.engine;
 
+import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.profile_server.protocol.IopProfileServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +64,7 @@ public class ProfSerConnectionEngine {
      *  ## After this the profile is ready to send messages and be found by other profiles in the network.
      *
      */
-    void engine() {
+    boolean engine() {
         try {
 
             LOG.info("Engine");
@@ -92,13 +93,14 @@ public class ProfSerConnectionEngine {
 
             // Client connected, now the identity have to do the check in
             requestCheckin();
-
+            return true;
         } catch (org.libertaria.world.profile_server.engine.InvalidStateException e) {
             e.printStackTrace();
+            return false;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
-
     }
 
     /**
@@ -203,7 +205,7 @@ public class ProfSerConnectionEngine {
     /**
      * Process a list roles response message
      */
-    private class ListRolesListener implements org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener<IopProfileServer.ListRolesResponse> {
+    private class ListRolesListener implements ProfSerMsgListener<IopProfileServer.ListRolesResponse> {
 
 
         public void execute(int messageId, IopProfileServer.ListRolesResponse message) {

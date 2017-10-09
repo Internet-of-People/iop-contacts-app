@@ -3,7 +3,6 @@ package org.libertaria.world.profile_server.utils;
 import org.libertaria.world.profile_server.ProfileBase;
 import org.libertaria.world.profile_server.imp.ProfileInformationImp;
 import org.libertaria.world.profiles_manager.PairingRequest;
-import org.libertaria.world.core.services.pairing.PairingMsgTypes;
 
 /**
  * Created by mati on 01/06/17.

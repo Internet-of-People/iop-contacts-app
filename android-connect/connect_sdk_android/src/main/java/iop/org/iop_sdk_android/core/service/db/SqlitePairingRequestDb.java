@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import org.libertaria.world.core.services.pairing.PairingMsgTypes;
+import org.libertaria.world.core.services.pairing.PairingMessageType;
 import org.libertaria.world.profile_server.imp.ProfileInformationImp;
 import org.libertaria.world.profiles_manager.PairingRequest;
 import org.libertaria.world.profiles_manager.PairingRequestsManager;
@@ -114,7 +114,7 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
         String remoteKey = cursor.getString(PAIRING_COLUMN_POS_REMOTE_KEY);
         String remoteServerId = cursor.getString(PAIRING_COLUMN_POS_REMOTE_SERVER_ID);
         long timestamp = cursor.getLong(PAIRING_COLUMN_POS_TIMESTAMP);
-        PairingMsgTypes status = PairingMsgTypes.getByName(cursor.getString(PAIRING_COLUMN_POS_STATUS));
+        PairingMessageType status = PairingMessageType.getByName(cursor.getString(PAIRING_COLUMN_POS_STATUS));
         String remotePsHost = cursor.getString(PAIRING_COLUMN_POS_REMOTE_SERVER_HOST_ID);
         String senderPsHost = cursor.getString(PAIRING_COLUMN_POS_SENDER_PS_HOST);
         String remoteName = cursor.getString(PAIRING_COLUMN_POS_REMOTE_NAME);
@@ -158,7 +158,7 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
 
     @Override
     public List<PairingRequest> openPairingRequests(String senderPubKey) {
-        Cursor cursor = getData(PAIRING_COLUMN_STATUS+" != '"+PairingMsgTypes.PAIR_ACCEPT.getType()+"'");
+        Cursor cursor = getData(PAIRING_COLUMN_STATUS + " != '" + PairingMessageType.PAIR_ACCEPT.getType() + "'");
         List<PairingRequest> list = new ArrayList<>();
         if (cursor.moveToFirst()){
             do {
@@ -169,7 +169,7 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
     }
 
     @Override
-    public boolean updateStatus(String senderPubKey, String remotePubKey, PairingMsgTypes status, ProfileInformationImp.PairStatus pairStatus){
+    public boolean updateStatus(String senderPubKey, String remotePubKey, PairingMessageType status, ProfileInformationImp.PairStatus pairStatus) {
         //return updateFieldByKey(PAIRING_COLUMN_REMOTE_KEY,remotePubKey,PAIRING_COLUMN_STATUS,status.getType())==1;
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -180,6 +180,22 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
                 contentValues,
                 PAIRING_COLUMN_REMOTE_KEY+"=? and "+PAIRING_COLUMN_SENDER_KEY+"=?",
                 new String[]{remotePubKey,senderPubKey}
+        ) == 1;
+
+    }
+
+    @Override
+    public boolean updateStatus(int pairingRequestId, PairingMessageType status, ProfileInformationImp.PairStatus pairStatus) {
+        //return updateFieldByKey(PAIRING_COLUMN_REMOTE_KEY,remotePubKey,PAIRING_COLUMN_STATUS,status.getType())==1;
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(PAIRING_COLUMN_STATUS, status.getType());
+        contentValues.put(PAIRING_COLUMN_PAIR_STATUS, pairStatus.name());
+        return db.update(
+                getTableName(),
+                contentValues,
+                PAIRING_COLUMN_ID + "=?",
+                new String[]{String.valueOf(pairingRequestId)}
         )==1;
 
     }

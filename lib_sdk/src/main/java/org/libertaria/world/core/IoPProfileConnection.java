@@ -28,6 +28,7 @@ import org.libertaria.world.profile_server.imp.ProfileInformationImp;
 import org.libertaria.world.profile_server.model.ProfServerData;
 import org.libertaria.world.profile_server.model.Profile;
 import org.libertaria.world.profile_server.protocol.IopProfileServer;
+import org.libertaria.world.profiles_manager.ProfilesManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,6 +86,10 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
      * Location helper dependent on the platform
      */
     private DeviceLocation deviceLocation;
+
+    private IoPConnect ioPConnect;
+
+    private ProfilesManager profilesManager;
     /**
      * {@link org.libertaria.world.profile_server.engine.MessageQueueManager}
      */
@@ -103,7 +108,9 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
                                 CryptoWrapper cryptoWrapper,
                                 SslContextFactory sslContextFactory,
                                 DeviceLocation deviceLocation,
-                                MessageQueueManager messageQueueManager) {
+                                MessageQueueManager messageQueueManager,
+                                IoPConnect ioPConnect,
+                                ProfilesManager profilesManager) {
         this.contextWrapper = contextWrapper;
         this.cryptoWrapper = cryptoWrapper;
         this.sslContextFactory = sslContextFactory;
@@ -111,6 +118,8 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
         this.profileCache = profile;
         this.deviceLocation = deviceLocation;
         this.messageQueueManager = messageQueueManager;
+        this.ioPConnect = ioPConnect;
+        this.profilesManager = profilesManager;
     }
 
     /**
@@ -174,13 +183,30 @@ public class IoPProfileConnection implements CallsListener, CallProfileAppServic
 
     private void checkMessageQueue() {
         List<MessageQueueManager.Message> messageQueue = messageQueueManager.getMessageQueue();
-        for (MessageQueueManager.Message message : messageQueue) {
-            try {
-                profSerEngine.sendAppServiceMsg(message.getCallId(), message.getToken(), message.getMsg(), messageQueueManager.buildDefaultQueueListener(message));
-            } catch (CantConnectException | CantSendMessageException e) {
-                //If something bad happen we inform it to the queue manager to take some action about it.
-                messageQueueManager.failedToResend(message);
-            }
+        for (final MessageQueueManager.Message message : messageQueue) {
+            ProfileInformation profileInformation = profilesManager.getProfile(message.getLocalProfilePubKey(), message.getRemoteProfileKey());
+            ioPConnect.callService(message.getServiceName(), message.getLocalProfilePubKey(), profileInformation, message.tryUpdateRemoteServices(), new ProfSerMsgListener<CallProfileAppService>() {
+                @Override
+                public void onMessageReceive(int messageId, CallProfileAppService call) {
+                    try {
+                        call.sendMsg(message.getMessage(), messageQueueManager.buildDefaultQueueListener(message));
+                    } catch (Exception e) {
+                        //If something bad happen we inform it to the queue manager to take some action about it.
+                        messageQueueManager.failedToResend(message);
+                    }
+                }
+
+                @Override
+                public void onMsgFail(int messageId, int statusValue, String details) {
+                    //If something bad happen we inform it to the queue manager to take some action about it.
+                    messageQueueManager.failedToResend(message);
+                }
+
+                @Override
+                public String getMessageName() {
+                    return message.getMessageId().toString();
+                }
+            });
         }
     }
 

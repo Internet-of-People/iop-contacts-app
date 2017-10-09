@@ -1,5 +1,6 @@
 package org.libertaria.world.profiles_manager;
 
+import org.libertaria.world.core.services.pairing.PairingMessageType;
 import org.libertaria.world.profile_server.imp.ProfileInformationImp;
 
 import java.util.List;
@@ -22,7 +23,9 @@ public interface PairingRequestsManager {
 
     List<PairingRequest> openPairingRequests(String senderPubKey);
 
-    boolean updateStatus(String senderPubKey, String remotePubKey, org.libertaria.world.core.services.pairing.PairingMsgTypes status, ProfileInformationImp.PairStatus paired);
+    boolean updateStatus(String senderPubKey, String remotePubKey, PairingMessageType status, ProfileInformationImp.PairStatus paired);
+
+    boolean updateStatus(int pairingRequestId, PairingMessageType status, ProfileInformationImp.PairStatus pairStatus);
 
     int disconnectPairingProfile(String senderPubKey, String remotePubKey);
 

@@ -22,7 +22,7 @@ import android.widget.Toast;
 import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.R;
 import org.furszy.contacts.scanner.ScanActivity;
-import org.libertaria.world.core.services.pairing.PairingMsg;
+import org.libertaria.world.core.services.pairing.PairRequestMessage;
 import org.libertaria.world.crypto.CryptoBytes;
 import org.libertaria.world.profile_server.ProfileInformation;
 import org.libertaria.world.profile_server.engine.MessageQueueManager;
@@ -53,8 +53,27 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.sendPairingReceiver = new SendPairingReceiver();
-        registerReceiver(sendPairingReceiver, new IntentFilter(MessageQueueManager.EVENT_MESSAGE_SUCCESSFUL));
-        registerReceiver(sendPairingReceiver, new IntentFilter(MessageQueueManager.EVENT_MESSAGE_FAILED));
+        localBroadcastManager.registerReceiver(sendPairingReceiver, new IntentFilter(MessageQueueManager.EVENT_MESSAGE_SUCCESSFUL));
+        localBroadcastManager.registerReceiver(sendPairingReceiver, new IntentFilter(MessageQueueManager.EVENT_MESSAGE_FAILED));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        localBroadcastManager.registerReceiver(sendPairingReceiver, new IntentFilter(MessageQueueManager.EVENT_MESSAGE_SUCCESSFUL));
+        localBroadcastManager.registerReceiver(sendPairingReceiver, new IntentFilter(MessageQueueManager.EVENT_MESSAGE_FAILED));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        localBroadcastManager.unregisterReceiver(sendPairingReceiver);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        localBroadcastManager.unregisterReceiver(sendPairingReceiver);
     }
 
     @Override
@@ -132,12 +151,12 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
 
                                     @Override
                                     public void onFail(int messageId, final int status, final String statusDetail) {
-                                        Log.i("SendRequest", "request fail " + statusDetail);
+                                        Log.i("SendRequest", "trying to send the pairing request" + statusDetail);
                                         runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                Log.i(TAG, "pairing request fail, " + statusDetail);
-                                                Snackbar.make(v, getString(R.string.pairing_fail, statusDetail), Snackbar.LENGTH_LONG).show();
+                                                Log.i(TAG, "trying to send the pairing request, " + statusDetail);
+                                                Snackbar.make(v, getString(R.string.pairing_trying), Snackbar.LENGTH_LONG).show();
                                                 //Toast.makeText(SendRequestActivity.this,statusDetail,Toast.LENGTH_LONG).show();
                                                 progressBar.setVisibility(View.INVISIBLE);
                                                 enableSendBtn();
@@ -213,13 +232,19 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
     private class SendPairingReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            PairRequestMessage pairRequestMessage;
             switch (intent.getAction()) {
                 case MessageQueueManager.EVENT_MESSAGE_SUCCESSFUL: {
-                    MessageQueueManager.Message message = (MessageQueueManager.Message) intent.getExtras().get(MessageQueueManager.EVENT_MESSAGE_FAILED);
-                    PairingMsg pairingMsg = new PairingMsg();
                     try {
-                        pairingMsg.decode(message.getMsg());
-                        PairingRequest pairingRequest = pairingModule.getPairingRequest(pairingMsg.getPairingRequestId());
+                        MessageQueueManager.Message message = (MessageQueueManager.Message) intent.getExtras().get(MessageQueueManager.EVENT_MESSAGE_SUCCESSFUL);
+                        if (message == null) {
+                            return;
+                        }
+                        if (!(message.getMessage() instanceof PairRequestMessage)) {
+                            return;
+                        }
+                        pairRequestMessage = (PairRequestMessage) message.getMessage();
+                        PairingRequest pairingRequest = pairingModule.getPairingRequest(pairRequestMessage.getPairingRequestId());
                         Notification not = new Notification.Builder(context)
                                 .setContentTitle("Pairing request accepted!")
                                 .setContentText("Your pairing request with " + pairingRequest.getRemoteName() + " has been accepted!")
@@ -234,11 +259,16 @@ public class SendRequestActivity extends BaseActivity implements View.OnClickLis
                 break;
                 case MessageQueueManager.EVENT_MESSAGE_FAILED: {
                     MessageQueueManager.Message message = (MessageQueueManager.Message) intent.getExtras().get(MessageQueueManager.EVENT_MESSAGE_FAILED);
-                    PairingMsg pairingMsg = new PairingMsg();
+                    if (message == null) {
+                        return;
+                    }
+                    if (!(message.getMessage() instanceof PairRequestMessage)) {
+                        return;
+                    }
                     try {
-                        pairingMsg.decode(message.getMsg());
-                        PairingRequest pairingRequest = pairingModule.getPairingRequest(pairingMsg.getPairingRequestId());
-                        pairingModule.cancelPairingRequest(pairingRequest);
+                        pairRequestMessage = (PairRequestMessage) message.getMessage();
+                        PairingRequest pairingRequest = pairingModule.getPairingRequest(pairRequestMessage.getPairingRequestId());
+                        pairingModule.cancelPairingRequest(pairingRequest, false);
                         Notification not = new Notification.Builder(context)
                                 .setContentTitle("Pairing request couldn't be sent.")
                                 .setContentText("Your pairing request with " + pairingRequest.getRemoteName() + " couldn't be sent.")

@@ -64,7 +64,7 @@ public class CallProfileAppService {
 
     public interface CallMessagesListener{
 
-        void onMessage(MsgWrapper msg);
+        void onMessage(MessageWrapper msg);
 
     }
 
@@ -262,28 +262,28 @@ public class CallProfileAppService {
     }
 
     public void sendMsg(BaseMsg msg, final ProfSerMsgListener<Boolean> sendListener, boolean enqueueMessage) throws Exception {
-        MsgWrapper msgWrapper = new MsgWrapper(msg,msg.getType());
-        wrapAndSend(msgWrapper,sendListener, enqueueMessage);
+        MessageWrapper messageWrapper = msg.buildMessageWrapper();
+        wrapAndSend(messageWrapper,sendListener, enqueueMessage);
     }
 
     public void sendMsg(BaseMsg msg, final ProfSerMsgListener<Boolean> sendListener) throws Exception {
-        MsgWrapper msgWrapper = new MsgWrapper(msg,msg.getType());
-        wrapAndSend(msgWrapper,sendListener, false);
+        MessageWrapper messageWrapper = msg.buildMessageWrapper();
+        wrapAndSend(messageWrapper,sendListener, false);
     }
 
     public void sendMsg(String type,final ProfSerMsgListener<Boolean> sendListener, boolean enqueueMessage) throws Exception {
-        MsgWrapper msgWrapper = new MsgWrapper(null,type);
-        wrapAndSend(msgWrapper,sendListener, enqueueMessage);
+        MessageWrapper messageWrapper = new MessageWrapper(null,type);
+        wrapAndSend(messageWrapper,sendListener, enqueueMessage);
     }
 
     public void sendMsg(String type,final ProfSerMsgListener<Boolean> sendListener) throws Exception {
-        MsgWrapper msgWrapper = new MsgWrapper(null,type);
-        wrapAndSend(msgWrapper,sendListener, false);
+        MessageWrapper messageWrapper = new MessageWrapper(null,type);
+        wrapAndSend(messageWrapper,sendListener, false);
     }
 
-    private void wrapAndSend(MsgWrapper msgWrapper, final ProfSerMsgListener<Boolean> sendListener, boolean enqueueMessage) throws Exception {
-        byte[] msgTemp = msgWrapper.encode();
-        if (isEncrypted && !msgWrapper.getMsgType().equals(BasicCallMessages.CRYPTO.getType())){
+    private void wrapAndSend(MessageWrapper messageWrapper, final ProfSerMsgListener<Boolean> sendListener, boolean enqueueMessage) throws Exception {
+        byte[] msgTemp = messageWrapper.encode();
+        if (isEncrypted && !messageWrapper.getMsgType().equals(BasicCallMessages.CRYPTO.getType())){
             if (cryptoAlgo!=null){
                 // todo: encrypt
                 msgTemp = msgTemp;//cryptoAlgo.digest(msgTemp,msgTemp.length,localProfile.getPublicKey());
@@ -361,17 +361,17 @@ public class CallProfileAppService {
                     logger.error("msg decryption, crypto algo not setted");
                 }
             }
-            MsgWrapper msgWrapper = MsgWrapper.decode(msgTemp);
-            if (msgWrapper.getMsgType().equals(BasicCallMessages.CRYPTO.getType())){
+            MessageWrapper messageWrapper = MessageWrapper.decode(msgTemp);
+            if (messageWrapper.getMsgType().equals(BasicCallMessages.CRYPTO.getType())){
                 // todo: do a class with the supported algos instead of this lazy lazy stuff..
-                if(!((CryptoMsg)(msgWrapper.getMsg())).getAlgo().equals("box")){
+                if(!((CryptoMsg)(messageWrapper.getMsg())).getAlgo().equals("box")){
                     setCryptoAlgo(new BoxAlgo());
                 }else {
-                    logger.info("crypto msg arrived with an unknown type.. "+msgWrapper.getMsg());
+                    logger.info("crypto msg arrived with an unknown type.. "+ messageWrapper.getMsg());
                 }
             }else
                 if (msgListener != null) {
-                    msgListener.onMessage(msgWrapper);
+                    msgListener.onMessage(messageWrapper);
                 } else {
                     logger.warn("CallAppService msg received, not msgListener attached..");
                 }
