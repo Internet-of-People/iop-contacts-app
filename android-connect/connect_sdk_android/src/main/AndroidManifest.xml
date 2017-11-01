@@ -18,8 +18,8 @@
         <receiver android:name="iop.org.iop_sdk_android.core.receivers.ReceiverBoot">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED">
-                    <category android:name="android.intent.category.HOME">
-                    </category></action></intent-filter>
+                    </action>
+            </intent-filter>
         </receiver>
 
     </application>

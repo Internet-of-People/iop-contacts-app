@@ -10,10 +10,6 @@ import java.util.Arrays;
 
 import jnr.ffi.byref.LongLongByReference;
 
-
-//import jnr.ffi.byref.LongLongByReference;
-//import org.abstractj.kalium.NaCl;
-
 /**
  * Created by Matias Furszyfer on 02/10/16.
  */
