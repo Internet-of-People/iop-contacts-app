@@ -136,7 +136,7 @@ public class PairingAppService extends org.libertaria.world.profile_server.engin
                                 );
                                 pairingRequest.setRemotePsHome(profileServiceOwner.getHomeHost());
                                 pairingRequest.setRemoteId(pairRequestMessage.getPairingRequestId());
-                                int prId = pairingRequestsManager.saveIfNotExistPairingRequest(pairingRequest);
+                                int prId = pairingRequestsManager.saveOrUpdate(pairingRequest);
 
                                 org.libertaria.world.profile_server.ProfileInformation profileInformation = callProfileAppService.getRemoteProfile();
                                 profileInformation.setName(pairRequestMessage.getName());

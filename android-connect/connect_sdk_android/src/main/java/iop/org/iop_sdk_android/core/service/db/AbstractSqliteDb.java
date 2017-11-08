@@ -36,8 +36,8 @@ public abstract class AbstractSqliteDb<T extends DbObject> extends SQLiteOpenHel
     public ArrayList<T> list() {
         ArrayList<T> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res =  db.rawQuery( "select * from "+getTableName(), null );
-        if(res.moveToFirst()) {
+        Cursor res = db.rawQuery("select * from " + getTableName(), null);
+        if (res.moveToFirst()) {
             do {
                 list.add(buildFrom(res));
             } while (res.moveToNext());
@@ -46,70 +46,78 @@ public abstract class AbstractSqliteDb<T extends DbObject> extends SQLiteOpenHel
     }
 
     public Cursor getData(String where) {
-        if (where==null) throw new IllegalArgumentException("where cannot be null");
+        if (where == null) throw new IllegalArgumentException("where cannot be null");
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res =  db.rawQuery( "select * from "+getTableName()+" where "+where, null );
+        Cursor res = db.rawQuery("select * from " + getTableName() + " where " + where, null);
         return res;
     }
 
-    public Cursor getData(String whereColumn,Object whereObjValue) {
-        if (whereObjValue==null) throw new IllegalArgumentException("value cannot be null");
+    public Cursor getData(String whereColumn, Object whereObjValue) {
+        if (whereObjValue == null) throw new IllegalArgumentException("value cannot be null");
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res =  db.rawQuery( "select * from "+getTableName()+" where "+whereColumn+"='"+whereObjValue+"'", null );
+        Cursor res = db.rawQuery("select * from " + getTableName() + " where " + whereColumn + "='" + whereObjValue + "'", null);
         return res;
     }
 
-    public T get(String whereColumn,Object whereObjValue) {
-        Cursor cursor = getData(whereColumn,whereObjValue);
-        if (cursor.moveToFirst()){
+    public Cursor getOne(String whereColumn, Object whereObjValue) {
+        if (whereObjValue == null) throw new IllegalArgumentException("value cannot be null");
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("select 1 from " + getTableName() + " where " + whereColumn + "='" + whereObjValue + "' LIMIT 1", null);
+    }
+
+    public T get(String whereColumn, Object whereObjValue) {
+        Cursor cursor = getData(whereColumn, whereObjValue);
+        if (cursor.moveToFirst()) {
             return buildFrom(cursor);
         }
         return null;
     }
 
-    public boolean contains(String whereColumn,Object whereObjValue) {
-        Cursor cursor = getData(whereColumn,whereObjValue);
+    public boolean contains(String whereColumn, Object whereObjValue) {
+        Cursor cursor = getOne(whereColumn, whereObjValue);
         return cursor.moveToFirst();
     }
 
-    public void update(String whereColumn,String whereValue,T t){
+    public void update(String whereColumn, String whereValue, T t) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.update(getTableName(), buildContent(t),whereColumn+"=?",new String[]{whereValue});
+        db.update(getTableName(), buildContent(t), whereColumn + "=?", new String[]{whereValue});
     }
 
-    public void updateFieldByKey(String whereColumn,String whereValue, String updateColumn, boolean updateValue) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(updateColumn,updateValue);
-        db.update(getTableName(),contentValues,whereColumn+"=?",new String[]{whereValue});
-    }
-
-    public int updateFieldByKey(String whereColumn,String whereValue, String updateColumn, String updateValue) {
+    public void updateFieldByKey(String whereColumn, String whereValue, String updateColumn, boolean updateValue) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        contentValues.put(updateColumn,updateValue);
-        return db.update(getTableName(),contentValues,whereColumn+"=?",new String[]{whereValue});
+        contentValues.put(updateColumn, updateValue);
+        db.update(getTableName(), contentValues, whereColumn + "=?", new String[]{whereValue});
     }
 
-    public int numberOfRows(){
+    public int updateFieldByKey(String whereColumn, String whereValue, String updateColumn, String updateValue) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(updateColumn, updateValue);
+        return db.update(getTableName(), contentValues, whereColumn + "=?", new String[]{whereValue});
+    }
+
+    public int numberOfRows() {
         return (int) DatabaseUtils.queryNumEntries(getReadableDatabase(), getTableName());
 
     }
 
-    public Integer delete(String keyColumn,String columnValue) {
+    public Integer delete(String keyColumn, String columnValue) {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete(getTableName(),
-                keyColumn+" = ? ",
-                new String[] { columnValue });
+                keyColumn + " = ? ",
+                new String[]{columnValue});
     }
 
     public void truncate() {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(getTableName(),null,null);
+        db.delete(getTableName(), null, null);
     }
 
     abstract String getTableName();
+
     abstract ContentValues buildContent(T obj);
+
     abstract T buildFrom(Cursor cursor);
 
 

@@ -13,7 +13,7 @@ public interface PairingRequestsManager {
 
     int savePairingRequest(PairingRequest pairingRequest);
 
-    int saveIfNotExistPairingRequest(PairingRequest pairingRequest);
+    int saveOrUpdate(PairingRequest pairingRequest);
 
     PairingRequest getPairingRequest(String senderPubKey, String remotePubkey);
 
