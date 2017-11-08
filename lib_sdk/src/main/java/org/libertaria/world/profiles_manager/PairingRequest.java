@@ -21,6 +21,7 @@ public class PairingRequest implements DbObject,Serializable {
     private String remoteName;
     private long timestamp;
     private PairingMessageType status;
+    private int remoteId;
     // Extra info
     private org.libertaria.world.profile_server.imp.ProfileInformationImp.PairStatus pairStatus;
 
@@ -32,7 +33,7 @@ public class PairingRequest implements DbObject,Serializable {
         return new PairingRequest(senderPubKey,remotePubKey,null,remotePsHost,senderName,System.currentTimeMillis(), PairingMessageType.PAIR_REQUEST,senderPsHost,remoteName,pairStatus);
     }
 
-    public PairingRequest(int id, String senderPubKey, String remotePubKey, String remoteServerId, String remotePsHost, String senderName, long timestamp, PairingMessageType status, String senderPsHost, String remoteName, org.libertaria.world.profile_server.imp.ProfileInformationImp.PairStatus pairStatus) {
+    public PairingRequest(int id, String senderPubKey, String remotePubKey, String remoteServerId, String remotePsHost, String senderName, long timestamp, PairingMessageType status, String senderPsHost, String remoteName, org.libertaria.world.profile_server.imp.ProfileInformationImp.PairStatus pairStatus, int remoteId) {
         this.id = id;
         this.senderPubKey = senderPubKey;
         this.remotePubKey = remotePubKey;
@@ -44,6 +45,7 @@ public class PairingRequest implements DbObject,Serializable {
         this.senderPsHost = senderPsHost;
         this.pairStatus = pairStatus;
         this.remoteName = remoteName;
+        this.remoteId = remoteId;
     }
 
     private PairingRequest(String senderPubKey, String remotePubKey, String remoteServerId, String remotePsHost, String senderName, long timestamp, PairingMessageType status, String senderPsHost, String remoteName , org.libertaria.world.profile_server.imp.ProfileInformationImp.PairStatus pairStatus) {
@@ -134,5 +136,13 @@ public class PairingRequest implements DbObject,Serializable {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public int getRemoteId() {
+        return remoteId;
+    }
+
+    public void setRemoteId(int remoteId) {
+        this.remoteId = remoteId;
     }
 }

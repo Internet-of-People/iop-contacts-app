@@ -139,7 +139,7 @@ public class PairingModuleImp extends AbstractModule implements PairingModule {
         final String remotePubKeyHex = pairingRequest.getSenderPubKey();
         final String localPubKeyHex = pairingRequest.getRemotePubKey();
         logger.info("acceptPairingRequest, remote: " + remotePubKeyHex);
-        final PairAcceptedMessage pairAcceptedMessage = new PairAcceptedMessage((int) pairingRequest.getId());
+        final PairAcceptedMessage pairAcceptedMessage = new PairAcceptedMessage(pairingRequest.getRemoteId());
         prepareCall(localPubKeyHex, remotePubKeyHex, new ProfSerMsgListener<CallProfileAppService>() {
             @Override
             public void onMessageReceive(int messageId, final CallProfileAppService call) {
@@ -207,11 +207,6 @@ public class PairingModuleImp extends AbstractModule implements PairingModule {
     }
 
     @Override
-    public void cancelPairingRequest(int pairingRequestId, Boolean notify) {
-        cancelPairingRequest(getPairingRequest(pairingRequestId), notify);
-    }
-
-    @Override
     public void cancelPairingRequest(PairingRequest pairingRequest, Boolean notify) {
         platformService.getPairingRequestsDb().delete(pairingRequest.getId());
         platformService.getProfilesDb().deleteProfileByPubKey(pairingRequest.getSenderPubKey(), pairingRequest.getRemotePubKey());
@@ -220,7 +215,7 @@ public class PairingModuleImp extends AbstractModule implements PairingModule {
             final String remotePubKeyHex = pairingRequest.getSenderPubKey();
             final String localPubKeyHex = pairingRequest.getRemotePubKey();
             logger.info("cancelPairingRequest, remote: " + remotePubKeyHex);
-            final PairRefusedMessage pairRefuseMessage = new PairRefusedMessage((int) pairingRequest.getId());
+            final PairRefusedMessage pairRefuseMessage = new PairRefusedMessage(pairingRequest.getRemoteId());
             prepareCallAndSend(localPubKeyHex, remotePubKeyHex, pairRefuseMessage, null, false);
         }
     }

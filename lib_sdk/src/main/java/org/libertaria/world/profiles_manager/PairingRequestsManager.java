@@ -19,13 +19,15 @@ public interface PairingRequestsManager {
 
     PairingRequest getPairingRequest(int pairingRequestId);
 
+    PairingRequest getPairingRequestByExternalId(int externalPairId);
+
     List<PairingRequest> pairingRequests(String senderPubKey);
 
     List<PairingRequest> openPairingRequests(String senderPubKey);
 
     boolean updateStatus(String senderPubKey, String remotePubKey, PairingMessageType status, ProfileInformationImp.PairStatus paired);
 
-    boolean updateStatus(int pairingRequestId, PairingMessageType status, ProfileInformationImp.PairStatus pairStatus);
+    boolean updateStatus(int externalPairId, PairingMessageType status, ProfileInformationImp.PairStatus pairStatus);
 
     int disconnectPairingProfile(String senderPubKey, String remotePubKey);
 
