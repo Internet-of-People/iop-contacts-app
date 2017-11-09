@@ -101,7 +101,6 @@ public class ConnectApp extends Application implements ConnectApplication {
             @Override
             public void onDisconnected() {
                 isClientServiceBound = false;
-                clientService.clear();
             }
         });
     }

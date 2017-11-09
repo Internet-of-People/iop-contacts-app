@@ -14,16 +14,16 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import tech.furszy.ui.lib.base.adapter.BaseAdapter;
-import tech.furszy.ui.lib.base.adapter.BaseViewHolder;
-import tech.furszy_ui_lib.R;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import tech.furszy.ui.lib.base.adapter.BaseAdapter;
+import tech.furszy.ui.lib.base.adapter.BaseViewHolder;
+import tech.furszy_ui_lib.R;
 
 /**
  * Created by furszy on 6/20/17.
@@ -62,7 +62,7 @@ public abstract class RecyclerFragment<T> extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        super.onCreateView(inflater,container,savedInstanceState);
+        super.onCreateView(inflater, container, savedInstanceState);
         root = inflater.inflate(R.layout.recycler_fragment, container, false);
         recycler = (RecyclerView) root.findViewById(R.id.recycler_contacts);
         swipeRefreshLayout = (SwipeRefreshLayout) root.findViewById(R.id.swipeRefresh);
@@ -73,7 +73,7 @@ public abstract class RecyclerFragment<T> extends Fragment {
         layoutManager = new LinearLayoutManager(getActivity());
         recycler.setLayoutManager(layoutManager);
         adapter = initAdapter();
-        if (adapter==null) throw new IllegalStateException("Base adapter cannot be null");
+        if (adapter == null) throw new IllegalStateException("Base adapter cannot be null");
         recycler.setAdapter(adapter);
         swipeRefreshLayout.setOnRefreshListener(
                 new SwipeRefreshLayout.OnRefreshListener() {
@@ -94,7 +94,7 @@ public abstract class RecyclerFragment<T> extends Fragment {
     }
 
     private void initExecutor() {
-        if (executor==null){
+        if (executor == null) {
             executor = Executors.newSingleThreadExecutor();
         }
     }
@@ -103,13 +103,15 @@ public abstract class RecyclerFragment<T> extends Fragment {
      * Method to override
      */
     private void load() {
-        swipeRefreshLayout.setRefreshing(true);
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setRefreshing(true);
+        }
         initExecutor();
-        if (executor!=null)
+        if (executor != null)
             executor.execute(loadRunnable);
     }
 
-    public void refresh(){
+    public void refresh() {
         load();
     }
 
@@ -117,23 +119,21 @@ public abstract class RecyclerFragment<T> extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-        if (executor!=null){
+        if (executor != null) {
             executor.shutdownNow();
             executor = null;
         }
     }
 
     /**
-     *
      * @return list of items
      */
     protected abstract List<T> onLoading();
 
     /**
-     *
      * @return the main adapter
      */
-    protected abstract BaseAdapter<T,? extends BaseViewHolder> initAdapter();
+    protected abstract BaseAdapter<T, ? extends BaseViewHolder> initAdapter();
 
     protected Runnable loadRunnable = new Runnable() {
         @Override
@@ -142,10 +142,10 @@ public abstract class RecyclerFragment<T> extends Fragment {
             try {
                 list = onLoading();
                 res = true;
-            } catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
                 res = false;
-                log.info("cantLoadListException: "+e.getMessage());
+                log.info("cantLoadListException: " + e.getMessage());
             }
             final boolean finalRes = res;
             getActivity().runOnUiThread(new Runnable() {
@@ -154,7 +154,7 @@ public abstract class RecyclerFragment<T> extends Fragment {
                     swipeRefreshLayout.setRefreshing(false);
                     if (finalRes) {
                         adapter.changeDataSet(list);
-                        if (list!=null && !list.isEmpty()) {
+                        if (list != null && !list.isEmpty()) {
                             hideEmptyScreen();
                         } else {
                             showEmptyScreen();
@@ -167,34 +167,34 @@ public abstract class RecyclerFragment<T> extends Fragment {
         }
     };
 
-    protected void setEmptyText(String text){
+    protected void setEmptyText(String text) {
         this.emptyText = text;
-        if (txt_empty!=null){
+        if (txt_empty != null) {
             txt_empty.setText(emptyText);
         }
     }
 
-    protected void setEmptyTextColor(int color){
-        if (txt_empty!=null){
+    protected void setEmptyTextColor(int color) {
+        if (txt_empty != null) {
             txt_empty.setTextColor(color);
         }
     }
 
     public void setEmptyView(int imgRes) {
-        if (img_empty_view!=null){
+        if (img_empty_view != null) {
             img_empty_view.setImageResource(imgRes);
         }
     }
 
 
-    private void showEmptyScreen(){
+    private void showEmptyScreen() {
 //        if (container_empty_screen!=null)
 //            AnimationUtils.fadeInView(container_empty_screen,300);
         container_empty_screen.setVisibility(View.VISIBLE);
 
     }
 
-    private void hideEmptyScreen(){
+    private void hideEmptyScreen() {
         container_empty_screen.setVisibility(View.GONE);
 //        if (container_empty_screen!=null)
 //            AnimationUtils.fadeOutView(container_empty_screen,300);
