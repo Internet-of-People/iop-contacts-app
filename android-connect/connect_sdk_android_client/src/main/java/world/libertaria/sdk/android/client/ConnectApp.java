@@ -45,12 +45,12 @@ public class ConnectApp extends Application implements ConnectApplication {
     protected LocalBroadcastManager broadcastManager;
     protected ActivityManager activityManager;
     private WeakReference<ConnectClientService> clientService;
-    private volatile boolean isClientServiceBound;
     private CopyOnWriteArrayList<ConnectListener> connectListeners;
 
-    public interface ConnectListener{
+    public interface ConnectListener {
 
         void onPlatformConnected(Context context);
+
         void onPlatformDisconnected(Context context);
     }
 
@@ -66,7 +66,7 @@ public class ConnectApp extends Application implements ConnectApplication {
         for (ActivityManager.RunningAppProcessInfo processInfo : activityManager.getRunningAppProcesses()) {
             if (processInfo.pid == pid) {
                 String currentProcName = processInfo.processName;
-                logger.info("process name: "+currentProcName);
+                logger.info("process name: " + currentProcName);
                 if (!TextUtils.isEmpty(currentProcName) && currentProcName.equals("org.furszy:connect_service")) {
                     //Rest of the initializations are not needed for the background
                     //process
@@ -77,7 +77,7 @@ public class ConnectApp extends Application implements ConnectApplication {
         broadcastManager = LocalBroadcastManager.getInstance(this);
 
         // check if the Connect is installed first
-        if(!isPackageInstalled("org.furszy.contacts",getPackageManager())){
+        if (!isPackageInstalled("org.furszy.contacts", getPackageManager())) {
 
 
         }
@@ -86,13 +86,8 @@ public class ConnectApp extends Application implements ConnectApplication {
             @Override
             public void onConnected() {
                 try {
-                    isClientServiceBound = true;
-
                     clientService = new WeakReference<>(connectHelper.getClient());
-
-                    if (clientService.get().mPlatformServiceIsBound){
-                        onConnectClientServiceBind();
-                    }
+                    onConnectClientServiceBind();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -100,7 +95,8 @@ public class ConnectApp extends Application implements ConnectApplication {
 
             @Override
             public void onDisconnected() {
-                isClientServiceBound = false;
+                connectHelper.unbindService(getBaseContext());
+                clientService.clear();
             }
         });
     }
@@ -163,24 +159,27 @@ public class ConnectApp extends Application implements ConnectApplication {
         log.setLevel(Level.INFO);
     }
 
-    protected final Module getModule(EnabledServices enabledService){
-        if (clientService==null) throw new IllegalStateException("client service not connected");
+    protected final Module getModule(EnabledServices enabledService) {
+        if (clientService == null) {
+            connectHelper.startProfileServerService();
+            clientService = new WeakReference<>(connectHelper.getClient());
+        }
         return clientService.get().getModule(enabledService);
     }
 
-    public final String getAppPackage(){
+    public final String getAppPackage() {
         return getPackageName();
     }
 
-    public final ProfilesModule getProfilesModule(){
+    public final ProfilesModule getProfilesModule() {
         return (ProfilesModule) getModule(EnabledServices.PROFILE_DATA);
     }
 
-    public final PairingModule getPairingModule(){
+    public final PairingModule getPairingModule() {
         return (PairingModule) getModule(EnabledServices.PROFILE_PAIRING);
     }
 
-    public final ChatModule getChatModule(){
+    public final ChatModule getChatModule() {
         return (ChatModule) getModule(EnabledServices.CHAT);
     }
 
@@ -188,7 +187,7 @@ public class ConnectApp extends Application implements ConnectApplication {
      * Method to override reciving the bind notification
      */
     protected void onConnectClientServiceBind() {
-        if (isClientServiceBound && clientService!=null && clientService.get()!=null && clientService.get().mPlatformServiceIsBound) {
+        if (ClientServiceConnectHelper.isConnected.get() && clientService != null && clientService.get() != null && clientService.get().mPlatformServiceIsBound) {
             // notify connection
             Intent intent = new Intent(ACTION_IOP_SERVICE_CONNECTED);
             broadcastManager.sendBroadcast(intent);
@@ -198,16 +197,17 @@ public class ConnectApp extends Application implements ConnectApplication {
                     connectListener.onPlatformConnected(this);
                 }
             }
-        }else {
-            logger.warn("onConnectClientServiceBind, isClientServiceBound: " + isClientServiceBound + ", mPlatformServiceIsBound " + (clientService != null ? clientService.get().toString() : null));
+        } else {
+            logger.warn("onConnectClientServiceBind, isClientServiceBound: " + ClientServiceConnectHelper.isConnected.get() + ", mPlatformServiceIsBound " + (clientService != null ? clientService.get().toString() : null));
         }
     }
+
     /**
      * Method to override reciving the unbind notification
      */
     protected void onConnectClientServiceUnbind() {
         // notify listeners
-        if (connectListeners!=null){
+        if (connectListeners != null) {
             for (ConnectListener connectListener : connectListeners) {
                 connectListener.onPlatformDisconnected(this);
             }
@@ -215,26 +215,26 @@ public class ConnectApp extends Application implements ConnectApplication {
     }
 
     public boolean isConnectedToPlatform() {
-        if ( clientService!=null && clientService.get()!=null){
+        if (clientService != null && clientService.get() != null) {
             return clientService.get().mPlatformServiceIsBound;
         }
         return false;
     }
 
     public void addConnectListener(ConnectListener connectListener) {
-        if (connectListeners==null){
+        if (connectListeners == null) {
             connectListeners = new CopyOnWriteArrayList<>();
         }
         connectListeners.add(connectListener);
     }
 
-    public void removeConnectListener(ConnectListener connectListener){
-        if (connectListeners!=null){
+    public void removeConnectListener(ConnectListener connectListener) {
+        if (connectListeners != null) {
             connectListeners.remove(connectListener);
         }
     }
 
     public boolean isClientServiceBound() {
-        return isClientServiceBound;
+        return ClientServiceConnectHelper.isConnected.get();
     }
 }

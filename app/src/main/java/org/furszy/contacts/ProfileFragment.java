@@ -127,6 +127,7 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
             public void onClick(View v) {
                 Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivityForResult(i, RESULT_LOAD_IMAGE);
+                changeScreenState(UPDATE_SCREEN_STATE);
             }
         });
 
@@ -148,6 +149,7 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
 
             }
         });
+        show_location.setVisibility(View.GONE);
 
         btn_create.setOnClickListener(this);
 
