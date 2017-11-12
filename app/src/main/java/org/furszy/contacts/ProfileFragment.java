@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,8 +35,6 @@ import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.Toast;
 
-import com.squareup.picasso.Picasso;
-
 import org.furszy.contacts.app_base.BaseAppFragment;
 import org.libertaria.world.profile_server.ProfileInformation;
 import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
@@ -51,8 +50,11 @@ import java.util.regex.Pattern;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import id.zelory.compressor.Compressor;
+import iop.org.iop_sdk_android.core.service.device_state.ContactLocationListener;
 
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.app.Activity.RESULT_OK;
+import static android.content.Context.LOCATION_SERVICE;
 
 /**
  * Created by mati on 16/04/17.
@@ -64,6 +66,8 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
     private static final String TAG = "ProfileActivity";
 
     private final int destWidth = 400;
+
+    private static final int MY_PERMISSIONS_LOCATION = 1001;
 
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1000;
 
@@ -98,6 +102,8 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
             }
         }
     };
+
+    private LocationManager mLocationManager;
 
 
     @Nullable
@@ -134,22 +140,28 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
         //Show Locaiton
 
         show_location = (Switch) root.findViewById(R.id.show_location);
-        show_location.setChecked(false);
-        show_location.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        final boolean hasLocationPermission = checkPermission(ACCESS_FINE_LOCATION);
 
+        mLocationManager = (LocationManager) getContext().getSystemService(LOCATION_SERVICE);
+        show_location.setChecked(hasLocationPermission);
+        show_location.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
-
-                if(isChecked){
-
-                }else{
-
+                if (isChecked) {
+                    if (!hasLocationPermission) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION};
+                            ActivityCompat.requestPermissions(getActivity(),
+                                    perms,
+                                    MY_PERMISSIONS_LOCATION);
+                        }
+                    }
+                } else {
+                    mLocationManager.removeUpdates(ContactLocationListener.getInstance());
                 }
-
             }
         });
-        show_location.setVisibility(View.GONE);
 
         btn_create.setOnClickListener(this);
 
@@ -157,14 +169,6 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
             changeScreenState(DONE_SCREEN_STATE);
         } else {
             changeScreenState(UPDATE_SCREEN_STATE);
-        }
-
-        try {
-            File imgFile = null;// module.getUserImageFile();
-            if (imgFile != null && imgFile.exists())
-                Picasso.with(getActivity()).load(imgFile).into(imgProfile);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
         init();
@@ -532,6 +536,21 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
                     Toast.makeText(getActivity(), "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
                 }
                 return;
+            }
+
+            case MY_PERMISSIONS_LOCATION: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (mLocationManager != null) {
+                        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1500,
+                                    20, ContactLocationListener.getInstance());
+                        }
+
+                    }
+                } else {
+                    show_location.setChecked(false);
+                }
             }
 
             // other 'case' lines to check for other

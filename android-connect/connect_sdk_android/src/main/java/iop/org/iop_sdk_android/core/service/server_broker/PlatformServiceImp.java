@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -81,6 +82,7 @@ import iop.org.iop_sdk_android.core.service.db.LocalProfilesDb;
 import iop.org.iop_sdk_android.core.service.db.SqlitePairingRequestDb;
 import iop.org.iop_sdk_android.core.service.db.SqliteProfilesDb;
 import iop.org.iop_sdk_android.core.service.db.message_queue.MessageQueueDb;
+import iop.org.iop_sdk_android.core.service.device_state.ContactLocationListener;
 import iop.org.iop_sdk_android.core.service.device_state.DeviceConnectionManager;
 import iop.org.iop_sdk_android.core.wrappers.IntentWrapperAndroid;
 import iop.org.iop_sdk_android.core.wrappers.PackageInfoAndroid;
@@ -90,6 +92,7 @@ import world.libertaria.shared.library.global.ModuleParameter;
 import world.libertaria.shared.library.global.service.IPlatformService;
 import world.libertaria.shared.library.global.service.IntentServiceAction;
 
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PROFILE_CONNECTED;
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PROFILE_DISCONNECTED;
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
@@ -260,7 +263,15 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
                 serviceFactory = serviceFactoryImp;
                 ioPConnect.setEngineListener((ProfilesModuleImp) core.getModule(EnabledServices.PROFILE_DATA.getName()));
                 ioPConnect.start();
+                gpsEnabled = checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
 
+                if (gpsEnabled) {
+                    LocationManager mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+                    if (mLocationManager != null) {
+                        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1500,
+                                20, ContactLocationListener.getInstance());
+                    }
+                }
 
                 tryScheduleService();
 
@@ -643,7 +654,7 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
     @Override
     public boolean isDeviceLocationEnabled() {
         return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
 

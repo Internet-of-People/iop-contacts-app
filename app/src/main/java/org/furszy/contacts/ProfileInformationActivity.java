@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.location.Address;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,6 +34,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import iop.org.iop_sdk_android.core.service.device_state.LocationUtil;
 
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PAIR_DISCONNECTED;
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT;
@@ -61,6 +63,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     private View root;
     private CircleImageView imgProfile;
     private TextView txt_name;
+    private TextView locationText;
     private Button btn_action;
     private ProgressBar progress_bar;
 
@@ -76,15 +79,15 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            if (action.equals(ACTION_PROFILE_UPDATED_CONSTANT)){
-                if (isMyProfile){
+            if (action.equals(ACTION_PROFILE_UPDATED_CONSTANT)) {
+                if (isMyProfile) {
                     profileInformation = profilesModule.getProfile(selectedProfPubKey);
                     loadProfileData();
                 }
             } else if (action.equals(ACTION_ON_PAIR_DISCONNECTED)) {
                 if (profileInformation != null) {
                     String pubKey = profileInformation.getHexPublicKey();
-                    profileInformation = profilesModule.getKnownProfile(selectedProfPubKey,pubKey);
+                    profileInformation = profilesModule.getKnownProfile(selectedProfPubKey, pubKey);
                     loadProfileData();
                 }
             }
@@ -93,10 +96,10 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (getIntent()!=null && getIntent().hasExtra(IS_MY_PROFILE)) {
+        if (getIntent() != null && getIntent().hasExtra(IS_MY_PROFILE)) {
             getMenuInflater().inflate(R.menu.my_profile_menu, menu);
         } else {
-            MenuItem menuItem = menu.add(0,OPTIONS_DELETE,0,R.string.delete_contact);
+            MenuItem menuItem = menu.add(0, OPTIONS_DELETE, 0, R.string.delete_contact);
             return super.onCreateOptionsMenu(menu);
         }
         return true;
@@ -105,7 +108,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.editProfile:
-                Intent myIntent = new Intent(this,ProfileActivity.class);
+                Intent myIntent = new Intent(this, ProfileActivity.class);
                 startActivity(myIntent);
                 return true;
             case OPTIONS_DELETE:
@@ -117,7 +120,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     }
 
     @Override
-    protected void onCreateView(Bundle savedInstanceState,ViewGroup container) {
+    protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -133,9 +136,10 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 //        Log.i("APP",data.toString());
 
         //setContentView(R.layout.profile_information_main);
-        root = getLayoutInflater().inflate(R.layout.profile_information_main,container);
+        root = getLayoutInflater().inflate(R.layout.profile_information_main, container);
         imgProfile = (CircleImageView) root.findViewById(R.id.profile_image);
         txt_name = (TextView) root.findViewById(R.id.txt_name);
+        locationText = (TextView) root.findViewById(R.id.txt_location);
         btn_action = (Button) root.findViewById(R.id.btn_action);
         progress_bar = (ProgressBar) root.findViewById(R.id.progress_bar);
         txt_chat = (TextView) root.findViewById(R.id.txt_chat);
@@ -151,34 +155,39 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         });
 
         Bundle extras = getIntent().getExtras();
-        if (extras!=null){
+        if (extras != null) {
             if (extras.containsKey(INTENT_EXTRA_PROF_KEY)) {
                 byte[] pubKey = extras.getByteArray(INTENT_EXTRA_PROF_KEY);
-                profileInformation = profilesModule.getKnownProfile(selectedProfPubKey,CryptoBytes.toHexString(pubKey));
+                profileInformation = profilesModule.getKnownProfile(selectedProfPubKey, CryptoBytes.toHexString(pubKey));
                 // and schedule to try to update this profile information..
                 searchForProfile = true;
-            }else if (extras.containsKey(IS_MY_PROFILE)){
+            } else if (extras.containsKey(IS_MY_PROFILE)) {
                 isMyProfile = true;
                 profileInformation = profilesModule.getProfile(selectedProfPubKey);
                 btn_action.setVisibility(View.GONE);
                 txt_chat.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_chat_disable, 0);
-                txt_chat.setEnabled (false);
+                txt_chat.setEnabled(false);
             }
         }
 
-        if (profileInformation==null && !searchForProfile){
+        if (profileInformation == null && !searchForProfile) {
             onBackPressed();
             return;
         }
 
-        /*if (searchForProfile){
-            showLoading();
-        }else
-            hideLoading();*/
+        Address address = LocationUtil.getLastKnownAddress(getApplicationContext());
+        String displayText = getApplicationContext().getString(R.string.my_location);
+
+        if (address != null) {
+            displayText = address.getSubAdminArea() + ", " + address.getCountryName();
+        }
+        locationText.setText(displayText);
     }
 
-    private void tappedActionButton(){
-        if (flag.compareAndSet(true,true)){ return; }
+    private void tappedActionButton() {
+        if (flag.compareAndSet(true, true)) {
+            return;
+        }
         flag.set(true);
         showLoading();
         executor.submit(new Runnable() {
@@ -206,7 +215,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                                 flag.set(false);
                                 hideLoading();
                                 String baseMsg = getResources().getString(R.string.pairing_fail);
-                                Toast.makeText(ProfileInformationActivity.this, baseMsg+": Remote profile not available", Toast.LENGTH_LONG).show();
+                                Toast.makeText(ProfileInformationActivity.this, baseMsg + ": Remote profile not available", Toast.LENGTH_LONG).show();
                             }
                         });
                     }
@@ -221,30 +230,32 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                     );
                 } catch (Exception e) {
                     String baseMsg = getResources().getString(R.string.pairing_fail);
-                    Toast.makeText(ProfileInformationActivity.this, baseMsg+": "+e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(ProfileInformationActivity.this, baseMsg + ": " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
             }
         });
     }
 
-    private void tappedDeleteButton(){
-        if (flag.compareAndSet(true,true)) { return; }
+    private void tappedDeleteButton() {
+        if (flag.compareAndSet(true, true)) {
+            return;
+        }
         flag.set(true);
         showLoading();
         executor.submit(new Runnable() {
             @Override
             public void run() {
                 MsgListenerFuture<Boolean> readyListener = new MsgListenerFuture<Boolean>();
-                readyListener.setListener(new BaseMsgFuture.Listener<Boolean>(){
+                readyListener.setListener(new BaseMsgFuture.Listener<Boolean>() {
 
                     @Override
                     public void onAction(int messageId, Boolean object) {
                         flag.set(false);
-                        runOnUiThread(new Runnable(){
+                        runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 hideLoading();
-                                Toast.makeText(ProfileInformationActivity.this, "User has been disconnected",Toast.LENGTH_LONG).show();
+                                Toast.makeText(ProfileInformationActivity.this, "User has been disconnected", Toast.LENGTH_LONG).show();
                                 onBackPressed();
                             }
                         });
@@ -253,11 +264,11 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                     @Override
                     public void onFail(int messageId, int status, String statusDetail) {
                         flag.set(false);
-                        runOnUiThread(new Runnable(){
+                        runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 hideLoading();
-                                Toast.makeText(ProfileInformationActivity.this, "Fail disconnecting",Toast.LENGTH_LONG).show();
+                                Toast.makeText(ProfileInformationActivity.this, "Fail disconnecting", Toast.LENGTH_LONG).show();
                             }
                         });
                     }
@@ -272,12 +283,12 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     }
 
     private void loadProfileData() {
-        if (profileInformation!=null) {
+        if (profileInformation != null) {
             if (profileInformation.getPairStatus().equals(ProfileInformationImp.PairStatus.DISCONNECTED)) {
                 btn_action.setEnabled(true);
                 btn_action.setText(R.string.send_request);
-                btn_action.setBackgroundColor(getResources().getColor(R.color.bgBlue,null));
-                btn_action.setTextColor(getResources().getColor(R.color.white,null));
+                btn_action.setBackgroundColor(getResources().getColor(R.color.bgBlue, null));
+                btn_action.setTextColor(getResources().getColor(R.color.white, null));
                 disconnected_message.setVisibility(View.VISIBLE);
             }
             txt_name.setText(profileInformation.getName());
@@ -291,14 +302,14 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     @Override
     protected void onResume() {
         super.onResume();
-        if (isMyProfile){
+        if (isMyProfile) {
             profileInformation = profilesModule.getProfile(selectedProfPubKey);
         }
         loadProfileData();
-        if (executor==null){
+        if (executor == null) {
             executor = Executors.newSingleThreadExecutor();
         }
-        if (searchForProfile){
+        if (searchForProfile) {
             executor.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -318,7 +329,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 
                             @Override
                             public void onFail(int messageId, int status, String statusDetail) {
-                                logger.info("Search profile on network fail, detail:"+statusDetail);
+                                logger.info("Search profile on network fail, detail:" + statusDetail);
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
@@ -329,12 +340,12 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                                 });
                             }
                         });
-                        profilesModule.getProfileInformation(selectedProfPubKey,profileInformation.getHexPublicKey(),true,msgListenerFuture);
+                        profilesModule.getProfileInformation(selectedProfPubKey, profileInformation.getHexPublicKey(), true, msgListenerFuture);
                     } catch (CantSendMessageException e) {
                         e.printStackTrace();
                     } catch (CantConnectException e) {
                         e.printStackTrace();
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
@@ -351,32 +362,34 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     @Override
     protected void onStop() {
         super.onStop();
-        if (executor!=null){
+        if (executor != null) {
             executor.shutdownNow();
             executor = null;
         }
     }
 
-    private void showLoading(){
+    private void showLoading() {
         progress_bar.setVisibility(View.VISIBLE);
     }
 
-    private void hideLoading(){
+    private void hideLoading() {
         progress_bar.setVisibility(View.GONE);
     }
 
     @Override
     public void onClick(final View v) {
         int id = v.getId();
-        if (id==R.id.txt_chat){
-            if (isMyProfile) { return; }
+        if (id == R.id.txt_chat) {
+            if (isMyProfile) {
+                return;
+            }
             if (profileInformation.getPairStatus().equals(ProfileInformationImp.PairStatus.DISCONNECTED)) {
-                Toast.makeText(v.getContext(),"You need connect with "+profileInformation.getName()+" in order to send messages",Toast.LENGTH_SHORT).show();
+                Toast.makeText(v.getContext(), "You need connect with " + profileInformation.getName() + " in order to send messages", Toast.LENGTH_SHORT).show();
                 return;
             }
             Intent intent = new Intent(ACTION_OPEN_CHAT_APP);
-            intent.putExtra(EXTRA_INTENT_LOCAL_PROFILE,selectedProfPubKey);
-            intent.putExtra(EXTRA_INTENT_REMOTE_PROFILE,profileInformation.getHexPublicKey());
+            intent.putExtra(EXTRA_INTENT_LOCAL_PROFILE, selectedProfPubKey);
+            intent.putExtra(EXTRA_INTENT_REMOTE_PROFILE, profileInformation.getHexPublicKey());
             sendBroadcast(intent);
             //Toast.makeText(this,"Open chat app here please",Toast.LENGTH_LONG).show();
             /*if (flag.compareAndSet(false,true)) {
