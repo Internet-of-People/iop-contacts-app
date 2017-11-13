@@ -67,7 +67,8 @@ public class PairingModuleImp extends AbstractModule implements PairingModule {
         }
         // check if the pairing request exist
         if (platformService.getPairingRequestsDb().containsPairingRequest(localProfilePubKey, remotePubKeyStr)) {
-            throw new IllegalStateException("Pairing request already exist");
+            listener.onMsgFail(0, 0, "Already known profile");
+            return;
         }
 
         final Profile localProfile = ioPConnect.getProfile(localProfilePubKey);
@@ -119,9 +120,6 @@ public class PairingModuleImp extends AbstractModule implements PairingModule {
             @Override
             public void onMsgFail(int messageId, int statusValue, String details) {
                 // rollback pairing request:
-//                logger.info("fail pairing request: " + details);
-//                platformService.getProfilesDb().deleteProfileByPubKey(localProfilePubKey, remotePubKeyStr);
-//                platformService.getPairingRequestsDb().delete(pairingRequest.getId());
                 listener.onMsgFail(messageId, statusValue, details);
             }
 

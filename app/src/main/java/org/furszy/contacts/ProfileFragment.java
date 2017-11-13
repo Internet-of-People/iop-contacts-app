@@ -36,6 +36,8 @@ import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import com.google.common.base.Strings;
+
 import org.furszy.contacts.app_base.BaseAppFragment;
 import org.libertaria.world.profile_server.ProfileInformation;
 import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
@@ -414,50 +416,52 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
 
     private void updateProfile() {
         final String name = txt_name.getText().toString();
-        if (!name.equals("")) {
-            progressBar.setVisibility(View.VISIBLE);
-            final boolean isIdentityCreated = profilesModule.isIdentityCreated(selectedProfilePubKey);
-            if (!isIdentityCreated) {
-                IntentFilter intentFilter = new IntentFilter(App.INTENT_ACTION_PROFILE_CONNECTED);
-                ((BaseActivity) getActivity()).localBroadcastManager.registerReceiver(connectionReceiver, intentFilter);
-            }
-            execute(new Runnable() {
-                @Override
-                public void run() {
-                    boolean success = false;
-                    String detail;
-                    try {
-                        MsgListenerFuture<Boolean> listenerFuture = new MsgListenerFuture<>();
-                        profilesModule.updateProfile(
-                                selectedProfilePubKey,
-                                name,
-                                profImgData,
-                                listenerFuture);
-
-                        detail = "Saved";
-                        success = true;
-                    } catch (Exception e) {
-                        Log.e(TAG, " exception updating the profile\n" + e.getMessage());
-                        detail = "Cant update profile, send report please";
-                    }
-                    Activity activity = getActivity();
-                    if (activity != null) {
-                        final String finalDetail = detail;
-                        final boolean finalSuccess = success;
-                        activity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                progressBar.setVisibility(View.GONE);
-                                Toast.makeText(getActivity(), finalDetail, Toast.LENGTH_LONG).show();
-                                if (finalSuccess) {
-                                    getActivity().onBackPressed();
-                                }
-                            }
-                        });
-                    }
-                }
-            });
+        if (Strings.isNullOrEmpty(name)) {
+            Toast.makeText(getActivity(), "Your name cannot be empty!", Toast.LENGTH_LONG).show();
+            return;
         }
+        progressBar.setVisibility(View.VISIBLE);
+        final boolean isIdentityCreated = profilesModule.isIdentityCreated(selectedProfilePubKey);
+        if (!isIdentityCreated) {
+            IntentFilter intentFilter = new IntentFilter(App.INTENT_ACTION_PROFILE_CONNECTED);
+            ((BaseActivity) getActivity()).localBroadcastManager.registerReceiver(connectionReceiver, intentFilter);
+        }
+        execute(new Runnable() {
+            @Override
+            public void run() {
+                boolean success = false;
+                String detail;
+                try {
+                    MsgListenerFuture<Boolean> listenerFuture = new MsgListenerFuture<>();
+                    profilesModule.updateProfile(
+                            selectedProfilePubKey,
+                            name,
+                            profImgData,
+                            listenerFuture);
+
+                    detail = "Saved";
+                    success = true;
+                } catch (Exception e) {
+                    Log.e(TAG, " exception updating the profile\n" + e.getMessage());
+                    detail = "Cant update profile, send report please";
+                }
+                Activity activity = getActivity();
+                if (activity != null) {
+                    final String finalDetail = detail;
+                    final boolean finalSuccess = success;
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            progressBar.setVisibility(View.GONE);
+                            Toast.makeText(getActivity(), finalDetail, Toast.LENGTH_LONG).show();
+                            if (finalSuccess) {
+                                getActivity().onBackPressed();
+                            }
+                        }
+                    });
+                }
+            }
+        });
 
     }
 
