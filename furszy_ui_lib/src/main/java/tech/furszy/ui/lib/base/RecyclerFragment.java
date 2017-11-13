@@ -1,5 +1,6 @@
 package tech.furszy.ui.lib.base;
 
+import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -148,22 +149,25 @@ public abstract class RecyclerFragment<T> extends Fragment {
                 log.info("cantLoadListException: " + e.getMessage());
             }
             final boolean finalRes = res;
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    swipeRefreshLayout.setRefreshing(false);
-                    if (finalRes) {
-                        adapter.changeDataSet(list);
-                        if (list != null && !list.isEmpty()) {
-                            hideEmptyScreen();
-                        } else {
-                            showEmptyScreen();
-                            txt_empty.setText(emptyText);
-                            txt_empty.setTextColor(Color.BLACK);
+            Activity activity = getActivity();
+            if (activity != null) {
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        swipeRefreshLayout.setRefreshing(false);
+                        if (finalRes) {
+                            adapter.changeDataSet(list);
+                            if (list != null && !list.isEmpty()) {
+                                hideEmptyScreen();
+                            } else {
+                                showEmptyScreen();
+                                txt_empty.setText(emptyText);
+                                txt_empty.setTextColor(Color.BLACK);
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
         }
     };
 

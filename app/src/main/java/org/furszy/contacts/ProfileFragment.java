@@ -1,6 +1,7 @@
 package org.furszy.contacts;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -423,8 +424,8 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
             execute(new Runnable() {
                 @Override
                 public void run() {
-                    boolean res = false;
-                    String detail = null;
+                    boolean success = false;
+                    String detail;
                     try {
                         MsgListenerFuture<Boolean> listenerFuture = new MsgListenerFuture<>();
                         profilesModule.updateProfile(
@@ -432,33 +433,28 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
                                 name,
                                 profImgData,
                                 listenerFuture);
-                        listenerFuture.get();
-                        res = listenerFuture.getStatusDetail() == null;
-                        if (!res) {
-                            detail = "Fail, error: " + listenerFuture.getStatusDetail();
-                        }
+
+                        detail = "Saved";
+                        success = true;
                     } catch (Exception e) {
                         Log.e(TAG, " exception updating the profile\n" + e.getMessage());
                         detail = "Cant update profile, send report please";
                     }
-                    final String finalDetail = detail;
-                    final boolean finalRes = res;
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (getActivity() != null) {
-                                if (!finalRes) {
-                                    progressBar.setVisibility(View.GONE);
-                                    Toast.makeText(getActivity(), finalDetail, Toast.LENGTH_LONG).show();
-                                } else {
-                                    progressBar.setVisibility(View.VISIBLE);
-                                    Toast.makeText(getActivity(), "Saved", Toast.LENGTH_LONG).show();
+                    Activity activity = getActivity();
+                    if (activity != null) {
+                        final String finalDetail = detail;
+                        final boolean finalSuccess = success;
+                        activity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                progressBar.setVisibility(View.GONE);
+                                Toast.makeText(getActivity(), finalDetail, Toast.LENGTH_LONG).show();
+                                if (finalSuccess) {
                                     getActivity().onBackPressed();
                                 }
                             }
-                        }
-                    });
-
+                        });
+                    }
                 }
             });
         }
