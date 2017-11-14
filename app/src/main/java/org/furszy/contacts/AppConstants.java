@@ -8,6 +8,6 @@ public class AppConstants {
 
     public static final String TEST_PROFILE_SERVER_HOST = "104.197.68.8";
 
-    public static final String REPORT_EMAIL = "matias@furszy.tech";
+    public static final String REPORT_EMAIL = "marsvicam@gmail.com";
     public static final String REPORT_SUBJECT_ISSUE = "report error";
 }
