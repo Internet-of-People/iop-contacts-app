@@ -101,6 +101,14 @@ public class ConnectApp extends Application implements ConnectApplication {
         });
     }
 
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        if (clientService != null && clientService.get() != null) {
+            clientService.get().doUnbindService();
+        }
+    }
+
     private boolean isPackageInstalled(String packagename, PackageManager packageManager) {
         try {
             packageManager.getPackageInfo(packagename, 0);
@@ -160,10 +168,6 @@ public class ConnectApp extends Application implements ConnectApplication {
     }
 
     protected final Module getModule(EnabledServices enabledService) {
-        if (clientService == null) {
-            connectHelper.startProfileServerService();
-            clientService = new WeakReference<>(connectHelper.getClient());
-        }
         return clientService.get().getModule(enabledService);
     }
 

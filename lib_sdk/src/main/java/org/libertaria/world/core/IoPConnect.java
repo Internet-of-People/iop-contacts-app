@@ -4,7 +4,6 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.libertaria.world.connection.DeviceNetworkConnection;
 import org.libertaria.world.connection.ReconnectionManager;
@@ -42,7 +41,6 @@ import org.libertaria.world.profiles_manager.PairingRequestsManager;
 import org.libertaria.world.profiles_manager.ProfileOuterClass;
 import org.libertaria.world.profiles_manager.ProfilesManager;
 import org.libertaria.world.services.EnabledServices;
-import org.libertaria.world.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.crypto.InvalidCipherTextException;
@@ -53,7 +51,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -418,21 +415,22 @@ public class IoPConnect implements ConnectionListener {
     public void updateProfile(Profile localProfile, boolean updatePs, ProfSerMsgListener<Boolean> msgListener) {
         // update db
         localProfilesDao.updateProfile(localProfile);
-
         if (updatePs) {
-            IoPProfileConnection connection = getProfileConnection(localProfile.getHexPublicKey());
-            if (connection != null && connection.isReady()) {
-                connection.updateProfile(
-                        localProfile.getVersion(),
-                        localProfile.getName(),
-                        localProfile.getImg(),
-                        localProfile.getLatitude(),
-                        localProfile.getLongitude(),
-                        localProfile.getExtraData(),
-                        msgListener);
-            } else {
-                throw new IllegalStateException("Main profile connection is not open");
-            }
+            updatePs(localProfile, msgListener);
+        }
+    }
+
+    private void updatePs(Profile localProfile, ProfSerMsgListener<Boolean> msgListener) {
+        IoPProfileConnection connection = getProfileConnection(localProfile.getHexPublicKey());
+        if (connection != null && connection.isReady()) {
+            connection.updateProfile(
+                    localProfile.getVersion(),
+                    localProfile.getName(),
+                    localProfile.getImg(),
+                    localProfile.getLatitude(),
+                    localProfile.getLongitude(),
+                    localProfile.getExtraData(),
+                    msgListener);
         }
     }
 
@@ -980,6 +978,5 @@ public class IoPConnect implements ConnectionListener {
         }
         remoteManagers.clear();
     }
-
 
 }

@@ -271,12 +271,10 @@ public class ConnectClientService extends Service {
     }
 
     void doUnbindService() {
-        if (mPlatformServiceIsBound) {
-            // Detach our existing connection.
-            unbindService(mPlatformServiceConnection);
-            mPlatformServiceIsBound = false;
-            logger.info("Unbinding.");
-        }
+        // Detach our existing connection.
+        unbindService(mPlatformServiceConnection);
+        mPlatformServiceIsBound = false;
+        logger.info("Unbinding.");
     }
 
 

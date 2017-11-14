@@ -102,6 +102,7 @@ public class SettingsRestoreActivity extends BaseActivity {
 
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
+        super.onCreateView(savedInstanceState, container);
         View root = getLayoutInflater().inflate(R.layout.setttings_restore_activity, container);
         setTitle("Restore profile");
         getSupportActionBar().setHomeButtonEnabled(true);
@@ -161,9 +162,11 @@ public class SettingsRestoreActivity extends BaseActivity {
         for (File file : fileList) {
             list.add(file.getName());
         }
-        adapter.clear();
-        adapter.addAll(list);
-        adapter.notifyDataSetChanged();
+        if (adapter != null) {
+            adapter.clear();
+            adapter.addAll(list);
+            adapter.notifyDataSetChanged();
+        }
     }
 
     private List<File> listFiles() {
