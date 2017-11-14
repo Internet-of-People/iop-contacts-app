@@ -9,13 +9,13 @@ import org.libertaria.world.profile_server.engine.app_services.BaseMsg;
 
 public class PairRefusedMessage extends BaseMsg<PairRefusedMessage> {
 
-    private int pairingRequestId;
+    private int externalPairingId;
 
     public PairRefusedMessage() {
     }
 
-    public PairRefusedMessage(int pairingRequestId) {
-        this.pairingRequestId = pairingRequestId;
+    public PairRefusedMessage(int externalPairingId) {
+        this.externalPairingId = externalPairingId;
     }
 
     @Override
@@ -34,7 +34,7 @@ public class PairRefusedMessage extends BaseMsg<PairRefusedMessage> {
         return PairingMessageType.PAIR_REFUSE.getType();
     }
 
-    public int getPairingRequestId() {
-        return pairingRequestId;
+    public int getExternalPairingId() {
+        return externalPairingId;
     }
 }

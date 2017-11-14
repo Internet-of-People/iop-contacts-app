@@ -1,6 +1,7 @@
 package org.furszy.contacts;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,7 +36,7 @@ import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.Toast;
 
-import com.squareup.picasso.Picasso;
+import com.google.common.base.Strings;
 
 import org.furszy.contacts.app_base.BaseAppFragment;
 import org.libertaria.world.profile_server.ProfileInformation;
@@ -51,8 +53,11 @@ import java.util.regex.Pattern;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import id.zelory.compressor.Compressor;
+import iop.org.iop_sdk_android.core.service.device_state.ContactLocationListener;
 
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.app.Activity.RESULT_OK;
+import static android.content.Context.LOCATION_SERVICE;
 
 /**
  * Created by mati on 16/04/17.
@@ -64,6 +69,8 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
     private static final String TAG = "ProfileActivity";
 
     private final int destWidth = 400;
+
+    private static final int MY_PERMISSIONS_LOCATION = 1001;
 
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1000;
 
@@ -99,6 +106,8 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
         }
     };
 
+    private LocationManager mLocationManager;
+
 
     @Nullable
     @Override
@@ -127,25 +136,33 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
             public void onClick(View v) {
                 Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivityForResult(i, RESULT_LOAD_IMAGE);
+                changeScreenState(UPDATE_SCREEN_STATE);
             }
         });
 
         //Show Locaiton
 
         show_location = (Switch) root.findViewById(R.id.show_location);
-        show_location.setChecked(false);
-        show_location.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        final boolean hasLocationPermission = checkPermission(ACCESS_FINE_LOCATION);
 
+        mLocationManager = (LocationManager) getContext().getSystemService(LOCATION_SERVICE);
+        show_location.setChecked(hasLocationPermission);
+        show_location.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
-
-                if(isChecked){
-
-                }else{
-
+                if (isChecked) {
+                    if (!hasLocationPermission) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION};
+                            ActivityCompat.requestPermissions(getActivity(),
+                                    perms,
+                                    MY_PERMISSIONS_LOCATION);
+                        }
+                    }
+                } else {
+                    mLocationManager.removeUpdates(ContactLocationListener.getInstance());
                 }
-
             }
         });
 
@@ -155,14 +172,6 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
             changeScreenState(DONE_SCREEN_STATE);
         } else {
             changeScreenState(UPDATE_SCREEN_STATE);
-        }
-
-        try {
-            File imgFile = null;// module.getUserImageFile();
-            if (imgFile != null && imgFile.exists())
-                Picasso.with(getActivity()).load(imgFile).into(imgProfile);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
         init();
@@ -407,55 +416,52 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
 
     private void updateProfile() {
         final String name = txt_name.getText().toString();
-        if (!name.equals("")) {
-            progressBar.setVisibility(View.VISIBLE);
-            final boolean isIdentityCreated = profilesModule.isIdentityCreated(selectedProfilePubKey);
-            if (!isIdentityCreated) {
-                IntentFilter intentFilter = new IntentFilter(App.INTENT_ACTION_PROFILE_CONNECTED);
-                ((BaseActivity) getActivity()).localBroadcastManager.registerReceiver(connectionReceiver, intentFilter);
-            }
-            execute(new Runnable() {
-                @Override
-                public void run() {
-                    boolean res = false;
-                    String detail = null;
-                    try {
-                        MsgListenerFuture<Boolean> listenerFuture = new MsgListenerFuture<>();
-                        profilesModule.updateProfile(
-                                selectedProfilePubKey,
-                                name,
-                                profImgData,
-                                listenerFuture);
-                        listenerFuture.get();
-                        res = listenerFuture.getStatusDetail() == null;
-                        if (!res) {
-                            detail = "Fail, error: " + listenerFuture.getStatusDetail();
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, " exception updating the profile\n" + e.getMessage());
-                        detail = "Cant update profile, send report please";
-                    }
+        if (Strings.isNullOrEmpty(name)) {
+            Toast.makeText(getActivity(), "Your name cannot be empty!", Toast.LENGTH_LONG).show();
+            return;
+        }
+        progressBar.setVisibility(View.VISIBLE);
+        final boolean isIdentityCreated = profilesModule.isIdentityCreated(selectedProfilePubKey);
+        if (!isIdentityCreated) {
+            IntentFilter intentFilter = new IntentFilter(App.INTENT_ACTION_PROFILE_CONNECTED);
+            ((BaseActivity) getActivity()).localBroadcastManager.registerReceiver(connectionReceiver, intentFilter);
+        }
+        execute(new Runnable() {
+            @Override
+            public void run() {
+                boolean success = false;
+                String detail;
+                try {
+                    MsgListenerFuture<Boolean> listenerFuture = new MsgListenerFuture<>();
+                    profilesModule.updateProfile(
+                            selectedProfilePubKey,
+                            name,
+                            profImgData,
+                            listenerFuture);
+
+                    detail = "Saved";
+                    success = true;
+                } catch (Exception e) {
+                    Log.e(TAG, " exception updating the profile\n" + e.getMessage());
+                    detail = "Cant update profile, send report please";
+                }
+                Activity activity = getActivity();
+                if (activity != null) {
                     final String finalDetail = detail;
-                    final boolean finalRes = res;
-                    getActivity().runOnUiThread(new Runnable() {
+                    final boolean finalSuccess = success;
+                    activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (getActivity() != null) {
-                                if (!finalRes) {
-                                    progressBar.setVisibility(View.GONE);
-                                    Toast.makeText(getActivity(), finalDetail, Toast.LENGTH_LONG).show();
-                                } else {
-                                    progressBar.setVisibility(View.VISIBLE);
-                                    Toast.makeText(getActivity(), "Saved", Toast.LENGTH_LONG).show();
-                                    getActivity().onBackPressed();
-                                }
+                            progressBar.setVisibility(View.GONE);
+                            Toast.makeText(getActivity(), finalDetail, Toast.LENGTH_LONG).show();
+                            if (finalSuccess) {
+                                getActivity().onBackPressed();
                             }
                         }
                     });
-
                 }
-            });
-        }
+            }
+        });
 
     }
 
@@ -530,6 +536,21 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
                     Toast.makeText(getActivity(), "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
                 }
                 return;
+            }
+
+            case MY_PERMISSIONS_LOCATION: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (mLocationManager != null) {
+                        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1500,
+                                    20, ContactLocationListener.getInstance());
+                        }
+
+                    }
+                } else {
+                    show_location.setChecked(false);
+                }
             }
 
             // other 'case' lines to check for other

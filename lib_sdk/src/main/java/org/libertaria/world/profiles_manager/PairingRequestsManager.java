@@ -13,11 +13,13 @@ public interface PairingRequestsManager {
 
     int savePairingRequest(PairingRequest pairingRequest);
 
-    int saveIfNotExistPairingRequest(PairingRequest pairingRequest);
+    int saveOrUpdate(PairingRequest pairingRequest);
 
     PairingRequest getPairingRequest(String senderPubKey, String remotePubkey);
 
     PairingRequest getPairingRequest(int pairingRequestId);
+
+    PairingRequest getPairingRequestByExternalId(int externalPairId);
 
     List<PairingRequest> pairingRequests(String senderPubKey);
 
@@ -25,7 +27,7 @@ public interface PairingRequestsManager {
 
     boolean updateStatus(String senderPubKey, String remotePubKey, PairingMessageType status, ProfileInformationImp.PairStatus paired);
 
-    boolean updateStatus(int pairingRequestId, PairingMessageType status, ProfileInformationImp.PairStatus pairStatus);
+    boolean updateStatus(int externalPairId, PairingMessageType status, ProfileInformationImp.PairStatus pairStatus);
 
     int disconnectPairingProfile(String senderPubKey, String remotePubKey);
 

@@ -9,7 +9,14 @@ import org.libertaria.world.profile_server.engine.app_services.BaseMsg;
 
 public class PairDisconnectedMessage extends BaseMsg<PairDisconnectedMessage> {
 
-    public PairDisconnectedMessage(){}
+    private int remoteId;
+
+    public PairDisconnectedMessage() {
+    }
+
+    public PairDisconnectedMessage(int remoteId) {
+        this.remoteId = remoteId;
+    }
 
     @Override
     public byte[] encode() throws Exception {
@@ -18,11 +25,19 @@ public class PairDisconnectedMessage extends BaseMsg<PairDisconnectedMessage> {
 
     @Override
     public PairDisconnectedMessage decode(byte[] msg) throws Exception {
-        return SerializationUtils.deserialize(msg,PairDisconnectedMessage.class);
+        return SerializationUtils.deserialize(msg, PairDisconnectedMessage.class);
     }
 
     @Override
     public String getType() {
         return PairingMessageType.PAIR_DISCONNECT.getType();
+    }
+
+    public int getRemoteId() {
+        return remoteId;
+    }
+
+    public void setRemoteId(int remoteId) {
+        this.remoteId = remoteId;
     }
 }

@@ -42,7 +42,7 @@
             android:drawableLeft="@drawable/ic_location"
             android:textColor="@color/subtitles"
             android:drawablePadding="2dp"
-            android:text="My Location"
+            android:text="@string/my_location"
             android:textSize="14sp"/>
 
         <Button
