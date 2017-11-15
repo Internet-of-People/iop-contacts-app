@@ -118,7 +118,6 @@ public class MessageQueueDb extends SQLiteOpenHelper implements MessageQueueMana
         IntentMessage eventMessage = new IntentWrapperAndroid(EVENT_MESSAGE_SUCCESSFUL);
         eventMessage.put(messageSent.getMessageId().toString(), messageSent);
         systemContext.broadcastPlatformEvent(eventMessage);
-        removeFromQueue(messageSent);
     }
 
     @Override

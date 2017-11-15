@@ -16,8 +16,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.InputFilter;
-import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,25 +23,25 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import org.furszy.contacts.requests.MessageQueueReceiver;
+import org.furszy.contacts.ui.home.HomeActivity;
+import org.libertaria.world.profile_server.engine.MessageQueueManager;
 import org.libertaria.world.services.chat.ChatModule;
 import org.libertaria.world.services.interfaces.PairingModule;
 import org.libertaria.world.services.interfaces.ProfilesModule;
-import org.furszy.contacts.ui.home.HomeActivity;
 
-import java.util.regex.Pattern;
-
-import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
-import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.INTENT_EXTRA_PROF_NAME;
 import static org.furszy.contacts.App.INTENT_ACTION_PROFILE_CHECK_IN_FAIL;
 import static org.furszy.contacts.App.INTENT_ACTION_PROFILE_CONNECTED;
 import static org.furszy.contacts.App.INTENT_ACTION_PROFILE_DISCONNECTED;
 import static org.furszy.contacts.App.INTENT_EXTRA_ERROR_DETAIL;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.INTENT_EXTRA_PROF_KEY;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.INTENT_EXTRA_PROF_NAME;
 
 /**
  * Created by furszy on 6/5/17.
  */
 
-public class BaseActivity extends AppCompatActivity{
+public class BaseActivity extends AppCompatActivity {
 
     public static final String NOTIF_DIALOG_EVENT = "nde";
 
@@ -56,6 +54,7 @@ public class BaseActivity extends AppCompatActivity{
 
     protected LocalBroadcastManager localBroadcastManager;
     protected NotificationManager notificationManager;
+    protected MessageQueueReceiver messageQueueReceiver;
     private NotifReceiver notifReceiver;
 
     protected Toolbar toolbar;
@@ -73,6 +72,8 @@ public class BaseActivity extends AppCompatActivity{
             setContentView(R.layout.activity_base);
             loadBasics();
             init();
+
+            this.messageQueueReceiver = new MessageQueueReceiver(pairingModule, notificationManager);
             // onCreateChildMethod
             onCreateView(savedInstanceState, childContainer);
 
@@ -86,12 +87,12 @@ public class BaseActivity extends AppCompatActivity{
                 }
             });
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    protected void loadBasics(){
+    protected void loadBasics() {
         app = App.getInstance();
         if (app.isConnectedToPlatform()) {
             pairingModule = app.getPairingModule();
@@ -101,7 +102,7 @@ public class BaseActivity extends AppCompatActivity{
         selectedProfPubKey = app.getSelectedProfilePubKey();
     }
 
-    private void init(){
+    private void init() {
         childContainer = (FrameLayout) findViewById(R.id.content);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitleTextColor(Color.WHITE);
@@ -119,7 +120,7 @@ public class BaseActivity extends AppCompatActivity{
      *
      * @param savedInstanceState
      */
-    protected void onCreateView(Bundle savedInstanceState, ViewGroup container){
+    protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
 
     }
 
@@ -127,10 +128,12 @@ public class BaseActivity extends AppCompatActivity{
     protected void onResume() {
         super.onResume();
         loadBasics();
+        localBroadcastManager.registerReceiver(messageQueueReceiver, new IntentFilter(MessageQueueManager.EVENT_MESSAGE_SUCCESSFUL));
+        localBroadcastManager.registerReceiver(messageQueueReceiver, new IntentFilter(MessageQueueManager.EVENT_MESSAGE_FAILED));
         localBroadcastManager.registerReceiver(notifReceiver, new IntentFilter(NOTIF_DIALOG_EVENT));
         localBroadcastManager.registerReceiver(notifReceiver, new IntentFilter(INTENT_ACTION_PROFILE_DISCONNECTED));
-        localBroadcastManager.registerReceiver(notifReceiver,new IntentFilter(INTENT_ACTION_PROFILE_CHECK_IN_FAIL));
-        localBroadcastManager.registerReceiver(notifReceiver,new IntentFilter(INTENT_ACTION_PROFILE_CONNECTED));
+        localBroadcastManager.registerReceiver(notifReceiver, new IntentFilter(INTENT_ACTION_PROFILE_CHECK_IN_FAIL));
+        localBroadcastManager.registerReceiver(notifReceiver, new IntentFilter(INTENT_ACTION_PROFILE_CONNECTED));
     }
 
     @Override
@@ -138,28 +141,29 @@ public class BaseActivity extends AppCompatActivity{
         try {
             super.onStop();
             localBroadcastManager.unregisterReceiver(notifReceiver);
-        }catch (Exception e){
+            localBroadcastManager.unregisterReceiver(messageQueueReceiver);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private class NotifReceiver extends BroadcastReceiver{
+    private class NotifReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.i("BaseActivity","onReceive");
+            Log.i("BaseActivity", "onReceive");
             String action = intent.getAction();
-            if (action.equals(INTENT_ACTION_PROFILE_CONNECTED)){
+            if (action.equals(INTENT_ACTION_PROFILE_CONNECTED)) {
                 hideConnectionLoose();
-            }else if (action.equals(INTENT_ACTION_PROFILE_DISCONNECTED)){
+            } else if (action.equals(INTENT_ACTION_PROFILE_DISCONNECTED)) {
                 showConnectionLoose();
-            }else if(action.equals(INTENT_ACTION_PROFILE_CHECK_IN_FAIL)){
+            } else if (action.equals(INTENT_ACTION_PROFILE_CHECK_IN_FAIL)) {
                 // todo: here i should add some error handling and use the "detail" field...
                 String detail = intent.getStringExtra(INTENT_EXTRA_ERROR_DETAIL);
-                Log.e("BaseActivity","check in fail: "+detail);
-                Toast.makeText(BaseActivity.this,"Check in fail, "+detail,Toast.LENGTH_LONG).show();
+                Log.e("BaseActivity", "check in fail: " + detail);
+                Toast.makeText(BaseActivity.this, "Check in fail, " + detail, Toast.LENGTH_LONG).show();
                 showConnectionLoose();
-            }else {
+            } else {
                 final String name = intent.getStringExtra(INTENT_EXTRA_PROF_NAME);
                 final String requesteeKey = intent.getStringExtra(INTENT_EXTRA_PROF_KEY);
                 Intent notificationIntent = new Intent(context, HomeActivity.class);
@@ -183,16 +187,16 @@ public class BaseActivity extends AppCompatActivity{
     }
 
     protected boolean checkPermission(String permission) {
-        int result = ContextCompat.checkSelfPermission(getApplicationContext(),permission);
+        int result = ContextCompat.checkSelfPermission(getApplicationContext(), permission);
         return result == PackageManager.PERMISSION_GRANTED;
     }
 
 
-    public void hideConnectionLoose(){
+    public void hideConnectionLoose() {
         btnReload.setVisibility(View.GONE);
     }
 
-    public void showConnectionLoose(){
+    public void showConnectionLoose() {
         btnReload.setVisibility(View.VISIBLE);
     }
 

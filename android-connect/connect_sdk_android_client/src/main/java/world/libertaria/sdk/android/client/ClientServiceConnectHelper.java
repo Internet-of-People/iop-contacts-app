@@ -32,11 +32,6 @@ public class ClientServiceConnectHelper {
         return anRedtooth;
     }
 
-    public void unbindService(Context context) {
-        context.stopService(new Intent(context, ConnectClientService.class));
-        clientService.doUnbindService();
-    }
-
     private ClientServiceConnectHelper(Context context) {
         this.application = context;
     }
@@ -51,7 +46,7 @@ public class ClientServiceConnectHelper {
         //binder comes from server to communicate with method's of
 
         public void onServiceDisconnected(ComponentName className) {
-            Log.d("ServiceConnection", "disconnected");
+            Log.d(TAG, "profile service disconnected " + className);
             isConnected.set(false);
             profServiceConnection = null;
             listener.onDisconnected();
@@ -61,7 +56,6 @@ public class ClientServiceConnectHelper {
     //
     public void startProfileServerService() {
         intent = new Intent(application, ConnectClientService.class);
-        application.startService(intent);
         application.bindService(intent, profServiceConnection, Context.BIND_AUTO_CREATE);
     }
 

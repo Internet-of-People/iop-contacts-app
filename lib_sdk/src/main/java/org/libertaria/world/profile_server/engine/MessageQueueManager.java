@@ -1,9 +1,7 @@
 package org.libertaria.world.profile_server.engine;
 
-import org.libertaria.world.profile_server.ProfileInformation;
 import org.libertaria.world.profile_server.engine.app_services.BaseMsg;
 import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
-import org.libertaria.world.profile_server.protocol.IopProfileServer;
 
 import java.io.Serializable;
 import java.util.Date;

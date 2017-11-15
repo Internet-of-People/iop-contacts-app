@@ -205,8 +205,6 @@ public class ConnectClientService extends Service {
         // desconnect and close local socket
         if (localConnection != null)
             localConnection.shutdown();
-
-        doUnbindService();
     }
 
     /**
@@ -232,7 +230,7 @@ public class ConnectClientService extends Service {
             }
             if (mPlatformServiceIsBound) {
                 // notify app about the connection
-                connectApp.onConnectClientServiceBind();
+                connectApp.onConnectClientServiceBind(ConnectClientService.this);
             }
         }
 

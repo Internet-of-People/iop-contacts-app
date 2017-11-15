@@ -14,23 +14,21 @@ import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
-import com.bugsee.library.Bugsee;
-
+import org.furszy.contacts.ui.home.HomeActivity;
 import org.libertaria.world.core.IoPConnectContext;
 import org.libertaria.world.profile_server.ProfileServerConfigurations;
 import org.libertaria.world.services.EnabledServices;
 import org.libertaria.world.services.chat.ChatModule;
 import org.libertaria.world.services.interfaces.PairingModule;
 import org.libertaria.world.services.interfaces.ProfilesModule;
-import org.furszy.contacts.ui.home.HomeActivity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
 import iop.org.iop_sdk_android.core.service.ProfileServerConfigurationsImp;
-import world.libertaria.shared.library.services.chat.ChatIntentsConstants;
 import world.libertaria.sdk.android.client.ConnectApp;
+import world.libertaria.sdk.android.client.ConnectClientService;
 
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_CHECK_IN_FAIL;
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PAIR_RECEIVED;
@@ -158,8 +156,8 @@ public class App extends ConnectApp implements IoPConnectContext {
     }
 
     @Override
-    protected void onConnectClientServiceBind() {
-        super.onConnectClientServiceBind();
+    protected void onConnectClientServiceBind(ConnectClientService clientService) {
+        super.onConnectClientServiceBind(clientService);
         profilesModule = getProfilesModule();
         pairingModule = getPairingModule();
         chatModule = getChatModule();
