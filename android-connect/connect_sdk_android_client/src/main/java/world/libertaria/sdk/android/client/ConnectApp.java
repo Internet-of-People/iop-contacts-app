@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.ReentrantLock;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
@@ -44,7 +45,6 @@ public class ConnectApp extends Application implements ConnectApplication {
 
     public static final String INTENT_ACTION_ON_SERVICE_CONNECTED = "service_connected";
 
-    private ClientServiceConnectHelper connectHelper;
     protected LocalBroadcastManager broadcastManager;
     protected ActivityManager activityManager;
     private ConnectClientService clientService;
@@ -64,8 +64,8 @@ public class ConnectApp extends Application implements ConnectApplication {
             ConnectApp.this.clientService = myBinder.getService();
             onConnectClientServiceBind(clientService);
         }
-        //binder comes from server to communicate with method's of
 
+        //binder comes from server to communicate with method's of
         public void onServiceDisconnected(ComponentName className) {
             Log.d(this.toString(), "profile service disconnected " + className);
         }
@@ -98,8 +98,7 @@ public class ConnectApp extends Application implements ConnectApplication {
 
         }
 
-        Intent intent = new Intent(this, ConnectClientService.class);
-        bindService(intent, profServiceConnection, Context.BIND_AUTO_CREATE);
+        bindConnectService();
     }
 
     private boolean isPackageInstalled(String packagename, PackageManager packageManager) {
@@ -109,6 +108,12 @@ public class ConnectApp extends Application implements ConnectApplication {
         } catch (PackageManager.NameNotFoundException e) {
             return false;
         }
+    }
+
+    private void bindConnectService() {
+        Intent intent = new Intent(this, ConnectClientService.class);
+        bindService(intent, profServiceConnection, Context.BIND_AUTO_CREATE);
+        startService(intent);
     }
 
     private void initLogging() {
@@ -206,6 +211,8 @@ public class ConnectApp extends Application implements ConnectApplication {
      * Method to override reciving the unbind notification
      */
     protected void onConnectClientServiceUnbind() {
+        unbindService(profServiceConnection);
+        clientService = null;
         // notify listeners
         if (connectListeners != null) {
             for (ConnectListener connectListener : connectListeners) {

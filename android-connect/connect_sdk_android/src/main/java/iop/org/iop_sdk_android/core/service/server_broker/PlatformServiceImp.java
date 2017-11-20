@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -19,6 +20,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
 
@@ -74,6 +76,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import iop.org.iop_sdk_android.R;
 import iop.org.iop_sdk_android.core.crypto.CryptoWrapperAndroid;
 import iop.org.iop_sdk_android.core.modules.profile.ProfilesModuleImp;
 import iop.org.iop_sdk_android.core.service.ProfileServerConfigurationsImp;
@@ -109,6 +112,8 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
     //CONSTANTS
     private static final String ACTION_SCHEDULE_SERVICE = "schedule_service";
     public static final String ACTION_BOOT_SERVICE = "boot_service";
+    private static Integer PLATFORM_SERVICE_ID = 1;
+
     //PRIVATE
     private Logger logger = LoggerFactory.getLogger(PlatformServiceImp.class);
 
@@ -222,6 +227,13 @@ public class PlatformServiceImp extends Service implements PlatformService, Devi
     @Override
     public void onCreate() {
         super.onCreate();
+        Notification notification = new NotificationCompat.Builder(this)
+                .setContentTitle(getResources().getString(R.string.service_notification_title))
+                .setTicker(getResources().getString(R.string.service_notification_message))
+                .setContentText(getResources().getString(R.string.service_notification_message))
+                .setOngoing(true)
+                .build();
+        startForeground(PLATFORM_SERVICE_ID, notification);
         logger.info("onCreate");
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);

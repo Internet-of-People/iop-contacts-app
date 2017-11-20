@@ -120,11 +120,6 @@ public class ConnectClientService extends Service {
     }
 
     public final Object invokeService(Object o, EnabledServices service, Method method, Object[] args) throws Throwable {
-        if (!mPlatformServiceIsBound) {
-            if (doBindService()) {
-                throw new IllegalStateException("Service is not bound!");
-            }
-        }
         logger.info("Service " + service.getName() + " invoque method " + method.getName());
         ProfSerMsgListener methodListener = null;
         ModuleParameter[] parameters = null;
@@ -203,8 +198,9 @@ public class ConnectClientService extends Service {
     public void onDestroy() {
         super.onDestroy();
         // desconnect and close local socket
-        if (localConnection != null)
+        if (localConnection != null) {
             localConnection.shutdown();
+        }
     }
 
     /**
@@ -241,7 +237,6 @@ public class ConnectClientService extends Service {
             mPlatformServiceIsBound = false;
             logger.info("ISERVERBROKERSERVICE disconnected");
             // notify app
-            connectApp.onConnectClientServiceUnbind();
         }
     };
 
@@ -257,7 +252,9 @@ public class ConnectClientService extends Service {
         try {
             //Log.d(TAG, "Before init intent.componentName");
             //Log.d(TAG, "Before bindService");
-            return bindService(intent, mPlatformServiceConnection, BIND_AUTO_CREATE);
+            bindService(intent, mPlatformServiceConnection, BIND_AUTO_CREATE);
+            startService(intent);
+            return true;
         } catch (SecurityException e) {
             e.printStackTrace();
             logger.info("can't bind to ISERVERBROKERSERVICE, check permission in Manifest");

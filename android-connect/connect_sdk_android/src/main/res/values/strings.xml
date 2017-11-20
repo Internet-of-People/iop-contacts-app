@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">iop_sdk_android</string>
+    <string name="service_notification_title">IoP service is running…</string>
+    <string name="service_notification_message">IoP service is running…</string>
 </resources>

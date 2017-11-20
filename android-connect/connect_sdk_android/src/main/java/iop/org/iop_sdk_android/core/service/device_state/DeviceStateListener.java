@@ -19,7 +19,7 @@ class DeviceStateListener extends PhoneStateListener {
     public void onSignalStrengthsChanged(SignalStrength signalStrength) {
         super.onSignalStrengthsChanged(signalStrength);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            setSignalStrengthAPIPlus23(signalStrength);
+//            setSignalStrengthAPIPlus23(signalStrength);
         } else {
             setSignalStrenthAPIMinus23(signalStrength);
         }
