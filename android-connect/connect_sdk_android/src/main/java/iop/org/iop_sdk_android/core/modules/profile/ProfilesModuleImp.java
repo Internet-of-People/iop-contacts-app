@@ -2,6 +2,7 @@ package iop.org.iop_sdk_android.core.modules.profile;
 
 import org.libertaria.world.core.IoPConnect;
 import org.libertaria.world.core.exceptions.ConnectionAlreadyInitializedException;
+import org.libertaria.world.exceptions.IncorrectPasswordException;
 import org.libertaria.world.global.AbstractModule;
 import org.libertaria.world.global.IntentMessage;
 import org.libertaria.world.global.PlatformSerializer;
@@ -27,7 +28,6 @@ import org.libertaria.world.services.interfaces.ProfilesModule;
 import org.libertaria.world.wallet.utils.Iso8601Format;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spongycastle.crypto.InvalidCipherTextException;
 
 import java.io.File;
 import java.io.IOException;
@@ -421,7 +421,7 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
     }
 
     @Override
-    public void restoreProfileFrom(File file, String password) throws IOException, InvalidCipherTextException {
+    public void restoreProfileFrom(File file, String password) throws IOException, IncorrectPasswordException {
         logger.info("Restoring profile");
         if (file.exists()) {
             try {
@@ -438,7 +438,7 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
                     //Ok we already have it
                 }
                 logger.info("restore profile completed");
-            } catch (InvalidCipherTextException ipbe) {
+            } catch (IncorrectPasswordException ipbe) {
                 logger.warn("Error while retrieving the profile!", ipbe);
                 throw ipbe;
             } catch (Exception e) {

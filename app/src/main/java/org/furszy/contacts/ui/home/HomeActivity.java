@@ -47,7 +47,7 @@ public class HomeActivity extends BaseDrawerActivity {
     private BroadcastReceiver initReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(INTENT_ACTION_ON_SERVICE_CONNECTED)){
+            if (intent.getAction().equals(INTENT_ACTION_ON_SERVICE_CONNECTED)) {
                 loadBasics();
                 refreshFragments();
             }
@@ -55,7 +55,7 @@ public class HomeActivity extends BaseDrawerActivity {
     };
 
     private void refreshFragments() {
-        if (adapter!=null) {
+        if (adapter != null) {
             for (Fragment fragment : adapter.mFragmentList) {
                 ((BaseAppRecyclerFragment) fragment).loadBasics();
             }
@@ -66,16 +66,16 @@ public class HomeActivity extends BaseDrawerActivity {
 
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
-        if(!App.getInstance().createProfSerConfig().isIdentityCreated()){
+        if (!App.getInstance().createProfSerConfig().isIdentityCreated()) {
             Intent intent = new Intent(this, StartActivity.class);
             startActivity(intent);
             finish();
-        }else {
+        } else {
             root = getLayoutInflater().inflate(R.layout.home_main, container);
             setTitle("IoP Connections");
 
-            if (getIntent()!=null){
-                if (getIntent().hasExtra(INIT_REQUESTS)){
+            if (getIntent() != null) {
+                if (getIntent().hasExtra(INIT_REQUESTS)) {
                     initInRequest = true;
                 }
             }
@@ -94,7 +94,7 @@ public class HomeActivity extends BaseDrawerActivity {
             });
         }
 
-        localBroadcastManager.registerReceiver(initReceiver,new IntentFilter(INTENT_ACTION_ON_SERVICE_CONNECTED));
+        localBroadcastManager.registerReceiver(initReceiver, new IntentFilter(INTENT_ACTION_ON_SERVICE_CONNECTED));
     }
 
     @Override
@@ -102,11 +102,11 @@ public class HomeActivity extends BaseDrawerActivity {
         super.onResume();
         // to check current activity in the navigation drawer
         setNavigationMenuItemChecked(0);
-        if (initInRequest){
+        if (initInRequest) {
             viewPager.setCurrentItem(1);
             initInRequest = false;
         }
-        localBroadcastManager.registerReceiver(initReceiver,new IntentFilter(INTENT_ACTION_ON_SERVICE_CONNECTED));
+        localBroadcastManager.registerReceiver(initReceiver, new IntentFilter(INTENT_ACTION_ON_SERVICE_CONNECTED));
     }
 
     @Override
@@ -151,13 +151,13 @@ public class HomeActivity extends BaseDrawerActivity {
         }
     }
 
-    public void refreshContacts(){
+    public void refreshContacts() {
         final Fragment fragment = adapter.getItem(0);
-        if (fragment!=null){
+        if (fragment != null) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    ((ContactsFragment)fragment).refresh();
+                    ((ContactsFragment) fragment).refresh();
                 }
             });
         }
@@ -166,11 +166,11 @@ public class HomeActivity extends BaseDrawerActivity {
 
     private void refreshRequests() {
         final Fragment fragment = adapter.getItem(1);
-        if (fragment!=null){
+        if (fragment != null) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    ((RequestsFragment)fragment).refresh();
+                    ((RequestsFragment) fragment).refresh();
                 }
             });
         }

@@ -23,7 +23,6 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import org.furszy.contacts.ui.home.HomeActivity;
-import org.spongycastle.crypto.InvalidCipherTextException;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -69,10 +68,8 @@ public class RestoreActivity extends BaseActivity {
                 } catch (IOException e) {
                     Toast.makeText(getApplicationContext(), R.string.restore_cant_open_file_message,
                             Toast.LENGTH_LONG).show();
-                } catch (InvalidCipherTextException e) {
-                    //This shouldn't happen here as we are not sending any password.
-                    Toast.makeText(getApplicationContext(), R.string.restore_invalid_password_message,
-                            Toast.LENGTH_LONG).show();
+                } catch (org.libertaria.world.exceptions.IncorrectPasswordException e) {
+                    e.printStackTrace();
                 }
                 Toast.makeText(this, "Restore profile from backup completed", Toast.LENGTH_LONG).show();
                 startActivity(new Intent(this, HomeActivity.class));

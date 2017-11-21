@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import ch.qos.logback.classic.Level;
@@ -34,6 +35,7 @@ import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import world.libertaria.shared.library.global.client.ConnectApplication;
 
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_IOP_SERVICE_CONNECTED;
+import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_IOP_SERVICE_DISCONNECTED;
 
 /**
  * Created by furszy on 7/28/17.
@@ -50,6 +52,8 @@ public class ConnectApp extends Application implements ConnectApplication {
     private ConnectClientService clientService;
     private CopyOnWriteArrayList<ConnectListener> connectListeners;
 
+    private AtomicBoolean isConnected = new AtomicBoolean(false);
+
     public interface ConnectListener {
 
         void onPlatformConnected(Context context);
@@ -63,11 +67,14 @@ public class ConnectApp extends Application implements ConnectApplication {
             ConnectClientService.ConnectBinder myBinder = (ConnectClientService.ConnectBinder) binder;
             ConnectApp.this.clientService = myBinder.getService();
             onConnectClientServiceBind(clientService);
+            isConnected.set(true);
         }
 
         //binder comes from server to communicate with method's of
         public void onServiceDisconnected(ComponentName className) {
             Log.d(this.toString(), "profile service disconnected " + className);
+            isConnected.set(false);
+            unbindService(profServiceConnection);
         }
     };
 
@@ -166,6 +173,9 @@ public class ConnectApp extends Application implements ConnectApplication {
     }
 
     protected final Module getModule(EnabledServices enabledService) {
+        if (clientService == null) {
+            return null;
+        }
         return clientService.getModule(enabledService);
     }
 
@@ -192,7 +202,8 @@ public class ConnectApp extends Application implements ConnectApplication {
      */
     protected void onConnectClientServiceBind(ConnectClientService clientService) {
         this.clientService = clientService;
-        if (ClientServiceConnectHelper.isConnected.get() && this.clientService != null && this.clientService.mPlatformServiceIsBound) {
+        if (this.clientService != null && this.clientService.mPlatformServiceIsBound) {
+            logger.info("Service is bound, notifying...");
             // notify connection
             Intent intent = new Intent(ACTION_IOP_SERVICE_CONNECTED);
             broadcastManager.sendBroadcast(intent);
@@ -203,7 +214,7 @@ public class ConnectApp extends Application implements ConnectApplication {
                 }
             }
         } else {
-            logger.warn("onConnectClientServiceBind, isClientServiceBound: " + ClientServiceConnectHelper.isConnected.get() + ", mPlatformServiceIsBound " + (this.clientService != null ? this.clientService.toString() : null));
+            logger.warn("onConnectClientServiceBind mPlatformServiceIsBound " + (this.clientService != null ? this.clientService.mPlatformServiceIsBound : null));
         }
     }
 
@@ -211,21 +222,19 @@ public class ConnectApp extends Application implements ConnectApplication {
      * Method to override reciving the unbind notification
      */
     protected void onConnectClientServiceUnbind() {
-        unbindService(profServiceConnection);
-        clientService = null;
         // notify listeners
+        Intent intent = new Intent(ACTION_IOP_SERVICE_DISCONNECTED);
+        broadcastManager.sendBroadcast(intent);
         if (connectListeners != null) {
             for (ConnectListener connectListener : connectListeners) {
                 connectListener.onPlatformDisconnected(this);
             }
         }
+        bindConnectService(); //Then we try to reconnect ASAP!
     }
 
     public boolean isConnectedToPlatform() {
-        if (clientService != null) {
-            return clientService.mPlatformServiceIsBound;
-        }
-        return false;
+        return clientService != null && clientService.mPlatformServiceIsBound;
     }
 
     public void addConnectListener(ConnectListener connectListener) {
@@ -242,6 +251,6 @@ public class ConnectApp extends Application implements ConnectApplication {
     }
 
     public boolean isClientServiceBound() {
-        return ClientServiceConnectHelper.isConnected.get();
+        return isConnected.get();
     }
 }

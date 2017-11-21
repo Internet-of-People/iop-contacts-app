@@ -120,8 +120,9 @@ public class ProfileFragment extends BaseAppFragment implements View.OnClickList
 
         root = inflater.inflate(R.layout.profile_main, container);
 
-        isRegistered = profilesModule.isProfileRegistered(selectedProfilePubKey);
-
+        if (profilesModule != null) {
+            isRegistered = profilesModule.isProfileRegistered(selectedProfilePubKey);
+        }
         imgProfile = (CircleImageView) root.findViewById(R.id.profile_image);
         txt_name = (EditText) root.findViewById(R.id.txt_name);
         txt_name.setFilters(new InputFilter[]{filter, new InputFilter.LengthFilter(14)});

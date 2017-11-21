@@ -53,20 +53,20 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            if (action.equals(ACTION_PROFILE_UPDATED_CONSTANT)){
+            if (action.equals(ACTION_PROFILE_UPDATED_CONSTANT)) {
                 refreshProfile();
-            }else if(action.equals(ACTION_IOP_SERVICE_CONNECTED)){
+            } else if (action.equals(ACTION_IOP_SERVICE_CONNECTED)) {
                 refreshProfile();
                 if (profilesModule != null) {
                     if (!profilesModule.isProfileConnectedOrConnecting(selectedProfPubKey)) {
                         btnReload.setVisibility(View.VISIBLE);
                     }
                 }
-            }else if (action.equals(ACTION_ON_PROFILE_DISCONNECTED)){
+            } else if (action.equals(ACTION_ON_PROFILE_DISCONNECTED)) {
                 showConnectionLoose();
-            }else if (action.equals(ACTION_ON_CHECK_IN_FAIL)){
+            } else if (action.equals(ACTION_ON_CHECK_IN_FAIL)) {
                 showConnectionLoose();
-            }else if (action.equals(INTENT_ACTION_PROFILE_CONNECTED)){
+            } else if (action.equals(INTENT_ACTION_PROFILE_CONNECTED)) {
                 hideConnectionLoose();
             }
         }
@@ -96,7 +96,7 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
         //imgProfile = (CircleImageView) navHeader.findViewById(R.id.profile_image);
 
         //Layout reload
-        btnReload = (LinearLayout)findViewById(R.id.btnReload);
+        btnReload = (LinearLayout) findViewById(R.id.btnReload);
         btnReload.setVisibility(LinearLayout.GONE);
         btnReload.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -105,18 +105,18 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
             }
         });
 
-        onCreateView(savedInstanceState,frameLayout);
+        onCreateView(savedInstanceState, frameLayout);
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(receiver,new IntentFilter(IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT));
-        registerReceiver(receiver,new IntentFilter(ACTION_IOP_SERVICE_CONNECTED));
+        registerReceiver(receiver, new IntentFilter(IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT));
+        registerReceiver(receiver, new IntentFilter(ACTION_IOP_SERVICE_CONNECTED));
         localBroadcastManager.registerReceiver(receiver, new IntentFilter(INTENT_ACTION_PROFILE_DISCONNECTED));
-        localBroadcastManager.registerReceiver(receiver,new IntentFilter(INTENT_ACTION_PROFILE_CHECK_IN_FAIL));
-        localBroadcastManager.registerReceiver(receiver,new IntentFilter(INTENT_ACTION_PROFILE_CONNECTED));
+        localBroadcastManager.registerReceiver(receiver, new IntentFilter(INTENT_ACTION_PROFILE_CHECK_IN_FAIL));
+        localBroadcastManager.registerReceiver(receiver, new IntentFilter(INTENT_ACTION_PROFILE_CONNECTED));
 
         try {
             if (profilesModule != null) {
@@ -124,7 +124,7 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
                     btnReload.setVisibility(View.VISIBLE);
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -141,12 +141,12 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
 
         try {
             unregisterReceiver(receiver);
-        }catch (Exception e){
+        } catch (Exception e) {
             // nothing..
         }
         try {
             localBroadcastManager.unregisterReceiver(receiver);
-        }catch (Exception e){
+        } catch (Exception e) {
             // nothing..
         }
     }
@@ -158,7 +158,7 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
     /**
      * Empty method to check some status before set the main layout of the activity
      */
-    protected void beforeCreate(){
+    protected void beforeCreate() {
 
     }
 
@@ -167,7 +167,7 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
      *
      * @param savedInstanceState
      */
-    protected void onCreateView(Bundle savedInstanceState, ViewGroup container){
+    protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
 
     }
 
@@ -198,7 +198,7 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
         int id = item.getItemId();
 
         //to prevent current item select over and over
-        if (item.isChecked()){
+        if (item.isChecked()) {
             drawer.closeDrawer(GravityCompat.START);
             return false;
         }
@@ -215,26 +215,25 @@ public class BaseDrawerActivity extends BaseActivity implements NavigationView.O
         return true;
     }
 
-    protected void setNavigationMenuItemChecked(int pos){
+    protected void setNavigationMenuItemChecked(int pos) {
         navigationView.getMenu().getItem(pos).setChecked(true);
     }
 
-    public void hideConnectionLoose(){
+    public void hideConnectionLoose() {
         btnReload.setVisibility(View.GONE);
     }
 
-    public void showConnectionLoose(){
+    public void showConnectionLoose() {
         btnReload.setVisibility(View.VISIBLE);
     }
-
 
 
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        if (id==R.id.container_profile){
+        if (id == R.id.container_profile) {
             Intent intent = new Intent(v.getContext(), ProfileInformationActivity.class);
-            intent.putExtra(ProfileInformationActivity.IS_MY_PROFILE,true);
+            intent.putExtra(ProfileInformationActivity.IS_MY_PROFILE, true);
             startActivity(intent);
         }
     }

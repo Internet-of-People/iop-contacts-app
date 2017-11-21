@@ -18,6 +18,7 @@ public class IntentBroadcastConstants {
     public static final String ACTION_ON_PAIR_DISCONNECTED = "on_pair_disconnected";
 
     public static final String ACTION_IOP_SERVICE_CONNECTED = "iop_service_connected";
+    public static final String ACTION_IOP_SERVICE_DISCONNECTED = "iop_service_disconnected";
 
 
     public static final String INTENT_EXTRA_PROF_KEY = "prof_key"; // -> string value

@@ -24,7 +24,6 @@ import android.widget.Toast;
 
 import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.R;
-import org.spongycastle.crypto.InvalidCipherTextException;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -82,9 +81,8 @@ public class SettingsRestoreActivity extends BaseActivity {
             } catch (IOException e) {
                 Toast.makeText(getApplicationContext(), R.string.restore_cant_open_file_message,
                         Toast.LENGTH_LONG).show();
-            } catch (InvalidCipherTextException e) {
-                Toast.makeText(getApplicationContext(), R.string.restore_invalid_password_message,
-                        Toast.LENGTH_LONG).show();
+            } catch (org.libertaria.world.exceptions.IncorrectPasswordException e) {
+                e.printStackTrace();
             }
             onBackPressed();
             Toast.makeText(getApplicationContext(), R.string.restore_completed_message,

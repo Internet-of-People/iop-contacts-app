@@ -54,7 +54,7 @@ public class ConnectClientService extends Service {
     /**
      * Flag indicating whether we have called bind on the service.
      */
-    boolean mPlatformServiceIsBound;
+    volatile boolean mPlatformServiceIsBound;
     /**
      * Module interfaces
      */
@@ -155,6 +155,10 @@ public class ConnectClientService extends Service {
             waitingFutures.put(messageId, methodListener);
         }
 
+        if (iServerBrokerService == null) {
+            return null;
+        }
+
         ModuleObjectWrapper respObject = iServerBrokerService.callMethod(
                 localConnection.getClientId(), // future client key..
                 messageId, // data id should be packageName+msg_id
@@ -201,6 +205,7 @@ public class ConnectClientService extends Service {
         if (localConnection != null) {
             localConnection.shutdown();
         }
+        doUnbindService();
     }
 
     /**
@@ -233,8 +238,8 @@ public class ConnectClientService extends Service {
         public void onServiceDisconnected(ComponentName className) {
             // This is called when the connection with the service has been
             // unexpectedly disconnected -- that is, its process crashed.
-            iServerBrokerService = null;
-            mPlatformServiceIsBound = false;
+            doUnbindService();
+            connectApp.onConnectClientServiceUnbind();
             logger.info("ISERVERBROKERSERVICE disconnected");
             // notify app
         }
@@ -267,8 +272,9 @@ public class ConnectClientService extends Service {
 
     void doUnbindService() {
         // Detach our existing connection.
-        unbindService(mPlatformServiceConnection);
         mPlatformServiceIsBound = false;
+        iServerBrokerService = null;
+        unbindService(mPlatformServiceConnection);
         logger.info("Unbinding.");
     }
 
