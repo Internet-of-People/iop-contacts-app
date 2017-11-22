@@ -50,7 +50,7 @@ public class ConnectClientService extends Service {
      */
     private ConnectApp connectApp;
 
-    private IPlatformService iServerBrokerService = null;
+    private static IPlatformService iServerBrokerService = null;
     /**
      * Flag indicating whether we have called bind on the service.
      */
@@ -229,10 +229,7 @@ public class ConnectClientService extends Service {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            if (mPlatformServiceIsBound) {
-                // notify app about the connection
-                connectApp.onConnectClientServiceBind(ConnectClientService.this);
-            }
+            connectApp.onConnectClientServiceBind(ConnectClientService.this);
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -257,7 +254,7 @@ public class ConnectClientService extends Service {
         try {
             //Log.d(TAG, "Before init intent.componentName");
             //Log.d(TAG, "Before bindService");
-            bindService(intent, mPlatformServiceConnection, BIND_AUTO_CREATE);
+            getApplicationContext().bindService(intent, mPlatformServiceConnection, BIND_AUTO_CREATE);
             startService(intent);
             return true;
         } catch (SecurityException e) {

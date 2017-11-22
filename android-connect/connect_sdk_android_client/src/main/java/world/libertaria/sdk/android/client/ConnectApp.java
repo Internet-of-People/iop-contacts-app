@@ -119,7 +119,7 @@ public class ConnectApp extends Application implements ConnectApplication {
 
     private void bindConnectService() {
         Intent intent = new Intent(this, ConnectClientService.class);
-        bindService(intent, profServiceConnection, Context.BIND_AUTO_CREATE);
+        getApplicationContext().bindService(intent, profServiceConnection, Context.BIND_AUTO_CREATE);
         startService(intent);
     }
 
@@ -202,19 +202,15 @@ public class ConnectApp extends Application implements ConnectApplication {
      */
     protected void onConnectClientServiceBind(ConnectClientService clientService) {
         this.clientService = clientService;
-        if (this.clientService != null && this.clientService.mPlatformServiceIsBound) {
-            logger.info("Service is bound, notifying...");
-            // notify connection
-            Intent intent = new Intent(ACTION_IOP_SERVICE_CONNECTED);
-            broadcastManager.sendBroadcast(intent);
-            // notify listeners
-            if (connectListeners != null) {
-                for (ConnectListener connectListener : connectListeners) {
-                    connectListener.onPlatformConnected(this);
-                }
+        logger.info("Service is bound, notifying...");
+        // notify connection
+        Intent intent = new Intent(ACTION_IOP_SERVICE_CONNECTED);
+        getApplicationContext().sendBroadcast(intent);
+        // notify listeners
+        if (connectListeners != null) {
+            for (ConnectListener connectListener : connectListeners) {
+                connectListener.onPlatformConnected(this);
             }
-        } else {
-            logger.warn("onConnectClientServiceBind mPlatformServiceIsBound " + (this.clientService != null ? this.clientService.mPlatformServiceIsBound : null));
         }
     }
 
@@ -224,7 +220,7 @@ public class ConnectApp extends Application implements ConnectApplication {
     protected void onConnectClientServiceUnbind() {
         // notify listeners
         Intent intent = new Intent(ACTION_IOP_SERVICE_DISCONNECTED);
-        broadcastManager.sendBroadcast(intent);
+        getApplicationContext().sendBroadcast(intent);
         if (connectListeners != null) {
             for (ConnectListener connectListener : connectListeners) {
                 connectListener.onPlatformDisconnected(this);
