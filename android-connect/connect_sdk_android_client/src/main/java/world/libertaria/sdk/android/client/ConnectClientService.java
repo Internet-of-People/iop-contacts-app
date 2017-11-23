@@ -271,8 +271,12 @@ public class ConnectClientService extends Service {
         // Detach our existing connection.
         mPlatformServiceIsBound = false;
         iServerBrokerService = null;
-        unbindService(mPlatformServiceConnection);
-        logger.info("Unbinding.");
+        try {
+            unbindService(mPlatformServiceConnection);
+            logger.info("Unbinding.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 

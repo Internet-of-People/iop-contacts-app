@@ -11,6 +11,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -18,16 +19,20 @@ import org.furszy.contacts.App;
 import org.furszy.contacts.BaseDrawerActivity;
 import org.furszy.contacts.R;
 import org.furszy.contacts.StartActivity;
-import org.furszy.contacts.app_base.BaseAppFragment;
 import org.furszy.contacts.app_base.BaseAppRecyclerFragment;
 import org.furszy.contacts.ui.home.contacts.ContactsFragment;
 import org.furszy.contacts.ui.home.requests.RequestsFragment;
 import org.furszy.contacts.ui.send_request.SendRequestActivity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.furszy.contacts.App.INTENT_ACTION_ON_SERVICE_CONNECTED;
+import static world.libertaria.shared.library.util.OpenApplicationsUtil.CONTACTS_POSITION;
+import static world.libertaria.shared.library.util.OpenApplicationsUtil.INITIAL_FRAGMENT_EXTRA;
+import static world.libertaria.shared.library.util.OpenApplicationsUtil.REQUESTS_POSITION;
 
 /**
  * Created by furszy on 6/20/17.
@@ -36,6 +41,10 @@ import static org.furszy.contacts.App.INTENT_ACTION_ON_SERVICE_CONNECTED;
 public class HomeActivity extends BaseDrawerActivity {
 
     public static final String INIT_REQUESTS = "in_req";
+    public static final String FRAGMENT_CONTACTS = "contacts";
+    public static final String FRAGMENT_REQUESTS = "requests";
+
+
     private View root;
     private TabLayout tabLayout;
     private ViewPager viewPager;
@@ -56,9 +65,6 @@ public class HomeActivity extends BaseDrawerActivity {
 
     private void refreshFragments() {
         if (adapter != null) {
-            for (Fragment fragment : adapter.mFragmentList) {
-                ((BaseAppRecyclerFragment) fragment).loadBasics();
-            }
             refreshContacts();
             refreshRequests();
         }
@@ -82,7 +88,6 @@ public class HomeActivity extends BaseDrawerActivity {
 
             viewPager = (ViewPager) root.findViewById(R.id.viewpager);
             setupViewPager(viewPager);
-
             tabLayout = (TabLayout) root.findViewById(R.id.tabs);
             tabLayout.setupWithViewPager(viewPager);
             fab_add = (FloatingActionButton) root.findViewById(R.id.fab_add);
@@ -95,6 +100,12 @@ public class HomeActivity extends BaseDrawerActivity {
         }
 
         localBroadcastManager.registerReceiver(initReceiver, new IntentFilter(INTENT_ACTION_ON_SERVICE_CONNECTED));
+
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            int initialFragment = extras.getInt(INITIAL_FRAGMENT_EXTRA);
+            viewPager.setCurrentItem(initialFragment);
+        }
     }
 
     @Override
@@ -117,14 +128,13 @@ public class HomeActivity extends BaseDrawerActivity {
 
     private void setupViewPager(ViewPager viewPager) {
         adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new ContactsFragment(), "Contacts");
-        adapter.addFragment(new RequestsFragment(), "Requests");
+        adapter.addFragment(CONTACTS_POSITION, new ContactsFragment(), FRAGMENT_CONTACTS);
+        adapter.addFragment(REQUESTS_POSITION, new RequestsFragment(), FRAGMENT_REQUESTS);
         viewPager.setAdapter(adapter);
     }
 
     public class ViewPagerAdapter extends FragmentPagerAdapter {
-        private final List<Fragment> mFragmentList = new ArrayList<>();
-        private final List<String> mFragmentTitleList = new ArrayList<>();
+        private final Map<Integer, Pair<String, Fragment>> fragments = new HashMap<>();
 
         public ViewPagerAdapter(FragmentManager manager) {
             super(manager);
@@ -132,47 +142,44 @@ public class HomeActivity extends BaseDrawerActivity {
 
         @Override
         public Fragment getItem(int position) {
-            return mFragmentList.get(position);
+            return fragments.get(position).second;
         }
 
         @Override
         public int getCount() {
-            return mFragmentList.size();
+            return fragments.size();
         }
 
-        public void addFragment(Fragment fragment, String title) {
-            mFragmentList.add(fragment);
-            mFragmentTitleList.add(title);
+        public void addFragment(Integer position, Fragment fragment, String title) {
+            fragments.put(position, new Pair<>(title, fragment));
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return mFragmentTitleList.get(position);
+            return fragments.get(position).first;
         }
     }
 
     public void refreshContacts() {
-        final Fragment fragment = adapter.getItem(0);
-        if (fragment != null) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    ((ContactsFragment) fragment).refresh();
-                }
-            });
-        }
+        final Fragment fragment = adapter.getItem(CONTACTS_POSITION);
+        ((BaseAppRecyclerFragment) fragment).loadBasics();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((ContactsFragment) fragment).refresh();
+            }
+        });
     }
 
 
     private void refreshRequests() {
-        final Fragment fragment = adapter.getItem(1);
-        if (fragment != null) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    ((RequestsFragment) fragment).refresh();
-                }
-            });
-        }
+        final Fragment fragment = adapter.getItem(REQUESTS_POSITION);
+        ((BaseAppRecyclerFragment) fragment).loadBasics();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((RequestsFragment) fragment).refresh();
+            }
+        });
     }
 }

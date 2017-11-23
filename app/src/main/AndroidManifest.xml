@@ -2,62 +2,63 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.furszy.contacts">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
-        android:icon="@mipmap/ic_launcher"
         android:name=".App"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:persistent="true"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:persistent="true">
+        android:theme="@style/AppTheme">
         <activity android:name="org.furszy.contacts.StartActivity">
 
         </activity>
-        <activity android:name="org.furszy.contacts.ProfileActivity" android:exported="true">
+        <activity
+            android:name="org.furszy.contacts.ProfileActivity"
+            android:exported="true">
             <intent-filter>
-                <action android:name="world.libertaria.profiles.MY_PROFILE"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="world.libertaria.profiles.MY_PROFILE" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
         <activity android:name="org.furszy.contacts.ProfileInformationActivity">
             <intent-filter android:autoVerify="true">
-                <data android:scheme="iop"/>
+                <data android:scheme="iop" />
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
-            <!--<intent-filter>-->
-                <!--<action android:name="world.libertaria.profiles.MY_PROFILE"/>-->
-                <!--<category android:name="android.intent.category.DEFAULT"/>-->
-            <!--</intent-filter>-->
         </activity>
 
-        <activity android:name=".scanner.ScanActivity"/>
+        <activity android:name=".scanner.ScanActivity" />
         <activity android:name="org.furszy.contacts.BaseDrawerActivity"></activity>
         <activity android:name="org.furszy.contacts.RestoreActivity"></activity>
-        <activity android:name=".ui.other_profile.OtherProfileActivity"/>
-        <activity android:name="org.furszy.contacts.CreateProfileActivity"  />
+        <activity android:name=".ui.other_profile.OtherProfileActivity" />
+        <activity android:name="org.furszy.contacts.CreateProfileActivity" />
         <activity android:name=".ui.settings.SettingsActivity"></activity>
         <activity android:name=".ui.settings_restore.SettingsRestoreActivity"></activity>
         <activity android:name=".ui.settings_backup.SettingsBackupActivity"></activity>
         <activity android:name=".ui.settings_backup_process.SettingsBackupPasswordActivity"></activity>
         <activity android:name=".ui.settings_backup_folder.SettingsBackupFolderActivity"></activity>
         <activity android:name=".ui.my_qr.MyQrActivity"></activity>
-        <activity android:name=".contacts.ProfilesInformationActivity"/>
-        <activity android:name=".requests.PairingRequestsActivity"/>
-        <activity android:name=".ui.welcome.WelcomeActivity"/>
+        <activity android:name=".contacts.ProfilesInformationActivity" />
+        <activity android:name=".requests.PairingRequestsActivity" />
+        <activity android:name=".ui.welcome.WelcomeActivity" />
 
-        <activity android:name=".ui.home.HomeActivity"
+        <activity
+            android:name=".ui.home.HomeActivity"
             android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <action android:name="org.furszy.contacts.MAIN_ACTIVITY" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
@@ -66,24 +67,22 @@
 
         </activity>
 
-        <activity android:name=".ui.chat.ChatActivity"
-            >
+        <activity android:name=".ui.chat.ChatActivity">
 
         </activity>
-        <activity android:name=".ui.chat.WaitingChatActivity">
-        </activity>
+        <activity android:name=".ui.chat.WaitingChatActivity"></activity>
 
         <activity android:name=".ui.send_request.SendRequestActivity">
             <intent-filter>
-                <action android:name="world.libertaria.profiles.REQUEST"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="text/plain"/>
+                <action android:name="world.libertaria.profiles.REQUEST" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
 
-        <receiver android:name=".StartActivityReceiver"
-            android:exported="true"
-            >
+        <receiver
+            android:name=".StartActivityReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="org.libertaria.connect.START_ACTIVITY"></action>
             </intent-filter>

@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Address;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,6 +36,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import iop.org.iop_sdk_android.core.service.device_state.LocationUtil;
+import world.libertaria.shared.library.util.OpenApplicationsUtil;
 
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_ON_PAIR_DISCONNECTED;
 import static world.libertaria.shared.library.global.client.IntentBroadcastConstants.ACTION_PROFILE_UPDATED_CONSTANT;
@@ -121,21 +123,13 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#2998ff")));
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowHomeEnabled(true);
+            actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#2998ff")));
+        }
         localBroadcastManager.registerReceiver(receiver, new IntentFilter(ACTION_ON_PAIR_DISCONNECTED));
-//        Uri data = getIntent().getData();
-//        String scheme = data.getScheme(); // "http"
-//        String host = data.getHost(); // "twitter.com"
-//        List<String> params = data.getPathSegments();
-//        String first = params.get(0); // "status"
-//        String second = params.get(1); // "1234"
-//
-//        Log.i("APP",data.toString());
-
-        //setContentView(R.layout.profile_information_main);
         root = getLayoutInflater().inflate(R.layout.profile_information_main, container);
         imgProfile = (CircleImageView) root.findViewById(R.id.profile_image);
         txt_name = (TextView) root.findViewById(R.id.txt_name);
@@ -379,130 +373,49 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     @Override
     public void onClick(final View v) {
         int id = v.getId();
-        if (id == R.id.txt_chat) {
-            if (isMyProfile) {
-                return;
-            }
-            if (profileInformation.getPairStatus().equals(ProfileInformationImp.PairStatus.DISCONNECTED)) {
-                Toast.makeText(v.getContext(), "You need connect with " + profileInformation.getName() + " in order to send messages", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            Intent intent = new Intent(ACTION_OPEN_CHAT_APP);
-            intent.putExtra(EXTRA_INTENT_LOCAL_PROFILE, selectedProfPubKey);
-            intent.putExtra(EXTRA_INTENT_REMOTE_PROFILE, profileInformation.getHexPublicKey());
-            sendBroadcast(intent);
-            //Toast.makeText(this,"Open chat app here please",Toast.LENGTH_LONG).show();
-            /*if (flag.compareAndSet(false,true)) {
-                Toast.makeText(v.getContext(),"Sending chat request..",Toast.LENGTH_SHORT).show();
-                executor.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            MsgListenerFuture<Boolean> readyListener = new MsgListenerFuture<>();
-                            readyListener.setListener(new BaseMsgFuture.Listener<Boolean>() {
-                                @Override
-                                public void onAction(int messageId, Boolean object) {
-                                    flag.set(false);
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(ProfileInformationActivity.this, "Chat request sent", Toast.LENGTH_LONG).show();
-                                            Intent intent = new Intent(ProfileInformationActivity.this, WaitingChatActivity.class);
-                                            intent.putExtra(REMOTE_PROFILE_PUB_KEY,profileInformation.getHexPublicKey());
-                                            intent.putExtra(WaitingChatActivity.IS_CALLING, true);
-                                            startActivity(intent);
-                                        }
-                                    });
+        switch (id) {
+            case R.id.txt_chat:
+                if (isMyProfile) {
+                    OpenApplicationsUtil.openChatContacts(getApplicationContext());
+                }
 
-                                }
+                if (profileInformation.getPairStatus().equals(ProfileInformationImp.PairStatus.DISCONNECTED)) {
+                    Toast.makeText(v.getContext(), "You need connect with " + profileInformation.getName() + " in order to send messages", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-                                @Override
-                                public void onFail(int messageId, int status, String statusDetail) {
-                                    Log.i("TAG", "onFail");
-                                    Log.e(TAG, "fail chat request: " + statusDetail + ", id: " + messageId);
-                                    flag.set(false);
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(ProfileInformationActivity.this, "Chat request fail", Toast.LENGTH_LONG).show();
-                                        }
-                                    });
-                                }
-                            });
-                            chatModule.requestChat(selectedProfPubKey,profileInformation, readyListener);
-                        } catch (ChatCallAlreadyOpenException e) {
-                            e.printStackTrace();
-                            // chat call already open
-                            // first send the acceptance
-                            try {
-                                chatModule.acceptChatRequest(selectedProfPubKey,profileInformation.getHexPublicKey(), new ProfSerMsgListener<Boolean>() {
-                                    @Override
-                                    public void onMessageReceive(int messageId, Boolean message) {
-                                        runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                flag.set(false);
-                                                // let's go to the chat again
-                                                Intent intent1 = new Intent(ProfileInformationActivity.this, ChatActivity.class);
-                                                intent1.putExtra(REMOTE_PROFILE_PUB_KEY, profileInformation.getHexPublicKey());
-                                                startActivity(intent1);
-                                            }
-                                        });
-                                    }
-
-                                    @Override
-                                    public void onMsgFail(int messageId, int statusValue, final String details) {
-                                        logger.info("chat connection fail %s",details);
-                                        flag.set(false);
-                                        runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                Toast.makeText(ProfileInformationActivity.this,"Chat connection fail\n"+details,Toast.LENGTH_LONG).show();
-                                            }
-                                        });
-                                    }
-
-                                    @Override
-                                    public String getMessageName() {
-                                        return "accept_chat_request";
-                                    }
-                                });
-
-                            } catch (AppServiceCallNotAvailableException e1){
-                                e1.printStackTrace();
-                                flag.set(false);
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(ProfileInformationActivity.this,"Remote profile calling you.., closing the connection\nPlease try again",Toast.LENGTH_LONG).show();
-                                    }
-                                });
-
-                            } catch (final Exception e1) {
-                                e1.printStackTrace();
-                                flag.set(false);
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(ProfileInformationActivity.this,"Chat connection fail\n"+e1.getMessage(),Toast.LENGTH_LONG).show();
-                                    }
-                                });
-                            }
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(ProfileInformationActivity.this, "Chat call fail\nplease try again later", Toast.LENGTH_LONG).show();
-                                }
-                            });
-                            flag.set(false);
-                        }
+                OpenApplicationsUtil.startNewChat(getApplicationContext(), profileInformation.getHexPublicKey());
+                break;
+            case R.id.pairingStatus:
+                if (isMyProfile) {
+                    OpenApplicationsUtil.openRequestsScreen(getApplicationContext());
+                } else {
+                    String toastMessage = profileInformation.getPairStatus().toString();
+                    switch (profileInformation.getPairStatus()) {
+                        case PAIRED:
+                            toastMessage = "You are already paired with " + profileInformation.getName();
+                            break;
+                        case WAITING_FOR_MY_RESPONSE:
+                            toastMessage = "Sending approval to " + profileInformation.getName();
+                            //TODO: APPROVE
+                            break;
+                        case WAITING_FOR_RESPONSE:
+                            toastMessage = "Waiting approval from " + profileInformation.getName();
+                            break;
+                        case BLOCKED:
+                            toastMessage = profileInformation.getName() + " is blocked.";
+                            break;
+                        case DISCONNECTED:
+                            toastMessage = profileInformation.getName() + " is disconnected.";
+                            break;
+                        case NOT_PAIRED:
+                            //TODO: SEND PAIRING REQUEST
+                            toastMessage = "Sending pairing request to " + profileInformation.getName();
+                            break;
                     }
-                });
-            }*/
-
+                    Toast.makeText(v.getContext(), toastMessage, Toast.LENGTH_SHORT).show();
+                }
+                break;
         }
     }
 }
