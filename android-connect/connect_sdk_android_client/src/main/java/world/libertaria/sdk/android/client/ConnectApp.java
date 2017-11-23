@@ -82,6 +82,7 @@ public class ConnectApp extends Application implements ConnectApplication {
     public void onCreate() {
         super.onCreate();
         initLogging();
+        Thread.setDefaultUncaughtExceptionHandler(new GlobalExceptionHandler()); //Initialize global handler.
         logger = LoggerFactory.getLogger(ConnectApp.class);
         activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         // This is just for now..
