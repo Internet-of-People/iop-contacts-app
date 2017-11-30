@@ -172,14 +172,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
             onBackPressed();
             return;
         }
-
-        Address address = LocationUtil.getLastKnownAddress(getApplicationContext());
-        String displayText = getApplicationContext().getString(R.string.my_location);
-
-        if (address != null) {
-            displayText = address.getSubAdminArea() + ", " + address.getCountryName();
-        }
-        locationText.setText(displayText);
+        refreshLocation();
     }
 
     private void tappedActionButton() {
@@ -349,6 +342,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
                 }
             });
         }
+        refreshLocation();
     }
 
     @Override
@@ -372,6 +366,18 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
 
     private void hideLoading() {
         progress_bar.setVisibility(View.GONE);
+    }
+
+    private void refreshLocation() {
+        Address address = LocationUtil.getLastKnownAddress(getApplicationContext());
+        String displayText = getApplicationContext().getString(R.string.my_location);
+
+        if (address != null) {
+            displayText = address.getSubAdminArea() + ", " + address.getCountryName();
+        }
+        if (locationText != null) {
+            locationText.setText(displayText);
+        }
     }
 
     @Override
