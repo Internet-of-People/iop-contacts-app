@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -68,6 +69,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
     private TextView locationText;
     private Button btn_action;
     private ProgressBar progress_bar;
+    private LinearLayout userApps;
 
     private TextView txt_chat, disconnected_message;
 
@@ -137,6 +139,7 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
         btn_action = (Button) root.findViewById(R.id.btn_action);
         progress_bar = (ProgressBar) root.findViewById(R.id.progress_bar);
         txt_chat = (TextView) root.findViewById(R.id.txt_chat);
+        userApps = (LinearLayout) root.findViewById(R.id.userApps);
         txt_chat.setOnClickListener(this);
         disconnected_message = (TextView) root.findViewById(R.id.disconnected_message);
         disconnected_message.setVisibility(View.GONE);
@@ -158,10 +161,11 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
             } else if (extras.containsKey(IS_MY_PROFILE)) {
                 isMyProfile = true;
                 profileInformation = profilesModule.getProfile(selectedProfPubKey);
-                btn_action.setVisibility(View.GONE);
-                txt_chat.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_chat_disable, 0);
-                txt_chat.setEnabled(false);
             }
+        }
+
+        if (isMyProfile) {
+            userApps.setVisibility(View.GONE);
         }
 
         if (profileInformation == null && !searchForProfile) {

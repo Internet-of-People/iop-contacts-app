@@ -22,6 +22,7 @@ public class OpenApplicationsUtil {
     public static final String INITIAL_FRAGMENT_EXTRA = "initial_fragment";
     public static final Integer CONTACTS_POSITION = 0;
     public static final Integer REQUESTS_POSITION = 1;
+
     //CONSTRUCTORS
     private OpenApplicationsUtil() {
         throw new UnsupportedOperationException("Don't you dare to initialize this class!");
@@ -35,7 +36,7 @@ public class OpenApplicationsUtil {
         if (isIntentSafe) {
             context.startActivity(intent);
         } else {
-            Toast.makeText(context, "Not supported operation", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "Not supported operation", Toast.LENGTH_LONG).show(); //TODO: OPEN GOOGLE PLAY AND SEARCH APP!
         }
     }
 
@@ -59,6 +60,11 @@ public class OpenApplicationsUtil {
         Intent intent = new Intent("org.furszy.contacts.MAIN_ACTIVITY");
         intent.putExtra(INITIAL_FRAGMENT_EXTRA, REQUESTS_POSITION);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startIntent(context, intent);
+    }
+
+    public static void openConnectApplication(Context context) {
+        Intent intent = context.getPackageManager().getLaunchIntentForPackage("org.furszy");
         startIntent(context, intent);
     }
 

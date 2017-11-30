@@ -101,10 +101,12 @@ public class HomeActivity extends BaseDrawerActivity {
 
         localBroadcastManager.registerReceiver(initReceiver, new IntentFilter(INTENT_ACTION_ON_SERVICE_CONNECTED));
 
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            int initialFragment = extras.getInt(INITIAL_FRAGMENT_EXTRA);
-            viewPager.setCurrentItem(initialFragment);
+        if (viewPager != null) {
+            Bundle extras = getIntent().getExtras();
+            if (extras != null) {
+                int initialFragment = extras.getInt(INITIAL_FRAGMENT_EXTRA);
+                viewPager.setCurrentItem(initialFragment);
+            }
         }
     }
 
