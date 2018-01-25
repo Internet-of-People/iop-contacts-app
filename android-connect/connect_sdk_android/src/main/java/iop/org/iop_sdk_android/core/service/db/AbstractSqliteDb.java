@@ -11,12 +11,13 @@ import android.database.sqlite.SQLiteOpenHelper;
 import org.libertaria.world.global.DbObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by furszy on 6/6/17.
  */
 
-public abstract class AbstractSqliteDb<T extends DbObject> extends SQLiteOpenHelper {
+public abstract class AbstractSqliteDb<T> extends SQLiteOpenHelper {
 
     public AbstractSqliteDb(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);
@@ -90,6 +91,13 @@ public abstract class AbstractSqliteDb<T extends DbObject> extends SQLiteOpenHel
         db.update(getTableName(), contentValues, whereColumn + "=?", new String[]{whereValue});
     }
 
+    public void updateDifferentFrom(String whereColumn, String whereValue, String updateColumn, String updateValue) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(updateColumn, updateValue);
+        db.update(getTableName(), contentValues, whereColumn + "!=?", new String[]{whereValue});
+    }
+
     public int updateFieldByKey(String whereColumn, String whereValue, String updateColumn, String updateValue) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -114,11 +122,11 @@ public abstract class AbstractSqliteDb<T extends DbObject> extends SQLiteOpenHel
         db.delete(getTableName(), null, null);
     }
 
-    abstract String getTableName();
+    protected abstract String getTableName();
 
-    abstract ContentValues buildContent(T obj);
+    protected abstract ContentValues buildContent(T obj);
 
-    abstract T buildFrom(Cursor cursor);
+    protected abstract T buildFrom(Cursor cursor);
 
 
 }

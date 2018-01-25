@@ -87,7 +87,7 @@ public class SqlitePairingRequestDb extends AbstractSqliteDb<PairingRequest> imp
     }
 
     @Override
-    String getTableName() {
+    protected String getTableName() {
         return PAIRING_TABLE_NAME;
     }
 

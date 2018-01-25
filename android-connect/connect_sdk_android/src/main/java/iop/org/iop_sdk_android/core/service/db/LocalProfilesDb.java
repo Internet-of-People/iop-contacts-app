@@ -88,7 +88,7 @@ public class LocalProfilesDb extends AbstractSqliteDb<Profile> implements LocalP
     }
 
     @Override
-    String getTableName() {
+    protected String getTableName() {
         return TABLE_NAME;
     }
 
