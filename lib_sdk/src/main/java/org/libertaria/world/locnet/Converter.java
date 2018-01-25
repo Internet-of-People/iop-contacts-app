@@ -31,20 +31,20 @@ public class Converter
     }
 
 
-    public static NodeInfo.ServiceType fromProtoBuf(IopLocNet.ServiceType type) throws UnknownHostException
+    public static NodeInfo.ServiceType fromProtoBuf(String type) throws UnknownHostException
     {
         switch (type)
         {
-            case Content:       return NodeInfo.ServiceType.Content;
-            case Latency:       return NodeInfo.ServiceType.Latency;
-            case Location:      return NodeInfo.ServiceType.Location;
-            case Minting:       return NodeInfo.ServiceType.Minting;
-            case Profile:       return NodeInfo.ServiceType.Profile;
-            case Proximity:     return NodeInfo.ServiceType.Proximity;
-            case Relay:         return NodeInfo.ServiceType.Relay;
-            case Reputation:    return NodeInfo.ServiceType.Reputation;
-            case Token:         return NodeInfo.ServiceType.Unstructured;
-            case Unstructured:  return NodeInfo.ServiceType.Unstructured;
+            case "Content":       return NodeInfo.ServiceType.Content;
+            case "Latency":       return NodeInfo.ServiceType.Latency;
+            case "Location":      return NodeInfo.ServiceType.Location;
+            case "Minting":       return NodeInfo.ServiceType.Minting;
+            case "Profile":       return NodeInfo.ServiceType.Profile;
+            case "Proximity":     return NodeInfo.ServiceType.Proximity;
+            case "Relay":         return NodeInfo.ServiceType.Relay;
+            case "Reputation":    return NodeInfo.ServiceType.Reputation;
+            case "Token":         return NodeInfo.ServiceType.Unstructured;
+            case "Unstructured":  return NodeInfo.ServiceType.Unstructured;
             default: throw new IllegalArgumentException("Not implemented for unknown enum value: " + type);
         }
     }
