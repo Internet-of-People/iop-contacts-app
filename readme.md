@@ -1,4 +1,6 @@
-## Connect framework
+<img width=200px src="https://github.com/Internet-of-People/iop-resources/blob/master/logo/v2/logo_iop.png" alt="IoP Logo">
+
+# Connect framework
 
 The project is divided in three specific parts:
 
