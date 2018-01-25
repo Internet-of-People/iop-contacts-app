@@ -1,5 +1,7 @@
 package iop.org.iop_sdk_android.core.modules.profile;
 
+import android.content.Context;
+
 import org.libertaria.world.core.IoPConnect;
 import org.libertaria.world.core.exceptions.ConnectionAlreadyInitializedException;
 import org.libertaria.world.exceptions.IncorrectPasswordException;
@@ -11,6 +13,7 @@ import org.libertaria.world.global.Version;
 import org.libertaria.world.profile_server.CantConnectException;
 import org.libertaria.world.profile_server.CantSendMessageException;
 import org.libertaria.world.profile_server.ProfileInformation;
+import org.libertaria.world.profile_server.ProfileServerConfiguration;
 import org.libertaria.world.profile_server.ProfileServerConfigurations;
 import org.libertaria.world.profile_server.engine.app_services.AppService;
 import org.libertaria.world.profile_server.engine.app_services.PairingListener;
@@ -38,6 +41,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import iop.org.iop_sdk_android.core.service.server_broker.ProfileServerConfigurationImpl;
 import iop.org.iop_sdk_android.core.utils.ImageUtils;
 import iop.org.iop_sdk_android.core.wrappers.IntentWrapperAndroid;
 import world.libertaria.shared.library.global.client.IntentBroadcastConstants;
@@ -63,6 +67,7 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
     // todo: change this for the non local broadcast..
     private ProfileServerConfigurations confPref;
     private ServiceFactory serviceFactory;
+    private ProfileServerConfiguration profileServerConfiguration;
 
     private PlatformSerializer platformSerializer = new PlatformSerializer() {
         @Override
@@ -80,6 +85,7 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
         );
         this.confPref = confPref;
         this.serviceFactory = serviceFactory;
+        profileServerConfiguration = new ProfileServerConfigurationImpl((Context) context);
         //this.connectService = connectService;
     }
 
@@ -106,6 +112,11 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
             broadcastEvent(intentMessage);
         }
     };
+
+    @Override
+    public ProfileServerConfiguration serverConfiguration() {
+        return profileServerConfiguration;
+    }
 
     @Override
     public String registerProfile(String name, String type, byte[] img, int latitude, int longitude, String extraData) throws Exception {

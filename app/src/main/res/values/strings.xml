@@ -90,4 +90,10 @@
     <string name="play_again_desc">To see the welcome slider again, goto Settings -> apps -> welcome slider -> clear data</string>
     <string name="play_again">Play Again</string>
     <string name="my_location">My Location</string>
+    <string name="server_conf">Profile server configuration</string>
+    <string name="title_activity_profile_server_configuration">Profile server configuration</string>
+    <string name="select_server">Select profile server</string>
+    <string name="add_server_message">Introduce the server information below</string>
+    <string name="add_new_server">Add new server</string>
+    <string name="title_activity_add_server">Add new profile server</string>
 </resources>

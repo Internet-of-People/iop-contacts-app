@@ -2,38 +2,45 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <LinearLayout
-        android:orientation="vertical"
-        android:gravity="center_horizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:focusable="true"
         android:focusableInTouchMode="true"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
         android:paddingTop="40dp">
 
         <TextView
             android:id="@+id/sendMessage"
-            android:text="@string/request_message"
+            style="@style/MessageText"
+            android:text="@string/add_server_message"
             android:textColor="@color/mainText"
-            android:textSize="18sp"
-            style="@style/MessageText"/>
-
+            android:textSize="18sp" />
 
 
         <EditText
-            android:layout_width="@dimen/inputs_width"
+            android:id="@+id/edit_ip"
+            android:layout_width="288dp"
             android:layout_height="wrap_content"
-            android:id="@+id/edit_uri"
-            android:background="@drawable/bg_inputs"
-            android:hint="Add URI"
-            android:layout_marginTop="40dp"
             android:layout_marginBottom="20dp"
+            android:layout_marginTop="40dp"
+            android:background="@drawable/bg_inputs"
             android:gravity="center"
-            android:textSize="18sp"
-            android:textStyle="bold"
+            android:hint="Enter the server IP"
             android:padding="12dp"
             android:textColor="#4d4d4d"
-            />
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/edit_port"
+            android:layout_width="288dp"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="number"
+            android:text="16987" />
 
         <ImageView
             android:id="@+id/img_qr"
@@ -49,7 +56,7 @@
             android:layout_height="0dip"
             android:layout_weight="1"
             android:gravity="center|bottom"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -59,17 +66,17 @@
                 >
 
                 <ProgressBar
+                    android:id="@+id/progress_bar"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
-                    android:id="@+id/progress_bar"
-                    android:layout_gravity="center"
-                    />
+                    android:layout_gravity="center" />
 
             </LinearLayout>
+
             <Button
-                android:id="@+id/btn_add"
-                android:text="@string/send_request"
-                style="@style/ButtomBlue"/>
+                android:id="@+id/btn_add_srv"
+                style="@style/ButtomBlue"
+                android:text="@string/add_new_server" />
         </LinearLayout>
 
 

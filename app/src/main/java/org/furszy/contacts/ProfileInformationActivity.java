@@ -173,6 +173,10 @@ public class ProfileInformationActivity extends BaseActivity implements View.OnC
             return;
         }
 
+        refreshLocationText();
+    }
+
+    private void refreshLocationText() {
         Address address = LocationUtil.getLastKnownAddress(getApplicationContext());
         String displayText = getApplicationContext().getString(R.string.my_location);
 

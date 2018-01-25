@@ -31,18 +31,17 @@
     </LinearLayout>
 
     <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_add"
         android:layout_width="56dp"
         android:layout_height="56dp"
-        android:id="@+id/fab_add"
-        android:src="@drawable/ic_add_contact"
-        app:layout_anchor="@id/container"
-        app:layout_anchorGravity="bottom|right|end"
         android:layout_gravity="bottom|end"
-        android:layout_marginEnd="20dp"
         android:layout_marginBottom="20dp"
-        app:borderWidth="0dp"
+        android:layout_marginEnd="20dp"
         android:clickable="true"
-        />
+        android:src="@drawable/ic_add_contact"
+        app:borderWidth="0dp"
+        app:layout_anchor="@id/container"
+        app:layout_anchorGravity="bottom|right|end" />
 
 
 

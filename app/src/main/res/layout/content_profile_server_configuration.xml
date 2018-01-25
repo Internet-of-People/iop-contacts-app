@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="org.furszy.contacts.ui.settings.ProfileServerConfigurationActivity"
+    tools:showIn="@layout/activity_profile_server_configuration">
+
+    <TextView
+        android:id="@+id/selectServerLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/select_server"
+        tools:layout_editor_absoluteX="113dp"
+        tools:layout_editor_absoluteY="133dp"
+        tools:text="@string/select_server" />
+
+    <Spinner
+        android:id="@+id/selectServerSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="39dp"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="166dp" />
+
+    <EditText
+        android:id="@+id/serverDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textMultiLine"
+        android:visibility="gone"
+        tools:layout_editor_absoluteX="85dp"
+        tools:layout_editor_absoluteY="232dp" />
+
+</android.support.constraint.ConstraintLayout>

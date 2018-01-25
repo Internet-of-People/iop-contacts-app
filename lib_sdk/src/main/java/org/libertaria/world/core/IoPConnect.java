@@ -70,14 +70,13 @@ public class IoPConnect implements ConnectionListener {
     private final Logger logger = LoggerFactory.getLogger(IoPConnect.class);
 
     /**
-     * Reconnect time in seconds
-     */
-    private static final long RECONNECT_TIME = 15;
-
-    /**
      * Map of local device profiles pubKey connected to the home PS, profile public key -> host PS manager
      */
     private ConcurrentMap<String, IoPProfileConnection> managers;
+    {
+        this.managers = new ConcurrentHashMap<>();
+    }
+
     /**
      * Map of device profiles connected to remote PS
      */
@@ -90,7 +89,7 @@ public class IoPConnect implements ConnectionListener {
      * Enviroment context
      */
     private IoPConnectContext context;
-    /**
+    /**`
      * Local profiles db
      */
     private LocalProfilesDao localProfilesDao;
@@ -120,7 +119,12 @@ public class IoPConnect implements ConnectionListener {
     private SslContextFactory sslContextFactory;
     private EngineListener engineListener;
     private final ReconnectionManager reconnectionManager;
-    private final MessageQueueManager messageQueueManager;
+
+    {
+        this.reconnectionManager = new ReconnectionManager();
+    }
+
+    private MessageQueueManager messageQueueManager;
 
     private class PsKey {
 
@@ -141,6 +145,9 @@ public class IoPConnect implements ConnectionListener {
         }
     }
 
+    public IoPConnect() {
+    }
+
     public IoPConnect(IoPConnectContext contextWrapper,
                       CryptoWrapper cryptoWrapper,
                       SslContextFactory sslContextFactory,
@@ -153,13 +160,11 @@ public class IoPConnect implements ConnectionListener {
         this.context = contextWrapper;
         this.cryptoWrapper = cryptoWrapper;
         this.sslContextFactory = sslContextFactory;
-        this.managers = new ConcurrentHashMap<>();
         this.profilesManager = profilesManager;
         this.localProfilesDao = localProfilesDao;
         this.pairingRequestsManager = pairingRequestsManager;
         this.deviceLocation = deviceLocation;
         this.deviceNetworkConnection = deviceNetworkConnection;
-        this.reconnectionManager = new ReconnectionManager();
         this.messageQueueManager = messageQueueManager;
     }
 
@@ -278,7 +283,7 @@ public class IoPConnect implements ConnectionListener {
      * @return profile pubKey
      */
     public Profile createProfile(byte[] profileOwnerChallenge, String name, String type, byte[] img, String extraData, String secretPassword) {
-        Version version = new Version((byte) 1, (byte) 0, (byte) 0);
+        Version version = Version.newProtocolAcceptedVersion();
         ProfileServerConfigurations profileServerConfigurations = createEmptyProfileServerConf();
         KeyEd25519 keyEd25519 = profileServerConfigurations.createNewUserKeys();
         //     public Profile(Version version, String name, String type, String extraData, byte[] img, String homeHost, KeyEd25519 keyEd25519) {
@@ -594,7 +599,9 @@ public class IoPConnect implements ConnectionListener {
 
                 @Override
                 public void onMsgFail(int messageId, int statusValue, String details) {
-                    messageQueueManager.enqueueMessage(serviceName, localProfilePubKey, remoteProfile.getHexPublicKey(), baseMsg, tryUpdateRemoteServices);
+                    if (messageQueueManager != null) {
+                        messageQueueManager.enqueueMessage(serviceName, localProfilePubKey, remoteProfile.getHexPublicKey(), baseMsg, tryUpdateRemoteServices);
+                    }
                     readyListener.onMsgFail(messageId, statusValue, details);
                 }
 

@@ -60,6 +60,20 @@
                     android:text="@string/restore_profile"/>
 
 
+                <Button
+                    android:id="@+id/btn_server_conf"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:height="40dp"
+                    android:background="@drawable/settings_items"
+                    android:gravity="center_vertical"
+                    android:padding="8dp"
+                    android:paddingBottom="6dp"
+                    android:paddingTop="6dp"
+                    android:stateListAnimator="@null"
+                    android:text="@string/server_conf"
+                    android:textColor="#444444" />
+
                 <Switch
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

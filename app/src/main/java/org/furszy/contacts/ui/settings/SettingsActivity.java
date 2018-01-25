@@ -31,13 +31,15 @@ import java.util.List;
  * Created by Neoperol on 6/21/17.
  */
 
-public class SettingsActivity  extends BaseDrawerActivity implements DatabaseCollector {
+public class SettingsActivity extends BaseDrawerActivity implements DatabaseCollector {
     private View root;
     private Button buttonRestore;
     private Button buttonBackup;
+    private Button buttonServerConfiguration;
     private Button btn_report;
     private String versionName = "";
-    TextView text_version ;
+    TextView text_version;
+
     @Override
     protected void onCreateView(Bundle savedInstanceState, ViewGroup container) {
         root = getLayoutInflater().inflate(R.layout.settings_activity, container);
@@ -51,12 +53,16 @@ public class SettingsActivity  extends BaseDrawerActivity implements DatabaseCol
         buttonBackup = (Button) root.findViewById(R.id.btn_backup);
         buttonBackup.setOnClickListener(this);
 
+        //Profile server configuration
+        buttonServerConfiguration = (Button) root.findViewById(R.id.btn_server_conf);
+        buttonServerConfiguration.setOnClickListener(this);
+
         root.findViewById(R.id.btn_delete_contacts).setOnClickListener(this);
         root.findViewById(R.id.btn_delete_contacts).setVisibility(View.GONE);
         root.findViewById(R.id.btn_delete_requests).setOnClickListener(this);
         root.findViewById(R.id.btn_delete_requests).setVisibility(View.GONE);
 
-        Switch switchView = ((Switch)root.findViewById(R.id.switch_background_service));
+        Switch switchView = ((Switch) root.findViewById(R.id.switch_background_service));
         switchView.setChecked(app.createProfSerConfig().getBackgroundServiceEnable());
         switchView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -81,21 +87,24 @@ public class SettingsActivity  extends BaseDrawerActivity implements DatabaseCol
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        if (id == R.id.btn_delete_contacts){
+        if (id == R.id.btn_delete_contacts) {
             //anRedtooth.deteleContacts();
-            Toast.makeText(this,"Method cancelled..",Toast.LENGTH_LONG).show();
-        }else if(id == R.id.btn_delete_requests) {
+            Toast.makeText(this, "Method cancelled..", Toast.LENGTH_LONG).show();
+        } else if (id == R.id.btn_delete_requests) {
             //anRedtooth.deletePairingRequests();
             Toast.makeText(this, "Method cancelled..", Toast.LENGTH_LONG).show();
-        }else if(id == R.id.btn_backup) {
+        } else if (id == R.id.btn_backup) {
             Intent myIntent = new Intent(v.getContext(), SettingsBackupActivity.class);
             startActivity(myIntent);
-        }else if(id == R.id.btn_restore) {
+        } else if (id == R.id.btn_restore) {
             Intent myIntent = new Intent(v.getContext(), SettingsRestoreActivity.class);
             startActivity(myIntent);
-        }else if(id == R.id.btn_report){
+        } else if (id == R.id.btn_report) {
             launchReportDialog();
-        }else
+        } else if (id == R.id.btn_server_conf) {
+            Intent myIntent = new Intent(v.getContext(), ProfileServerConfigurationActivity.class);
+            startActivity(myIntent);
+        } else
             super.onClick(v);
     }
 
@@ -105,12 +114,11 @@ public class SettingsActivity  extends BaseDrawerActivity implements DatabaseCol
                 "org.furszy.contacts.myfileprovider",
                 R.string.report_issuea_dialog_title,
                 R.string.report_issue_dialog_message_issue,
-                this)
-        {
+                this) {
             @Nullable
             @Override
             protected CharSequence subject() {
-                return AppConstants.REPORT_SUBJECT_ISSUE+" "+ BuildConfig.VERSION_NAME;
+                return AppConstants.REPORT_SUBJECT_ISSUE + " " + BuildConfig.VERSION_NAME;
             }
 
             @Nullable
