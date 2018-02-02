@@ -11,6 +11,7 @@ import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.R;
 import org.libertaria.world.profile_server.model.ProfServerData;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProfileServerConfigurationActivity extends BaseActivity {
@@ -38,7 +39,11 @@ public class ProfileServerConfigurationActivity extends BaseActivity {
             }
 
         });
-        ArrayAdapter<ProfServerData> adapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_spinner_item, profilesModule.getRegisteredServers());
+        List<ProfServerData> registeredServers = profilesModule.getRegisteredServers();
+        if (registeredServers == null) {
+            registeredServers = new ArrayList<>();
+        }
+        ArrayAdapter<ProfServerData> adapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_spinner_item, registeredServers);
         serverList.setAdapter(adapter); // this will set list of values to spinner
         serverList.setSelection(registeredServers.indexOf(profilesModule.getSelectedProfileServer()));//set selected value in spinner
     }

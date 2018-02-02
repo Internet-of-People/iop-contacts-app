@@ -18,12 +18,7 @@ import android.widget.Toast;
 import org.furszy.contacts.BaseActivity;
 import org.furszy.contacts.R;
 import org.furszy.contacts.scanner.ScanActivity;
-import org.libertaria.world.crypto.CryptoBytes;
-import org.libertaria.world.profile_server.*;
-import org.libertaria.world.profile_server.engine.futures.BaseMsgFuture;
-import org.libertaria.world.profile_server.engine.futures.MsgListenerFuture;
 import org.libertaria.world.profile_server.utils.AddressUtils;
-import org.libertaria.world.profile_server.utils.ProfileUtils;
 
 import static android.Manifest.permission.CAMERA;
 import static org.furszy.contacts.scanner.ScanActivity.INTENT_EXTRA_RESULT;
@@ -111,7 +106,7 @@ public class AddNewServerActivity extends BaseActivity implements View.OnClickLi
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        profilesModule.serverConfiguration().registerNewServer(serverIp, intServerPort);
+                        profilesModule.registerNewServer(serverIp, intServerPort);
                         Snackbar.make(v, "Profile server " + serverIp + ":" + intServerPort + " has been successfully registered.", Snackbar.LENGTH_LONG).show();
                     }
                 }).start();
