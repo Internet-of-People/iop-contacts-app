@@ -20,9 +20,7 @@ import java.util.List;
  * todo: this interface should be on the sdk and not in this layer.. move me please..
  */
 
-public interface ProfilesModule extends Module {
-
-    ProfileServerConfiguration serverConfiguration();
+public interface ProfilesModule extends Module, ProfileServerConfiguration {
 
     String registerProfile(String name, String type, byte[] img, int latitude, int longitude, String extraData) throws Exception;
 

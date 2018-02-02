@@ -24,6 +24,7 @@ import org.libertaria.world.profile_server.engine.listeners.EngineListener;
 import org.libertaria.world.profile_server.engine.listeners.ProfSerMsgListener;
 import org.libertaria.world.profile_server.imp.ProfileInformationImp;
 import org.libertaria.world.profile_server.model.KeyEd25519;
+import org.libertaria.world.profile_server.model.ProfServerData;
 import org.libertaria.world.profile_server.model.Profile;
 import org.libertaria.world.services.EnabledServices;
 import org.libertaria.world.services.ServiceFactory;
@@ -112,11 +113,6 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
             broadcastEvent(intentMessage);
         }
     };
-
-    @Override
-    public ProfileServerConfiguration serverConfiguration() {
-        return profileServerConfiguration;
-    }
 
     @Override
     public String registerProfile(String name, String type, byte[] img, int latitude, int longitude, String extraData) throws Exception {
@@ -473,5 +469,30 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
     public void onDestroy() {
         //connectService = null;
         ioPConnect = null;
+    }
+
+    @Override
+    public ProfServerData getSelectedProfileServer() {
+        return profileServerConfiguration.getSelectedProfileServer();
+    }
+
+    @Override
+    public List<ProfServerData> getRegisteredServers() {
+        return profileServerConfiguration.getRegisteredServers();
+    }
+
+    @Override
+    public ProfServerData registerNewServer(String host, Integer port) {
+        return profileServerConfiguration.registerNewServer(host, port);
+    }
+
+    @Override
+    public void updateServer(ProfServerData profServerData) {
+        profileServerConfiguration.updateServer(profServerData);
+    }
+
+    @Override
+    public void selectServer(ProfServerData profServerData) {
+        profileServerConfiguration.selectServer(profServerData);
     }
 }

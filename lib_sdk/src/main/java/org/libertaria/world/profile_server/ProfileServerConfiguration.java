@@ -26,9 +26,9 @@ public interface ProfileServerConfiguration {
 
     /**
      * Registers a new profile server to be used.
-     * @param host              mandatory : the IP of the server
-     * @param port
      *
+     * @param host mandatory : the IP of the server
+     * @param port
      */
     ProfServerData registerNewServer(String host, Integer port);
 
