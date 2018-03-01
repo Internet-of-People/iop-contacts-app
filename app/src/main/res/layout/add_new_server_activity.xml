@@ -21,8 +21,22 @@
 
 
         <EditText
-            android:id="@+id/edit_ip"
+            android:id="@+id/edit_alias"
             android:layout_width="288dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="40dp"
+            android:background="@drawable/bg_inputs"
+            android:gravity="center"
+            android:hint="Enter the server alias"
+            android:padding="12dp"
+            android:textColor="#4d4d4d"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/edit_ip"
+            android:layout_width="287dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
             android:layout_marginTop="40dp"
@@ -36,7 +50,7 @@
 
         <EditText
             android:id="@+id/edit_port"
-            android:layout_width="288dp"
+            android:layout_width="75dp"
             android:layout_height="wrap_content"
             android:ems="10"
             android:inputType="number"

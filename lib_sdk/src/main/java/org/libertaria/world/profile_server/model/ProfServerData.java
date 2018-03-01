@@ -1,7 +1,6 @@
 package org.libertaria.world.profile_server.model;
 
 
-import org.libertaria.world.global.DbObject;
 import org.libertaria.world.global.HardCodedConstans;
 
 import java.util.Arrays;
@@ -28,7 +27,7 @@ public class ProfServerData {
     private byte[] protocolVersion = HardCodedConstans.PROTOCOL_VERSION;
     private int appServicePort;
 
-    private String serverCertificate;
+    private String serverAlias;
 
     public static final int DEFAULT_PORT = 16987;
 
@@ -52,7 +51,7 @@ public class ProfServerData {
         this.hasContract = hasContract;
     }
 
-    public ProfServerData(byte[] networkId, String host, int pPort, int custPort, int nonCustPort, int appServicePort, boolean isHome, boolean hasContract, float latitude, float longitude, String serverCertificate) {
+    public ProfServerData(byte[] networkId, String host, int pPort, int custPort, int nonCustPort, int appServicePort, boolean isHome, boolean hasContract, float latitude, float longitude, String serverAlias) {
         this.networkId = networkId;
         this.host = host;
         this.pPort = pPort;
@@ -63,7 +62,7 @@ public class ProfServerData {
         this.hasContract = hasContract;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.serverCertificate = serverCertificate;
+        this.serverAlias = serverAlias;
     }
 
     public ProfServerData(byte[] networkId, String host, int pPort, int custPort, int nonCustPort, int appServicePort) {
@@ -111,7 +110,7 @@ public class ProfServerData {
         if (!Arrays.equals(networkId, that.networkId)) return false;
         if (host != null ? !host.equals(that.host) : that.host != null) return false;
         if (!Arrays.equals(protocolVersion, that.protocolVersion)) return false;
-        return serverCertificate != null ? serverCertificate.equals(that.serverCertificate) : that.serverCertificate == null;
+        return serverAlias != null ? serverAlias.equals(that.serverAlias) : that.serverAlias == null;
     }
 
     @Override
@@ -127,7 +126,7 @@ public class ProfServerData {
         result = 31 * result + (hasContract ? 1 : 0);
         result = 31 * result + Arrays.hashCode(protocolVersion);
         result = 31 * result + appServicePort;
-        result = 31 * result + (serverCertificate != null ? serverCertificate.hashCode() : 0);
+        result = 31 * result + (serverAlias != null ? serverAlias.hashCode() : 0);
         return result;
     }
 
@@ -212,12 +211,12 @@ public class ProfServerData {
         this.longitude = longitude;
     }
 
-    public String getServerCertificate() {
-        return serverCertificate;
+    public String getServerAlias() {
+        return serverAlias;
     }
 
-    public void setServerCertificate(String serverCertificate) {
-        this.serverCertificate = serverCertificate;
+    public void setServerAlias(String serverAlias) {
+        this.serverAlias = serverAlias;
     }
 
     public void setpPort(int pPort) {

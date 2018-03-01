@@ -37,7 +37,7 @@ public class ProfileServerConfigurationImpl extends AbstractSqliteDb<ProfServerD
     public static final String CONFIGURATIONS_COLUMN_LATITUDE = "latitude";
     public static final String CONFIGURATIONS_COLUMN_LONGITUDE = "longitude";
     public static final String CONFIGURATIONS_COLUMN_SELECTED = "selected";
-    public static final String CONFIGURATIONS_COLUMN_CERTIFICATE = "certificate";
+    public static final String CONFIGURATIONS_COLUMN_ALIAS = "alias";
 
 
     public static final int CONFIGURATIONS_POS_COLUMN_HOST_IP = 0;
@@ -49,7 +49,7 @@ public class ProfileServerConfigurationImpl extends AbstractSqliteDb<ProfServerD
     public static final int CONFIGURATIONS_POS_COLUMN_LATITUDE = 6;
     public static final int CONFIGURATIONS_POS_COLUMN_LONGITUDE = 7;
     public static final int CONFIGURATIONS_POS_COLUMN_SELECTED = 8;
-    public static final int CONFIGURATIONS_POS_COLUMN_CERTIFICATE = 9;
+    public static final int CONFIGURATIONS_POS_COLUMN_ALIAS = 9;
 
 
     private List<ProfServerData> registeredServers = new ArrayList<>();
@@ -75,7 +75,7 @@ public class ProfileServerConfigurationImpl extends AbstractSqliteDb<ProfServerD
                         CONFIGURATIONS_COLUMN_LATITUDE + " LONG, " +
                         CONFIGURATIONS_COLUMN_LONGITUDE + " LONG," +
                         CONFIGURATIONS_COLUMN_SELECTED + " TEXT," +
-                        CONFIGURATIONS_COLUMN_CERTIFICATE + " TEXT)"
+                        CONFIGURATIONS_COLUMN_ALIAS + " TEXT)"
         );
     }
 
@@ -115,10 +115,11 @@ public class ProfileServerConfigurationImpl extends AbstractSqliteDb<ProfServerD
     }
 
     @Override
-    public ProfServerData registerNewServer(String host, Integer port) {
+    public ProfServerData registerNewServer(String host, Integer port, String alias) {
         ProfServerData profServerData = new ProfServerData(host);
         profServerData.setpPort(port);
         profServerData.setHome(false);
+        profServerData.setServerAlias(alias);
         insert(profServerData);
         registeredServers.add(profServerData);
         return profServerData;
@@ -153,7 +154,7 @@ public class ProfileServerConfigurationImpl extends AbstractSqliteDb<ProfServerD
         contentValues.put(CONFIGURATIONS_COLUMN_LATITUDE, profServerData.getLatitude());
         contentValues.put(CONFIGURATIONS_COLUMN_LONGITUDE, profServerData.getLongitude());
         contentValues.put(CONFIGURATIONS_COLUMN_SELECTED, String.valueOf(profServerData.isHome()));
-        contentValues.put(CONFIGURATIONS_COLUMN_SELECTED, profServerData.getServerCertificate());
+        contentValues.put(CONFIGURATIONS_COLUMN_SELECTED, profServerData.getServerAlias());
         return contentValues;
     }
 
@@ -168,7 +169,7 @@ public class ProfileServerConfigurationImpl extends AbstractSqliteDb<ProfServerD
         float latitude = cursor.getLong(CONFIGURATIONS_POS_COLUMN_LATITUDE);
         float longitude = cursor.getLong(CONFIGURATIONS_POS_COLUMN_LONGITUDE);
         boolean selected = Boolean.valueOf(cursor.getString(CONFIGURATIONS_POS_COLUMN_SELECTED));
-        String serverCertificate = String.valueOf(cursor.getString(CONFIGURATIONS_POS_COLUMN_CERTIFICATE));
+        String serverCertificate = String.valueOf(cursor.getString(CONFIGURATIONS_POS_COLUMN_ALIAS));
         return new ProfServerData(hostNodeId, hostIp, hostPort, custPort, nonCustPort, appPort, selected, true, latitude, longitude, serverCertificate);
     }
 

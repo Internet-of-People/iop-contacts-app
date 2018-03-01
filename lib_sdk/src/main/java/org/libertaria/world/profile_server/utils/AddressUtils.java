@@ -1,5 +1,8 @@
 package org.libertaria.world.profile_server.utils;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.regex.Pattern;
 
 /**
@@ -25,5 +28,14 @@ public final class AddressUtils {
             if (!Character.isDigit(c)) return false;
         }
         return true;
+    }
+
+    public static boolean isAddressAvailable(String ipAddress, Integer port) {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(ipAddress, port), 600);
+            return true;
+        } catch (IOException e) {
+            return false; // Either timeout or unreachable or failed DNS lookup.
+        }
     }
 }

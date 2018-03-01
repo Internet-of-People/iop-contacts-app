@@ -24,9 +24,8 @@ import static org.libertaria.world.profile_server.protocol.MessageFactory.NO_LOC
 
 /**
  * Created by mati on 08/11/16.
- *
+ * <p>
  * This class is in charge of build the messages in a protocol server language.
- *
  */
 
 public class ProfSerImp implements ProfileServer {
@@ -40,21 +39,21 @@ public class ProfSerImp implements ProfileServer {
 
     public ProfSerImp(IoPConnectContext context, ProfServerData configurations, SslContextFactory sslContextFactory, PsSocketHandler<IopProfileServer.Message> handler) {
         this.configurations = configurations;
-        profSerConnectionManager = new ProfSerConnectionManager(configurations.getHost(),sslContextFactory,handler);
+        profSerConnectionManager = new ProfSerConnectionManager(configurations.getHost(), sslContextFactory, handler);
     }
 
 
     @Override
-    public ProfSerRequest ping(IopProfileServer.ServerRoleType portType) throws CantConnectException,CantSendMessageException{
-        return ping(portType,null,null);
+    public ProfSerRequest ping(IopProfileServer.ServerRoleType portType) throws CantConnectException, CantSendMessageException {
+        return ping(portType, null, null);
     }
 
     @Override
-    public ProfSerRequest ping(IopProfileServer.ServerRoleType portType, String callId,String token) throws CantConnectException,CantSendMessageException {
+    public ProfSerRequest ping(IopProfileServer.ServerRoleType portType, String callId, String token) throws CantConnectException, CantSendMessageException {
         IopProfileServer.Message message = MessageFactory.buildPingRequestMessage(
                 ByteString.copyFromUtf8("hi").toByteArray(),
                 configurations.getProtocolVersion());
-        switch (portType){
+        switch (portType) {
             case CL_CUSTOMER:
                 return buildRequestToCustomerPort(message);
             case CL_NON_CUSTOMER:
@@ -62,8 +61,9 @@ public class ProfSerImp implements ProfileServer {
             case PRIMARY:
                 return buildRequestToPrimaryPort(message);
             case CL_APP_SERVICE:
-                if (callId==null) throw new IllegalArgumentException("token cannot be null on a appServicePortRequest");
-                return buildRequestToAppServicePort(callId,token,message);
+                if (callId == null)
+                    throw new IllegalArgumentException("token cannot be null on a appServicePortRequest");
+                return buildRequestToAppServicePort(callId, token, message);
             case SR_NEIGHBOR:
                 throw new IllegalArgumentException("app service port not implemented");
             case UNRECOGNIZED:
@@ -74,50 +74,50 @@ public class ProfSerImp implements ProfileServer {
     }
 
 
-
     @Override
-    public ProfSerRequest listRolesRequest() throws CantConnectException,CantSendMessageException {
+    public ProfSerRequest listRolesRequest() throws CantConnectException, CantSendMessageException {
         IopProfileServer.Message message = MessageFactory.buildServerListRolesRequestMessage(configurations.getProtocolVersion());
         return buildRequestToPrimaryPort(message);
     }
 
     @Override
-    public ProfSerRequest registerHostRequest(Signer signer, byte[] identityPk, String identityType) throws CantConnectException,CantSendMessageException {
-        IopProfileServer.Message message = MessageFactory.buildRegisterHostRequest(identityPk,identityType,System.currentTimeMillis(),null,signer);
+    public ProfSerRequest registerHostRequest(Signer signer, byte[] identityPk, String identityType) throws CantConnectException, CantSendMessageException {
+        IopProfileServer.Message message = MessageFactory.buildRegisterHostRequest(identityPk, identityType, System.currentTimeMillis(), null, signer);
         return buildRequestToNonCustomerPort(message);
     }
 
     @Override
-    public ProfSerRequest startConversationNonCl(byte[] clientPk, byte[] challenge) throws CantConnectException,CantSendMessageException {
-        logger.info("startConversationNonCl, clientPK bytes count: "+clientPk.length+", challenge bytes count: "+challenge.length);
-        logger.info("clientPK: "+ Arrays.toString(clientPk));
-        logger.info("challenge: "+ Arrays.toString(challenge));
-        IopProfileServer.Message message = MessageFactory.buildStartConversationRequest(clientPk,challenge,configurations.getProtocolVersion());
-        logger.info("startConversationNonCl message id: "+message.getId());
+    public ProfSerRequest startConversationNonCl(byte[] clientPk, byte[] challenge) throws CantConnectException, CantSendMessageException {
+        logger.info("startConversationNonCl, clientPK bytes count: " + clientPk.length + ", challenge bytes count: " + challenge.length);
+        logger.info("clientPK: " + Arrays.toString(clientPk));
+        logger.info("challenge: " + Arrays.toString(challenge));
+        IopProfileServer.Message message = MessageFactory.buildStartConversationRequest(clientPk, challenge, configurations.getProtocolVersion());
+        logger.info("startConversationNonCl message id: " + message.getId());
         return buildRequestToNonCustomerPort(message);
     }
 
     @Override
-    public ProfSerRequest startConversationNonCl(String clientPk, String challenge) throws CantConnectException,CantSendMessageException {
-        return startConversationNonCl(ByteString.copyFromUtf8(clientPk).toByteArray(),ByteString.copyFromUtf8(challenge).toByteArray());
+    public ProfSerRequest startConversationNonCl(String clientPk, String challenge) throws CantConnectException, CantSendMessageException {
+        return startConversationNonCl(ByteString.copyFromUtf8(clientPk).toByteArray(), ByteString.copyFromUtf8(challenge).toByteArray());
     }
 
     @Override
-    public ProfSerRequest startConversationCl(byte[] clientPk, byte[] challenge) throws CantConnectException,CantSendMessageException {
-        IopProfileServer.Message message = MessageFactory.buildStartConversationRequest(clientPk,challenge,configurations.getProtocolVersion());
-        logger.info("startConversationCl message id: "+message.getId());
+    public ProfSerRequest startConversationCl(byte[] clientPk, byte[] challenge) throws CantConnectException, CantSendMessageException {
+        IopProfileServer.Message message = MessageFactory.buildStartConversationRequest(clientPk, challenge, configurations.getProtocolVersion());
+        logger.info("startConversationCl message id: " + message.getId());
         return buildRequestToCustomerPort(message);
     }
+
     // metodo rápido..
     @Override
-    public ProfSerRequest startConversationCl(String clientPk, String challenge) throws CantConnectException,CantSendMessageException{
-       return startConversationCl(ByteString.copyFromUtf8(clientPk).toByteArray(),ByteString.copyFromUtf8(challenge).toByteArray());
+    public ProfSerRequest startConversationCl(String clientPk, String challenge) throws CantConnectException, CantSendMessageException {
+        return startConversationCl(ByteString.copyFromUtf8(clientPk).toByteArray(), ByteString.copyFromUtf8(challenge).toByteArray());
     }
 
     @Override
-    public ProfSerRequest checkIn(byte[] nodeChallenge, Signer signer) throws CantConnectException,CantSendMessageException {
-        IopProfileServer.Message message = MessageFactory.buildCheckInRequest(nodeChallenge,signer);
-        logger.info("checkIn message id: "+message.getId());
+    public ProfSerRequest checkIn(byte[] nodeChallenge, Signer signer) throws CantConnectException, CantSendMessageException {
+        IopProfileServer.Message message = MessageFactory.buildCheckInRequest(nodeChallenge, signer);
+        logger.info("checkIn message id: " + message.getId());
         return buildRequestToCustomerPort(message);
     }
 
@@ -159,7 +159,7 @@ public class ProfSerImp implements ProfileServer {
     @Override
     public ProfSerRequest storeCanDataRequest(CanStoreMap canStoreMap) {
         logger.info("storeCanDataRequest");
-        IopProfileServer.Message message = MessageFactory.buildCanStoreDataRequest(configurations.getNetworkId(),canStoreMap);
+        IopProfileServer.Message message = MessageFactory.buildCanStoreDataRequest(configurations.getNetworkId(), canStoreMap);
 
         return null;
     }
@@ -167,7 +167,7 @@ public class ProfSerImp implements ProfileServer {
     @Override
     public ProfSerRequest searchProfilesRequest(boolean onlyHostedProfiles, boolean includeThumbnailImages, int maxResponseRecordCount, int maxTotalRecordCount, String profileType, String profileName, String extraData) throws CantConnectException, CantSendMessageException {
         logger.info("searchProfilesRequest");
-        return searchProfilesRequest(onlyHostedProfiles,includeThumbnailImages,maxResponseRecordCount,maxTotalRecordCount,profileType,profileName,NO_LOCATION,NO_LOCATION,0,extraData);
+        return searchProfilesRequest(onlyHostedProfiles, includeThumbnailImages, maxResponseRecordCount, maxTotalRecordCount, profileType, profileName, NO_LOCATION, NO_LOCATION, 0, extraData);
     }
 
     @Override
@@ -191,7 +191,7 @@ public class ProfSerImp implements ProfileServer {
     @Override
     public ProfSerRequest searchProfilePartRequest(int recordIndex, int recordCount) throws CantConnectException, CantSendMessageException {
         logger.info("searchProfilePartRequest");
-        IopProfileServer.Message msg = MessageFactory.buildSearcProfilePartRequest(recordIndex,recordCount);
+        IopProfileServer.Message msg = MessageFactory.buildSearcProfilePartRequest(recordIndex, recordCount);
         return buildRequestToCustomerPort(msg);
     }
 
@@ -205,53 +205,52 @@ public class ProfSerImp implements ProfileServer {
     @Override
     public ProfSerRequest getProfileInformationRequest(byte[] profileNetworkId, boolean applicationServices, boolean thumbnail, boolean profileImage) throws CantConnectException, CantSendMessageException {
         logger.info("getProfileInformationRequest");
-        IopProfileServer.Message message = MessageFactory.buildGetIdentityInformationRequest(profileNetworkId,applicationServices,thumbnail,profileImage);
+        IopProfileServer.Message message = MessageFactory.buildGetIdentityInformationRequest(profileNetworkId, applicationServices, thumbnail, profileImage);
         return (configurations.isHome()) ? buildRequestToCustomerPort(message) : buildRequestToNonCustomerPort(message);
     }
 
     @Override
     public ProfSerRequest callIdentityApplicationServiceRequest(byte[] profileNetworkId, String appService) {
         logger.info("callIdentityApplicationServiceRequest");
-        IopProfileServer.Message message = MessageFactory.buildCallIdentityApplicationServiceRequest(profileNetworkId,appService);
+        IopProfileServer.Message message = MessageFactory.buildCallIdentityApplicationServiceRequest(profileNetworkId, appService);
         return (configurations.isHome()) ? buildRequestToCustomerPort(message) : buildRequestToNonCustomerPort(message);
     }
 
     /**
-     *
-     *  This request is sent by a client to the profile server in order to deliver a message to the other client
-     *  over the opened application service call channel.
-     *
-     *  After the client connects to clAppService port, it sends an initialization message using this request
-     *  to inform the profile server about its identity. This initialization message is not delivered to the other
-     *  party and the profile server responds to this initialization message only after the other party is also
-     *  connected. In the initialization message, the 'message' field is ignored. If the other party fails to join
-     *  the channel within 30 seconds, the profile server closes the existing connection to the connected client.
-     *
-     *  Until the client receives a reply from the profile server to its initialization message, it is not allowed
-     *  to send other ApplicationServiceSendMessageRequest. This would be an error and the profile server would
-     *  destroy the channel.
-     *
-     *  If neither of clients connects to clAppService port or sends an inititial message within 30 seconds after
-     *  the call was initiated, the profile server destroys the channel.
-     *
-     *  Note that the clients are allowed to disconnect from clNonCustomer/clCustomer port once the caller receives
-     *  CallIdentityApplicationServiceResponse and the callee sends IncomingCallNotificationResponse.
-     *
-     *  Each client is only allowed to have 20 ApplicationServiceSendMessageRequest messages pending, which means
-     *  that there was no ApplicationServiceSendMessageResponse sent to the client. If a client attempts to send
-     *  another message while having 20 pending messages, the profile server destroys the call channel.
-     *
-     *  Roles: clAppService
+     * This request is sent by a client to the profile server in order to deliver a message to the other client
+     * over the opened application service call channel.
+     * <p>
+     * After the client connects to clAppService port, it sends an initialization message using this request
+     * to inform the profile server about its identity. This initialization message is not delivered to the other
+     * party and the profile server responds to this initialization message only after the other party is also
+     * connected. In the initialization message, the 'message' field is ignored. If the other party fails to join
+     * the channel within 30 seconds, the profile server closes the existing connection to the connected client.
+     * <p>
+     * Until the client receives a reply from the profile server to its initialization message, it is not allowed
+     * to send other ApplicationServiceSendMessageRequest. This would be an error and the profile server would
+     * destroy the channel.
+     * <p>
+     * If neither of clients connects to clAppService port or sends an inititial message within 30 seconds after
+     * the call was initiated, the profile server destroys the channel.
+     * <p>
+     * Note that the clients are allowed to disconnect from clNonCustomer/clCustomer port once the caller receives
+     * CallIdentityApplicationServiceResponse and the callee sends IncomingCallNotificationResponse.
+     * <p>
+     * Each client is only allowed to have 20 ApplicationServiceSendMessageRequest messages pending, which means
+     * that there was no ApplicationServiceSendMessageResponse sent to the client. If a client attempts to send
+     * another message while having 20 pending messages, the profile server destroys the call channel.
+     * <p>
+     * Roles: clAppService
      *
      * @param callToken
      * @param msg
      * @return
      */
     @Override
-    public ProfSerRequest appServiceSendMessageRequest(String callId,byte[] callToken, byte[] msg) {
-        IopProfileServer.Message message = MessageFactory.buildApplicationServiceSendMessageRequest(callToken,msg);
-        logger.info("appServiceSendMessageRequest, msg id: "+message.getId());
-        return buildRequestToAppServicePort(callId,CryptoBytes.toHexString(callToken),message);
+    public ProfSerRequest appServiceSendMessageRequest(String callId, byte[] callToken, byte[] msg) {
+        IopProfileServer.Message message = MessageFactory.buildApplicationServiceSendMessageRequest(callToken, msg);
+        logger.info("appServiceSendMessageRequest, msg id: " + message.getId());
+        return buildRequestToAppServicePort(callId, CryptoBytes.toHexString(callToken), message);
     }
 
     @Override
@@ -262,10 +261,10 @@ public class ProfSerImp implements ProfileServer {
     }
 
     @Override
-    public ProfSerRequest appServiceReceiveMessageNotificationResponse(String callId,String token, int msgId) {
+    public ProfSerRequest appServiceReceiveMessageNotificationResponse(String callId, String token, int msgId) {
         logger.info("appServiceReceiveMessageNotificationResponse");
         IopProfileServer.Message message = MessageFactory.buildApplicationServiceReceiveMessageNotificationRequest(msgId);
-        return buildRequestToAppServicePort(callId,token,message);
+        return buildRequestToAppServicePort(callId, token, message);
     }
 
     @Override
@@ -288,9 +287,9 @@ public class ProfSerImp implements ProfileServer {
         profSerConnectionManager.shutdown();
     }
 
-    private int getPort(IopProfileServer.ServerRoleType portType){
+    private int getPort(IopProfileServer.ServerRoleType portType) {
         int port = 0;
-        switch (portType){
+        switch (portType) {
             case CL_CUSTOMER:
                 port = configurations.getCustPort();
                 break;
@@ -305,22 +304,22 @@ public class ProfSerImp implements ProfileServer {
     }
 
     public void writeToPrimaryPort(IopProfileServer.Message message) throws CantConnectException, CantSendMessageException {
-        write(message,IopProfileServer.ServerRoleType.PRIMARY,configurations.getpPort());
+        write(message, IopProfileServer.ServerRoleType.PRIMARY, configurations.getpPort());
     }
 
     public void writeToNonCustomerPort(IopProfileServer.Message message) throws CantConnectException, CantSendMessageException {
-        write(message,IopProfileServer.ServerRoleType.CL_NON_CUSTOMER,configurations.getNonCustPort());
+        write(message, IopProfileServer.ServerRoleType.CL_NON_CUSTOMER, configurations.getNonCustPort());
     }
 
     public void writeToCustomerPort(IopProfileServer.Message message) throws CantConnectException, CantSendMessageException {
-        write(message,IopProfileServer.ServerRoleType.CL_CUSTOMER,configurations.getCustPort());
+        write(message, IopProfileServer.ServerRoleType.CL_CUSTOMER, configurations.getCustPort());
     }
 
-    public void writeToAppServicePort(String callId,String token,IopProfileServer.Message message) throws CantConnectException, CantSendMessageException{
-        write(message, IopProfileServer.ServerRoleType.CL_APP_SERVICE,configurations.getAppServicePort(),callId,token);
+    public void writeToAppServicePort(String callId, String token, IopProfileServer.Message message) throws CantConnectException, CantSendMessageException {
+        write(message, IopProfileServer.ServerRoleType.CL_APP_SERVICE, configurations.getAppServicePort(), callId, token);
     }
 
-    private void write(IopProfileServer.Message message, IopProfileServer.ServerRoleType serverRoleType,int port) throws CantConnectException, CantSendMessageException {
+    private void write(IopProfileServer.Message message, IopProfileServer.ServerRoleType serverRoleType, int port) throws CantConnectException, CantSendMessageException {
         profSerConnectionManager.write(
                 serverRoleType,
                 port,
@@ -328,7 +327,7 @@ public class ProfSerImp implements ProfileServer {
         );
     }
 
-    private void write(IopProfileServer.Message message, IopProfileServer.ServerRoleType serverRoleType,int port,String callId,String token) throws CantConnectException, CantSendMessageException {
+    private void write(IopProfileServer.Message message, IopProfileServer.ServerRoleType serverRoleType, int port, String callId, String token) throws CantConnectException, CantSendMessageException {
         profSerConnectionManager.writeToAppServiceCall(
                 serverRoleType,
                 port,
@@ -338,7 +337,7 @@ public class ProfSerImp implements ProfileServer {
         );
     }
 
-    private ProfSerRequest buildRequestToPrimaryPort(final IopProfileServer.Message message){
+    private ProfSerRequest buildRequestToPrimaryPort(final IopProfileServer.Message message) {
         return new ProfSerRequestImp(message.getId()) {
             @Override
             public void send() throws CantConnectException, CantSendMessageException {
@@ -347,7 +346,7 @@ public class ProfSerImp implements ProfileServer {
         };
     }
 
-    private ProfSerRequest buildRequestToNonCustomerPort(final IopProfileServer.Message message){
+    private ProfSerRequest buildRequestToNonCustomerPort(final IopProfileServer.Message message) {
         return new ProfSerRequestImp(message.getId()) {
             @Override
             public void send() throws CantConnectException, CantSendMessageException {
@@ -356,7 +355,7 @@ public class ProfSerImp implements ProfileServer {
         };
     }
 
-    private ProfSerRequest buildRequestToCustomerPort(final IopProfileServer.Message message){
+    private ProfSerRequest buildRequestToCustomerPort(final IopProfileServer.Message message) {
         return new ProfSerRequestImp(message.getId()) {
             @Override
             public void send() throws CantConnectException, CantSendMessageException {
@@ -365,11 +364,11 @@ public class ProfSerImp implements ProfileServer {
         };
     }
 
-    private ProfSerRequest buildRequestToAppServicePort(final String callId,final String token, final IopProfileServer.Message message) {
+    private ProfSerRequest buildRequestToAppServicePort(final String callId, final String token, final IopProfileServer.Message message) {
         return new ProfSerRequestImp(message.getId()) {
             @Override
             public void send() throws CantConnectException, CantSendMessageException {
-                writeToAppServicePort(callId,token,message);
+                writeToAppServicePort(callId, token, message);
             }
         };
     }
@@ -377,7 +376,7 @@ public class ProfSerImp implements ProfileServer {
     /**
      * Ping tast to mantain alive the customer connection.
      */
-    private class PingTask implements Runnable{
+    private class PingTask implements Runnable {
 
         IopProfileServer.ServerRoleType portType;
 

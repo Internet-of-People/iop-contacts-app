@@ -482,8 +482,8 @@ public class ProfilesModuleImp extends AbstractModule implements ProfilesModule,
     }
 
     @Override
-    public ProfServerData registerNewServer(String host, Integer port) {
-        return profileServerConfiguration.registerNewServer(host, port);
+    public ProfServerData registerNewServer(String host, Integer port, String alias) {
+        return profileServerConfiguration.registerNewServer(host, port, "");
     }
 
     @Override

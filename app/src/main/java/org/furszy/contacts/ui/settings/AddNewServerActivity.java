@@ -33,6 +33,7 @@ public class AddNewServerActivity extends BaseActivity implements View.OnClickLi
     private static final int SCANNER_RESULT = 122;
 
     private View root;
+    private EditText edit_alias;
     private EditText edit_ip;
     private EditText edit_port;
     private Button btn_add;
@@ -66,6 +67,7 @@ public class AddNewServerActivity extends BaseActivity implements View.OnClickLi
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#2998ff")));
         setTitle("Send Request");
         root = getLayoutInflater().inflate(R.layout.add_new_server_activity, container, true);
+        edit_alias = (EditText) root.findViewById(R.id.edit_alias);
         edit_ip = (EditText) root.findViewById(R.id.edit_ip);
         edit_port = (EditText) root.findViewById(R.id.edit_port);
         root.findViewById(R.id.img_qr).setOnClickListener(this);
@@ -95,7 +97,11 @@ public class AddNewServerActivity extends BaseActivity implements View.OnClickLi
                 btn_add.setEnabled(false);
                 btn_add.setBackground(getResources().getDrawable(R.drawable.bg_button_light_blue, null));
                 final String serverIp = edit_ip.getText().toString();
-                String serverPort = edit_port.getText().toString();
+                final String serverPort = edit_port.getText().toString();
+                String serverAlias = edit_alias.getText().toString();
+                if (serverAlias.isEmpty()) {
+                    serverAlias = serverIp.concat(":").concat(serverPort);
+                }
                 if (AddressUtils.isValidIP(serverIp) && AddressUtils.isValidPort(serverPort)) {
                     enableSendBtn();
                     Snackbar.make(v, "Valid IP and port must be provided!", Snackbar.LENGTH_LONG).show();
@@ -103,10 +109,11 @@ public class AddNewServerActivity extends BaseActivity implements View.OnClickLi
                 }
                 final Integer intServerPort = Integer.valueOf(serverPort);
                 progressBar.setVisibility(View.VISIBLE);
+                final String finalServerAlias = serverAlias;
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        profilesModule.registerNewServer(serverIp, intServerPort);
+                        profilesModule.registerNewServer(serverIp, intServerPort, finalServerAlias);
                         Snackbar.make(v, "Profile server " + serverIp + ":" + intServerPort + " has been successfully registered.", Snackbar.LENGTH_LONG).show();
                     }
                 }).start();
